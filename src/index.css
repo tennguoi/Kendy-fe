@@ -1,0 +1,51 @@
+:root {
+  --sans: Inter, 'Segoe UI', Roboto, system-ui, sans-serif;
+  --kd-deep: #0f172a;
+  --kd-navy: #102033;
+  --kd-blue: #147cff;
+  --kd-blue-hover: #1687f2;
+  --kd-cyan: #18c4c7;
+  --kd-teal: #20bfc8;
+  --kd-bg: #f5f8fc;
+  --kd-card: #ffffff;
+  --kd-border: #e2e8f0;
+  --kd-text: #0f172a;
+  --kd-muted: #64748b;
+  --kd-success: #16a34a;
+  --kd-warning: #f59e0b;
+  --kd-danger: #dc2626;
+  --kd-info: #2563eb;
+  --kd-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+  --kd-soft-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+
+  font: 16px/1.45 var(--sans);
+  letter-spacing: 0;
+  color: #0f172a;
+  background: #f5f8fc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--kd-blue);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
