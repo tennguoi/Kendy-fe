@@ -209,6 +209,7 @@
 }
 
 .auth-form-panel {
+  position: relative;
   min-width: 0;
   min-height: 100svh;
   box-sizing: border-box;
@@ -216,6 +217,37 @@
   display: grid;
   place-items: center;
   overflow-y: auto;
+}
+
+.auth-home-link {
+  position: absolute;
+  top: 28px;
+  right: 40px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  color: var(--kd-text);
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.auth-home-link:hover {
+  border-color: rgba(20, 124, 255, 0.35);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
+}
+
+.auth-home-link:focus-visible {
+  outline: 3px solid rgba(24, 196, 199, 0.28);
+  outline-offset: 3px;
 }
 
 .auth-card {
@@ -602,7 +634,12 @@
   }
 
   .auth-form-panel {
-    padding: 28px;
+    padding: 78px 28px 28px;
+  }
+
+  .auth-home-link {
+    top: 22px;
+    right: 28px;
   }
 }
 
@@ -610,6 +647,15 @@
   .auth-brand-content,
   .auth-form-panel {
     padding: 18px;
+  }
+
+  .auth-form-panel {
+    padding-top: 74px;
+  }
+
+  .auth-home-link {
+    top: 18px;
+    right: 18px;
   }
 
   .auth-logo-lockup img {

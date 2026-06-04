@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  ArrowLeft,
   ArrowRight,
   CheckCircle2,
   Eye,
@@ -23,7 +24,7 @@ const defaultOAuthProviders = [
   { id: 'github', name: 'GitHub', authorizationUrl: '/oauth2/authorization/github' },
 ]
 
-function AuthScreen({ notice, onSuccess }) {
+function AuthScreen({ notice, onBack, onSuccess }) {
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({
     name: '',
@@ -179,6 +180,13 @@ function AuthScreen({ notice, onSuccess }) {
       </aside>
 
       <main className="auth-form-panel">
+        {onBack && (
+          <button type="button" className="auth-home-link" onClick={onBack}>
+            <ArrowLeft size={17} strokeWidth={2} aria-hidden="true" />
+            <span>Trang chủ</span>
+          </button>
+        )}
+
         <form key={mode} className="auth-card" onSubmit={submit}>
           <div className="auth-card-head">
             <span className="auth-mode-icon" aria-hidden="true">
