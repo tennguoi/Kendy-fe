@@ -1,19 +1,19 @@
 import heroImg from '../../assets/hero.png'
 import { navItems } from '../../data/navigation'
 
-function Sidebar({ activeView, onViewChange }) {
+function Sidebar({ activeView, footerLabel = 'Hỗ trợ', footerTitle = 'Ticket sau mua', items = navItems, onViewChange }) {
   return (
     <aside className="sidebar">
       <div className="brand">
         <img src={heroImg} alt="Kendy Digital" />
         <div>
-          <strong>KendyDigital</strong>
-          <span>Service wallet</span>
+          <strong>Kendy Digital</strong>
+          <span>Ví mua dịch vụ</span>
         </div>
       </div>
 
       <nav className="nav">
-        {navItems.map((item) => {
+        {items.map((item) => {
           const Icon = item.icon
 
           return (
@@ -33,8 +33,8 @@ function Sidebar({ activeView, onViewChange }) {
       </nav>
 
       <div className="sidebar-footer">
-        <span>Webhook</span>
-        <strong>SePay ready</strong>
+        <span>{footerLabel}</span>
+        <strong>{footerTitle}</strong>
       </div>
     </aside>
   )

@@ -1,6 +1,6 @@
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 
-function HeroSection({ logo, notice, onLoginClick, platformSignals }) {
+function HeroSection({ logo, notice, onLoginClick, serviceSignals }) {
   return (
     <section className="public-hero" id="top">
       <div className="public-pixel-layer" aria-hidden="true" />
@@ -12,47 +12,54 @@ function HeroSection({ logo, notice, onLoginClick, platformSignals }) {
 
           <span className="public-kicker">
             <CheckCircle2 size={18} strokeWidth={2} aria-hidden="true" />
-            Nền tảng dịch vụ digital có ví, đơn hàng và ticket hỗ trợ
+            Mua tài khoản, nâng cấp gói và đăng ký dịch vụ Facebook
           </span>
 
-          <h1>Nền tảng mua dịch vụ digital nhanh chóng, minh bạch và tự động</h1>
+          <h1>Mua tài khoản CapCut, Facebook và dịch vụ quảng cáo nhanh chóng, minh bạch</h1>
           <p className="public-hero-copy">
-            Kendy Digital giúp bạn nạp tiền qua SePay, mua dịch vụ bằng ví, theo dõi đơn hàng và gửi ticket hỗ trợ
-            trên một hệ thống rõ ràng thay vì trao đổi thủ công rời rạc.
+            Kendy Digital giúp bạn mua tài khoản, nâng cấp gói, nạp tiền tự động, theo dõi đơn hàng và nhận hỗ trợ sau
+            mua trên một hệ thống có ví tiền, mã đơn và ticket rõ ràng.
           </p>
 
           <div className="public-hero-actions">
-            <button type="button" className="public-btn primary hero-main" onClick={onLoginClick}>
-              <span>Bắt đầu ngay</span>
+            <a className="public-btn primary hero-main" href="#services">
+              <span>Xem dịch vụ</span>
               <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
-            </button>
-            <a className="public-btn glass" href="#services">
-              Xem dịch vụ
+            </a>
+            <a className="public-btn glass" href="#contact">
+              Liên hệ tư vấn
             </a>
           </div>
 
           <div className="public-trust-strip" aria-label="Điểm nổi bật">
-            <span>Nạp tiền tự động</span>
-            <span>Xử lý đơn 24/7</span>
-            <span>Lịch sử ví minh bạch</span>
-            <span>Hỗ trợ theo ticket</span>
+            <span>Facebook Ads</span>
+            <span>CapCut Pro</span>
+            <span>Nâng cấp tài khoản</span>
+            <span>Bảo hành rõ điều kiện</span>
           </div>
         </div>
 
-        <div className="hero-platform-card" aria-label="Mockup giao diện ví và đơn hàng">
+        <div className="hero-service-card" aria-label="Mô phỏng dịch vụ nổi bật">
           <div className="mockup-topbar">
-            <span>Kendy Wallet</span>
-            <strong>Dashboard preview</strong>
+            <span>Mockup giao dịch</span>
+            <strong>Ví, đơn hàng và dịch vụ</strong>
           </div>
 
           <div className="wallet-preview">
             <span>Số dư ví</span>
             <strong>1.250.000đ</strong>
-            <small>Giao dịch gần nhất: +500.000đ đã cộng vào ví</small>
+            <small>Giao dịch nạp tiền thành công: +500.000đ</small>
+          </div>
+
+          <div className="hero-service-stack">
+            <span>CapCut Pro</span>
+            <span>Tài khoản Facebook</span>
+            <span>Nâng cấp tài khoản</span>
+            <span>Chạy quảng cáo</span>
           </div>
 
           <div className="signal-grid">
-            {platformSignals.map((item) => {
+            {serviceSignals.map((item) => {
               const Icon = item.icon
 
               return (
@@ -67,11 +74,15 @@ function HeroSection({ logo, notice, onLoginClick, platformSignals }) {
 
           <div className="order-preview">
             <div>
-              <span>Đơn hàng</span>
-              <strong>CapCut Pro 12 tháng</strong>
+              <span>Đơn gần đây</span>
+              <strong>Nâng cấp CapCut Pro 12 tháng</strong>
             </div>
             <em>Đang xử lý</em>
           </div>
+
+          <button type="button" className="hero-login-link" onClick={onLoginClick}>
+            Đã có tài khoản? Đăng nhập để theo dõi đơn
+          </button>
         </div>
       </div>
     </section>

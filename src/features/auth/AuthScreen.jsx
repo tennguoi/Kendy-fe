@@ -139,23 +139,23 @@ function AuthScreen({ notice, onBack, onSuccess }) {
 
   return (
     <section className="auth-screen">
-      <aside className="auth-brand-panel" aria-label="Digital Services">
+      <aside className="auth-brand-panel" aria-label="Kendy Digital">
         <div className="pixel-layer" aria-hidden="true" />
         <div className="auth-brand-content">
           <div className="auth-logo-lockup">
-            <img src={heroImg} alt="Digital Services" />
+            <img src={heroImg} alt="Kendy Digital" />
             <div>
-              <strong>Digital Services</strong>
-              <span>Shop tài khoản &amp; dịch vụ quảng cáo</span>
+              <strong>Kendy Digital</strong>
+              <span>Tài khoản, nâng cấp &amp; quảng cáo Facebook</span>
             </div>
           </div>
 
           <div className="auth-hero-copy">
             <span className="auth-kicker">
               <CheckCircle2 size={18} strokeWidth={2} aria-hidden="true" />
-              Nền tảng dịch vụ số chuyên nghiệp
+              Dịch vụ tài khoản và quảng cáo chuyên nghiệp
             </span>
-            <h1>Digital Services</h1>
+            <h1>Kendy Digital</h1>
             <p>
               Bán tài khoản CapCut, Facebook, nâng cấp tài khoản &amp; dịch vụ chạy quảng cáo.
             </p>

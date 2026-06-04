@@ -18,13 +18,17 @@ function FeaturedServices({ services, onPurchaseClick }) {
         {services.map((service) => (
           <article className="pricing-card" key={service.name}>
             <div className="pricing-head">
-              <span>{service.category}</span>
+              <div className="pricing-badges">
+                <span>{service.category}</span>
+                <em>{service.badge}</em>
+              </div>
               <strong>{service.name}</strong>
+              <p>{service.description}</p>
             </div>
 
             <div className="price-line">
               <strong>{service.price}</strong>
-              <span>{service.mode}</span>
+              <span>{service.mode} · {service.status}</span>
             </div>
 
             <dl className="service-meta">
@@ -48,7 +52,7 @@ function FeaturedServices({ services, onPurchaseClick }) {
             </ul>
 
             <button type="button" className="public-btn dark" onClick={onPurchaseClick}>
-              <span>Mua ngay</span>
+              <span>{service.cta}</span>
               <ArrowRight size={17} strokeWidth={2} aria-hidden="true" />
             </button>
           </article>

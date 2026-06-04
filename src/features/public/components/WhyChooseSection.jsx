@@ -4,11 +4,11 @@ function WhyChooseSection({ items, policies }) {
       <div className="section-heading split">
         <div>
           <span className="eyebrow">Tại sao chọn chúng tôi</span>
-          <h2>Website bán dịch vụ digital nhưng vận hành như một platform có kiểm soát</h2>
+          <h2>Mua tài khoản và dịch vụ Facebook cần rõ điều kiện ngay từ đầu</h2>
         </div>
         <p>
-          Trọng tâm là tạo niềm tin tài chính: giao dịch có lịch sử, đơn hàng có trạng thái và chính sách được đặt trước
-          hành động mua.
+          Khách không chỉ cần giá. Khách cần biết tài khoản dùng cho việc gì, bảo hành ra sao, đơn đang xử lý tới đâu
+          và nếu lỗi thì liên hệ ở đâu.
         </p>
       </div>
 

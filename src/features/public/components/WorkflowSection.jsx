@@ -3,7 +3,7 @@ function WorkflowSection({ steps }) {
     <section className="public-section workflow-section" id="workflow">
       <div className="section-heading">
         <span className="eyebrow">Hướng dẫn</span>
-        <h2>Quy trình hoạt động giúp người dùng hiểu vì sao có dashboard và ví tiền</h2>
+        <h2>Quy trình mua dịch vụ đơn giản, không phải nhắn hỏi từng bước</h2>
       </div>
 
       <div className="workflow-list">
@@ -19,6 +19,12 @@ function WorkflowSection({ steps }) {
             </article>
           )
         })}
+      </div>
+
+      <div className="workflow-cta">
+        <a className="public-btn primary" href="#services">
+          Xem dịch vụ phù hợp
+        </a>
       </div>
     </section>
   )

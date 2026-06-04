@@ -5,7 +5,7 @@ function PublicFooter({ logo, footerGroups }) {
         <img src={logo} alt="" />
         <div>
           <strong>Kendy Digital</strong>
-          <p>Nền tảng dịch vụ số tự động, nạp tiền nhanh, quản lý đơn minh bạch.</p>
+          <p>Mua tài khoản Facebook, nâng cấp CapCut Pro, đăng ký dịch vụ quảng cáo và nhận hỗ trợ sau mua.</p>
         </div>
       </div>
 
@@ -23,7 +23,7 @@ function PublicFooter({ logo, footerGroups }) {
       </div>
 
       <div className="footer-bottom">
-        <span>Liên hệ: support@kendy.digital</span>
+        <span>Liên hệ: Zalo/Facebook hỗ trợ sau khi đăng nhập</span>
         <span>Kendy Digital © 2026</span>
       </div>
     </footer>

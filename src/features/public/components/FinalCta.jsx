@@ -5,9 +5,9 @@ function FinalCta({ onLoginClick }) {
     <section className="final-cta" id="contact">
       <div>
         <span className="eyebrow">Kendy Digital</span>
-        <h2>Bắt đầu bằng tài khoản, sau đó quản lý ví và đơn hàng trong dashboard</h2>
+        <h2>Cần tài khoản Facebook, CapCut Pro hoặc dịch vụ quảng cáo?</h2>
         <p>
-          Đăng ký hoặc đăng nhập để nạp tiền, mua dịch vụ, theo dõi xử lý đơn và gửi ticket hỗ trợ khi cần.
+          Đăng nhập để xem dịch vụ, điều kiện mua, thời gian xử lý và gửi yêu cầu hỗ trợ sau khi đặt đơn.
         </p>
       </div>
       <div className="final-actions">

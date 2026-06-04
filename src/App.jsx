@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import OrderTable from './components/orders/OrderTable'
+import { adminNavItems } from './data/adminNavigation'
 import { mockOrders, mockServices } from './data/mockData'
+import AdminOverviewView from './features/admin/AdminOverviewView'
+import AdminPricingView from './features/admin/AdminPricingView'
+import AdminServicesView from './features/admin/AdminServicesView'
+import AdminSettingsView from './features/admin/AdminSettingsView'
 import AuthScreen from './features/auth/AuthScreen'
 import DashboardShell from './features/dashboard/DashboardShell'
 import DepositView from './features/deposit/DepositView'
@@ -43,6 +48,13 @@ function App() {
   const [wallet, setWallet] = useState(null)
   const [apiServices, setApiServices] = useState([])
   const [apiOrders, setApiOrders] = useState([])
+  const [adminCategories, setAdminCategories] = useState([])
+  const [adminServices, setAdminServices] = useState([])
+  const [adminPricing, setAdminPricing] = useState([])
+  const [adminSettings, setAdminSettings] = useState({})
+  const [adminLoading, setAdminLoading] = useState(false)
+  const [adminError, setAdminError] = useState('')
+  const [adminNotice, setAdminNotice] = useState('')
   const [activeDeposit, setActiveDeposit] = useState(null)
   const [apiNotice, setApiNotice] = useState(() => {
     if (initialOAuthCallback?.token) {
@@ -62,6 +74,9 @@ function App() {
   const serviceList = apiServices.length > 0 ? apiServices : mockServices
   const orderList = apiOrders.length > 0 ? apiOrders : mockOrders
   const displayBalance = Number(wallet?.balance ?? currentUser?.balance ?? 1325000)
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
+  const adminActiveView = activeView.startsWith('admin-') ? activeView : 'admin-overview'
+  const userActiveView = activeView.startsWith('admin-') ? 'overview' : activeView
 
   const metrics = useMemo(
     () => [
@@ -121,6 +136,42 @@ function App() {
       })
   }, [accessToken, applyAuthenticatedData, rememberSession])
 
+  const loadAdminData = useCallback(async () => {
+    if (!accessToken || !isAdmin) {
+      return
+    }
+
+    setAdminLoading(true)
+    setAdminError('')
+    try {
+      const [categories, services, pricing, settingsList] = await Promise.all([
+        apiRequest('/api/admin/service-categories', { token: accessToken }),
+        apiRequest('/api/admin/services/search?limit=200&sort=sort_order', { token: accessToken }),
+        apiRequest('/api/admin/pricing?limit=200&sort=sort_order', { token: accessToken }),
+        apiRequest('/api/admin/settings/search', { token: accessToken }),
+      ])
+
+      setAdminCategories(categories || [])
+      setAdminServices(services || [])
+      setAdminPricing(pricing || [])
+      if (Array.isArray(settingsList)) {
+        const map = {}
+        settingsList.forEach((s) => { map[s.key] = s.value })
+        setAdminSettings(map)
+      }
+    } catch {
+      setAdminError('Không tải được dữ liệu admin. Kiểm tra quyền hoặc trạng thái backend.')
+    } finally {
+      setAdminLoading(false)
+    }
+  }, [accessToken, isAdmin])
+
+  useEffect(() => {
+    if (isAdmin) {
+      Promise.resolve().then(loadAdminData)
+    }
+  }, [isAdmin, loadAdminData])
+
   const handleAuthSuccess = (response, remember = true) => {
     setRememberSession(remember)
     setAccessToken(response.accessToken)
@@ -143,6 +194,12 @@ function App() {
     setCurrentUser(null)
     setWallet(null)
     setApiOrders([])
+    setAdminCategories([])
+    setAdminServices([])
+    setAdminPricing([])
+    setAdminSettings({})
+    setAdminError('')
+    setAdminNotice('')
     setShowAuthScreen(false)
     setApiNotice('Đã đăng xuất.')
   }
@@ -204,11 +261,11 @@ function App() {
   }
 
   const renderActiveView = () => {
-    if (activeView === 'overview') {
+    if (userActiveView === 'overview') {
       return <OverviewView metrics={metrics} orders={orderList} />
     }
 
-    if (activeView === 'deposit') {
+    if (userActiveView === 'deposit') {
       return (
         <DepositView
           activeDeposit={activeDeposit}
@@ -223,15 +280,66 @@ function App() {
       )
     }
 
-    if (activeView === 'services') {
+    if (userActiveView === 'services') {
       return <ServicesView services={serviceList} onPurchase={handlePurchase} />
     }
 
-    if (activeView === 'orders') {
+    if (userActiveView === 'orders') {
       return <OrderTable orders={orderList} />
     }
 
     return <SupportView />
+  }
+
+  const renderAdminView = () => {
+    if (adminActiveView === 'admin-services') {
+      return (
+        <AdminServicesView
+          categories={adminCategories}
+          error={adminError}
+          loading={adminLoading}
+          onReload={loadAdminData}
+          onSetError={setAdminError}
+          onSetNotice={setAdminNotice}
+          onUpdateCategories={setAdminCategories}
+          onUpdateServices={setAdminServices}
+          services={adminServices}
+          token={accessToken}
+        />
+      )
+    }
+
+    if (adminActiveView === 'admin-pricing') {
+      return (
+        <AdminPricingView
+          categories={adminCategories}
+          error={adminError}
+          loading={adminLoading}
+          onReload={loadAdminData}
+          onSetError={setAdminError}
+          onSetNotice={setAdminNotice}
+          onUpdatePricing={setAdminPricing}
+          pricingItems={adminPricing}
+          token={accessToken}
+        />
+      )
+    }
+
+    if (adminActiveView === 'admin-settings') {
+      return (
+        <AdminSettingsView
+          error={adminError}
+          loading={adminLoading}
+          onReload={loadAdminData}
+          onSetError={setAdminError}
+          onSetNotice={setAdminNotice}
+          settings={adminSettings}
+          token={accessToken}
+        />
+      )
+    }
+
+    return <AdminOverviewView categories={adminCategories} pricingItems={adminPricing} services={adminServices} />
   }
 
   if (!accessToken) {
@@ -242,9 +350,28 @@ function App() {
     return <PublicHome notice={apiNotice} onLoginClick={handleOpenAuth} />
   }
 
+  if (isAdmin) {
+    return (
+      <DashboardShell
+        activeView={adminActiveView}
+        displayBalance={displayBalance}
+        footerLabel="Admin"
+        footerTitle="Dịch vụ & bảng giá"
+        items={adminNavItems}
+        onLogout={handleLogout}
+        onViewChange={setActiveView}
+        showBalance={false}
+        subtitle="Quản trị nội dung public site"
+      >
+        {adminNotice && <p className="admin-message">{adminNotice}</p>}
+        {renderAdminView()}
+      </DashboardShell>
+    )
+  }
+
   return (
     <DashboardShell
-      activeView={activeView}
+      activeView={userActiveView}
       displayBalance={displayBalance}
       onLogout={handleLogout}
       onViewChange={setActiveView}
