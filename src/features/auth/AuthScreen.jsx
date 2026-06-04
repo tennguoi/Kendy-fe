@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
+  ArrowLeft,
   ArrowRight,
   CheckCircle2,
   Eye,
@@ -15,10 +16,15 @@ import {
 import heroImg from '../../assets/hero.png'
 import { authHighlights } from '../../data/authHighlights'
 import { useToast } from '../../components/Toast'
-import { apiRequest } from '../../lib/api'
+import { apiRequest, toApiUrl } from '../../lib/api'
 import './AuthScreen.css'
 
-function AuthScreen({ notice, onSuccess }) {
+const defaultOAuthProviders = [
+  { id: 'google', name: 'Google', authorizationUrl: '/oauth2/authorization/google' },
+  { id: 'github', name: 'GitHub', authorizationUrl: '/oauth2/authorization/github' },
+]
+
+function AuthScreen({ notice, onBack, onSuccess }) {
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({
     name: '',
@@ -31,8 +37,29 @@ function AuthScreen({ notice, onSuccess }) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [oauthProviders, setOauthProviders] = useState(defaultOAuthProviders)
   const isRegister = mode === 'register'
   const { addToast } = useToast()
+
+  useEffect(() => {
+    let isMounted = true
+
+    apiRequest('/api/auth/oauth2/providers')
+      .then((data) => {
+        if (isMounted && Array.isArray(data?.providers) && data.providers.length > 0) {
+          setOauthProviders(data.providers)
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setOauthProviders(defaultOAuthProviders)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const updateForm = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }))
@@ -41,6 +68,15 @@ function AuthScreen({ notice, onSuccess }) {
   const switchMode = () => {
     setMode((current) => (current === 'login' ? 'register' : 'login'))
     setError('')
+  }
+
+  const startOAuthLogin = (provider) => {
+    addToast({
+      type: 'info',
+      title: `Đăng nhập bằng ${provider.name}`,
+      message: 'Bạn sẽ được chuyển sang trang xác thực của nhà cung cấp.',
+    })
+    window.location.assign(toApiUrl(provider.authorizationUrl))
   }
 
   const submit = async (event) => {
@@ -144,6 +180,13 @@ function AuthScreen({ notice, onSuccess }) {
       </aside>
 
       <main className="auth-form-panel">
+        {onBack && (
+          <button type="button" className="auth-home-link" onClick={onBack}>
+            <ArrowLeft size={17} strokeWidth={2} aria-hidden="true" />
+            <span>Trang chủ</span>
+          </button>
+        )}
+
         <form key={mode} className="auth-card" onSubmit={submit}>
           <div className="auth-card-head">
             <span className="auth-mode-icon" aria-hidden="true">
@@ -287,6 +330,26 @@ function AuthScreen({ notice, onSuccess }) {
               </>
             )}
           </button>
+
+          <div className="auth-divider">
+            <span>Hoặc đăng nhập bằng</span>
+          </div>
+
+          <div className="oauth-actions">
+            {oauthProviders.map((provider) => (
+              <button
+                key={provider.id}
+                type="button"
+                className={`oauth-button ${provider.id}`}
+                onClick={() => startOAuthLogin(provider)}
+              >
+                <span className="oauth-icon" aria-hidden="true">
+                  {provider.id === 'github' ? 'GH' : 'G'}
+                </span>
+                <span>{provider.name}</span>
+              </button>
+            ))}
+          </div>
 
           <p className="auth-switch">
             {isRegister ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}

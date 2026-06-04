@@ -5,6 +5,7 @@ import AuthScreen from './features/auth/AuthScreen'
 import DashboardShell from './features/dashboard/DashboardShell'
 import DepositView from './features/deposit/DepositView'
 import OverviewView from './features/overview/OverviewView'
+import PublicHome from './features/public/PublicHome'
 import ServicesView from './features/services/ServicesView'
 import SupportView from './features/support/SupportView'
 import { useClipboard } from './hooks/useClipboard'
@@ -12,12 +13,15 @@ import { apiRequest } from './lib/api'
 import { money } from './utils/currency'
 import { createPreviewDepositCode } from './utils/deposit'
 import { createIdempotencyKey } from './utils/idempotency'
+import { clearOAuthCallbackUrl, readOAuthCallback } from './utils/oauthCallback'
 import {
   clearStoredAccessToken,
   getStoredAccessToken,
   hasPersistentSession,
   persistAccessToken,
 } from './utils/session'
+
+const initialOAuthCallback = readOAuthCallback()
 
 async function fetchAuthenticatedData(token) {
   const [me, walletData, orderData] = await Promise.all([
@@ -31,15 +35,26 @@ async function fetchAuthenticatedData(token) {
 
 function App() {
   const [activeView, setActiveView] = useState('overview')
+  const [showAuthScreen, setShowAuthScreen] = useState(() => Boolean(initialOAuthCallback?.error))
   const [depositAmount, setDepositAmount] = useState('250000')
-  const [accessToken, setAccessToken] = useState(() => getStoredAccessToken())
-  const [rememberSession, setRememberSession] = useState(() => hasPersistentSession())
+  const [accessToken, setAccessToken] = useState(() => initialOAuthCallback?.token || getStoredAccessToken())
+  const [rememberSession, setRememberSession] = useState(() => Boolean(initialOAuthCallback?.token) || hasPersistentSession())
   const [currentUser, setCurrentUser] = useState(null)
   const [wallet, setWallet] = useState(null)
   const [apiServices, setApiServices] = useState([])
   const [apiOrders, setApiOrders] = useState([])
   const [activeDeposit, setActiveDeposit] = useState(null)
-  const [apiNotice, setApiNotice] = useState('')
+  const [apiNotice, setApiNotice] = useState(() => {
+    if (initialOAuthCallback?.token) {
+      return 'Đăng nhập bằng tài khoản liên kết thành công.'
+    }
+
+    if (initialOAuthCallback?.error) {
+      return `Đăng nhập bằng tài khoản liên kết thất bại: ${initialOAuthCallback.error}`
+    }
+
+    return ''
+  })
   const { copied, copyText } = useClipboard()
 
   const amountNumber = Number(depositAmount) || 0
@@ -71,6 +86,10 @@ function App() {
 
   useEffect(() => {
     let isMounted = true
+
+    if (initialOAuthCallback) {
+      clearOAuthCallbackUrl()
+    }
 
     apiRequest('/api/services')
       .then((data) => {
@@ -106,6 +125,7 @@ function App() {
     setRememberSession(remember)
     setAccessToken(response.accessToken)
     setCurrentUser(response.user)
+    setShowAuthScreen(false)
     setApiNotice('Đăng nhập thành công.')
   }
 
@@ -123,7 +143,15 @@ function App() {
     setCurrentUser(null)
     setWallet(null)
     setApiOrders([])
+    setShowAuthScreen(false)
     setApiNotice('Đã đăng xuất.')
+  }
+
+  const handleOpenAuth = () => {
+    setShowAuthScreen(true)
+    if (apiNotice === 'Đã đăng xuất.') {
+      setApiNotice('')
+    }
   }
 
   const handleDepositAmountChange = (value) => {
@@ -207,7 +235,11 @@ function App() {
   }
 
   if (!accessToken) {
-    return <AuthScreen notice={apiNotice} onSuccess={handleAuthSuccess} />
+    if (showAuthScreen) {
+      return <AuthScreen notice={apiNotice} onBack={() => setShowAuthScreen(false)} onSuccess={handleAuthSuccess} />
+    }
+
+    return <PublicHome notice={apiNotice} onLoginClick={handleOpenAuth} />
   }
 
   return (
