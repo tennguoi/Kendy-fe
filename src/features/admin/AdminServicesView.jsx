@@ -1,6 +1,6 @@
 import { Plus, RefreshCw, Save } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { apiRequest } from '../../lib/api'
+import { adminApi } from '../../api/admin.api'
 
 const emptyServiceForm = {
   benefits: '',
@@ -169,17 +169,13 @@ function AdminServicesView({
     setSubmitting(true)
     onSetError('')
     try {
-      const created = await apiRequest('/api/admin/service-categories', {
-        method: 'POST',
-        token,
-        body: {
-          description: categoryForm.description || undefined,
-          name: categoryForm.name.trim(),
-          parentId: categoryForm.parentId ? Number(categoryForm.parentId) : undefined,
-          slug: categoryForm.slug.trim(),
-          sortOrder: Number(categoryForm.sortOrder) || 0,
-        },
-      })
+      const created = await adminApi.createServiceCategory({
+        description: categoryForm.description || undefined,
+        name: categoryForm.name.trim(),
+        parentId: categoryForm.parentId ? Number(categoryForm.parentId) : undefined,
+        slug: categoryForm.slug.trim(),
+        sortOrder: Number(categoryForm.sortOrder) || 0,
+      }, token)
       onUpdateCategories((items) => [...items, created].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)))
       setCategoryForm(emptyCategoryForm)
       onSetNotice(`Đã tạo nhóm ${created.name}.`)
@@ -196,11 +192,10 @@ function AdminServicesView({
     onSetError('')
     try {
       const isEditing = Boolean(selectedServiceId)
-      const saved = await apiRequest(isEditing ? `/api/admin/services/${selectedServiceId}` : '/api/admin/services', {
-        method: isEditing ? 'PUT' : 'POST',
-        token,
-        body: buildServicePayload(serviceForm, isEditing),
-      })
+      const payload = buildServicePayload(serviceForm, isEditing)
+      const saved = isEditing 
+        ? await adminApi.updateService(selectedServiceId, payload, token)
+        : await adminApi.createService(payload, token)
       onUpdateServices((items) => {
         const next = isEditing ? items.map((item) => (item.id === saved.id ? saved : item)) : [saved, ...items]
         return next.sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))

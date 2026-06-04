@@ -16,7 +16,8 @@ import {
 import heroImg from '../../assets/hero.png'
 import { authHighlights } from '../../data/authHighlights'
 import { useToast } from '../../components/Toast'
-import { apiRequest, toApiUrl } from '../../lib/api'
+import { toApiUrl } from '../../lib/api'
+import { authApi } from '../../api/auth.api'
 import './AuthScreen.css'
 
 const defaultOAuthProviders = [
@@ -44,7 +45,7 @@ function AuthScreen({ notice, onBack, onSuccess }) {
   useEffect(() => {
     let isMounted = true
 
-    apiRequest('/api/auth/oauth2/providers')
+    authApi.getProviders()
       .then((data) => {
         if (isMounted && Array.isArray(data?.providers) && data.providers.length > 0) {
           setOauthProviders(data.providers)
@@ -104,24 +105,18 @@ function AuthScreen({ notice, onBack, onSuccess }) {
     setBusy(true)
     try {
       if (isRegister) {
-        await apiRequest('/api/auth/register', {
-          method: 'POST',
-          body: {
-            name: form.name.trim(),
-            email: form.email.trim(),
-            phone: form.phone,
-            password: form.password,
-          },
+        await authApi.register({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone,
+          password: form.password,
         })
         addToast({ type: 'success', title: 'Tạo tài khoản', message: 'Tạo tài khoản thành công.' })
       }
 
-      const response = await apiRequest('/api/auth/login', {
-        method: 'POST',
-        body: {
-          email: form.email.trim(),
-          password: form.password,
-        },
+      const response = await authApi.login({
+        email: form.email.trim(),
+        password: form.password,
       })
 
       addToast({ type: 'success', title: 'Đăng nhập', message: 'Đăng nhập thành công.' })

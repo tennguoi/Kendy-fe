@@ -1,6 +1,6 @@
 import { RefreshCw, Save } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { apiRequest } from '../../lib/api'
+import { adminApi } from '../../api/admin.api'
 
 const sortOptions = [
   { label: 'Thứ tự hiển thị', value: 'sort_order' },
@@ -93,21 +93,17 @@ function AdminPricingView({
     setSubmitting(true)
     onSetError('')
     try {
-      const saved = await apiRequest(`/api/admin/services/${selectedItem.id}`, {
-        method: 'PUT',
-        token,
-        body: {
-          ctaType: form.ctaType,
-          featured: form.featured,
-          price: Number(form.price) || 0,
-          priceText: form.priceText || undefined,
-          pricingBadge: form.pricingBadge || undefined,
-          processingTime: form.processingTime || undefined,
-          publicVisible: form.publicVisible,
-          stockStatus: form.stockStatus,
-          warrantyPolicy: form.warrantyPolicy || undefined,
-        },
-      })
+      const saved = await adminApi.updateService(selectedItem.id, {
+        ctaType: form.ctaType,
+        featured: form.featured,
+        price: Number(form.price) || 0,
+        priceText: form.priceText || undefined,
+        pricingBadge: form.pricingBadge || undefined,
+        processingTime: form.processingTime || undefined,
+        publicVisible: form.publicVisible,
+        stockStatus: form.stockStatus,
+        warrantyPolicy: form.warrantyPolicy || undefined,
+      }, token)
 
       onUpdatePricing((items) => items.map((item) => (item.id === saved.id ? { ...item, ...saved } : item)))
       setFormDraft(null)

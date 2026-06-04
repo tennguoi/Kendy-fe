@@ -14,7 +14,10 @@ import PublicHome from './features/public/PublicHome'
 import ServicesView from './features/services/ServicesView'
 import SupportView from './features/support/SupportView'
 import { useClipboard } from './hooks/useClipboard'
-import { apiRequest } from './lib/api'
+import { adminApi } from './api/admin.api'
+import { authApi } from './api/auth.api'
+import { publicApi } from './api/public.api'
+import { userApi } from './api/user.api'
 import { money } from './utils/currency'
 import { createPreviewDepositCode } from './utils/deposit'
 import { createIdempotencyKey } from './utils/idempotency'
@@ -30,9 +33,9 @@ const initialOAuthCallback = readOAuthCallback()
 
 async function fetchAuthenticatedData(token) {
   const [me, walletData, orderData] = await Promise.all([
-    apiRequest('/api/me', { token }),
-    apiRequest('/api/wallet', { token }),
-    apiRequest('/api/orders', { token }),
+    userApi.getMe(token),
+    userApi.getWallet(token),
+    userApi.getOrders(token),
   ])
 
   return { me, orderData, walletData }
@@ -106,7 +109,7 @@ function App() {
       clearOAuthCallbackUrl()
     }
 
-    apiRequest('/api/services')
+    publicApi.getServices()
       .then((data) => {
         if (isMounted) {
           setApiServices(data)
@@ -145,10 +148,10 @@ function App() {
     setAdminError('')
     try {
       const [categories, services, pricing, settingsList] = await Promise.all([
-        apiRequest('/api/admin/service-categories', { token: accessToken }),
-        apiRequest('/api/admin/services/search?limit=200&sort=sort_order', { token: accessToken }),
-        apiRequest('/api/admin/pricing?limit=200&sort=sort_order', { token: accessToken }),
-        apiRequest('/api/admin/settings/search', { token: accessToken }),
+        adminApi.getServiceCategories(accessToken),
+        adminApi.getServices(accessToken),
+        adminApi.getPricing(accessToken),
+        adminApi.getSettings(accessToken),
       ])
 
       setAdminCategories(categories || [])
@@ -183,7 +186,7 @@ function App() {
   const handleLogout = async () => {
     if (accessToken) {
       try {
-        await apiRequest('/api/auth/logout', { method: 'POST', token: accessToken })
+        await authApi.logout(accessToken)
       } catch {
         // Local logout still needs to clear client state if the API is unreachable.
       }
@@ -222,11 +225,7 @@ function App() {
     }
 
     try {
-      const deposit = await apiRequest('/api/deposits', {
-        method: 'POST',
-        token: accessToken,
-        body: { amount: amountNumber },
-      })
+      const deposit = await userApi.createDeposit({ amount: amountNumber }, accessToken)
 
       setActiveDeposit(deposit)
       setApiNotice(`Đã tạo mã nạp ${deposit.depositCode}.`)
@@ -242,15 +241,11 @@ function App() {
     }
 
     try {
-      const order = await apiRequest('/api/orders', {
-        method: 'POST',
-        token: accessToken,
-        body: {
-          serviceId: service.id,
-          inputData: JSON.stringify({ source: 'dashboard' }),
-          idempotencyKey: createIdempotencyKey(service.id),
-        },
-      })
+      const order = await userApi.createOrder({
+        serviceId: service.id,
+        inputData: JSON.stringify({ source: 'dashboard' }),
+        idempotencyKey: createIdempotencyKey(service.id),
+      }, accessToken)
 
       setApiOrders((items) => [order, ...items.filter((item) => item.orderCode !== order.orderCode)])
       applyAuthenticatedData(await fetchAuthenticatedData(accessToken))
