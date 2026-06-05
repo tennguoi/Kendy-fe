@@ -213,7 +213,7 @@
   min-width: 0;
   min-height: 100svh;
   box-sizing: border-box;
-  padding: 80px 40px 40px;
+  padding: 40px;
   display: grid;
   place-items: center;
   overflow-y: auto;
@@ -221,24 +221,21 @@
 
 .auth-home-link {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  min-height: 40px;
-  z-index: 40;
+  top: 28px;
+  right: 40px;
+  min-height: 42px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 0 12px;
+  padding: 0 13px;
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   color: var(--kd-text);
   background: #ffffff;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   font: inherit;
-  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  white-space: nowrap;
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
@@ -637,12 +634,12 @@
   }
 
   .auth-form-panel {
-    padding: 88px 28px 40px;
+    padding: 78px 28px 28px;
   }
 
   .auth-home-link {
-    top: 20px;
-    right: 20px;
+    top: 22px;
+    right: 28px;
   }
 }
 
@@ -653,17 +650,12 @@
   }
 
   .auth-form-panel {
-    padding: 80px 16px 24px;
+    padding-top: 74px;
   }
 
   .auth-home-link {
-    top: 16px;
-    right: 16px;
-    min-height: 36px;
-    font-size: 13px;
-    padding: 0 10px;
-    gap: 6px;
-    border-radius: 10px;
+    top: 18px;
+    right: 18px;
   }
 
   .auth-logo-lockup img {
@@ -681,17 +673,16 @@
   }
 
   .auth-card {
-    padding: 20px 16px;
+    padding: 22px;
     border-radius: 20px;
   }
 
   .auth-card-head {
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 12px;
   }
 
   .auth-card-head h2 {
-    font-size: 20px;
+    font-size: 23px;
   }
 
   .auth-options {

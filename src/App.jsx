@@ -2,10 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import OrderTable from './components/orders/OrderTable'
 import { adminNavItems } from './data/adminNavigation'
 import { mockOrders, mockServices } from './data/mockData'
+import AdminFinanceView from './features/admin/AdminFinanceView'
+import AdminOrdersView from './features/admin/AdminOrdersView'
 import AdminOverviewView from './features/admin/AdminOverviewView'
 import AdminPricingView from './features/admin/AdminPricingView'
 import AdminServicesView from './features/admin/AdminServicesView'
 import AdminSettingsView from './features/admin/AdminSettingsView'
+import AdminTicketsView from './features/admin/AdminTicketsView'
+import AdminUsersView from './features/admin/AdminUsersView'
 import AuthScreen from './features/auth/AuthScreen'
 import DashboardShell from './features/dashboard/DashboardShell'
 import DepositView from './features/deposit/DepositView'
@@ -41,6 +45,22 @@ async function fetchAuthenticatedData(token) {
   return { me, orderData, walletData }
 }
 
+function settledValue(result, fallback) {
+  return result.status === 'fulfilled' ? result.value : fallback
+}
+
+function settingsToMap(settingsList) {
+  if (!Array.isArray(settingsList)) {
+    return {}
+  }
+
+  const map = {}
+  settingsList.forEach((setting) => {
+    map[setting.key] = setting.value
+  })
+  return map
+}
+
 function App() {
   const [activeView, setActiveView] = useState('overview')
   const [showAuthScreen, setShowAuthScreen] = useState(() => Boolean(initialOAuthCallback?.error))
@@ -54,6 +74,14 @@ function App() {
   const [adminCategories, setAdminCategories] = useState([])
   const [adminServices, setAdminServices] = useState([])
   const [adminPricing, setAdminPricing] = useState([])
+  const [adminDashboard, setAdminDashboard] = useState(null)
+  const [adminUsers, setAdminUsers] = useState([])
+  const [adminOrders, setAdminOrders] = useState([])
+  const [adminDeposits, setAdminDeposits] = useState([])
+  const [adminBankTransactions, setAdminBankTransactions] = useState([])
+  const [adminWalletTransactions, setAdminWalletTransactions] = useState([])
+  const [adminRevenue, setAdminRevenue] = useState(null)
+  const [adminTickets, setAdminTickets] = useState([])
   const [adminSettings, setAdminSettings] = useState({})
   const [adminLoading, setAdminLoading] = useState(false)
   const [adminError, setAdminError] = useState('')
@@ -147,20 +175,36 @@ function App() {
     setAdminLoading(true)
     setAdminError('')
     try {
-      const [categories, services, pricing, settingsList] = await Promise.all([
+      const results = await Promise.allSettled([
+        adminApi.getDashboard(accessToken),
+        adminApi.getUsers(accessToken),
+        adminApi.getOrders(accessToken),
+        adminApi.getDeposits(accessToken),
+        adminApi.getBankTransactions(accessToken),
+        adminApi.getWalletTransactions(accessToken),
+        adminApi.getRevenueReport(accessToken),
+        adminApi.getTickets(accessToken),
         adminApi.getServiceCategories(accessToken),
         adminApi.getServices(accessToken),
         adminApi.getPricing(accessToken),
         adminApi.getSettings(accessToken),
       ])
 
-      setAdminCategories(categories || [])
-      setAdminServices(services || [])
-      setAdminPricing(pricing || [])
-      if (Array.isArray(settingsList)) {
-        const map = {}
-        settingsList.forEach((s) => { map[s.key] = s.value })
-        setAdminSettings(map)
+      setAdminDashboard(settledValue(results[0], null))
+      setAdminUsers(settledValue(results[1], []))
+      setAdminOrders(settledValue(results[2], []))
+      setAdminDeposits(settledValue(results[3], []))
+      setAdminBankTransactions(settledValue(results[4], []))
+      setAdminWalletTransactions(settledValue(results[5], []))
+      setAdminRevenue(settledValue(results[6], null))
+      setAdminTickets(settledValue(results[7], []))
+      setAdminCategories(settledValue(results[8], []))
+      setAdminServices(settledValue(results[9], []))
+      setAdminPricing(settledValue(results[10], []))
+      setAdminSettings(settingsToMap(settledValue(results[11], [])))
+
+      if (results.some((result) => result.status === 'rejected')) {
+        setAdminError('Một phần dữ liệu admin chưa tải được. Các màn hình còn lại vẫn có thể sử dụng.')
       }
     } catch {
       setAdminError('Không tải được dữ liệu admin. Kiểm tra quyền hoặc trạng thái backend.')
@@ -200,6 +244,14 @@ function App() {
     setAdminCategories([])
     setAdminServices([])
     setAdminPricing([])
+    setAdminDashboard(null)
+    setAdminUsers([])
+    setAdminOrders([])
+    setAdminDeposits([])
+    setAdminBankTransactions([])
+    setAdminWalletTransactions([])
+    setAdminRevenue(null)
+    setAdminTickets([])
     setAdminSettings({})
     setAdminError('')
     setAdminNotice('')
@@ -287,6 +339,54 @@ function App() {
   }
 
   const renderAdminView = () => {
+    if (adminActiveView === 'admin-users') {
+      return (
+        <AdminUsersView
+          error={adminError}
+          loading={adminLoading}
+          onReload={loadAdminData}
+          onSetError={setAdminError}
+          onSetNotice={setAdminNotice}
+          onUpdateUsers={setAdminUsers}
+          token={accessToken}
+          users={adminUsers}
+        />
+      )
+    }
+
+    if (adminActiveView === 'admin-orders') {
+      return <AdminOrdersView error={adminError} loading={adminLoading} onReload={loadAdminData} orders={adminOrders} />
+    }
+
+    if (adminActiveView === 'admin-finance') {
+      return (
+        <AdminFinanceView
+          bankTransactions={adminBankTransactions}
+          dashboard={adminDashboard}
+          deposits={adminDeposits}
+          error={adminError}
+          loading={adminLoading}
+          onReload={loadAdminData}
+          revenue={adminRevenue}
+          walletTransactions={adminWalletTransactions}
+        />
+      )
+    }
+
+    if (adminActiveView === 'admin-tickets') {
+      return (
+        <AdminTicketsView
+          error={adminError}
+          loading={adminLoading}
+          onReload={loadAdminData}
+          onSetError={setAdminError}
+          onSetNotice={setAdminNotice}
+          tickets={adminTickets}
+          token={accessToken}
+        />
+      )
+    }
+
     if (adminActiveView === 'admin-services') {
       return (
         <AdminServicesView
@@ -334,7 +434,15 @@ function App() {
       )
     }
 
-    return <AdminOverviewView categories={adminCategories} pricingItems={adminPricing} services={adminServices} />
+    return (
+      <AdminOverviewView
+        categories={adminCategories}
+        dashboard={adminDashboard}
+        pricingItems={adminPricing}
+        revenue={adminRevenue}
+        services={adminServices}
+      />
+    )
   }
 
   if (!accessToken) {

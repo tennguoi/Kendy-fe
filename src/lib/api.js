@@ -37,7 +37,7 @@ axiosClient.interceptors.response.use(
   },
   (error) => {
     // Chuẩn hóa lỗi cho giống response cũ
-    let message = 'Lỗi không xác định';
+    let message;
     if (error.response) {
       const payload = error.response.data;
       message = payload?.message || payload?.error || payload?.detail || `API ${error.config.method.toUpperCase()} ${error.config.url} failed with ${error.response.status}`;
@@ -46,7 +46,7 @@ axiosClient.interceptors.response.use(
     } else {
       message = error.message;
     }
-    return Promise.reject(new Error(message));
+    return Promise.reject(new Error(message || 'Lỗi không xác định'));
   }
 );
 

@@ -1,5 +1,6 @@
 import { Save } from 'lucide-react'
 import { useState } from 'react'
+import { adminApi } from '../../api/admin.api'
 
 function AdminSettingsView({
   error,
@@ -18,25 +19,15 @@ function AdminSettingsView({
     setSubmitting(true)
     onSetError('')
     try {
-      const response = await fetch('http://localhost:8080/api/admin/settings/bulk-update', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          settings: [
-            {
-              key: 'admin_2fa_required',
-              value: twoFactorRequired ? 'false' : 'true',
-              publicSetting: false,
-            },
-          ],
-        }),
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
+      await adminApi.updateSettings({
+        settings: [
+          {
+            key: 'admin_2fa_required',
+            value: twoFactorRequired ? 'false' : 'true',
+            publicSetting: false,
+          },
+        ],
+      }, token)
       onSetNotice(`Đã ${twoFactorRequired ? 'tắt' : 'bật'} yêu cầu 2FA.`)
       await onReload()
     } catch (err) {
@@ -69,7 +60,7 @@ function AdminSettingsView({
         <div className="admin-panel-head">
           <h3>Bảo mật</h3>
         </div>
-        <div className="admin-check-row" style={{ padding: '14px' }}>
+        <div className="admin-check-row settings-row">
           <label>
             <input
               checked={twoFactorRequired}
