@@ -1,23 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import OrderTable from './components/orders/OrderTable'
-import { adminNavItems } from './data/adminNavigation'
-import { mockOrders, mockServices } from './data/mockData'
+import { useToast } from './components/Toast'
+import { adminNavItems } from './features/admin/adminNavigation'
+import { navItems } from './features/user/navigation'
 import AdminRoutes from './features/admin/AdminRoutes'
 import AuthScreen from './features/auth/AuthScreen'
 import DashboardShell from './features/dashboard/DashboardShell'
-import DepositView from './features/deposit/DepositView'
-import OverviewView from './features/overview/OverviewView'
+import UserRoutes from './features/user/UserRoutes'
 import PublicHome from './features/public/PublicHome'
-import ServicesView from './features/services/ServicesView'
-import SupportView from './features/support/SupportView'
 import { useClipboard } from './hooks/useClipboard'
 import { adminApi } from './api/admin.api'
 import { authApi } from './api/auth.api'
 import { publicApi } from './api/public.api'
 import { userApi } from './api/user.api'
 import { money } from './utils/currency'
-import { createPreviewDepositCode } from './utils/deposit'
 import { createIdempotencyKey } from './utils/idempotency'
 import { clearOAuthCallbackUrl, readOAuthCallback } from './utils/oauthCallback'
 import {
@@ -30,18 +26,38 @@ import {
 const initialOAuthCallback = readOAuthCallback()
 const adminRoutePaths = adminNavItems.map((item) => item.path)
 
-async function fetchAuthenticatedData(token) {
-  const [me, walletData, orderData] = await Promise.all([
-    userApi.getMe(token),
+async function fetchUserBootstrap(token) {
+  const me = await userApi.getMe(token)
+  const results = await Promise.allSettled([
     userApi.getWallet(token),
-    userApi.getOrders(token),
+    userApi.getDashboard(token),
+    userApi.getUnreadNotificationCount(token),
   ])
 
-  return { me, orderData, walletData }
+  return {
+    dashboardData: settledValue(results[1], null),
+    me,
+    notificationCount: settledValue(results[2], { unread: 0 }),
+    walletData: settledValue(results[0], null),
+  }
 }
 
 function settledValue(result, fallback) {
   return result.status === 'fulfilled' ? result.value : fallback
+}
+
+function normalizeList(value) {
+  if (Array.isArray(value)) {
+    return value
+  }
+
+  if (!value || typeof value !== 'object') {
+    return []
+  }
+
+  const keys = ['content', 'items', 'data', 'records', 'results']
+  const list = keys.map((key) => value[key]).find(Array.isArray)
+  return list || []
 }
 
 function normalizePathname(pathname) {
@@ -52,7 +68,6 @@ function normalizePathname(pathname) {
 function App() {
   const location = useLocation()
   const navigate = useNavigate()
-  const [activeView, setActiveView] = useState('overview')
   const [showAuthScreen, setShowAuthScreen] = useState(() => (
     Boolean(initialOAuthCallback?.error || initialOAuthCallback?.oauthTwoFactorChallenge)
   ))
@@ -64,13 +79,40 @@ function App() {
   const [wallet, setWallet] = useState(null)
   const [apiServices, setApiServices] = useState([])
   const [apiOrders, setApiOrders] = useState([])
+  const [apiTickets, setApiTickets] = useState([])
+  const [apiDeposits, setApiDeposits] = useState([])
+  const [apiWalletTransactions, setApiWalletTransactions] = useState([])
+  const [favoriteServices, setFavoriteServices] = useState([])
+  const [recentServices, setRecentServices] = useState([])
+  const [routeLoading, setRouteLoading] = useState(false)
+  const [userDashboard, setUserDashboard] = useState(null)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const [supportAttachments, setSupportAttachments] = useState([])
+  const [supportFile, setSupportFile] = useState(null)
+  const [supportLoading, setSupportLoading] = useState(false)
+  const [supportMessage, setSupportMessage] = useState('')
+  const [supportQuery, setSupportQuery] = useState('')
+  const [supportSelectedCode, setSupportSelectedCode] = useState(null)
+  const [supportStatus, setSupportStatus] = useState('')
+  const [supportSubmitting, setSupportSubmitting] = useState(false)
+  const [ticketForm, setTicketForm] = useState({
+    category: 'DEPOSIT',
+    depositCode: '',
+    message: '',
+    orderCode: '',
+    priority: 'NORMAL',
+    subject: '',
+  })
   const [adminCategories, setAdminCategories] = useState([])
   const [adminServices, setAdminServices] = useState([])
   const [adminPricing, setAdminPricing] = useState([])
   const [adminDashboard, setAdminDashboard] = useState(null)
   const [adminRevenue, setAdminRevenue] = useState(null)
+  const [adminDashboardSummary, setAdminDashboardSummary] = useState(null)
+  const [adminRevenueChart, setAdminRevenueChart] = useState([])
+  const [adminServicePerformance, setAdminServicePerformance] = useState([])
+  const [adminUserActivity, setAdminUserActivity] = useState(null)
   const [adminOverviewError, setAdminOverviewError] = useState('')
-  const [adminNotice, setAdminNotice] = useState('')
   const [activeDeposit, setActiveDeposit] = useState(null)
   const [apiNotice, setApiNotice] = useState(() => {
     if (initialOAuthCallback?.oauthTwoFactorChallenge) {
@@ -88,39 +130,59 @@ function App() {
     return ''
   })
   const { copied, copyText } = useClipboard()
+  const { addToast } = useToast()
 
   const amountNumber = Number(depositAmount) || 0
-  const depositCode = activeDeposit?.depositCode || createPreviewDepositCode(amountNumber)
-  const serviceList = Array.isArray(apiServices) && apiServices.length > 0 ? apiServices : mockServices
-  const orderList = Array.isArray(apiOrders) && apiOrders.length > 0 ? apiOrders : mockOrders
-  const displayBalance = Number(wallet?.balance ?? currentUser?.balance ?? 1325000)
+  const serviceList = useMemo(() => (Array.isArray(apiServices) ? apiServices : []), [apiServices])
+  const orderList = useMemo(() => (Array.isArray(apiOrders) ? apiOrders : []), [apiOrders])
+  const ticketList = useMemo(() => (Array.isArray(apiTickets) ? apiTickets : []), [apiTickets])
+  const selectedTicket = ticketList.find((ticket) => ticket.ticketCode === supportSelectedCode) || ticketList[0] || null
+  const displayBalance = Number(wallet?.balance ?? currentUser?.balance ?? 0)
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
   const normalizedPathname = normalizePathname(location.pathname)
   const isAdminPath = normalizedPathname === '/admin' || normalizedPathname.startsWith('/admin/')
   const adminActiveView = adminNavItems.find((item) => item.path === normalizedPathname)?.id || 'admin-overview'
-  const userActiveView = activeView
+  const userActiveView = navItems.find((item) => item.path === normalizedPathname)?.id || 'overview'
 
   const metrics = useMemo(
     () => [
       { label: 'Số dư ví', value: money.format(displayBalance), tone: 'green' },
       {
         label: 'Đơn đang xử lý',
-        value: String(orderList.filter((order) => order.status === 'PROCESSING').length).padStart(2, '0'),
+        value: String(userDashboard?.processingOrders ?? orderList.filter((order) => order.status === 'PROCESSING').length).padStart(2, '0'),
         tone: 'orange',
       },
-      { label: 'Ticket mở', value: '01', tone: 'blue' },
-      { label: 'Manual review', value: '02', tone: 'red' },
+      { label: 'Ticket chờ phản hồi', value: String(userDashboard?.pendingUserTickets ?? ticketList.filter((ticket) => ticket.status === 'PENDING_USER').length).padStart(2, '0'), tone: 'blue' },
+      { label: 'Thông báo mới', value: String(unreadNotifications).padStart(2, '0'), tone: 'red' },
     ],
-    [displayBalance, orderList],
+    [displayBalance, orderList, ticketList, unreadNotifications, userDashboard],
   )
 
-  const applyAuthenticatedData = useCallback(({ me, orderData, walletData }) => {
+  const applyBootstrapData = useCallback(({
+    dashboardData,
+    me,
+    notificationCount,
+    walletData,
+  }) => {
     setCurrentUser(me)
     setWallet(walletData)
-    setApiOrders(orderData)
+    setUserDashboard(dashboardData)
+    setUnreadNotifications(Number(notificationCount?.unread || 0))
     setApiNotice('')
     setAuthInit(true)
   }, [])
+
+  const notify = useCallback((message, type = 'info', title = '') => {
+    addToast({
+      message,
+      title: title || (type === 'error' ? 'Lỗi' : type === 'success' ? 'Thành công' : 'Thông báo'),
+      type,
+    })
+  }, [addToast])
+
+  const handleAdminNotice = useCallback((message) => {
+    notify(message, 'success')
+  }, [notify])
 
   useEffect(() => {
     let isMounted = true
@@ -152,13 +214,15 @@ function App() {
     }
 
     persistAccessToken(accessToken, rememberSession)
-    fetchAuthenticatedData(accessToken)
-      .then(applyAuthenticatedData)
+    fetchUserBootstrap(accessToken)
+      .then(applyBootstrapData)
       .catch(() => {
-        setApiNotice('Không kết nối được API hoặc token đã hết hạn.')
+        const message = 'Không kết nối được API hoặc token đã hết hạn.'
+        setApiNotice(message)
+        notify(message, 'error')
         setAuthInit(true)
       })
-  }, [accessToken, applyAuthenticatedData, rememberSession])
+  }, [accessToken, applyBootstrapData, notify, rememberSession])
 
   useEffect(() => {
     if (!accessToken || !isAdmin) {
@@ -173,6 +237,10 @@ function App() {
       adminApi.getServiceCategories(accessToken),
       adminApi.getServices(accessToken),
       adminApi.getPricing(accessToken),
+      adminApi.getDashboardSummary(accessToken),
+      adminApi.getRevenueChart(accessToken),
+      adminApi.getServicePerformance(accessToken),
+      adminApi.getUserActivity(accessToken),
     ]).then((results) => {
       if (cancelled) return
       setAdminDashboard(settledValue(results[0], null))
@@ -180,6 +248,10 @@ function App() {
       setAdminCategories(settledValue(results[2], []))
       setAdminServices(settledValue(results[3], []))
       setAdminPricing(settledValue(results[4], []))
+      setAdminDashboardSummary(settledValue(results[5], null))
+      setAdminRevenueChart(settledValue(results[6], []))
+      setAdminServicePerformance(settledValue(results[7], []))
+      setAdminUserActivity(settledValue(results[8], null))
       setAdminOverviewError(results.some((r) => r.status === 'rejected') ? 'Một phần dữ liệu tổng quan admin chưa tải được.' : '')
     }).catch(() => {
       if (!cancelled) setAdminOverviewError('Không tải được dữ liệu tổng quan admin. Kiểm tra quyền hoặc trạng thái backend.')
@@ -196,12 +268,87 @@ function App() {
     }
   }, [accessToken, authInit, currentUser, isAdmin, isAdminPath, navigate])
 
+  useEffect(() => {
+    if (!accessToken || !authInit || isAdmin || isAdminPath) {
+      return
+    }
+
+    let cancelled = false
+
+    const loadRouteData = async () => {
+      setRouteLoading(true)
+      try {
+        if (userActiveView === 'overview') {
+          const [orders, transactions, favorites, recent] = await Promise.all([
+            userApi.searchOrders({ size: 50 }, accessToken),
+            userApi.getWalletTransactions({ size: 20 }, accessToken),
+            userApi.getFavoriteServices(accessToken),
+            userApi.getRecentServices(accessToken),
+          ])
+          if (cancelled) return
+          setApiOrders(normalizeList(orders))
+          setApiWalletTransactions(normalizeList(transactions))
+          setFavoriteServices(normalizeList(favorites))
+          setRecentServices(normalizeList(recent))
+          return
+        }
+
+        if (userActiveView === 'deposit') {
+          const deposits = normalizeList(await userApi.getDeposits({ size: 20 }, accessToken))
+          if (cancelled) return
+          setApiDeposits(deposits)
+          setActiveDeposit((current) => (
+            current && deposits.some((deposit) => deposit.depositCode === current.depositCode)
+              ? deposits.find((deposit) => deposit.depositCode === current.depositCode)
+              : deposits.find((deposit) => deposit.status === 'PENDING') || deposits[0] || null
+          ))
+          return
+        }
+
+        if (userActiveView === 'services') {
+          const [favorites, recent] = await Promise.all([
+            userApi.getFavoriteServices(accessToken),
+            userApi.getRecentServices(accessToken),
+          ])
+          if (cancelled) return
+          setFavoriteServices(normalizeList(favorites))
+          setRecentServices(normalizeList(recent))
+          return
+        }
+
+        if (userActiveView === 'orders') {
+          const orders = await userApi.searchOrders({ size: 50 }, accessToken)
+          if (!cancelled) {
+            setApiOrders(normalizeList(orders))
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          notify(err.message || 'Không tải được dữ liệu trang hiện tại.', 'error')
+        }
+      } finally {
+        if (!cancelled) {
+          setRouteLoading(false)
+        }
+      }
+    }
+
+    loadRouteData()
+
+    return () => {
+      cancelled = true
+      setRouteLoading(false)
+    }
+  }, [accessToken, authInit, isAdmin, isAdminPath, notify, userActiveView])
+
   const handleAuthSuccess = (response, remember = true) => {
     setRememberSession(remember)
     setAccessToken(response.accessToken)
     setCurrentUser(response.user)
     setShowAuthScreen(false)
-    setApiNotice('Đăng nhập thành công.')
+    const message = 'Đăng nhập thành công.'
+    setApiNotice(message)
+    notify(message, 'success')
   }
 
   const handleLogout = async () => {
@@ -218,15 +365,32 @@ function App() {
     setCurrentUser(null)
     setWallet(null)
     setApiOrders([])
+    setApiWalletTransactions([])
+    setApiDeposits([])
+    setApiTickets([])
+    setFavoriteServices([])
+    setRecentServices([])
+    setUserDashboard(null)
+    setUnreadNotifications(0)
+    setSupportAttachments([])
+    setSupportFile(null)
+    setSupportMessage('')
+    setSupportSelectedCode(null)
+    setActiveDeposit(null)
     setAdminCategories([])
     setAdminServices([])
     setAdminPricing([])
     setAdminDashboard(null)
     setAdminRevenue(null)
+    setAdminDashboardSummary(null)
+    setAdminRevenueChart([])
+    setAdminServicePerformance([])
+    setAdminUserActivity(null)
     setAdminOverviewError('')
-    setAdminNotice('')
     setShowAuthScreen(false)
-    setApiNotice('Đã đăng xuất.')
+    const message = 'Đã đăng xuất.'
+    setApiNotice(message)
+    notify(message, 'info')
     navigate('/', { replace: true })
   }
 
@@ -242,15 +406,36 @@ function App() {
     navigate(nextItem?.path || '/admin')
   }, [navigate])
 
+  const handleUserViewChange = useCallback((viewId) => {
+    const nextItem = navItems.find((item) => item.id === viewId)
+    navigate(nextItem?.path || '/')
+  }, [navigate])
+
   const handleAdminRouteError = useCallback(() => {}, [])
+
+  const handleUserSettingsError = useCallback((message) => {
+    if (message) {
+      notify(message, 'error')
+    }
+  }, [notify])
 
   const handleDepositAmountChange = (value) => {
     setDepositAmount(value.replace(/\D/g, ''))
   }
 
+  const refreshBootstrapData = useCallback(async () => {
+    if (!accessToken) {
+      return
+    }
+
+    applyBootstrapData(await fetchUserBootstrap(accessToken))
+  }, [accessToken, applyBootstrapData])
+
   const handleCreateDeposit = async () => {
     if (!accessToken) {
-      setApiNotice('Vui lòng đăng nhập trước khi tạo yêu cầu nạp.')
+      const message = 'Vui lòng đăng nhập trước khi tạo yêu cầu nạp.'
+      setApiNotice(message)
+      notify(message, 'info')
       return
     }
 
@@ -258,15 +443,70 @@ function App() {
       const deposit = await userApi.createDeposit({ amount: amountNumber }, accessToken)
 
       setActiveDeposit(deposit)
-      setApiNotice(`Đã tạo mã nạp ${deposit.depositCode}.`)
+      setApiDeposits((items) => [deposit, ...normalizeList(items).filter((item) => item.depositCode !== deposit.depositCode)])
+      await refreshBootstrapData()
+      const message = `Đã tạo mã nạp ${deposit.depositCode}.`
+      setApiNotice(message)
+      notify(message, 'success')
     } catch {
-      setApiNotice('Không tạo được yêu cầu nạp. Kiểm tra backend hoặc số tiền tối thiểu.')
+      const message = 'Không tạo được yêu cầu nạp. Kiểm tra backend hoặc số tiền tối thiểu.'
+      setApiNotice(message)
+      notify(message, 'error')
+    }
+  }
+
+  const handleRefreshDeposit = async (depositCode) => {
+    if (!accessToken) {
+      return
+    }
+
+    try {
+      if (depositCode) {
+        const [deposit, status] = await Promise.all([
+          userApi.getDeposit(depositCode, accessToken),
+          userApi.getDepositStatus(depositCode, accessToken),
+        ])
+        const merged = { ...deposit, ...status }
+        setActiveDeposit(merged)
+        setApiDeposits((items) => normalizeList(items).map((item) => (item.depositCode === depositCode ? merged : item)))
+        notify(`Đã cập nhật trạng thái ${depositCode}.`, 'success')
+      } else {
+        const deposits = normalizeList(await userApi.getDeposits({ size: 20 }, accessToken))
+        setApiDeposits(deposits)
+        setActiveDeposit((current) => (
+          current && deposits.some((deposit) => deposit.depositCode === current.depositCode)
+            ? deposits.find((deposit) => deposit.depositCode === current.depositCode)
+            : deposits.find((deposit) => deposit.status === 'PENDING') || deposits[0] || null
+        ))
+        notify('Đã tải lại lịch sử nạp tiền.', 'success')
+      }
+      const walletData = await userApi.getWallet(accessToken)
+      setWallet(walletData)
+    } catch (err) {
+      notify(err.message || 'Không cập nhật được yêu cầu nạp.', 'error')
+    }
+  }
+
+  const handleCancelDeposit = async (deposit) => {
+    if (!accessToken || !deposit?.depositCode) {
+      return
+    }
+
+    try {
+      const saved = await userApi.cancelDeposit(deposit.depositCode, { reason: 'Người dùng hủy yêu cầu nạp' }, accessToken)
+      setActiveDeposit(saved)
+      setApiDeposits((items) => normalizeList(items).map((item) => (item.depositCode === saved.depositCode ? saved : item)))
+      notify(`Đã hủy yêu cầu nạp ${saved.depositCode}.`, 'success')
+    } catch (err) {
+      notify(err.message || 'Không hủy được yêu cầu nạp.', 'error')
     }
   }
 
   const handlePurchase = async (service) => {
     if (!accessToken) {
-      setApiNotice('Vui lòng đăng nhập trước khi mua dịch vụ.')
+      const message = 'Vui lòng đăng nhập trước khi mua dịch vụ.'
+      setApiNotice(message)
+      notify(message, 'info')
       return
     }
 
@@ -277,43 +517,241 @@ function App() {
         idempotencyKey: createIdempotencyKey(service.id),
       }, accessToken)
 
-      setApiOrders((items) => [order, ...items.filter((item) => item.orderCode !== order.orderCode)])
-      applyAuthenticatedData(await fetchAuthenticatedData(accessToken))
-      setApiNotice(`Đã tạo đơn ${order.orderCode}.`)
+      setApiOrders((items) => [order, ...normalizeList(items).filter((item) => item.orderCode !== order.orderCode)])
+      await refreshBootstrapData()
+      const message = `Đã tạo đơn ${order.orderCode}.`
+      setApiNotice(message)
+      notify(message, 'success')
     } catch {
-      setApiNotice('Không tạo được đơn. Kiểm tra số dư ví hoặc trạng thái dịch vụ.')
+      const message = 'Không tạo được đơn. Kiểm tra số dư ví hoặc trạng thái dịch vụ.'
+      setApiNotice(message)
+      notify(message, 'error')
     }
   }
 
-  const renderActiveView = () => {
-    if (userActiveView === 'overview') {
-      return <OverviewView metrics={metrics} orders={orderList} />
+  const handleToggleFavoriteService = async (service) => {
+    if (!accessToken || !service?.id) {
+      const message = 'Vui lòng đăng nhập trước khi ghim dịch vụ.'
+      setApiNotice(message)
+      notify(message, 'info')
+      return
     }
 
-    if (userActiveView === 'deposit') {
-      return (
-        <DepositView
-          activeDeposit={activeDeposit}
-          amountNumber={amountNumber}
-          copied={copied}
-          depositAmount={depositAmount}
-          depositCode={depositCode}
-          onAmountChange={handleDepositAmountChange}
-          onCopy={copyText}
-          onCreateDeposit={handleCreateDeposit}
-        />
-      )
+    const isFavorite = favoriteServices.some((item) => item.id === service.id)
+
+    try {
+      if (isFavorite) {
+        await userApi.removeFavoriteService(service.id, accessToken)
+        setFavoriteServices((items) => items.filter((item) => item.id !== service.id))
+        notify(`Đã bỏ ghim ${service.name}.`, 'success')
+      } else {
+        const saved = await userApi.addFavoriteService(service.id, accessToken)
+        setFavoriteServices((items) => [saved, ...items.filter((item) => item.id !== saved.id)])
+        notify(`Đã ghim ${saved.name}.`, 'success')
+      }
+    } catch (err) {
+      notify(err.message || 'Không cập nhật được dịch vụ yêu thích.', 'error')
+    }
+  }
+
+  const handleCancelOrder = async (order) => {
+    if (!accessToken || !order?.orderCode) {
+      return
     }
 
-    if (userActiveView === 'services') {
-      return <ServicesView services={serviceList} onPurchase={handlePurchase} />
+    try {
+      const saved = await userApi.cancelOrder(order.orderCode, { reason: 'Người dùng hủy đơn' }, accessToken)
+      setApiOrders((items) => normalizeList(items).map((item) => (item.orderCode === saved.orderCode ? saved : item)))
+      await refreshBootstrapData()
+      notify(`Đã hủy đơn ${saved.orderCode}.`, 'success')
+    } catch (err) {
+      notify(err.message || 'Không hủy được đơn hàng.', 'error')
+    }
+  }
+
+  const handleReorder = async (order) => {
+    if (!accessToken || !order?.orderCode) {
+      return
     }
 
-    if (userActiveView === 'orders') {
-      return <OrderTable orders={orderList} />
+    try {
+      const saved = await userApi.reorder(order.orderCode, accessToken)
+      setApiOrders((items) => [saved, ...normalizeList(items).filter((item) => item.orderCode !== saved.orderCode)])
+      await refreshBootstrapData()
+      notify(`Đã tạo lại đơn ${saved.orderCode}.`, 'success')
+    } catch (err) {
+      notify(err.message || 'Không mua lại được đơn hàng.', 'error')
+    }
+  }
+
+  const loadTickets = useCallback(async () => {
+    if (!accessToken || !authInit || isAdmin || userActiveView !== 'support') {
+      return
     }
 
-    return <SupportView />
+    setSupportLoading(true)
+    try {
+      const data = normalizeList(await userApi.searchTickets({
+        query: supportQuery.trim(),
+        status: supportStatus,
+      }, accessToken))
+      setApiTickets(data)
+      setSupportSelectedCode((current) => (
+        current && data.some((ticket) => ticket.ticketCode === current)
+          ? current
+          : data[0]?.ticketCode || null
+      ))
+    } catch (err) {
+      notify(err.message || 'Không tải được ticket hỗ trợ.', 'error')
+    } finally {
+      setSupportLoading(false)
+    }
+  }, [accessToken, authInit, isAdmin, notify, supportQuery, supportStatus, userActiveView])
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadTickets, 250)
+    return () => window.clearTimeout(timer)
+  }, [loadTickets])
+
+  const loadTicketDetail = async (ticketCode) => {
+    if (!accessToken || !ticketCode) {
+      return
+    }
+
+    setSupportSelectedCode(ticketCode)
+    try {
+      const [ticket, attachments] = await Promise.all([
+        userApi.getTicket(ticketCode, accessToken),
+        userApi.getTicketAttachments(ticketCode, accessToken),
+      ])
+      setApiTickets((items) => {
+        const list = normalizeList(items)
+        return list.some((item) => item.ticketCode === ticket.ticketCode)
+          ? list.map((item) => (item.ticketCode === ticket.ticketCode ? ticket : item))
+          : [ticket, ...list]
+      })
+      setSupportAttachments(normalizeList(attachments))
+    } catch (err) {
+      notify(err.message || 'Không tải được chi tiết ticket.', 'error')
+    }
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (userActiveView === 'support' && selectedTicket?.ticketCode) {
+        loadTicketDetail(selectedTicket.ticketCode)
+      } else if (userActiveView === 'support') {
+        setSupportAttachments([])
+      }
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTicket?.ticketCode, userActiveView])
+
+  const updateTicketForm = (field, value) => {
+    setTicketForm((current) => ({ ...current, [field]: value }))
+  }
+
+  const handleCreateTicket = async (event) => {
+    event.preventDefault()
+    if (!accessToken) {
+      return
+    }
+
+    setSupportSubmitting(true)
+    try {
+      const saved = await userApi.createTicket({
+        category: ticketForm.category,
+        depositCode: ticketForm.depositCode.trim() || undefined,
+        message: ticketForm.message.trim(),
+        orderCode: ticketForm.orderCode.trim() || undefined,
+        priority: ticketForm.priority,
+        subject: ticketForm.subject.trim(),
+      }, accessToken)
+      setApiTickets((items) => [saved, ...normalizeList(items).filter((item) => item.ticketCode !== saved.ticketCode)])
+      setSupportSelectedCode(saved.ticketCode)
+      setTicketForm({ category: 'DEPOSIT', depositCode: '', message: '', orderCode: '', priority: 'NORMAL', subject: '' })
+      notify(`Đã tạo ticket ${saved.ticketCode}.`, 'success')
+    } catch (err) {
+      notify(err.message || 'Không tạo được ticket.', 'error')
+    } finally {
+      setSupportSubmitting(false)
+    }
+  }
+
+  const handleSendTicketMessage = async (event) => {
+    event.preventDefault()
+    if (!accessToken || !selectedTicket || !supportMessage.trim()) {
+      return
+    }
+
+    setSupportSubmitting(true)
+    try {
+      const saved = await userApi.sendTicketMessage(selectedTicket.ticketCode, { message: supportMessage.trim() }, accessToken)
+      setApiTickets((items) => normalizeList(items).map((item) => (item.ticketCode === saved.ticketCode ? saved : item)))
+      setSupportMessage('')
+      notify(`Đã phản hồi ticket ${saved.ticketCode}.`, 'success')
+    } catch (err) {
+      notify(err.message || 'Không gửi được phản hồi ticket.', 'error')
+    } finally {
+      setSupportSubmitting(false)
+    }
+  }
+
+  const handleTicketState = async (ticketCode, action) => {
+    if (!accessToken || !ticketCode) {
+      return
+    }
+
+    setSupportSubmitting(true)
+    try {
+      const saved = action === 'close'
+        ? await userApi.closeTicket(ticketCode, accessToken)
+        : await userApi.reopenTicket(ticketCode, accessToken)
+      setApiTickets((items) => normalizeList(items).map((item) => (item.ticketCode === saved.ticketCode ? saved : item)))
+      notify(`Đã cập nhật ticket ${saved.ticketCode}.`, 'success')
+    } catch (err) {
+      notify(err.message || 'Không cập nhật được ticket.', 'error')
+    } finally {
+      setSupportSubmitting(false)
+    }
+  }
+
+  const handleUploadTicketAttachment = async (event) => {
+    event.preventDefault()
+    if (!accessToken || !selectedTicket || !supportFile) {
+      return
+    }
+
+    setSupportSubmitting(true)
+    try {
+      await userApi.uploadTicketAttachment(selectedTicket.ticketCode, supportFile, accessToken)
+      setSupportFile(null)
+      setSupportAttachments(normalizeList(await userApi.getTicketAttachments(selectedTicket.ticketCode, accessToken)))
+      notify('Đã upload attachment.', 'success')
+    } catch (err) {
+      notify(err.message || 'Không upload được attachment.', 'error')
+    } finally {
+      setSupportSubmitting(false)
+    }
+  }
+
+  const handleDeleteTicketAttachment = async (ticketCode, attachmentId) => {
+    if (!accessToken) {
+      return
+    }
+
+    setSupportSubmitting(true)
+    try {
+      await userApi.deleteTicketAttachment(ticketCode, attachmentId, accessToken)
+      setSupportAttachments(normalizeList(await userApi.getTicketAttachments(ticketCode, accessToken)))
+      notify(`Đã xóa attachment #${attachmentId}.`, 'success')
+    } catch (err) {
+      notify(err.message || 'Không xóa được attachment.', 'error')
+    } finally {
+      setSupportSubmitting(false)
+    }
   }
 
   if (!accessToken) {
@@ -344,6 +782,7 @@ function App() {
     return (
       <DashboardShell
         activeView={adminActiveView}
+        currentUser={currentUser}
         displayBalance={displayBalance}
         footerLabel="Admin"
         footerTitle="Dịch vụ & bảng giá"
@@ -353,7 +792,6 @@ function App() {
         showBalance={false}
         subtitle="Quản trị nội dung public site"
       >
-        {adminNotice && <p className="admin-message">{adminNotice}</p>}
         {adminActiveView === 'admin-overview' && adminOverviewError && (
           <p className="admin-message error">{adminOverviewError}</p>
         )}
@@ -361,14 +799,18 @@ function App() {
           categories={adminCategories}
           currentUser={currentUser}
           dashboard={adminDashboard}
+          dashboardSummary={adminDashboardSummary}
           mountedPaths={adminRoutePaths}
           onCurrentUserChange={setCurrentUser}
           onSetError={handleAdminRouteError}
-          onSetNotice={setAdminNotice}
+          onSetNotice={handleAdminNotice}
           pricingItems={adminPricing}
           revenue={adminRevenue}
+          revenueChart={adminRevenueChart}
+          servicePerformance={adminServicePerformance}
           services={adminServices}
           token={accessToken}
+          userActivity={adminUserActivity}
         />
       </DashboardShell>
     )
@@ -377,11 +819,67 @@ function App() {
   return (
     <DashboardShell
       activeView={userActiveView}
+      currentUser={currentUser}
       displayBalance={displayBalance}
+      notificationCount={unreadNotifications}
       onLogout={handleLogout}
-      onViewChange={setActiveView}
+      onViewChange={handleUserViewChange}
     >
-      {renderActiveView()}
+      {routeLoading && userActiveView !== 'support' && userActiveView !== 'settings' && (
+        <p className="admin-message">Đang tải dữ liệu...</p>
+      )}
+      <UserRoutes
+        activeDeposit={activeDeposit}
+        amountNumber={amountNumber}
+        apiDeposits={apiDeposits}
+        apiTickets={apiTickets}
+        apiWalletTransactions={apiWalletTransactions}
+        copied={copied}
+        currentUser={currentUser}
+        depositAmount={depositAmount}
+        favoriteServices={favoriteServices}
+        metrics={metrics}
+        onAmountChange={handleDepositAmountChange}
+        onCancelDeposit={handleCancelDeposit}
+        onCancelOrder={handleCancelOrder}
+        onCloseTicket={(ticketCode) => handleTicketState(ticketCode, 'close')}
+        onCopy={copyText}
+        onCreateDeposit={handleCreateDeposit}
+        onCreateTicket={handleCreateTicket}
+        onCurrentUserChange={setCurrentUser}
+        onDeleteAttachment={handleDeleteTicketAttachment}
+        onFileChange={setSupportFile}
+        onLoadTicket={loadTicketDetail}
+        onOpenServices={() => handleUserViewChange('services')}
+        onPurchase={handlePurchase}
+        onRefreshDeposit={handleRefreshDeposit}
+        onRefreshTickets={loadTickets}
+        onReopenTicket={(ticketCode) => handleTicketState(ticketCode, 'reopen')}
+        onReorder={handleReorder}
+        onSearchChange={setSupportQuery}
+        onSendMessage={handleSendTicketMessage}
+        onSetMessage={setSupportMessage}
+        onSetNotice={(message) => notify(message, 'success')}
+        onSetSettingsError={handleUserSettingsError}
+        onStatusChange={setSupportStatus}
+        onTicketFormChange={updateTicketForm}
+        onToggleFavorite={handleToggleFavoriteService}
+        onUploadAttachment={handleUploadTicketAttachment}
+        onViewChange={handleUserViewChange}
+        orderList={orderList}
+        recentServices={recentServices}
+        serviceList={serviceList}
+        supportAttachments={supportAttachments}
+        supportFile={supportFile}
+        supportLoading={supportLoading}
+        supportMessage={supportMessage}
+        supportQuery={supportQuery}
+        supportSelectedTicket={selectedTicket}
+        supportStatus={supportStatus}
+        supportSubmitting={supportSubmitting}
+        ticketForm={ticketForm}
+        token={accessToken}
+      />
     </DashboardShell>
   )
 }

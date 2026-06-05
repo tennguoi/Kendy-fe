@@ -25,6 +25,7 @@ function formFromOrder(order) {
     orderCode: order?.orderCode || '',
     reason: '',
     resultData: order?.resultData || '',
+    userNote: order?.userNote || '',
   }
 }
 
@@ -34,6 +35,7 @@ function AdminOrdersView({
   token,
 }) {
   const [draft, setDraft] = useState(null)
+  const [bulkRefundCodes, setBulkRefundCodes] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [orders, setOrders] = useState([])
@@ -76,6 +78,35 @@ function AdminOrdersView({
     const timer = window.setTimeout(loadOrders, 250)
     return () => window.clearTimeout(timer)
   }, [loadOrders])
+
+  useEffect(() => {
+    if (!token || !selectedOrder?.orderCode) {
+      return
+    }
+
+    let active = true
+    async function loadOrderDetail() {
+      try {
+        const detail = await adminApi.getOrder(selectedOrder.orderCode, token)
+        if (active) {
+          setOrders((items) => {
+            if (items.some((item) => item.id === detail.id)) {
+              return items.map((item) => (item.id === detail.id ? detail : item))
+            }
+
+            return [detail, ...items]
+          })
+        }
+      } catch {
+        // The list row is still usable if the detail refresh fails.
+      }
+    }
+
+    loadOrderDetail()
+    return () => {
+      active = false
+    }
+  }, [selectedOrder?.orderCode, token])
 
   const selectOrder = (orderId) => {
     setSelectedId(orderId)
@@ -176,6 +207,58 @@ function AdminOrdersView({
     }
   }
 
+  const saveUserNote = async (event) => {
+    event.preventDefault()
+    if (!selectedOrder || !orderForm.userNote.trim()) {
+      setViewError('Ghi chú user không được để trống.')
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = await adminApi.updateOrderUserNote(
+        selectedOrder.orderCode,
+        { note: orderForm.userNote.trim() },
+        token,
+      )
+      patchOrder(saved)
+      setDraft(formFromOrder(saved))
+      onSetNotice(`Đã lưu ghi chú user cho đơn ${saved.orderCode}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không lưu được ghi chú user.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const runBulkRefund = async (event) => {
+    event.preventDefault()
+    const orderCodes = bulkRefundCodes
+      .split(/[\s,]+/)
+      .map((code) => code.trim())
+      .filter(Boolean)
+
+    if (orderCodes.length === 0 || !orderForm.reason.trim()) {
+      setViewError('Nhập danh sách mã đơn và lý do bulk refund.')
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const savedItems = await adminApi.bulkRefundOrders({ orderCodes, reason: orderForm.reason.trim() }, token)
+      savedItems.forEach(patchOrder)
+      setBulkRefundCodes('')
+      await loadOrders()
+      onSetNotice(`Đã refund ${savedItems.length} đơn.`)
+    } catch (err) {
+      setViewError(err.message || 'Không bulk refund được đơn hàng.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
@@ -264,6 +347,10 @@ function AdminOrdersView({
                 <strong>Ghi chú admin</strong>
                 <pre>{selectedOrder.adminNote || 'Chưa có ghi chú'}</pre>
               </div>
+              <div className="admin-code-block">
+                <strong>Ghi chú user</strong>
+                <pre>{selectedOrder.userNote || 'Chưa có ghi chú'}</pre>
+              </div>
 
               <form className="admin-form compact order-action-form" onSubmit={(event) => event.preventDefault()}>
                 <div className="admin-panel-head compact-head">
@@ -343,6 +430,50 @@ function AdminOrdersView({
                 <button type="submit" disabled={submitting}>
                   <Save size={17} strokeWidth={2} aria-hidden="true" />
                   <span>Lưu note</span>
+                </button>
+              </form>
+
+              <form className="admin-form compact" onSubmit={saveUserNote}>
+                <div className="admin-panel-head compact-head">
+                  <h3>Ghi chú cho user</h3>
+                  <Save size={18} strokeWidth={2} aria-hidden="true" />
+                </div>
+                <label>
+                  <span>User note</span>
+                  <textarea
+                    value={orderForm.userNote}
+                    onChange={(event) => updateDraft('userNote', event.target.value)}
+                    placeholder="Ghi chú hiển thị cho khách"
+                    rows="3"
+                    required
+                  />
+                </label>
+                <button type="submit" disabled={submitting}>
+                  <Save size={17} strokeWidth={2} aria-hidden="true" />
+                  <span>Lưu user note</span>
+                </button>
+              </form>
+
+              <form className="admin-form compact" onSubmit={runBulkRefund}>
+                <div className="admin-panel-head compact-head">
+                  <h3>Bulk refund</h3>
+                  <RotateCcw size={18} strokeWidth={2} aria-hidden="true" />
+                </div>
+                <label>
+                  <span>Mã đơn</span>
+                  <textarea
+                    value={bulkRefundCodes}
+                    onChange={(event) => setBulkRefundCodes(event.target.value)}
+                    placeholder="Nhập nhiều mã đơn, cách nhau bằng dấu phẩy hoặc xuống dòng"
+                    rows="3"
+                    required
+                  />
+                </label>
+                <button type="button" className="admin-icon-button" onClick={() => setBulkRefundCodes(selectedOrder.orderCode)}>
+                  Dùng đơn đang chọn
+                </button>
+                <button type="submit" className="admin-danger-button" disabled={submitting}>
+                  Bulk refund
                 </button>
               </form>
             </>

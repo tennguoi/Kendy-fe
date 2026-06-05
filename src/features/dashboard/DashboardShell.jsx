@@ -1,4 +1,4 @@
-import { navItems } from '../../data/navigation'
+import { navItems } from '../user/navigation'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import './Dashboard.css'
@@ -6,10 +6,12 @@ import './Dashboard.css'
 function DashboardShell({
   activeView,
   children,
+  currentUser,
   displayBalance,
   footerLabel,
   footerTitle,
   items = navItems,
+  notificationCount = 0,
   onLogout,
   onViewChange,
   showBalance = true,
@@ -29,8 +31,11 @@ function DashboardShell({
       <main className="workspace">
         <Topbar
           title={activeTitle}
+          currentUser={currentUser}
           displayBalance={displayBalance}
+          notificationCount={notificationCount}
           onLogout={onLogout}
+          onViewChange={onViewChange}
           showBalance={showBalance}
           subtitle={subtitle}
         />

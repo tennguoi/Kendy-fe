@@ -27,6 +27,7 @@ function AdminTicketsView({
   const [selectedCode, setSelectedCode] = useState(null)
   const [statusFilter, setStatusFilter] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [ticketQueue, setTicketQueue] = useState('all')
   const [tickets, setTickets] = useState([])
 
   const selectedTicket = tickets.find((ticket) => ticket.ticketCode === selectedCode) || tickets[0]
@@ -50,13 +51,18 @@ function AdminTicketsView({
     setLoading(true)
     setViewError('')
     try {
+      const ticketRequest = ticketQueue === 'unassigned'
+        ? adminApi.getUnassignedTickets(token)
+        : ticketQueue === 'mine'
+          ? adminApi.getAssignedToMeTickets(token)
+          : adminApi.searchTickets({
+              category: categoryFilter,
+              priority: priorityFilter,
+              query: query.trim(),
+              status: statusFilter,
+            }, token)
       const [ticketData, adminData, resolutionData] = await Promise.all([
-        adminApi.searchTickets({
-          category: categoryFilter,
-          priority: priorityFilter,
-          query: query.trim(),
-          status: statusFilter,
-        }, token),
+        ticketRequest,
         adminApi.getAdmins(token),
         adminApi.getTicketResolutionTime(token),
       ])
@@ -69,7 +75,7 @@ function AdminTicketsView({
     } finally {
       setLoading(false)
     }
-  }, [categoryFilter, priorityFilter, query, setViewError, statusFilter, token])
+  }, [categoryFilter, priorityFilter, query, setViewError, statusFilter, ticketQueue, token])
 
   const loadAttachments = useCallback(async (ticketCode) => {
     if (!token || !ticketCode) {
@@ -88,6 +94,29 @@ function AdminTicketsView({
     const timer = window.setTimeout(loadTickets, 250)
     return () => window.clearTimeout(timer)
   }, [loadTickets])
+
+  useEffect(() => {
+    if (!token || !selectedTicket?.ticketCode) {
+      return
+    }
+
+    let active = true
+    async function loadTicketDetail() {
+      try {
+        const detail = await adminApi.getTicket(selectedTicket.ticketCode, token)
+        if (active) {
+          patchTicket(detail)
+        }
+      } catch {
+        // Keep the current list item usable if detail refresh fails.
+      }
+    }
+
+    loadTicketDetail()
+    return () => {
+      active = false
+    }
+  }, [selectedTicket?.ticketCode, token])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -207,6 +236,11 @@ function AdminTicketsView({
       {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải ticket...'}</p>}
 
       <div className="admin-filters support-filters">
+        <select value={ticketQueue} onChange={(event) => setTicketQueue(event.target.value)}>
+          <option value="all">Tất cả ticket</option>
+          <option value="unassigned">Chưa assign</option>
+          <option value="mine">Assigned to me</option>
+        </select>
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm ticket, user, chủ đề" type="search" />
         <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
           {ticketStatuses.map((status) => (

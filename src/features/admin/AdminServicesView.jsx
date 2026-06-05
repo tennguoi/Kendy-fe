@@ -137,6 +137,7 @@ function AdminServicesView({
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
   const [selectedServiceId, setSelectedServiceId] = useState(null)
+  const [selectedServiceCategories, setSelectedServiceCategories] = useState([])
   const [serviceForm, setServiceForm] = useState(emptyServiceForm)
   const [serviceOrders, setServiceOrders] = useState([])
   const [services, setServices] = useState([])
@@ -204,27 +205,45 @@ function AdminServicesView({
     setSelectedServiceId(null)
     setServiceForm(emptyServiceForm)
     setServiceOrders([])
+    setSelectedServiceCategories([])
   }
 
   const selectService = async (service) => {
     setSelectedServiceId(service.id)
     setServiceForm(serviceToForm(service))
     try {
-      setServiceOrders(await adminApi.getServiceOrders(service.id, token))
+      const [orders, serviceCategories] = await Promise.all([
+        adminApi.getServiceOrders(service.id, token),
+        adminApi.getServiceCategoryLinks(service.id, token),
+      ])
+      setServiceOrders(orders)
+      setSelectedServiceCategories(serviceCategories)
     } catch {
       setServiceOrders([])
+      setSelectedServiceCategories([])
     }
   }
 
-  const selectCategory = (category) => {
+  const selectCategory = async (category) => {
     setSelectedCategoryId(category.id)
-    setCategoryForm({
-      description: category.description || '',
-      name: category.name || '',
-      parentId: category.parentId ? String(category.parentId) : '',
-      slug: category.slug || '',
-      sortOrder: String(category.sortOrder ?? 0),
-    })
+    try {
+      const detail = await adminApi.getServiceCategory(category.id, token)
+      setCategoryForm({
+        description: detail.description || '',
+        name: detail.name || '',
+        parentId: detail.parentId ? String(detail.parentId) : '',
+        slug: detail.slug || '',
+        sortOrder: String(detail.sortOrder ?? 0),
+      })
+    } catch {
+      setCategoryForm({
+        description: category.description || '',
+        name: category.name || '',
+        parentId: category.parentId ? String(category.parentId) : '',
+        slug: category.slug || '',
+        sortOrder: String(category.sortOrder ?? 0),
+      })
+    }
   }
 
   const startCreateCategory = () => {
@@ -578,13 +597,19 @@ function AdminServicesView({
               <span>{serviceOrders.length} đơn</span>
             </div>
             <div className="admin-mini-list">
+              {selectedServiceCategories.map((category) => (
+                <article key={category.id}>
+                  <strong>{category.name}</strong>
+                  <span>/{category.slug} · sort {category.sortOrder}</span>
+                </article>
+              ))}
               {serviceOrders.map((order) => (
                 <article key={order.id}>
                   <strong>{order.orderCode}</strong>
                   <span>User #{order.userId} · {formatAdminMoney(order.amount)} · {order.status} · {formatAdminDate(order.createdAt)}</span>
                 </article>
               ))}
-              {serviceOrders.length === 0 && <AdminEmptyState message="Chưa có đơn gần đây cho dịch vụ này." />}
+              {selectedServiceCategories.length === 0 && serviceOrders.length === 0 && <AdminEmptyState message="Chưa có danh mục hoặc đơn gần đây cho dịch vụ này." />}
             </div>
           </div>
         )}

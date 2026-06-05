@@ -14,6 +14,20 @@ const detailTabs = [
   { id: 'audit', label: 'Audit' },
 ]
 
+function normalizeList(value) {
+  if (Array.isArray(value)) {
+    return value
+  }
+
+  if (!value || typeof value !== 'object') {
+    return []
+  }
+
+  const keys = ['content', 'items', 'data', 'records', 'results']
+  const list = keys.map((key) => value[key]).find(Array.isArray)
+  return list || []
+}
+
 function AdminUsersView({
   onSetError,
   onSetNotice,
@@ -21,9 +35,11 @@ function AdminUsersView({
 }) {
   const [activeDetailTab, setActiveDetailTab] = useState('orders')
   const [adjustForm, setAdjustForm] = useState({ amount: '', confirmationPassword: '', direction: 'CREDIT', reason: '' })
+  const [bulkStatusForm, setBulkStatusForm] = useState({ ids: '', reason: '' })
   const [detail, setDetail] = useState(null)
   const [detailData, setDetailData] = useState({ audit: [], orders: [], sessions: [], tickets: [], wallet: [] })
   const [error, setError] = useState('')
+  const [hasLoadedUsers, setHasLoadedUsers] = useState(false)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [roleForm, setRoleForm] = useState({ reason: '', role: 'USER' })
@@ -41,18 +57,27 @@ function AdminUsersView({
 
   const loadUsers = useCallback(async () => {
     if (!token) {
+      setLoading(true)
+      setHasLoadedUsers(false)
       return
     }
 
     setLoading(true)
+    setHasLoadedUsers(false)
     setViewError('')
     try {
       const data = await adminApi.searchUsers({ query: query.trim(), status: statusFilter }, token)
-      setUsers(data)
-      setSelectedId((current) => (current && data.some((user) => user.id === current) ? current : data[0]?.id || null))
+      const normalizedUsers = normalizeList(data)
+      setUsers(normalizedUsers)
+      setSelectedId((current) => (
+        current && normalizedUsers.some((user) => user.id === current)
+          ? current
+          : normalizedUsers[0]?.id || null
+      ))
     } catch (err) {
       setViewError(err.message || 'Không tải được danh sách user.')
     } finally {
+      setHasLoadedUsers(true)
       setLoading(false)
     }
   }, [query, setViewError, statusFilter, token])
@@ -75,7 +100,13 @@ function AdminUsersView({
         adminApi.getAuditLogs({ actorUserId: userId, targetId: userId }, token),
       ])
       setDetail(profile)
-      setDetailData({ audit, orders, sessions, tickets, wallet })
+      setDetailData({
+        audit: normalizeList(audit),
+        orders: normalizeList(orders),
+        sessions: normalizeList(sessions),
+        tickets: normalizeList(tickets),
+        wallet: normalizeList(wallet),
+      })
       setRoleForm((current) => ({ ...current, role: profile.user.role || 'USER' }))
     } catch (err) {
       setViewError(err.message || 'Không tải được chi tiết user.')
@@ -93,7 +124,7 @@ function AdminUsersView({
   }, [loadUserDetail, selectedUser?.id])
 
   const patchUser = (saved) => {
-    setUsers((items) => items.map((item) => (item.id === saved.id ? saved : item)))
+    setUsers((items) => normalizeList(items).map((item) => (item.id === saved.id ? saved : item)))
   }
 
   const updateStatus = async (status) => {
@@ -185,6 +216,35 @@ function AdminUsersView({
     }
   }
 
+  const runBulkUserStatus = async (status) => {
+    const ids = bulkStatusForm.ids
+      .split(/[\s,]+/)
+      .map((id) => Number(id))
+      .filter(Boolean)
+
+    if (ids.length === 0) {
+      setViewError('Nhập danh sách user ID cần xử lý.')
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const payload = { ids, reason: bulkStatusForm.reason.trim() || 'Cập nhật bulk từ màn hình quản trị' }
+      const saved = status === 'LOCKED'
+        ? await adminApi.bulkLockUsers(payload, token)
+        : await adminApi.bulkUnlockUsers(payload, token)
+      saved.forEach(patchUser)
+      setBulkStatusForm({ ids: '', reason: '' })
+      await loadUsers()
+      onSetNotice(`Đã cập nhật ${saved.length} user.`)
+    } catch (err) {
+      setViewError(err.message || 'Không cập nhật bulk user.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
@@ -215,31 +275,35 @@ function AdminUsersView({
             <h3>Danh sách user</h3>
             <span>{users.length} tài khoản</span>
           </div>
-          <div className="admin-data-table">
-            <div className="admin-data-row head users">
-              <span>User</span>
-              <span>Vai trò</span>
-              <span>Số dư</span>
-              <span>Trạng thái</span>
+          {!hasLoadedUsers ? (
+            <AdminEmptyState message="Đang tải danh sách user..." />
+          ) : (
+            <div className="admin-data-table">
+              <div className="admin-data-row head users">
+                <span>User</span>
+                <span>Vai trò</span>
+                <span>Số dư</span>
+                <span>Trạng thái</span>
+              </div>
+              {users.map((user) => (
+                <button
+                  type="button"
+                  className={`admin-data-row users ${selectedUser?.id === user.id ? 'selected' : ''}`}
+                  key={user.id}
+                  onClick={() => setSelectedId(user.id)}
+                >
+                  <span>
+                    <strong>{user.name || 'Chưa đặt tên'}</strong>
+                    <small>{user.email}</small>
+                  </span>
+                  <span>{user.role}</span>
+                  <span>{formatAdminMoney(user.balance)}</span>
+                  <span><AdminStatusBadge status={user.status} /></span>
+                </button>
+              ))}
+              {users.length === 0 && <AdminEmptyState />}
             </div>
-            {users.map((user) => (
-              <button
-                type="button"
-                className={`admin-data-row users ${selectedUser?.id === user.id ? 'selected' : ''}`}
-                key={user.id}
-                onClick={() => setSelectedId(user.id)}
-              >
-                <span>
-                  <strong>{user.name || 'Chưa đặt tên'}</strong>
-                  <small>{user.email}</small>
-                </span>
-                <span>{user.role}</span>
-                <span>{formatAdminMoney(user.balance)}</span>
-                <span><AdminStatusBadge status={user.status} /></span>
-              </button>
-            ))}
-            {users.length === 0 && <AdminEmptyState />}
-          </div>
+          )}
         </div>
 
         <aside className="admin-panel admin-detail-panel">
@@ -248,7 +312,9 @@ function AdminUsersView({
             {selectedUser && <AdminStatusBadge status={selectedUser.status} />}
           </div>
 
-          {selectedUser ? (
+          {!hasLoadedUsers ? (
+            <AdminEmptyState message="Đang tải chi tiết user..." />
+          ) : selectedUser ? (
             <>
               <dl className="admin-detail-list">
                 <div><dt>Email</dt><dd>{selectedUser.email}</dd></div>
@@ -276,6 +342,28 @@ function AdminUsersView({
                   Khóa user
                 </button>
               </div>
+
+              <form className="admin-form compact" onSubmit={(event) => event.preventDefault()}>
+                <div className="admin-panel-head compact-head">
+                  <h3>Bulk trạng thái user</h3>
+                  <Shield size={18} strokeWidth={2} aria-hidden="true" />
+                </div>
+                <label>
+                  <span>User IDs</span>
+                  <textarea value={bulkStatusForm.ids} onChange={(event) => setBulkStatusForm((current) => ({ ...current, ids: event.target.value }))} rows="2" placeholder="VD: 1, 2, 3" />
+                </label>
+                <label>
+                  <span>Lý do</span>
+                  <textarea value={bulkStatusForm.reason} onChange={(event) => setBulkStatusForm((current) => ({ ...current, reason: event.target.value }))} rows="2" />
+                </label>
+                <div className="admin-action-row">
+                  <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => setBulkStatusForm((current) => ({ ...current, ids: selectedUser ? String(selectedUser.id) : current.ids }))}>
+                    Dùng user đang chọn
+                  </button>
+                  <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runBulkUserStatus('ACTIVE')}>Bulk mở</button>
+                  <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => runBulkUserStatus('LOCKED')}>Bulk khóa</button>
+                </div>
+              </form>
 
               <form className="admin-form compact" onSubmit={updateRole}>
                 <div className="admin-panel-head compact-head">

@@ -17,14 +17,18 @@ function AdminRoutes({
   categories,
   currentUser,
   dashboard,
+  dashboardSummary,
   onSetError,
   onSetNotice,
   onCurrentUserChange,
   mountedPaths,
   pricingItems,
   revenue,
+  revenueChart,
+  servicePerformance,
   services,
   token,
+  userActivity,
 }) {
   const location = useLocation()
   const activePath = normalizePathname(location.pathname)
@@ -36,9 +40,13 @@ function AdminRoutes({
         <AdminOverviewView
           categories={categories}
           dashboard={dashboard}
+          dashboardSummary={dashboardSummary}
           pricingItems={pricingItems}
           revenue={revenue}
+          revenueChart={revenueChart}
+          servicePerformance={servicePerformance}
           services={services}
+          userActivity={userActivity}
         />
       ),
     },
@@ -73,7 +81,11 @@ function AdminRoutes({
     <>
       {routes.map((route) => (
         mountedPaths.includes(route.path) && (
-          <div hidden={route.path !== activePath} key={route.path}>
+          <div
+            key={route.path}
+            style={route.path === activePath ? undefined : { display: 'none' }}
+            aria-hidden={route.path !== activePath}
+          >
             {route.element}
           </div>
         )

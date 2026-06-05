@@ -1,24 +1,19 @@
-import axiosClient from '../lib/api';
+import { userAccountApi } from './user/account.api';
+import { userDepositsApi } from './user/deposits.api';
+import { userNotificationsApi } from './user/notifications.api';
+import { userOrdersApi } from './user/orders.api';
+import { userSecurityApi } from './user/security.api';
+import { userServicesApi } from './user/services.api';
+import { userTicketsApi } from './user/tickets.api';
+import { userWalletApi } from './user/wallet.api';
 
 export const userApi = {
-  getMe: (token) => 
-    axiosClient.get('/api/me', { token }),
-    
-  getWallet: (token) => 
-    axiosClient.get('/api/wallet', { token }),
-    
-  getOrders: (token) => 
-    axiosClient.get('/api/orders', { token }),
-
-  sendTwoFactorEnableEmailCode: (token) =>
-    axiosClient.post('/api/me/2fa/email-code', {}, { token }),
-
-  enableEmailTwoFactor: (data, token) =>
-    axiosClient.post('/api/me/2fa/enable-email', data, { token }),
-    
-  createDeposit: (data, token) => 
-    axiosClient.post('/api/deposits', data, { token }),
-    
-  createOrder: (data, token) => 
-    axiosClient.post('/api/orders', data, { token }),
+  ...userAccountApi,
+  ...userSecurityApi,
+  ...userWalletApi,
+  ...userOrdersApi,
+  ...userDepositsApi,
+  ...userTicketsApi,
+  ...userNotificationsApi,
+  ...userServicesApi,
 };

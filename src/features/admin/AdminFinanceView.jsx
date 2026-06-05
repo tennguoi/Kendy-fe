@@ -15,14 +15,17 @@ const depositStatuses = ['', 'PENDING', 'COMPLETED', 'MANUAL_REVIEW', 'EXPIRED',
 const walletTypes = ['', 'DEPOSIT', 'PURCHASE', 'REFUND', 'ADJUSTMENT']
 const reportTypes = ['revenue', 'users', 'orders', 'bank', 'tickets']
 
-function downloadTextFile(fileName, content) {
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' })
+function downloadBlobFile(fileName, blob) {
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
   anchor.download = fileName
   anchor.click()
   URL.revokeObjectURL(url)
+}
+
+function downloadTextFile(fileName, content) {
+  downloadBlobFile(fileName, new Blob([content], { type: 'text/csv;charset=utf-8' }))
 }
 
 function AdminFinanceView({
@@ -32,6 +35,7 @@ function AdminFinanceView({
 }) {
   const [activeTab, setActiveTab] = useState('bank')
   const [bankActionForm, setBankActionForm] = useState({ depositCode: '', reason: '', userId: '' })
+  const [bankBulkForm, setBankBulkForm] = useState({ depositCode: '', ids: '', reason: '', userId: '' })
   const [bankStatus, setBankStatus] = useState('')
   const [bankTransactions, setBankTransactions] = useState([])
   const [balanceIssues, setBalanceIssues] = useState([])
@@ -46,6 +50,7 @@ function AdminFinanceView({
   const [selectedBankId, setSelectedBankId] = useState(null)
   const [selectedDepositCode, setSelectedDepositCode] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [exportFormat, setExportFormat] = useState('xlsx')
   const [walletTransactions, setWalletTransactions] = useState([])
   const [walletType, setWalletType] = useState('')
 
@@ -103,6 +108,52 @@ function AdminFinanceView({
     return () => window.clearTimeout(timer)
   }, [loadFinance])
 
+  useEffect(() => {
+    if (!token || !selectedBank?.id) {
+      return
+    }
+
+    let active = true
+    async function loadBankDetail() {
+      try {
+        const detail = await adminApi.getBankTransaction(selectedBank.id, token)
+        if (active) {
+          setBankTransactions((items) => items.map((item) => (item.id === detail.id ? detail : item)))
+        }
+      } catch {
+        // The search result is enough for list-level handling.
+      }
+    }
+
+    loadBankDetail()
+    return () => {
+      active = false
+    }
+  }, [selectedBank?.id, token])
+
+  useEffect(() => {
+    if (!token || !selectedDeposit?.depositCode) {
+      return
+    }
+
+    let active = true
+    async function loadDepositDetail() {
+      try {
+        const detail = await adminApi.getDeposit(selectedDeposit.depositCode, token)
+        if (active) {
+          setDeposits((items) => items.map((item) => (item.id === detail.id ? detail : item)))
+        }
+      } catch {
+        // The search result is enough for list-level handling.
+      }
+    }
+
+    loadDepositDetail()
+    return () => {
+      active = false
+    }
+  }, [selectedDeposit?.depositCode, token])
+
   const patchBank = (saved) => {
     setBankTransactions((items) => items.map((item) => (item.id === saved.id ? saved : item)))
   }
@@ -145,6 +196,76 @@ function AdminFinanceView({
       onSetNotice(`Đã xử lý bank transaction #${saved.id}.`)
     } catch (err) {
       setViewError(err.message || 'Không xử lý được bank transaction.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const runBulkBankCredit = async (event) => {
+    event.preventDefault()
+    const bankTransactionIds = bankBulkForm.ids
+      .split(/[\s,]+/)
+      .map((id) => Number(id))
+      .filter(Boolean)
+
+    if (bankTransactionIds.length === 0 || !bankBulkForm.userId || !bankBulkForm.reason.trim()) {
+      setViewError('Nhập danh sách bank transaction ID, user ID và lý do bulk manual credit.')
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = await adminApi.bulkManualCreditBankTransactions({
+        bankTransactionIds,
+        depositCode: bankBulkForm.depositCode.trim() || undefined,
+        reason: bankBulkForm.reason.trim(),
+        userId: Number(bankBulkForm.userId),
+      }, token)
+      saved.forEach(patchBank)
+      setBankBulkForm({ depositCode: '', ids: '', reason: '', userId: '' })
+      await loadFinance()
+      onSetNotice(`Đã manual credit ${saved.length} bank transaction.`)
+    } catch (err) {
+      setViewError(err.message || 'Không bulk manual credit được bank transaction.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const loadBankQueue = async (queue) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const data = queue === 'manual'
+        ? await adminApi.getManualReviewBankTransactions(token)
+        : queue === 'duplicate'
+          ? await adminApi.getDuplicateBankTransactions(token)
+          : await adminApi.getIgnoredBankTransactions(token)
+      setBankTransactions(data)
+      setSelectedBankId(data[0]?.id || null)
+      setActiveTab('bank')
+      onSetNotice(`Đã tải ${data.length} bank transaction.`)
+    } catch (err) {
+      setViewError(err.message || 'Không tải được bank queue.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const loadDepositQueue = async (queue) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const data = queue === 'expired'
+        ? await adminApi.getExpiredDeposits(token)
+        : await adminApi.getManualReviewDeposits(token)
+      setDeposits(data)
+      setSelectedDepositCode(data[0]?.depositCode || null)
+      setActiveTab('deposits')
+      onSetNotice(`Đã tải ${data.length} yêu cầu nạp.`)
+    } catch (err) {
+      setViewError(err.message || 'Không tải được deposit queue.')
     } finally {
       setSubmitting(false)
     }
@@ -194,13 +315,45 @@ function AdminFinanceView({
     }
   }
 
-  const exportReport = async (type) => {
+  const runReconciliation = async () => {
     setSubmitting(true)
     setViewError('')
     try {
-      const csv = await adminApi.exportReport(type, token)
-      downloadTextFile(`${type}.csv`, csv)
-      onSetNotice(`Đã export ${type}.csv.`)
+      const data = await adminApi.reconcileWallet(token)
+      setBalanceIssues(data)
+      onSetNotice(`Reconciliation hoàn tất: ${data.length} vấn đề.`)
+    } catch (err) {
+      setViewError(err.message || 'Không chạy được reconciliation.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const loadBalanceIntegrityReport = async () => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const data = await adminApi.getBalanceIntegrityReport(token)
+      setBalanceIssues(data)
+      onSetNotice(`Đã tải báo cáo balance integrity: ${data.length} vấn đề.`)
+    } catch (err) {
+      setViewError(err.message || 'Không tải được báo cáo balance integrity.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const exportReport = async (type, format) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const data = await adminApi.exportReport(type, token, format)
+      if (format === 'xlsx') {
+        downloadBlobFile(`${type}.xlsx`, data)
+      } else {
+        downloadTextFile(`${type}.csv`, data)
+      }
+      onSetNotice(`Đã export ${type}.${format}.`)
     } catch (err) {
       setViewError(err.message || 'Không export được báo cáo.')
     } finally {
@@ -244,8 +397,19 @@ function AdminFinanceView({
           <div><span>Net revenue</span><strong>{formatAdminMoney(revenue?.netRevenue)}</strong></div>
         </div>
         <div className="admin-action-row">
+          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadBankQueue('manual')}>Bank manual review</button>
+          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadBankQueue('duplicate')}>Bank duplicate</button>
+          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadDepositQueue('manual')}>Nạp manual review</button>
+          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadDepositQueue('expired')}>Nạp hết hạn</button>
+        </div>
+
+        <div className="admin-action-row">
+          <span className="admin-format-toggle">
+            <button type="button" className={exportFormat === 'csv' ? 'active' : ''} onClick={() => setExportFormat('csv')}>CSV</button>
+            <button type="button" className={exportFormat === 'xlsx' ? 'active' : ''} onClick={() => setExportFormat('xlsx')}>XLSX</button>
+          </span>
           {reportTypes.map((type) => (
-            <button type="button" className="admin-icon-button" disabled={submitting} key={type} onClick={() => exportReport(type)}>
+            <button type="button" className="admin-icon-button" disabled={submitting} key={type} onClick={() => exportReport(type, exportFormat)}>
               <Download size={16} strokeWidth={2} aria-hidden="true" />
               <span>Export {type}</span>
             </button>
@@ -337,6 +501,32 @@ function AdminFinanceView({
                       </button>
                     </div>
                   </form>
+                  <form className="admin-form compact" onSubmit={runBulkBankCredit}>
+                    <div className="admin-panel-head compact-head">
+                      <h3>Bulk manual credit</h3>
+                      <Save size={18} strokeWidth={2} aria-hidden="true" />
+                    </div>
+                    <label>
+                      <span>Bank transaction IDs</span>
+                      <textarea value={bankBulkForm.ids} onChange={(event) => setBankBulkForm((current) => ({ ...current, ids: event.target.value }))} rows="2" placeholder="VD: 101, 102, 103" />
+                    </label>
+                    <label>
+                      <span>User ID</span>
+                      <input value={bankBulkForm.userId} onChange={(event) => setBankBulkForm((current) => ({ ...current, userId: event.target.value.replace(/\D/g, '') }))} inputMode="numeric" />
+                    </label>
+                    <label>
+                      <span>Mã nạp</span>
+                      <input value={bankBulkForm.depositCode} onChange={(event) => setBankBulkForm((current) => ({ ...current, depositCode: event.target.value }))} />
+                    </label>
+                    <label>
+                      <span>Lý do</span>
+                      <textarea value={bankBulkForm.reason} onChange={(event) => setBankBulkForm((current) => ({ ...current, reason: event.target.value }))} rows="2" />
+                    </label>
+                    <button type="button" className="admin-icon-button" onClick={() => setBankBulkForm((current) => ({ ...current, ids: selectedBank ? String(selectedBank.id) : current.ids }))}>
+                      Dùng giao dịch đang chọn
+                    </button>
+                    <button type="submit" disabled={submitting}>Bulk manual credit</button>
+                  </form>
                   <div className="admin-code-block">
                     <strong>Raw payload</strong>
                     <pre>{selectedBank.rawPayload || 'Không có raw payload'}</pre>
@@ -425,7 +615,8 @@ function AdminFinanceView({
             </div>
             <div className="admin-action-row">
               <button type="button" className="admin-icon-button" disabled={submitting} onClick={runBalanceCheck}>Balance check</button>
-              <button type="button" className="admin-icon-button" disabled={submitting} onClick={runBalanceCheck}>Reconciliation preview</button>
+              <button type="button" className="admin-icon-button" disabled={submitting} onClick={runReconciliation}>Reconciliation preview</button>
+              <button type="button" className="admin-icon-button" disabled={submitting} onClick={loadBalanceIntegrityReport}>Balance report</button>
             </div>
             <div className="admin-data-table">
               <div className="admin-data-row head wallet">

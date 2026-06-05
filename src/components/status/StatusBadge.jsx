@@ -1,7 +1,10 @@
 import { statusLabel } from '../../data/statusLabels'
 
 function StatusBadge({ status }) {
-  return <span className={`status ${status.toLowerCase()}`}>{statusLabel[status] || status}</span>
+  const raw = String(status ?? '')
+  const label = statusLabel[raw] || raw
+  if (!raw) return <span className="status unknown">Không xác định</span>
+  return <span className={`status ${raw.toLowerCase()}`}>{label}</span>
 }
 
 export default StatusBadge
