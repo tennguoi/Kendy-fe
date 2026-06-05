@@ -1,6 +1,7 @@
 import { RefreshCw, Save } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../api/admin.api'
+import { AdminEmptyState } from './AdminShared'
 
 const sortOptions = [
   { label: 'Thứ tự hiển thị', value: 'sort_order' },
@@ -23,26 +24,26 @@ function pricingToForm(item) {
     pricingBadge: item.pricingBadge || '',
     processingTime: item.processingTime || '',
     publicVisible: item.publicVisible !== false,
+    requirements: item.requirements || '',
     stockStatus: item.stockStatus || 'AVAILABLE',
+    usageNotes: item.usageNotes || '',
     warrantyPolicy: item.warrantyPolicy || '',
   }
 }
 
 function AdminPricingView({
-  categories,
-  error,
-  loading,
-  onReload,
   onSetError,
   onSetNotice,
-  onUpdatePricing,
-  pricingItems,
   token,
 }) {
+  const [categories, setCategories] = useState([])
   const [categorySlug, setCategorySlug] = useState('')
+  const [error, setError] = useState('')
   const [featuredOnly, setFeaturedOnly] = useState(false)
   const [query, setQuery] = useState('')
   const [formDraft, setFormDraft] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [pricingItems, setPricingItems] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [sort, setSort] = useState('sort_order')
   const [submitting, setSubmitting] = useState(false)
@@ -50,20 +51,42 @@ function AdminPricingView({
   const selectedItem = pricingItems.find((item) => item.id === selectedId) || pricingItems[0]
   const form = formDraft && formDraft.id === selectedItem?.id ? formDraft.values : pricingToForm(selectedItem || {})
 
-  const visibleItems = useMemo(() => {
-    const keyword = query.trim().toLowerCase()
-    return pricingItems
-      .filter((item) => !categorySlug || item.categorySlug === categorySlug)
-      .filter((item) => !featuredOnly || item.featured)
-      .filter((item) => !keyword || item.name.toLowerCase().includes(keyword) || item.categoryName?.toLowerCase().includes(keyword))
-      .sort((a, b) => {
-        if (sort === 'price_asc') return Number(a.price) - Number(b.price)
-        if (sort === 'price_desc') return Number(b.price) - Number(a.price)
-        if (sort === 'featured') return Number(b.featured) - Number(a.featured) || a.sortOrder - b.sortOrder
-        if (sort === 'name') return a.name.localeCompare(b.name)
-        return a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)
-      })
-  }, [categorySlug, featuredOnly, pricingItems, query, sort])
+  const setViewError = useCallback((message) => {
+    setError(message)
+    onSetError(message)
+  }, [onSetError])
+
+  const loadPricing = useCallback(async () => {
+    if (!token) {
+      return
+    }
+
+    setLoading(true)
+    setViewError('')
+    try {
+      const [categoryData, pricingData] = await Promise.all([
+        adminApi.getServiceCategories(token),
+        adminApi.searchPricing({
+          categorySlug,
+          featured: featuredOnly ? true : undefined,
+          query: query.trim(),
+          sort,
+        }, token),
+      ])
+      setCategories(categoryData)
+      setPricingItems(pricingData)
+      setSelectedId((current) => (current && pricingData.some((item) => item.id === current) ? current : pricingData[0]?.id || null))
+    } catch (err) {
+      setViewError(err.message || 'Không tải được bảng giá.')
+    } finally {
+      setLoading(false)
+    }
+  }, [categorySlug, featuredOnly, query, setViewError, sort, token])
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadPricing, 250)
+    return () => window.clearTimeout(timer)
+  }, [loadPricing])
 
   const selectItem = (item) => {
     setSelectedId(item.id)
@@ -91,7 +114,7 @@ function AdminPricingView({
     }
 
     setSubmitting(true)
-    onSetError('')
+    setViewError('')
     try {
       const saved = await adminApi.updateService(selectedItem.id, {
         ctaType: form.ctaType,
@@ -101,16 +124,18 @@ function AdminPricingView({
         pricingBadge: form.pricingBadge || undefined,
         processingTime: form.processingTime || undefined,
         publicVisible: form.publicVisible,
+        requirements: form.requirements || undefined,
         stockStatus: form.stockStatus,
+        usageNotes: form.usageNotes || undefined,
         warrantyPolicy: form.warrantyPolicy || undefined,
       }, token)
 
-      onUpdatePricing((items) => items.map((item) => (item.id === saved.id ? { ...item, ...saved } : item)))
+      setPricingItems((items) => items.map((item) => (item.id === saved.id ? { ...item, ...saved } : item)))
       setFormDraft(null)
-      await onReload()
+      await loadPricing()
       onSetNotice(`Đã cập nhật bảng giá cho ${saved.name}.`)
     } catch (err) {
-      onSetError(err.message || 'Không cập nhật được bảng giá.')
+      setViewError(err.message || 'Không cập nhật được bảng giá.')
     } finally {
       setSubmitting(false)
     }
@@ -123,7 +148,7 @@ function AdminPricingView({
           <span className="eyebrow">Pricing management</span>
           <h2>Quản lý bảng giá public</h2>
         </div>
-        <button type="button" className="admin-icon-button" onClick={onReload} disabled={loading}>
+        <button type="button" className="admin-icon-button" onClick={loadPricing} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
           <span>Tải lại</span>
         </button>
@@ -154,7 +179,7 @@ function AdminPricingView({
         <div className="admin-panel">
           <div className="admin-panel-head">
             <h3>Bảng giá</h3>
-            <span>{visibleItems.length} gói</span>
+            <span>{pricingItems.length} gói</span>
           </div>
           <div className="admin-pricing-table">
             <div className="admin-pricing-row head">
@@ -163,7 +188,7 @@ function AdminPricingView({
               <span>CTA</span>
               <span>Trạng thái</span>
             </div>
-            {visibleItems.map((item) => (
+            {pricingItems.map((item) => (
               <button
                 type="button"
                 className={`admin-pricing-row ${selectedItem?.id === item.id ? 'selected' : ''}`}
@@ -179,6 +204,7 @@ function AdminPricingView({
                 <span>{item.stockStatus}</span>
               </button>
             ))}
+            {pricingItems.length === 0 && <AdminEmptyState />}
           </div>
         </div>
 
@@ -223,6 +249,14 @@ function AdminPricingView({
             <label>
               <span>Bảo hành</span>
               <textarea value={form.warrantyPolicy} onChange={(event) => updateForm('warrantyPolicy', event.target.value)} rows="3" />
+            </label>
+            <label>
+              <span>Điều kiện sử dụng</span>
+              <textarea value={form.requirements} onChange={(event) => updateForm('requirements', event.target.value)} rows="4" />
+            </label>
+            <label>
+              <span>Lưu ý public</span>
+              <textarea value={form.usageNotes} onChange={(event) => updateForm('usageNotes', event.target.value)} rows="4" />
             </label>
           </div>
 

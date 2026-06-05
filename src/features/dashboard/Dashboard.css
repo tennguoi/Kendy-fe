@@ -756,6 +756,12 @@
 
 .admin-category-list article {
   padding: 12px;
+  cursor: pointer;
+}
+
+.admin-category-list article.selected {
+  border-color: #bfdbfe;
+  background: #eff6ff;
 }
 
 .admin-category-list strong,
@@ -869,10 +875,21 @@
 }
 
 .admin-service-list button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: center;
   padding: 12px;
   text-align: left;
   color: var(--kd-text);
   cursor: pointer;
+}
+
+.admin-service-list button input {
+  grid-row: span 2;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--kd-blue);
 }
 
 .admin-service-list button:hover,
@@ -1105,6 +1122,10 @@ button.admin-data-row.selected {
   min-height: 40px;
   border: 1px solid #fecaca;
   border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 0 14px;
   color: #991b1b;
   background: #fee2e2;
@@ -1198,7 +1219,7 @@ button.admin-data-row.selected {
 }
 
 .admin-filters.support-filters {
-  grid-template-columns: minmax(220px, 1fr) 180px 160px;
+  grid-template-columns: minmax(220px, 1fr) 180px 160px 170px;
 }
 
 .admin-ticket-list {
@@ -1294,6 +1315,63 @@ button.admin-data-row.selected {
   padding: 18px;
   color: var(--kd-muted);
   text-align: center;
+}
+
+.admin-panel-subsection {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #edf2f7;
+}
+
+.admin-mini-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin-mini-list article {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.admin-mini-list strong,
+.admin-mini-list span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-mini-list span {
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-detail-panel.inline-detail {
+  position: sticky;
+  top: 18px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.admin-report-grid.compact-report {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+
+.admin-danger-button.slim {
+  min-height: 32px;
+  width: max-content;
+  padding: 0 10px;
+  font-size: 13px;
 }
 
 .settings-row {

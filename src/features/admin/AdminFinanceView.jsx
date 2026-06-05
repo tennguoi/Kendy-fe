@@ -1,7 +1,8 @@
-import { RefreshCw } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Ban, Download, RefreshCw, RotateCcw, Save } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { adminApi } from '../../api/admin.api'
 import { AdminEmptyState, AdminStatusBadge } from './AdminShared'
-import { formatAdminDate, formatAdminMoney, includesKeyword } from './adminFormat'
+import { formatAdminDate, formatAdminMoney } from './adminFormat'
 
 const financeTabs = [
   { id: 'bank', label: 'Bank transactions' },
@@ -9,18 +10,47 @@ const financeTabs = [
   { id: 'wallet', label: 'Ví tiền' },
 ]
 
+const bankStatuses = ['', 'NEW', 'MATCHED', 'CREDITED', 'MANUAL_REVIEW', 'DUPLICATE', 'IGNORED']
+const depositStatuses = ['', 'PENDING', 'COMPLETED', 'MANUAL_REVIEW', 'EXPIRED', 'CANCELLED']
+const walletTypes = ['', 'DEPOSIT', 'PURCHASE', 'REFUND', 'ADJUSTMENT']
+const reportTypes = ['revenue', 'users', 'orders', 'bank', 'tickets']
+
+function downloadTextFile(fileName, content) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = fileName
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
 function AdminFinanceView({
-  bankTransactions,
-  dashboard,
-  deposits,
-  error,
-  loading,
-  onReload,
-  revenue,
-  walletTransactions,
+  onSetError,
+  onSetNotice,
+  token,
 }) {
   const [activeTab, setActiveTab] = useState('bank')
+  const [bankActionForm, setBankActionForm] = useState({ depositCode: '', reason: '', userId: '' })
+  const [bankStatus, setBankStatus] = useState('')
+  const [bankTransactions, setBankTransactions] = useState([])
+  const [balanceIssues, setBalanceIssues] = useState([])
+  const [dashboard, setDashboard] = useState(null)
+  const [depositActionForm, setDepositActionForm] = useState({ minutes: '60', reason: '' })
+  const [depositStatus, setDepositStatus] = useState('')
+  const [deposits, setDeposits] = useState([])
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
+  const [revenue, setRevenue] = useState(null)
+  const [selectedBankId, setSelectedBankId] = useState(null)
+  const [selectedDepositCode, setSelectedDepositCode] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [walletTransactions, setWalletTransactions] = useState([])
+  const [walletType, setWalletType] = useState('')
+
+  const selectedBank = bankTransactions.find((item) => item.id === selectedBankId) || bankTransactions[0]
+  const selectedDeposit = deposits.find((item) => item.depositCode === selectedDepositCode) || deposits[0]
 
   const financeMetrics = [
     { label: 'Tiền nạp hoàn tất', value: formatAdminMoney(dashboard?.completedDepositAmount) },
@@ -29,20 +59,154 @@ function AdminFinanceView({
     { label: 'Bank chưa khớp', value: String(dashboard?.unmatchedBankCount ?? 0) },
   ]
 
-  const visibleBank = useMemo(
-    () => bankTransactions.filter((item) => includesKeyword(item, query, ['referenceCode', 'content', 'code', 'status', 'matchedUserId'])),
-    [bankTransactions, query],
-  )
+  const setViewError = useCallback((message) => {
+    setError(message)
+    onSetError(message)
+  }, [onSetError])
 
-  const visibleDeposits = useMemo(
-    () => deposits.filter((item) => includesKeyword(item, query, ['depositCode', 'transferContent', 'status', 'userId'])),
-    [deposits, query],
-  )
+  const loadFinance = useCallback(async () => {
+    if (!token) {
+      return
+    }
 
-  const visibleWallet = useMemo(
-    () => walletTransactions.filter((item) => includesKeyword(item, query, ['transactionCode', 'description', 'type', 'direction', 'referenceType'])),
-    [query, walletTransactions],
-  )
+    setLoading(true)
+    setViewError('')
+    try {
+      const [dashboardData, revenueData] = await Promise.all([
+        adminApi.getDashboard(token),
+        adminApi.getRevenueReport(token),
+      ])
+      setDashboard(dashboardData)
+      setRevenue(revenueData)
+
+      if (activeTab === 'bank') {
+        const data = await adminApi.searchBankTransactions({ query: query.trim(), status: bankStatus }, token)
+        setBankTransactions(data)
+        setSelectedBankId((current) => (current && data.some((item) => item.id === current) ? current : data[0]?.id || null))
+      } else if (activeTab === 'deposits') {
+        const data = await adminApi.searchDeposits({ query: query.trim(), status: depositStatus }, token)
+        setDeposits(data)
+        setSelectedDepositCode((current) => (current && data.some((item) => item.depositCode === current) ? current : data[0]?.depositCode || null))
+      } else {
+        const data = await adminApi.searchWalletTransactions({ query: query.trim(), type: walletType }, token)
+        setWalletTransactions(data)
+      }
+    } catch (err) {
+      setViewError(err.message || 'Không tải được dữ liệu tài chính.')
+    } finally {
+      setLoading(false)
+    }
+  }, [activeTab, bankStatus, depositStatus, query, setViewError, token, walletType])
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadFinance, 250)
+    return () => window.clearTimeout(timer)
+  }, [loadFinance])
+
+  const patchBank = (saved) => {
+    setBankTransactions((items) => items.map((item) => (item.id === saved.id ? saved : item)))
+  }
+
+  const patchDeposit = (saved) => {
+    setDeposits((items) => items.map((item) => (item.id === saved.id ? saved : item)))
+  }
+
+  const runBankAction = async (action) => {
+    if (!selectedBank || !bankActionForm.reason.trim()) {
+      setViewError('Chọn bank transaction và nhập lý do xử lý.')
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      let saved
+      if (action === 'match') {
+        saved = await adminApi.matchBankTransaction(selectedBank.id, {
+          depositCode: bankActionForm.depositCode.trim(),
+          reason: bankActionForm.reason.trim(),
+        }, token)
+      } else if (action === 'manual-credit') {
+        saved = await adminApi.manualCreditBankTransaction(selectedBank.id, {
+          depositCode: bankActionForm.depositCode.trim() || undefined,
+          reason: bankActionForm.reason.trim(),
+          userId: Number(bankActionForm.userId),
+        }, token)
+      } else if (action === 'reprocess') {
+        saved = await adminApi.reprocessBankTransaction(selectedBank.id, {
+          depositCode: bankActionForm.depositCode.trim() || undefined,
+          reason: bankActionForm.reason.trim(),
+        }, token)
+      } else {
+        saved = await adminApi.ignoreBankTransaction(selectedBank.id, { reason: bankActionForm.reason.trim() }, token)
+      }
+      patchBank(saved)
+      await loadFinance()
+      onSetNotice(`Đã xử lý bank transaction #${saved.id}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không xử lý được bank transaction.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const runDepositAction = async (action) => {
+    if (!selectedDeposit || !depositActionForm.reason.trim()) {
+      setViewError('Chọn yêu cầu nạp và nhập lý do xử lý.')
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      let saved
+      if (action === 'cancel') {
+        saved = await adminApi.cancelDeposit(selectedDeposit.depositCode, { reason: depositActionForm.reason.trim() }, token)
+      } else if (action === 'extend') {
+        saved = await adminApi.extendDeposit(selectedDeposit.depositCode, {
+          minutes: Number(depositActionForm.minutes) || 60,
+          reason: depositActionForm.reason.trim(),
+        }, token)
+      } else {
+        saved = await adminApi.manualCreditDeposit(selectedDeposit.depositCode, { reason: depositActionForm.reason.trim() }, token)
+      }
+      patchDeposit(saved)
+      await loadFinance()
+      onSetNotice(`Đã xử lý yêu cầu nạp ${saved.depositCode}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không xử lý được yêu cầu nạp.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const runBalanceCheck = async () => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const data = await adminApi.getBalanceCheck(token)
+      setBalanceIssues(data)
+      onSetNotice(`Balance check hoàn tất: ${data.length} vấn đề.`)
+    } catch (err) {
+      setViewError(err.message || 'Không chạy được balance check.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const exportReport = async (type) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const csv = await adminApi.exportReport(type, token)
+      downloadTextFile(`${type}.csv`, csv)
+      onSetNotice(`Đã export ${type}.csv.`)
+    } catch (err) {
+      setViewError(err.message || 'Không export được báo cáo.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <section className="admin-view">
@@ -51,7 +215,7 @@ function AdminFinanceView({
           <span className="eyebrow">Finance</span>
           <h2>Quản lý tài chính</h2>
         </div>
-        <button type="button" className="admin-icon-button" onClick={onReload} disabled={loading}>
+        <button type="button" className="admin-icon-button" onClick={loadFinance} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
           <span>Tải lại</span>
         </button>
@@ -79,6 +243,14 @@ function AdminFinanceView({
           <div><span>Refund</span><strong>{formatAdminMoney(revenue?.totalRefunds)}</strong></div>
           <div><span>Net revenue</span><strong>{formatAdminMoney(revenue?.netRevenue)}</strong></div>
         </div>
+        <div className="admin-action-row">
+          {reportTypes.map((type) => (
+            <button type="button" className="admin-icon-button" disabled={submitting} key={type} onClick={() => exportReport(type)}>
+              <Download size={16} strokeWidth={2} aria-hidden="true" />
+              <span>Export {type}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="admin-panel">
@@ -98,78 +270,194 @@ function AdminFinanceView({
         </div>
 
         {activeTab === 'bank' && (
-          <div className="admin-data-table">
-            <div className="admin-data-row head bank">
-              <span>Reference</span>
-              <span>Số tiền</span>
-              <span>Nội dung</span>
-              <span>Trạng thái</span>
-              <span>Nhận lúc</span>
-            </div>
-            {visibleBank.map((item) => (
-              <div className="admin-data-row bank" key={item.id}>
-                <span>
-                  <strong>{item.referenceCode || `#${item.id}`}</strong>
-                  <small>{item.bankName || item.gateway}</small>
-                </span>
-                <span>{formatAdminMoney(item.transferAmount)}</span>
-                <span>{item.content || item.code || 'Không có nội dung'}</span>
-                <span><AdminStatusBadge status={item.status} /></span>
-                <span>{formatAdminDate(item.receivedAt || item.transactionDate)}</span>
+          <div className="admin-grid detail-layout">
+            <div className="admin-data-table">
+              <div className="admin-filters single-filter">
+                <select value={bankStatus} onChange={(event) => setBankStatus(event.target.value)}>
+                  {bankStatuses.map((status) => <option value={status} key={status || 'all'}>{status || 'Tất cả bank status'}</option>)}
+                </select>
               </div>
-            ))}
-            {visibleBank.length === 0 && <AdminEmptyState />}
+              <div className="admin-data-row head bank">
+                <span>Reference</span>
+                <span>Số tiền</span>
+                <span>Nội dung</span>
+                <span>Trạng thái</span>
+                <span>Nhận lúc</span>
+              </div>
+              {bankTransactions.map((item) => (
+                <button className={`admin-data-row bank ${selectedBank?.id === item.id ? 'selected' : ''}`} key={item.id} type="button" onClick={() => setSelectedBankId(item.id)}>
+                  <span>
+                    <strong>{item.referenceCode || `#${item.id}`}</strong>
+                    <small>{item.bankName || item.gateway}</small>
+                  </span>
+                  <span>{formatAdminMoney(item.transferAmount)}</span>
+                  <span>{item.content || item.code || 'Không có nội dung'}</span>
+                  <span><AdminStatusBadge status={item.status} /></span>
+                  <span>{formatAdminDate(item.receivedAt || item.transactionDate)}</span>
+                </button>
+              ))}
+              {bankTransactions.length === 0 && <AdminEmptyState />}
+            </div>
+            <aside className="admin-detail-panel inline-detail">
+              <div className="admin-panel-head">
+                <h3>{selectedBank ? `Bank #${selectedBank.id}` : 'Chọn giao dịch'}</h3>
+                {selectedBank && <AdminStatusBadge status={selectedBank.status} />}
+              </div>
+              {selectedBank ? (
+                <>
+                  <dl className="admin-detail-list">
+                    <div><dt>User khớp</dt><dd>{selectedBank.matchedUserId ? `#${selectedBank.matchedUserId}` : 'Chưa khớp'}</dd></div>
+                    <div><dt>Deposit</dt><dd>{selectedBank.matchedDepositRequestId ? `#${selectedBank.matchedDepositRequestId}` : 'Chưa có'}</dd></div>
+                    <div><dt>Review</dt><dd>{selectedBank.reviewReason || 'Không có'}</dd></div>
+                    <div><dt>Credit</dt><dd>{formatAdminDate(selectedBank.creditedAt)}</dd></div>
+                  </dl>
+                  <form className="admin-form compact" onSubmit={(event) => event.preventDefault()}>
+                    <label>
+                      <span>Mã nạp</span>
+                      <input value={bankActionForm.depositCode} onChange={(event) => setBankActionForm((current) => ({ ...current, depositCode: event.target.value }))} />
+                    </label>
+                    <label>
+                      <span>User ID manual credit</span>
+                      <input value={bankActionForm.userId} onChange={(event) => setBankActionForm((current) => ({ ...current, userId: event.target.value.replace(/\D/g, '') }))} inputMode="numeric" />
+                    </label>
+                    <label>
+                      <span>Lý do</span>
+                      <textarea value={bankActionForm.reason} onChange={(event) => setBankActionForm((current) => ({ ...current, reason: event.target.value }))} rows="3" required />
+                    </label>
+                    <div className="admin-action-row">
+                      <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runBankAction('match')}>Match</button>
+                      <button type="button" className="admin-icon-button" disabled={submitting || !bankActionForm.userId} onClick={() => runBankAction('manual-credit')}>Manual credit</button>
+                      <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runBankAction('reprocess')}>
+                        <RotateCcw size={16} strokeWidth={2} aria-hidden="true" />
+                        <span>Reprocess</span>
+                      </button>
+                      <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => runBankAction('ignore')}>
+                        <Ban size={16} strokeWidth={2} aria-hidden="true" />
+                        <span>Ignore</span>
+                      </button>
+                    </div>
+                  </form>
+                  <div className="admin-code-block">
+                    <strong>Raw payload</strong>
+                    <pre>{selectedBank.rawPayload || 'Không có raw payload'}</pre>
+                  </div>
+                </>
+              ) : <AdminEmptyState />}
+            </aside>
           </div>
         )}
 
         {activeTab === 'deposits' && (
-          <div className="admin-data-table">
-            <div className="admin-data-row head deposits">
-              <span>Mã nạp</span>
-              <span>User</span>
-              <span>Số tiền</span>
-              <span>Trạng thái</span>
-              <span>Hết hạn</span>
-            </div>
-            {visibleDeposits.map((item) => (
-              <div className="admin-data-row deposits" key={item.id}>
-                <span>
-                  <strong>{item.depositCode}</strong>
-                  <small>{item.transferContent}</small>
-                </span>
-                <span>#{item.userId}</span>
-                <span>{formatAdminMoney(item.amount)}</span>
-                <span><AdminStatusBadge status={item.status} /></span>
-                <span>{formatAdminDate(item.expiredAt)}</span>
+          <div className="admin-grid detail-layout">
+            <div className="admin-data-table">
+              <div className="admin-filters single-filter">
+                <select value={depositStatus} onChange={(event) => setDepositStatus(event.target.value)}>
+                  {depositStatuses.map((status) => <option value={status} key={status || 'all'}>{status || 'Tất cả deposit status'}</option>)}
+                </select>
               </div>
-            ))}
-            {visibleDeposits.length === 0 && <AdminEmptyState />}
+              <div className="admin-data-row head deposits">
+                <span>Mã nạp</span>
+                <span>User</span>
+                <span>Số tiền</span>
+                <span>Trạng thái</span>
+                <span>Hết hạn</span>
+              </div>
+              {deposits.map((item) => (
+                <button className={`admin-data-row deposits ${selectedDeposit?.id === item.id ? 'selected' : ''}`} key={item.id} type="button" onClick={() => setSelectedDepositCode(item.depositCode)}>
+                  <span>
+                    <strong>{item.depositCode}</strong>
+                    <small>{item.transferContent}</small>
+                  </span>
+                  <span>#{item.userId}</span>
+                  <span>{formatAdminMoney(item.amount)}</span>
+                  <span><AdminStatusBadge status={item.status} /></span>
+                  <span>{formatAdminDate(item.expiredAt)}</span>
+                </button>
+              ))}
+              {deposits.length === 0 && <AdminEmptyState />}
+            </div>
+            <aside className="admin-detail-panel inline-detail">
+              <div className="admin-panel-head">
+                <h3>{selectedDeposit ? selectedDeposit.depositCode : 'Chọn yêu cầu nạp'}</h3>
+                {selectedDeposit && <AdminStatusBadge status={selectedDeposit.status} />}
+              </div>
+              {selectedDeposit ? (
+                <>
+                  <dl className="admin-detail-list">
+                    <div><dt>Ngân hàng</dt><dd>{selectedDeposit.bankName} · {selectedDeposit.bankAccount}</dd></div>
+                    <div><dt>Chủ TK</dt><dd>{selectedDeposit.bankOwner}</dd></div>
+                    <div><dt>Hoàn tất</dt><dd>{formatAdminDate(selectedDeposit.completedAt)}</dd></div>
+                    <div><dt>Nội dung</dt><dd>{selectedDeposit.transferContent}</dd></div>
+                  </dl>
+                  <form className="admin-form compact" onSubmit={(event) => event.preventDefault()}>
+                    <label>
+                      <span>Số phút gia hạn</span>
+                      <input value={depositActionForm.minutes} onChange={(event) => setDepositActionForm((current) => ({ ...current, minutes: event.target.value.replace(/\D/g, '') }))} inputMode="numeric" />
+                    </label>
+                    <label>
+                      <span>Lý do</span>
+                      <textarea value={depositActionForm.reason} onChange={(event) => setDepositActionForm((current) => ({ ...current, reason: event.target.value }))} rows="3" required />
+                    </label>
+                    <div className="admin-action-row">
+                      <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runDepositAction('extend')}>Gia hạn</button>
+                      <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runDepositAction('manual-credit')}>
+                        <Save size={16} strokeWidth={2} aria-hidden="true" />
+                        <span>Manual credit</span>
+                      </button>
+                      <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => runDepositAction('cancel')}>
+                        <Ban size={16} strokeWidth={2} aria-hidden="true" />
+                        <span>Hủy nạp</span>
+                      </button>
+                    </div>
+                  </form>
+                </>
+              ) : <AdminEmptyState />}
+            </aside>
           </div>
         )}
 
         {activeTab === 'wallet' && (
-          <div className="admin-data-table">
-            <div className="admin-data-row head wallet">
-              <span>Mã GD</span>
-              <span>Loại</span>
-              <span>Số tiền</span>
-              <span>Số dư sau</span>
-              <span>Thời gian</span>
+          <>
+            <div className="admin-filters single-filter">
+              <select value={walletType} onChange={(event) => setWalletType(event.target.value)}>
+                {walletTypes.map((type) => <option value={type} key={type || 'all'}>{type || 'Tất cả loại ví'}</option>)}
+              </select>
             </div>
-            {visibleWallet.map((item) => (
-              <div className="admin-data-row wallet" key={item.id}>
-                <span>
-                  <strong>{item.transactionCode}</strong>
-                  <small>{item.description || item.referenceType}</small>
-                </span>
-                <span>{item.type} · {item.direction}</span>
-                <span>{formatAdminMoney(item.amount)}</span>
-                <span>{formatAdminMoney(item.balanceAfter)}</span>
-                <span>{formatAdminDate(item.createdAt)}</span>
+            <div className="admin-action-row">
+              <button type="button" className="admin-icon-button" disabled={submitting} onClick={runBalanceCheck}>Balance check</button>
+              <button type="button" className="admin-icon-button" disabled={submitting} onClick={runBalanceCheck}>Reconciliation preview</button>
+            </div>
+            <div className="admin-data-table">
+              <div className="admin-data-row head wallet">
+                <span>Mã GD</span>
+                <span>Loại</span>
+                <span>Số tiền</span>
+                <span>Số dư sau</span>
+                <span>Thời gian</span>
               </div>
-            ))}
-            {visibleWallet.length === 0 && <AdminEmptyState />}
-          </div>
+              {walletTransactions.map((item) => (
+                <div className="admin-data-row wallet" key={item.id}>
+                  <span>
+                    <strong>{item.transactionCode}</strong>
+                    <small>{item.description || item.referenceType}</small>
+                  </span>
+                  <span>{item.type} · {item.direction}</span>
+                  <span>{formatAdminMoney(item.amount)}</span>
+                  <span>{formatAdminMoney(item.balanceAfter)}</span>
+                  <span>{formatAdminDate(item.createdAt)}</span>
+                </div>
+              ))}
+              {walletTransactions.length === 0 && <AdminEmptyState />}
+            </div>
+            <div className="admin-mini-list">
+              {balanceIssues.map((issue) => (
+                <article key={issue.userId}>
+                  <strong>{issue.email || `User #${issue.userId}`}</strong>
+                  <span>Lệch {formatAdminMoney(issue.difference)} · Stored {formatAdminMoney(issue.storedBalance)} · Ledger {formatAdminMoney(issue.ledgerBalance)}</span>
+                </article>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </section>

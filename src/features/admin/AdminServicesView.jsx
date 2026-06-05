@@ -1,6 +1,8 @@
-import { Plus, RefreshCw, Save } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Plus, RefreshCw, Save, Trash2 } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../api/admin.api'
+import { AdminEmptyState } from './AdminShared'
+import { formatAdminDate, formatAdminMoney } from './adminFormat'
 
 const emptyServiceForm = {
   benefits: '',
@@ -43,6 +45,14 @@ const serviceTypes = ['MANUAL', 'AUTO', 'SUBSCRIPTION', 'API_CREDIT']
 const serviceStatuses = ['DRAFT', 'ACTIVE', 'INACTIVE', 'MAINTENANCE']
 const stockStatuses = ['AVAILABLE', 'OUT_OF_STOCK', 'CONSULTING_ONLY']
 const ctaTypes = ['BUY_NOW', 'CONTACT', 'CONSULT']
+const facebookSchema = JSON.stringify({
+  properties: {
+    facebookUrl: { label: 'Link Facebook', type: 'string' },
+    note: { label: 'Ghi chú xử lý', type: 'string' },
+  },
+  required: ['facebookUrl'],
+  type: 'object',
+}, null, 2)
 
 function toMoney(value, fallback = undefined) {
   if (value === '' || value == null) {
@@ -115,36 +125,72 @@ function buildServicePayload(form, isEditing) {
 }
 
 function AdminServicesView({
-  categories,
-  error,
-  loading,
-  onReload,
   onSetError,
   onSetNotice,
-  onUpdateCategories,
-  onUpdateServices,
-  services,
   token,
 }) {
+  const [categories, setCategories] = useState([])
   const [categoryForm, setCategoryForm] = useState(emptyCategoryForm)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null)
+  const [selectedIds, setSelectedIds] = useState([])
   const [selectedServiceId, setSelectedServiceId] = useState(null)
   const [serviceForm, setServiceForm] = useState(emptyServiceForm)
+  const [serviceOrders, setServiceOrders] = useState([])
+  const [services, setServices] = useState([])
   const [statusFilter, setStatusFilter] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const filteredServices = useMemo(() => {
-    const keyword = query.trim().toLowerCase()
-    return services.filter((service) => {
-      const matchesStatus = !statusFilter || service.status === statusFilter
-      const matchesQuery =
-        !keyword ||
-        service.name?.toLowerCase().includes(keyword) ||
-        service.slug?.toLowerCase().includes(keyword) ||
-        service.categoryName?.toLowerCase().includes(keyword)
-      return matchesStatus && matchesQuery
-    })
-  }, [query, services, statusFilter])
+  const setViewError = useCallback((message) => {
+    setError(message)
+    onSetError(message)
+  }, [onSetError])
+
+  const loadCategories = useCallback(async () => {
+    if (!token) {
+      return
+    }
+
+    try {
+      setCategories(await adminApi.getServiceCategories(token))
+    } catch (err) {
+      setViewError(err.message || 'Không tải được nhóm dịch vụ.')
+    }
+  }, [setViewError, token])
+
+  const loadServices = useCallback(async () => {
+    if (!token) {
+      return
+    }
+
+    setLoading(true)
+    setViewError('')
+    try {
+      const data = await adminApi.searchServices({ query: query.trim(), status: statusFilter }, token)
+      setServices(data)
+      setSelectedServiceId((current) => (current && data.some((item) => item.id === current) ? current : data[0]?.id || null))
+    } catch (err) {
+      setViewError(err.message || 'Không tải được dịch vụ.')
+    } finally {
+      setLoading(false)
+    }
+  }, [query, setViewError, statusFilter, token])
+
+  const reloadAll = useCallback(async () => {
+    await Promise.all([loadCategories(), loadServices()])
+  }, [loadCategories, loadServices])
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadCategories, 0)
+    return () => window.clearTimeout(timer)
+  }, [loadCategories])
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadServices, 250)
+    return () => window.clearTimeout(timer)
+  }, [loadServices])
 
   const updateServiceForm = (field, value) => {
     setServiceForm((current) => ({ ...current, [field]: value }))
@@ -157,30 +203,78 @@ function AdminServicesView({
   const startCreateService = () => {
     setSelectedServiceId(null)
     setServiceForm(emptyServiceForm)
+    setServiceOrders([])
   }
 
-  const selectService = (service) => {
+  const selectService = async (service) => {
     setSelectedServiceId(service.id)
     setServiceForm(serviceToForm(service))
+    try {
+      setServiceOrders(await adminApi.getServiceOrders(service.id, token))
+    } catch {
+      setServiceOrders([])
+    }
+  }
+
+  const selectCategory = (category) => {
+    setSelectedCategoryId(category.id)
+    setCategoryForm({
+      description: category.description || '',
+      name: category.name || '',
+      parentId: category.parentId ? String(category.parentId) : '',
+      slug: category.slug || '',
+      sortOrder: String(category.sortOrder ?? 0),
+    })
+  }
+
+  const startCreateCategory = () => {
+    setSelectedCategoryId(null)
+    setCategoryForm(emptyCategoryForm)
   }
 
   const submitCategory = async (event) => {
     event.preventDefault()
     setSubmitting(true)
-    onSetError('')
+    setViewError('')
     try {
-      const created = await adminApi.createServiceCategory({
+      const payload = {
         description: categoryForm.description || undefined,
         name: categoryForm.name.trim(),
         parentId: categoryForm.parentId ? Number(categoryForm.parentId) : undefined,
         slug: categoryForm.slug.trim(),
         sortOrder: Number(categoryForm.sortOrder) || 0,
-      }, token)
-      onUpdateCategories((items) => [...items, created].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)))
+      }
+      const saved = selectedCategoryId
+        ? await adminApi.updateServiceCategory(selectedCategoryId, payload, token)
+        : await adminApi.createServiceCategory(payload, token)
+      setCategories((items) => {
+        const next = selectedCategoryId ? items.map((item) => (item.id === saved.id ? saved : item)) : [...items, saved]
+        return next.sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+      })
+      setSelectedCategoryId(saved.id)
       setCategoryForm(emptyCategoryForm)
-      onSetNotice(`Đã tạo nhóm ${created.name}.`)
+      onSetNotice(`Đã lưu nhóm ${saved.name}.`)
     } catch (err) {
-      onSetError(err.message || 'Không tạo được nhóm dịch vụ.')
+      setViewError(err.message || 'Không lưu được nhóm dịch vụ.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const deleteCategory = async () => {
+    if (!selectedCategoryId) {
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      await adminApi.deleteServiceCategory(selectedCategoryId, token)
+      setCategories((items) => items.filter((item) => item.id !== selectedCategoryId))
+      startCreateCategory()
+      onSetNotice('Đã xóa nhóm dịch vụ.')
+    } catch (err) {
+      setViewError(err.message || 'Không xóa được nhóm dịch vụ.')
     } finally {
       setSubmitting(false)
     }
@@ -189,26 +283,70 @@ function AdminServicesView({
   const submitService = async (event) => {
     event.preventDefault()
     setSubmitting(true)
-    onSetError('')
+    setViewError('')
     try {
       const isEditing = Boolean(selectedServiceId)
       const payload = buildServicePayload(serviceForm, isEditing)
       const saved = isEditing 
         ? await adminApi.updateService(selectedServiceId, payload, token)
         : await adminApi.createService(payload, token)
-      onUpdateServices((items) => {
+      setServices((items) => {
         const next = isEditing ? items.map((item) => (item.id === saved.id ? saved : item)) : [saved, ...items]
         return next.sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
       })
       setSelectedServiceId(saved.id)
       setServiceForm(serviceToForm(saved))
-      await onReload()
+      await reloadAll()
       onSetNotice(`Đã lưu dịch vụ ${saved.name}.`)
     } catch (err) {
-      onSetError(err.message || 'Không lưu được dịch vụ.')
+      setViewError(err.message || 'Không lưu được dịch vụ.')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const bulkStatus = async (enabled) => {
+    if (selectedIds.length === 0) {
+      setViewError('Chọn ít nhất một dịch vụ để bulk update.')
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const payload = { ids: selectedIds, reason: enabled ? 'Bulk enable từ UI admin' : 'Bulk disable từ UI admin' }
+      await (enabled ? adminApi.bulkEnableServices(payload, token) : adminApi.bulkDisableServices(payload, token))
+      setSelectedIds([])
+      await loadServices()
+      onSetNotice(`Đã ${enabled ? 'bật' : 'tắt'} ${selectedIds.length} dịch vụ.`)
+    } catch (err) {
+      setViewError(err.message || 'Không bulk update được dịch vụ.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const deleteService = async () => {
+    if (!selectedServiceId) {
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = await adminApi.deleteService(selectedServiceId, token)
+      setServices((items) => items.map((item) => (item.id === saved.id ? saved : item)))
+      setServiceForm(serviceToForm(saved))
+      onSetNotice(`Đã xóa/ẩn dịch vụ ${saved.name}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không xóa được dịch vụ.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const toggleSelected = (serviceId) => {
+    setSelectedIds((items) => (items.includes(serviceId) ? items.filter((id) => id !== serviceId) : [...items, serviceId]))
   }
 
   return (
@@ -218,7 +356,7 @@ function AdminServicesView({
           <span className="eyebrow">Service management</span>
           <h2>Quản lý dịch vụ và nhóm dịch vụ</h2>
         </div>
-        <button type="button" className="admin-icon-button" onClick={onReload} disabled={loading}>
+        <button type="button" className="admin-icon-button" onClick={reloadAll} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
           <span>Tải lại</span>
         </button>
@@ -234,7 +372,7 @@ function AdminServicesView({
           </div>
           <div className="admin-category-list">
             {categories.map((category) => (
-              <article key={category.id}>
+              <article className={selectedCategoryId === category.id ? 'selected' : ''} key={category.id} onClick={() => selectCategory(category)}>
                 <strong>{category.name}</strong>
                 <span>/{category.slug}</span>
               </article>
@@ -242,6 +380,10 @@ function AdminServicesView({
           </div>
 
           <form className="admin-form compact" onSubmit={submitCategory}>
+            <div className="admin-panel-head compact-head">
+              <h3>{selectedCategoryId ? 'Sửa nhóm' : 'Thêm nhóm'}</h3>
+              <button type="button" onClick={startCreateCategory}>Mới</button>
+            </div>
             <label>
               <span>Tên nhóm</span>
               <input value={categoryForm.name} onChange={(event) => updateCategoryForm('name', event.target.value)} required />
@@ -260,7 +402,11 @@ function AdminServicesView({
             </label>
             <button type="submit" className="admin-primary-button" disabled={submitting}>
               <Plus size={17} strokeWidth={2} aria-hidden="true" />
-              <span>Thêm nhóm</span>
+              <span>{selectedCategoryId ? 'Lưu nhóm' : 'Thêm nhóm'}</span>
+            </button>
+            <button type="button" className="admin-danger-button" disabled={!selectedCategoryId || submitting} onClick={deleteCategory}>
+              <Trash2 size={17} strokeWidth={2} aria-hidden="true" />
+              <span>Xóa nhóm</span>
             </button>
           </form>
         </div>
@@ -279,18 +425,24 @@ function AdminServicesView({
               ))}
             </select>
           </div>
+          <div className="admin-action-row">
+            <button type="button" className="admin-icon-button" disabled={submitting || selectedIds.length === 0} onClick={() => bulkStatus(true)}>Bulk enable</button>
+            <button type="button" className="admin-danger-button" disabled={submitting || selectedIds.length === 0} onClick={() => bulkStatus(false)}>Bulk disable</button>
+          </div>
           <div className="admin-service-list">
-            {filteredServices.map((service) => (
+            {services.map((service) => (
               <button
                 key={service.id}
                 type="button"
                 className={selectedServiceId === service.id ? 'selected' : ''}
                 onClick={() => selectService(service)}
               >
+                <input checked={selectedIds.includes(service.id)} onChange={() => toggleSelected(service.id)} onClick={(event) => event.stopPropagation()} type="checkbox" />
                 <strong>{service.name}</strong>
                 <span>{service.categoryName || 'Chưa phân nhóm'} · {service.status} · {service.priceText || service.price}</span>
               </button>
             ))}
+            {services.length === 0 && <AdminEmptyState />}
           </div>
         </div>
       </div>
@@ -298,6 +450,10 @@ function AdminServicesView({
       <form className="admin-form service-editor" onSubmit={submitService}>
         <div className="admin-panel-head">
           <h3>{selectedServiceId ? 'Chỉnh sửa dịch vụ' : 'Tạo dịch vụ mới'}</h3>
+          <button type="button" className="admin-danger-button" disabled={!selectedServiceId || submitting} onClick={deleteService}>
+            <Trash2 size={17} strokeWidth={2} aria-hidden="true" />
+            <span>Xóa dịch vụ</span>
+          </button>
           <button type="submit" disabled={submitting}>
             <Save size={17} strokeWidth={2} aria-hidden="true" />
             <span>Lưu dịch vụ</span>
@@ -394,6 +550,14 @@ function AdminServicesView({
             <span>Lưu ý sử dụng</span>
             <textarea value={serviceForm.usageNotes} onChange={(event) => updateServiceForm('usageNotes', event.target.value)} rows="3" />
           </label>
+          <label className="wide">
+            <span>Input schema</span>
+            <textarea value={serviceForm.inputSchema} onChange={(event) => updateServiceForm('inputSchema', event.target.value)} rows="6" placeholder='{"type":"object","required":["facebookUrl"],"properties":{...}}' />
+          </label>
+          <div className="wide admin-action-row">
+            <button type="button" className="admin-icon-button" onClick={() => updateServiceForm('inputSchema', facebookSchema)}>Mẫu Facebook</button>
+            <button type="button" className="admin-icon-button" onClick={() => updateServiceForm('inputSchema', '')}>Xóa schema</button>
+          </div>
         </div>
 
         <div className="admin-check-row">
@@ -406,6 +570,24 @@ function AdminServicesView({
             <span>Hiển thị public</span>
           </label>
         </div>
+
+        {selectedServiceId && (
+          <div className="admin-panel-subsection">
+            <div className="admin-panel-head compact-head">
+              <h3>Đơn gần đây của dịch vụ</h3>
+              <span>{serviceOrders.length} đơn</span>
+            </div>
+            <div className="admin-mini-list">
+              {serviceOrders.map((order) => (
+                <article key={order.id}>
+                  <strong>{order.orderCode}</strong>
+                  <span>User #{order.userId} · {formatAdminMoney(order.amount)} · {order.status} · {formatAdminDate(order.createdAt)}</span>
+                </article>
+              ))}
+              {serviceOrders.length === 0 && <AdminEmptyState message="Chưa có đơn gần đây cho dịch vụ này." />}
+            </div>
+          </div>
+        )}
       </form>
     </section>
   )

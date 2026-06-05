@@ -49,18 +49,6 @@ function settledValue(result, fallback) {
   return result.status === 'fulfilled' ? result.value : fallback
 }
 
-function settingsToMap(settingsList) {
-  if (!Array.isArray(settingsList)) {
-    return {}
-  }
-
-  const map = {}
-  settingsList.forEach((setting) => {
-    map[setting.key] = setting.value
-  })
-  return map
-}
-
 function App() {
   const [activeView, setActiveView] = useState('overview')
   const [showAuthScreen, setShowAuthScreen] = useState(() => Boolean(initialOAuthCallback?.error))
@@ -167,7 +155,7 @@ function App() {
       })
   }, [accessToken, applyAuthenticatedData, rememberSession])
 
-  const loadAdminData = useCallback(async () => {
+  const loadAdminOverviewData = useCallback(async () => {
     if (!accessToken || !isAdmin) {
       return
     }
@@ -177,31 +165,17 @@ function App() {
     try {
       const results = await Promise.allSettled([
         adminApi.getDashboard(accessToken),
-        adminApi.getUsers(accessToken),
-        adminApi.getOrders(accessToken),
-        adminApi.getDeposits(accessToken),
-        adminApi.getBankTransactions(accessToken),
-        adminApi.getWalletTransactions(accessToken),
         adminApi.getRevenueReport(accessToken),
-        adminApi.getTickets(accessToken),
         adminApi.getServiceCategories(accessToken),
         adminApi.getServices(accessToken),
         adminApi.getPricing(accessToken),
-        adminApi.getSettings(accessToken),
       ])
 
       setAdminDashboard(settledValue(results[0], null))
-      setAdminUsers(settledValue(results[1], []))
-      setAdminOrders(settledValue(results[2], []))
-      setAdminDeposits(settledValue(results[3], []))
-      setAdminBankTransactions(settledValue(results[4], []))
-      setAdminWalletTransactions(settledValue(results[5], []))
-      setAdminRevenue(settledValue(results[6], null))
-      setAdminTickets(settledValue(results[7], []))
-      setAdminCategories(settledValue(results[8], []))
-      setAdminServices(settledValue(results[9], []))
-      setAdminPricing(settledValue(results[10], []))
-      setAdminSettings(settingsToMap(settledValue(results[11], [])))
+      setAdminRevenue(settledValue(results[1], null))
+      setAdminCategories(settledValue(results[2], []))
+      setAdminServices(settledValue(results[3], []))
+      setAdminPricing(settledValue(results[4], []))
 
       if (results.some((result) => result.status === 'rejected')) {
         setAdminError('Một phần dữ liệu admin chưa tải được. Các màn hình còn lại vẫn có thể sử dụng.')
@@ -215,9 +189,9 @@ function App() {
 
   useEffect(() => {
     if (isAdmin) {
-      Promise.resolve().then(loadAdminData)
+      Promise.resolve().then(loadAdminOverviewData)
     }
-  }, [isAdmin, loadAdminData])
+  }, [isAdmin, loadAdminOverviewData])
 
   const handleAuthSuccess = (response, remember = true) => {
     setRememberSession(remember)
@@ -344,7 +318,6 @@ function App() {
         <AdminUsersView
           error={adminError}
           loading={adminLoading}
-          onReload={loadAdminData}
           onSetError={setAdminError}
           onSetNotice={setAdminNotice}
           onUpdateUsers={setAdminUsers}
@@ -355,7 +328,17 @@ function App() {
     }
 
     if (adminActiveView === 'admin-orders') {
-      return <AdminOrdersView error={adminError} loading={adminLoading} onReload={loadAdminData} orders={adminOrders} />
+      return (
+        <AdminOrdersView
+          error={adminError}
+          loading={adminLoading}
+          onSetError={setAdminError}
+          onSetNotice={setAdminNotice}
+          onUpdateOrders={setAdminOrders}
+          orders={adminOrders}
+          token={accessToken}
+        />
+      )
     }
 
     if (adminActiveView === 'admin-finance') {
@@ -366,8 +349,10 @@ function App() {
           deposits={adminDeposits}
           error={adminError}
           loading={adminLoading}
-          onReload={loadAdminData}
+          onSetError={setAdminError}
+          onSetNotice={setAdminNotice}
           revenue={adminRevenue}
+          token={accessToken}
           walletTransactions={adminWalletTransactions}
         />
       )
@@ -378,7 +363,6 @@ function App() {
         <AdminTicketsView
           error={adminError}
           loading={adminLoading}
-          onReload={loadAdminData}
           onSetError={setAdminError}
           onSetNotice={setAdminNotice}
           tickets={adminTickets}
@@ -393,7 +377,6 @@ function App() {
           categories={adminCategories}
           error={adminError}
           loading={adminLoading}
-          onReload={loadAdminData}
           onSetError={setAdminError}
           onSetNotice={setAdminNotice}
           onUpdateCategories={setAdminCategories}
@@ -410,7 +393,6 @@ function App() {
           categories={adminCategories}
           error={adminError}
           loading={adminLoading}
-          onReload={loadAdminData}
           onSetError={setAdminError}
           onSetNotice={setAdminNotice}
           onUpdatePricing={setAdminPricing}
@@ -425,7 +407,6 @@ function App() {
         <AdminSettingsView
           error={adminError}
           loading={adminLoading}
-          onReload={loadAdminData}
           onSetError={setAdminError}
           onSetNotice={setAdminNotice}
           settings={adminSettings}
