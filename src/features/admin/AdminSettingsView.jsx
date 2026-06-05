@@ -1,6 +1,7 @@
 import { RefreshCw, RotateCcw, Save } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../api/admin.api'
+import { userApi } from '../../api/user.api'
 import { AdminEmptyState, AdminStatusBadge } from './AdminShared'
 import { formatAdminDate } from './adminFormat'
 
@@ -29,7 +30,22 @@ function configToObject(items) {
   return config
 }
 
+function mergeSettings(currentSettings, savedSettings) {
+  const savedByKey = new Map(savedSettings.map((setting) => [setting.key, setting]))
+  const merged = currentSettings.map((setting) => savedByKey.get(setting.key) || setting)
+
+  savedSettings.forEach((setting) => {
+    if (!currentSettings.some((item) => item.key === setting.key)) {
+      merged.push(setting)
+    }
+  })
+
+  return merged
+}
+
 function AdminSettingsView({
+  currentUser,
+  onCurrentUserChange,
   onSetError,
   onSetNotice,
   token,
@@ -50,6 +66,8 @@ function AdminSettingsView({
   const [settings, setSettings] = useState([])
   const [settingSearch, setSettingSearch] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [twoFactorCode, setTwoFactorCode] = useState('')
+  const [twoFactorEmailSent, setTwoFactorEmailSent] = useState(false)
 
   const settingsMap = toMap(settings)
   const twoFactorRequired = settingsMap.admin_2fa_required === 'true'
@@ -116,7 +134,7 @@ function AdminSettingsView({
     setSubmitting(true)
     setViewError('')
     try {
-      await adminApi.updateSettings({
+      const savedSettings = await adminApi.updateSettings({
         settings: [
           {
             key: 'admin_2fa_required',
@@ -125,10 +143,41 @@ function AdminSettingsView({
           },
         ],
       }, token)
-      await loadSettings()
+      setSettings((current) => mergeSettings(current, savedSettings))
       onSetNotice(`Đã ${twoFactorRequired ? 'tắt' : 'bật'} yêu cầu 2FA.`)
     } catch (err) {
       setViewError(err.message || 'Không thể cập nhật cài đặt.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const sendTwoFactorEnableCode = async () => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      await userApi.sendTwoFactorEnableEmailCode(token)
+      setTwoFactorEmailSent(true)
+      onSetNotice(`Đã gửi mã xác thực tới ${currentUser?.email || 'email admin'}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không gửi được mã xác thực 2FA.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const enableEmailTwoFactor = async (event) => {
+    event.preventDefault()
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const savedUser = await userApi.enableEmailTwoFactor({ code: twoFactorCode.trim() }, token)
+      setTwoFactorCode('')
+      setTwoFactorEmailSent(false)
+      onCurrentUserChange(savedUser)
+      onSetNotice('Đã bật 2FA email cho tài khoản admin hiện tại.')
+    } catch (err) {
+      setViewError(err.message || 'Mã xác thực 2FA không hợp lệ hoặc đã hết hạn.')
     } finally {
       setSubmitting(false)
     }
@@ -248,10 +297,45 @@ function AdminSettingsView({
               <h3>Bảo mật</h3>
               <button type="button" onClick={backupSettings} disabled={submitting}>Backup</button>
             </div>
+            <div className="admin-panel-subsection">
+              <div className="admin-panel-head compact-head">
+                <h3>2FA tài khoản admin</h3>
+                <AdminStatusBadge status={currentUser?.twoFactorEnabled ? 'ACTIVE' : 'DISABLED'} />
+              </div>
+              <p className="admin-empty-state">
+                {currentUser?.twoFactorEnabled
+                  ? 'Tài khoản này sẽ nhận mã email ở mỗi lần đăng nhập.'
+                  : 'Bật 2FA sẽ gửi mã xác thực qua email và yêu cầu mã này ở mỗi lần đăng nhập.'}
+              </p>
+              {!currentUser?.twoFactorEnabled && (
+                <form className="admin-form compact" onSubmit={enableEmailTwoFactor}>
+                  <button type="button" className="admin-icon-button" disabled={submitting} onClick={sendTwoFactorEnableCode}>
+                    Gửi mã xác thực
+                  </button>
+                  {twoFactorEmailSent && (
+                    <label>
+                      <span>Mã email</span>
+                      <input
+                        value={twoFactorCode}
+                        onChange={(event) => setTwoFactorCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                        inputMode="numeric"
+                        placeholder="Nhập mã 6 số"
+                        required
+                      />
+                    </label>
+                  )}
+                  {twoFactorEmailSent && (
+                    <button type="submit" disabled={submitting || twoFactorCode.length < 6}>
+                      Xác nhận bật 2FA
+                    </button>
+                  )}
+                </form>
+              )}
+            </div>
             <div className="admin-check-row settings-row">
               <label>
                 <input checked={twoFactorRequired} disabled={submitting} onChange={toggleTwoFactor} type="checkbox" />
-                <span>Yêu cầu xác thực 2 lớp (2FA) khi truy cập admin</span>
+                <span>Policy: yêu cầu admin dùng 2FA khi truy cập admin</span>
               </label>
             </div>
           </div>

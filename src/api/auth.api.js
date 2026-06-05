@@ -6,6 +6,10 @@ export const authApi = {
   register: (data) => axiosClient.post('/api/auth/register', data),
   
   login: (data) => axiosClient.post('/api/auth/login', data),
+
+  sendTwoFactorEmailCode: (data) => axiosClient.post('/api/auth/2fa/email-code', data),
+
+  verifyOAuthTwoFactor: (data) => axiosClient.post('/api/auth/oauth2/2fa/verify', data),
   
   logout: (token) => axiosClient.post('/api/auth/logout', null, { token }),
 };

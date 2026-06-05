@@ -1,16 +1,22 @@
 export function readOAuthCallback(search = window.location.search) {
   const params = new URLSearchParams(search)
   const token = params.get('token')
+  const oauthTwoFactorChallenge = params.get('oauth2fa')
   const oauthError = params.get('oauthError')
   const expiresAt = params.get('expiresAt')
+  const email = params.get('email')
+  const provider = params.get('provider')
 
-  if (!token && !oauthError) {
+  if (!token && !oauthError && !oauthTwoFactorChallenge) {
     return null
   }
 
   return {
+    email,
     error: oauthError,
     expiresAt,
+    oauthTwoFactorChallenge,
+    provider,
     token,
   }
 }

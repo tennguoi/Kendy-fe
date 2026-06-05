@@ -1,15 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import OrderTable from './components/orders/OrderTable'
 import { adminNavItems } from './data/adminNavigation'
 import { mockOrders, mockServices } from './data/mockData'
-import AdminFinanceView from './features/admin/AdminFinanceView'
-import AdminOrdersView from './features/admin/AdminOrdersView'
-import AdminOverviewView from './features/admin/AdminOverviewView'
-import AdminPricingView from './features/admin/AdminPricingView'
-import AdminServicesView from './features/admin/AdminServicesView'
-import AdminSettingsView from './features/admin/AdminSettingsView'
-import AdminTicketsView from './features/admin/AdminTicketsView'
-import AdminUsersView from './features/admin/AdminUsersView'
+import AdminRoutes from './features/admin/AdminRoutes'
 import AuthScreen from './features/auth/AuthScreen'
 import DashboardShell from './features/dashboard/DashboardShell'
 import DepositView from './features/deposit/DepositView'
@@ -34,6 +28,7 @@ import {
 } from './utils/session'
 
 const initialOAuthCallback = readOAuthCallback()
+const adminRoutePaths = adminNavItems.map((item) => item.path)
 
 async function fetchAuthenticatedData(token) {
   const [me, walletData, orderData] = await Promise.all([
@@ -49,13 +44,23 @@ function settledValue(result, fallback) {
   return result.status === 'fulfilled' ? result.value : fallback
 }
 
+function normalizePathname(pathname) {
+  const normalized = pathname.replace(/\/+$/, '')
+  return normalized || '/'
+}
+
 function App() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [activeView, setActiveView] = useState('overview')
-  const [showAuthScreen, setShowAuthScreen] = useState(() => Boolean(initialOAuthCallback?.error))
+  const [showAuthScreen, setShowAuthScreen] = useState(() => (
+    Boolean(initialOAuthCallback?.error || initialOAuthCallback?.oauthTwoFactorChallenge)
+  ))
   const [depositAmount, setDepositAmount] = useState('250000')
   const [accessToken, setAccessToken] = useState(() => initialOAuthCallback?.token || getStoredAccessToken())
   const [rememberSession, setRememberSession] = useState(() => Boolean(initialOAuthCallback?.token) || hasPersistentSession())
   const [currentUser, setCurrentUser] = useState(null)
+  const [authInit, setAuthInit] = useState(() => !accessToken)
   const [wallet, setWallet] = useState(null)
   const [apiServices, setApiServices] = useState([])
   const [apiOrders, setApiOrders] = useState([])
@@ -63,19 +68,15 @@ function App() {
   const [adminServices, setAdminServices] = useState([])
   const [adminPricing, setAdminPricing] = useState([])
   const [adminDashboard, setAdminDashboard] = useState(null)
-  const [adminUsers, setAdminUsers] = useState([])
-  const [adminOrders, setAdminOrders] = useState([])
-  const [adminDeposits, setAdminDeposits] = useState([])
-  const [adminBankTransactions, setAdminBankTransactions] = useState([])
-  const [adminWalletTransactions, setAdminWalletTransactions] = useState([])
   const [adminRevenue, setAdminRevenue] = useState(null)
-  const [adminTickets, setAdminTickets] = useState([])
-  const [adminSettings, setAdminSettings] = useState({})
-  const [adminLoading, setAdminLoading] = useState(false)
-  const [adminError, setAdminError] = useState('')
+  const [adminOverviewError, setAdminOverviewError] = useState('')
   const [adminNotice, setAdminNotice] = useState('')
   const [activeDeposit, setActiveDeposit] = useState(null)
   const [apiNotice, setApiNotice] = useState(() => {
+    if (initialOAuthCallback?.oauthTwoFactorChallenge) {
+      return 'Mã xác thực đã được gửi tới email của bạn.'
+    }
+
     if (initialOAuthCallback?.token) {
       return 'Đăng nhập bằng tài khoản liên kết thành công.'
     }
@@ -90,12 +91,14 @@ function App() {
 
   const amountNumber = Number(depositAmount) || 0
   const depositCode = activeDeposit?.depositCode || createPreviewDepositCode(amountNumber)
-  const serviceList = apiServices.length > 0 ? apiServices : mockServices
-  const orderList = apiOrders.length > 0 ? apiOrders : mockOrders
+  const serviceList = Array.isArray(apiServices) && apiServices.length > 0 ? apiServices : mockServices
+  const orderList = Array.isArray(apiOrders) && apiOrders.length > 0 ? apiOrders : mockOrders
   const displayBalance = Number(wallet?.balance ?? currentUser?.balance ?? 1325000)
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
-  const adminActiveView = activeView.startsWith('admin-') ? activeView : 'admin-overview'
-  const userActiveView = activeView.startsWith('admin-') ? 'overview' : activeView
+  const normalizedPathname = normalizePathname(location.pathname)
+  const isAdminPath = normalizedPathname === '/admin' || normalizedPathname.startsWith('/admin/')
+  const adminActiveView = adminNavItems.find((item) => item.path === normalizedPathname)?.id || 'admin-overview'
+  const userActiveView = activeView
 
   const metrics = useMemo(
     () => [
@@ -116,6 +119,7 @@ function App() {
     setWallet(walletData)
     setApiOrders(orderData)
     setApiNotice('')
+    setAuthInit(true)
   }, [])
 
   useEffect(() => {
@@ -152,46 +156,45 @@ function App() {
       .then(applyAuthenticatedData)
       .catch(() => {
         setApiNotice('Không kết nối được API hoặc token đã hết hạn.')
+        setAuthInit(true)
       })
   }, [accessToken, applyAuthenticatedData, rememberSession])
 
-  const loadAdminOverviewData = useCallback(async () => {
+  useEffect(() => {
     if (!accessToken || !isAdmin) {
       return
     }
 
-    setAdminLoading(true)
-    setAdminError('')
-    try {
-      const results = await Promise.allSettled([
-        adminApi.getDashboard(accessToken),
-        adminApi.getRevenueReport(accessToken),
-        adminApi.getServiceCategories(accessToken),
-        adminApi.getServices(accessToken),
-        adminApi.getPricing(accessToken),
-      ])
+    let cancelled = false
 
+    Promise.allSettled([
+      adminApi.getDashboard(accessToken),
+      adminApi.getRevenueReport(accessToken),
+      adminApi.getServiceCategories(accessToken),
+      adminApi.getServices(accessToken),
+      adminApi.getPricing(accessToken),
+    ]).then((results) => {
+      if (cancelled) return
       setAdminDashboard(settledValue(results[0], null))
       setAdminRevenue(settledValue(results[1], null))
       setAdminCategories(settledValue(results[2], []))
       setAdminServices(settledValue(results[3], []))
       setAdminPricing(settledValue(results[4], []))
+      setAdminOverviewError(results.some((r) => r.status === 'rejected') ? 'Một phần dữ liệu tổng quan admin chưa tải được.' : '')
+    }).catch(() => {
+      if (!cancelled) setAdminOverviewError('Không tải được dữ liệu tổng quan admin. Kiểm tra quyền hoặc trạng thái backend.')
+    })
 
-      if (results.some((result) => result.status === 'rejected')) {
-        setAdminError('Một phần dữ liệu admin chưa tải được. Các màn hình còn lại vẫn có thể sử dụng.')
-      }
-    } catch {
-      setAdminError('Không tải được dữ liệu admin. Kiểm tra quyền hoặc trạng thái backend.')
-    } finally {
-      setAdminLoading(false)
+    return () => {
+      cancelled = true
     }
   }, [accessToken, isAdmin])
 
   useEffect(() => {
-    if (isAdmin) {
-      Promise.resolve().then(loadAdminOverviewData)
+    if (authInit && accessToken && currentUser && !isAdmin && isAdminPath) {
+      navigate('/', { replace: true })
     }
-  }, [isAdmin, loadAdminOverviewData])
+  }, [accessToken, authInit, currentUser, isAdmin, isAdminPath, navigate])
 
   const handleAuthSuccess = (response, remember = true) => {
     setRememberSession(remember)
@@ -219,18 +222,12 @@ function App() {
     setAdminServices([])
     setAdminPricing([])
     setAdminDashboard(null)
-    setAdminUsers([])
-    setAdminOrders([])
-    setAdminDeposits([])
-    setAdminBankTransactions([])
-    setAdminWalletTransactions([])
     setAdminRevenue(null)
-    setAdminTickets([])
-    setAdminSettings({})
-    setAdminError('')
+    setAdminOverviewError('')
     setAdminNotice('')
     setShowAuthScreen(false)
     setApiNotice('Đã đăng xuất.')
+    navigate('/', { replace: true })
   }
 
   const handleOpenAuth = () => {
@@ -239,6 +236,13 @@ function App() {
       setApiNotice('')
     }
   }
+
+  const handleAdminViewChange = useCallback((viewId) => {
+    const nextItem = adminNavItems.find((item) => item.id === viewId)
+    navigate(nextItem?.path || '/admin')
+  }, [navigate])
+
+  const handleAdminRouteError = useCallback(() => {}, [])
 
   const handleDepositAmountChange = (value) => {
     setDepositAmount(value.replace(/\D/g, ''))
@@ -312,126 +316,28 @@ function App() {
     return <SupportView />
   }
 
-  const renderAdminView = () => {
-    if (adminActiveView === 'admin-users') {
-      return (
-        <AdminUsersView
-          error={adminError}
-          loading={adminLoading}
-          onSetError={setAdminError}
-          onSetNotice={setAdminNotice}
-          onUpdateUsers={setAdminUsers}
-          token={accessToken}
-          users={adminUsers}
-        />
-      )
-    }
-
-    if (adminActiveView === 'admin-orders') {
-      return (
-        <AdminOrdersView
-          error={adminError}
-          loading={adminLoading}
-          onSetError={setAdminError}
-          onSetNotice={setAdminNotice}
-          onUpdateOrders={setAdminOrders}
-          orders={adminOrders}
-          token={accessToken}
-        />
-      )
-    }
-
-    if (adminActiveView === 'admin-finance') {
-      return (
-        <AdminFinanceView
-          bankTransactions={adminBankTransactions}
-          dashboard={adminDashboard}
-          deposits={adminDeposits}
-          error={adminError}
-          loading={adminLoading}
-          onSetError={setAdminError}
-          onSetNotice={setAdminNotice}
-          revenue={adminRevenue}
-          token={accessToken}
-          walletTransactions={adminWalletTransactions}
-        />
-      )
-    }
-
-    if (adminActiveView === 'admin-tickets') {
-      return (
-        <AdminTicketsView
-          error={adminError}
-          loading={adminLoading}
-          onSetError={setAdminError}
-          onSetNotice={setAdminNotice}
-          tickets={adminTickets}
-          token={accessToken}
-        />
-      )
-    }
-
-    if (adminActiveView === 'admin-services') {
-      return (
-        <AdminServicesView
-          categories={adminCategories}
-          error={adminError}
-          loading={adminLoading}
-          onSetError={setAdminError}
-          onSetNotice={setAdminNotice}
-          onUpdateCategories={setAdminCategories}
-          onUpdateServices={setAdminServices}
-          services={adminServices}
-          token={accessToken}
-        />
-      )
-    }
-
-    if (adminActiveView === 'admin-pricing') {
-      return (
-        <AdminPricingView
-          categories={adminCategories}
-          error={adminError}
-          loading={adminLoading}
-          onSetError={setAdminError}
-          onSetNotice={setAdminNotice}
-          onUpdatePricing={setAdminPricing}
-          pricingItems={adminPricing}
-          token={accessToken}
-        />
-      )
-    }
-
-    if (adminActiveView === 'admin-settings') {
-      return (
-        <AdminSettingsView
-          error={adminError}
-          loading={adminLoading}
-          onSetError={setAdminError}
-          onSetNotice={setAdminNotice}
-          settings={adminSettings}
-          token={accessToken}
-        />
-      )
-    }
-
-    return (
-      <AdminOverviewView
-        categories={adminCategories}
-        dashboard={adminDashboard}
-        pricingItems={adminPricing}
-        revenue={adminRevenue}
-        services={adminServices}
-      />
-    )
-  }
-
   if (!accessToken) {
     if (showAuthScreen) {
-      return <AuthScreen notice={apiNotice} onBack={() => setShowAuthScreen(false)} onSuccess={handleAuthSuccess} />
+      return (
+        <AuthScreen
+          notice={apiNotice}
+          oauthChallenge={initialOAuthCallback?.oauthTwoFactorChallenge ? {
+            challengeToken: initialOAuthCallback.oauthTwoFactorChallenge,
+            email: initialOAuthCallback.email,
+            expiresAt: initialOAuthCallback.expiresAt,
+            provider: initialOAuthCallback.provider,
+          } : null}
+          onBack={() => setShowAuthScreen(false)}
+          onSuccess={handleAuthSuccess}
+        />
+      )
     }
 
     return <PublicHome notice={apiNotice} onLoginClick={handleOpenAuth} />
+  }
+
+  if (!authInit) {
+    return <div className="loading">Đang tải...</div>
   }
 
   if (isAdmin) {
@@ -443,12 +349,27 @@ function App() {
         footerTitle="Dịch vụ & bảng giá"
         items={adminNavItems}
         onLogout={handleLogout}
-        onViewChange={setActiveView}
+        onViewChange={handleAdminViewChange}
         showBalance={false}
         subtitle="Quản trị nội dung public site"
       >
         {adminNotice && <p className="admin-message">{adminNotice}</p>}
-        {renderAdminView()}
+        {adminActiveView === 'admin-overview' && adminOverviewError && (
+          <p className="admin-message error">{adminOverviewError}</p>
+        )}
+        <AdminRoutes
+          categories={adminCategories}
+          currentUser={currentUser}
+          dashboard={adminDashboard}
+          mountedPaths={adminRoutePaths}
+          onCurrentUserChange={setCurrentUser}
+          onSetError={handleAdminRouteError}
+          onSetNotice={setAdminNotice}
+          pricingItems={adminPricing}
+          revenue={adminRevenue}
+          services={adminServices}
+          token={accessToken}
+        />
       </DashboardShell>
     )
   }

@@ -30,6 +30,8 @@ function AdminTicketsView({
   const [tickets, setTickets] = useState([])
 
   const selectedTicket = tickets.find((ticket) => ticket.ticketCode === selectedCode) || tickets[0]
+  const closedTicketsText = resolution ? String(resolution.closedTickets || 0) : '--'
+  const averageResolutionText = resolution ? String(Math.round(resolution.averageResolutionMinutes || 0)) : '--'
 
   const setViewError = useCallback((messageText) => {
     setError(messageText)
@@ -223,12 +225,10 @@ function AdminTicketsView({
         </select>
       </div>
 
-      {resolution && (
-        <div className="admin-report-grid compact-report">
-          <div><span>Ticket đã đóng</span><strong>{resolution.closedTickets || 0}</strong></div>
-          <div><span>Phút xử lý TB</span><strong>{Math.round(resolution.averageResolutionMinutes || 0)}</strong></div>
-        </div>
-      )}
+      <div className="admin-report-grid compact-report">
+        <div><span>Ticket đã đóng</span><strong>{closedTicketsText}</strong></div>
+        <div><span>Phút xử lý TB</span><strong>{averageResolutionText}</strong></div>
+      </div>
 
       <div className="admin-grid detail-layout">
         <div className="admin-panel">

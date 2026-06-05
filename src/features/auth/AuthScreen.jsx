@@ -25,7 +25,7 @@ const defaultOAuthProviders = [
   { id: 'github', name: 'GitHub', authorizationUrl: '/oauth2/authorization/github' },
 ]
 
-function AuthScreen({ notice, onBack, onSuccess }) {
+function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({
     name: '',
@@ -34,7 +34,16 @@ function AuthScreen({ notice, onBack, onSuccess }) {
     password: '',
     confirmPassword: '',
     remember: true,
+    twoFactorCode: '',
   })
+  const [twoFactorStep, setTwoFactorStep] = useState(() => (
+    oauthChallenge ? {
+      challengeToken: oauthChallenge.challengeToken,
+      email: oauthChallenge.email,
+      provider: oauthChallenge.provider,
+      type: 'oauth',
+    } : null
+  ))
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -68,6 +77,7 @@ function AuthScreen({ notice, onBack, onSuccess }) {
 
   const switchMode = () => {
     setMode((current) => (current === 'login' ? 'register' : 'login'))
+    setTwoFactorStep(null)
     setError('')
   }
 
@@ -83,6 +93,30 @@ function AuthScreen({ notice, onBack, onSuccess }) {
   const submit = async (event) => {
     event.preventDefault()
     setError('')
+
+    if (twoFactorStep?.type === 'oauth') {
+      if (!form.twoFactorCode.trim()) {
+        setError('Vui lòng nhập mã xác thực đã gửi qua email.')
+        return
+      }
+
+      setBusy(true)
+      try {
+        const response = await authApi.verifyOAuthTwoFactor({
+          challengeToken: twoFactorStep.challengeToken,
+          code: form.twoFactorCode.trim(),
+        })
+        addToast({ type: 'success', title: 'Đăng nhập', message: 'Xác thực 2FA thành công.' })
+        onSuccess(response, form.remember)
+      } catch (err) {
+        const msg = err.message || 'Mã xác thực không hợp lệ hoặc đã hết hạn.'
+        setError(msg)
+        addToast({ type: 'error', title: 'Xác thực thất bại', message: msg })
+      } finally {
+        setBusy(false)
+      }
+      return
+    }
 
     if (!form.email.trim() || !form.password) {
       setError('Vui lòng nhập email và mật khẩu.')
@@ -117,14 +151,24 @@ function AuthScreen({ notice, onBack, onSuccess }) {
       const response = await authApi.login({
         email: form.email.trim(),
         password: form.password,
+        twoFactorCode: twoFactorStep?.type === 'password' ? form.twoFactorCode.trim() : undefined,
       })
 
       addToast({ type: 'success', title: 'Đăng nhập', message: 'Đăng nhập thành công.' })
       onSuccess(response, form.remember)
-    } catch {
-      const msg = isRegister
+    } catch (err) {
+      if (!isRegister && String(err.message || '').includes('2FA code required')) {
+        setTwoFactorStep({ email: form.email.trim(), type: 'password' })
+        updateForm('twoFactorCode', '')
+        const msg = 'Mã xác thực đã được gửi tới email của bạn.'
+        setError('')
+        addToast({ type: 'info', title: 'Xác thực 2FA', message: msg })
+        return
+      }
+
+      const msg = err.message || (isRegister
         ? 'Không tạo được tài khoản. Vui lòng kiểm tra lại thông tin.'
-        : 'Không đăng nhập được. Kiểm tra email hoặc mật khẩu.'
+        : 'Không đăng nhập được. Kiểm tra email hoặc mật khẩu.')
       setError(msg)
       addToast({ type: 'error', title: isRegister ? 'Đăng ký thất bại' : 'Đăng nhập thất bại', message: msg })
     } finally {
@@ -188,13 +232,23 @@ function AuthScreen({ notice, onBack, onSuccess }) {
               {isRegister ? <UserRound size={22} strokeWidth={2} /> : <LogIn size={22} strokeWidth={2} />}
             </span>
             <div>
-              <span className="eyebrow">{isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</span>
-              <h2>{isRegister ? 'Bắt đầu với Kendy Digital' : 'Chào mừng bạn quay lại Kendy Digital.'}</h2>
+              <span className="eyebrow">{twoFactorStep ? 'Xác thực 2FA' : isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</span>
+              <h2>
+                {twoFactorStep
+                  ? 'Nhập mã xác thực đã gửi qua email.'
+                  : isRegister ? 'Bắt đầu với Kendy Digital' : 'Chào mừng bạn quay lại Kendy Digital.'}
+              </h2>
             </div>
           </div>
 
           <div className="auth-fields">
-            {isRegister && (
+            {twoFactorStep?.type === 'oauth' && (
+              <p className="auth-message">
+                Đăng nhập bằng {twoFactorStep.provider || 'OAuth'} cần mã xác thực gửi tới {twoFactorStep.email || 'email của bạn'}.
+              </p>
+            )}
+
+            {isRegister && !twoFactorStep && (
               <label className="auth-field">
                 <span>Họ tên</span>
                 <div className="auth-input">
@@ -209,21 +263,23 @@ function AuthScreen({ notice, onBack, onSuccess }) {
               </label>
             )}
 
-            <label className="auth-field">
-              <span>Email</span>
-              <div className="auth-input">
-                <Mail size={18} strokeWidth={2} aria-hidden="true" />
-                <input
-                  value={form.email}
-                  onChange={(event) => updateForm('email', event.target.value)}
-                  placeholder="email@kendy.vn"
-                  type="email"
-                  autoComplete="email"
-                />
-              </div>
-            </label>
+            {!twoFactorStep && (
+              <label className="auth-field">
+                <span>Email</span>
+                <div className="auth-input">
+                  <Mail size={18} strokeWidth={2} aria-hidden="true" />
+                  <input
+                    value={form.email}
+                    onChange={(event) => updateForm('email', event.target.value)}
+                    placeholder="email@kendy.vn"
+                    type="email"
+                    autoComplete="email"
+                  />
+                </div>
+              </label>
+            )}
 
-            {isRegister && (
+            {isRegister && !twoFactorStep && (
               <label className="auth-field">
                 <span>Số điện thoại</span>
                 <div className="auth-input">
@@ -239,30 +295,48 @@ function AuthScreen({ notice, onBack, onSuccess }) {
               </label>
             )}
 
-            <label className="auth-field">
-              <span>Mật khẩu</span>
-              <div className="auth-input">
-                <LockKeyhole size={18} strokeWidth={2} aria-hidden="true" />
-                <input
-                  value={form.password}
-                  onChange={(event) => updateForm('password', event.target.value)}
-                  placeholder="Nhập mật khẩu"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete={isRegister ? 'new-password' : 'current-password'}
-                />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPassword((current) => !current)}
-                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                >
-                  {showPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
-                </button>
-              </div>
-            </label>
+            {!twoFactorStep && (
+              <label className="auth-field">
+                <span>Mật khẩu</span>
+                <div className="auth-input">
+                  <LockKeyhole size={18} strokeWidth={2} aria-hidden="true" />
+                  <input
+                    value={form.password}
+                    onChange={(event) => updateForm('password', event.target.value)}
+                    placeholder="Nhập mật khẩu"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete={isRegister ? 'new-password' : 'current-password'}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword((current) => !current)}
+                    title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  >
+                    {showPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                  </button>
+                </div>
+              </label>
+            )}
 
-            {isRegister && (
+            {twoFactorStep && (
+              <label className="auth-field">
+                <span>Mã xác thực email</span>
+                <div className="auth-input">
+                  <ShieldCheck size={18} strokeWidth={2} aria-hidden="true" />
+                  <input
+                    value={form.twoFactorCode}
+                    onChange={(event) => updateForm('twoFactorCode', event.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="Nhập mã 6 số"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                  />
+                </div>
+              </label>
+            )}
+
+            {isRegister && !twoFactorStep && (
               <label className="auth-field">
                 <span>Xác nhận mật khẩu</span>
                 <div className={
@@ -292,7 +366,7 @@ function AuthScreen({ notice, onBack, onSuccess }) {
           </div>
 
           <div className="auth-options">
-            {!isRegister && (
+            {!isRegister && !twoFactorStep && (
               <>
                 <label className="checkbox-row">
                   <input
@@ -320,38 +394,44 @@ function AuthScreen({ notice, onBack, onSuccess }) {
               </>
             ) : (
               <>
-                <span>{isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</span>
+                <span>{twoFactorStep ? 'Xác nhận mã' : isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</span>
                 <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
               </>
             )}
           </button>
 
-          <div className="auth-divider">
-            <span>Hoặc đăng nhập bằng</span>
-          </div>
+          {!twoFactorStep && (
+            <>
+              <div className="auth-divider">
+                <span>Hoặc đăng nhập bằng</span>
+              </div>
 
-          <div className="oauth-actions">
-            {oauthProviders.map((provider) => (
-              <button
-                key={provider.id}
-                type="button"
-                className={`oauth-button ${provider.id}`}
-                onClick={() => startOAuthLogin(provider)}
-              >
-                <span className="oauth-icon" aria-hidden="true">
-                  {provider.id === 'github' ? 'GH' : 'G'}
-                </span>
-                <span>{provider.name}</span>
+              <div className="oauth-actions">
+                {oauthProviders.map((provider) => (
+                  <button
+                    key={provider.id}
+                    type="button"
+                    className={`oauth-button ${provider.id}`}
+                    onClick={() => startOAuthLogin(provider)}
+                  >
+                    <span className="oauth-icon" aria-hidden="true">
+                      {provider.id === 'github' ? 'GH' : 'G'}
+                    </span>
+                    <span>{provider.name}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {!twoFactorStep && (
+            <p className="auth-switch">
+              {isRegister ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}
+              <button type="button" onClick={switchMode}>
+                {isRegister ? 'Đăng nhập' : 'Đăng ký ngay'}
               </button>
-            ))}
-          </div>
-
-          <p className="auth-switch">
-            {isRegister ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}
-            <button type="button" onClick={switchMode}>
-              {isRegister ? 'Đăng nhập' : 'Đăng ký ngay'}
-            </button>
-          </p>
+            </p>
+          )}
         </form>
       </main>
     </section>
