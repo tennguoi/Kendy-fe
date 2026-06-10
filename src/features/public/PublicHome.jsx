@@ -32,6 +32,7 @@ import {
   serviceCategories as staticCategories,
   serviceTableRows as staticTableRows,
 } from './data/services.public'
+import ScrollReveal from '../../components/ScrollReveal/ScrollReveal'
 import './PublicHome.css'
 
 const categoryIcons = {
@@ -179,27 +180,31 @@ function PublicHome({ notice, onLoginClick }) {
       <PublicHeader logo={heroImg} navItems={navItems} onLoginClick={onLoginClick} />
 
       <main>
-        <HeroSection
-          logo={heroImg}
-          notice={notice}
-          onLoginClick={onLoginClick}
-          serviceSignals={serviceSignals}
-        />
-        <TrustStrip items={trustStats} />
-        <ServiceCategories categories={mergedCategories} />
-        <FeaturedServices services={mergedFeaturedServices} onPurchaseClick={onLoginClick} />
-        <ServiceTableSection
-          filters={mergedFilters}
-          rows={mergedTableRows}
-          onActionClick={onLoginClick}
-        />
-        <WorkflowSection steps={workflowSteps} />
-        <AutoDepositSection flow={depositFlow} />
-        <WhyChooseSection items={whyChooseUs} policies={policyHighlights} />
-        <TestimonialsSection items={proofItems} />
-        <FaqSection groups={faqGroups} />
-        <ConsultSection onSubmit={handleConsultSubmit} />
-        <FinalCta onLoginClick={onLoginClick} />
+        <ScrollReveal delay={100}>
+          <HeroSection
+            logo={heroImg}
+            notice={notice}
+            onLoginClick={onLoginClick}
+            serviceSignals={serviceSignals}
+          />
+        </ScrollReveal>
+        <ScrollReveal delay={200}><TrustStrip items={trustStats} /></ScrollReveal>
+        <ScrollReveal delay={100}><ServiceCategories categories={mergedCategories} /></ScrollReveal>
+        <ScrollReveal delay={100}><FeaturedServices services={mergedFeaturedServices} onPurchaseClick={onLoginClick} /></ScrollReveal>
+        <ScrollReveal delay={100}>
+          <ServiceTableSection
+            filters={mergedFilters}
+            rows={mergedTableRows}
+            onActionClick={onLoginClick}
+          />
+        </ScrollReveal>
+        <ScrollReveal delay={100}><WorkflowSection steps={workflowSteps} /></ScrollReveal>
+        <ScrollReveal delay={100}><AutoDepositSection flow={depositFlow} /></ScrollReveal>
+        <ScrollReveal delay={100}><WhyChooseSection items={whyChooseUs} policies={policyHighlights} /></ScrollReveal>
+        <ScrollReveal delay={100}><TestimonialsSection items={proofItems} /></ScrollReveal>
+        <ScrollReveal delay={100}><FaqSection groups={faqGroups} /></ScrollReveal>
+        <ScrollReveal delay={100}><ConsultSection onSubmit={handleConsultSubmit} /></ScrollReveal>
+        <ScrollReveal delay={100}><FinalCta onLoginClick={onLoginClick} /></ScrollReveal>
       </main>
 
       <PublicFooter footerGroups={footerGroups} logo={heroImg} />
