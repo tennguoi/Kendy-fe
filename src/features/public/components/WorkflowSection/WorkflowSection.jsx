@@ -1,3 +1,5 @@
+import './WorkflowSection.css'
+
 function WorkflowSection({ steps }) {
   return (
     <section className="public-section workflow-section" id="workflow">

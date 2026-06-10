@@ -1,5 +1,6 @@
 import { ArrowRight, LogIn, Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import './PublicHeader.css'
 
 function PublicHeader({ logo, navItems, onLoginClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

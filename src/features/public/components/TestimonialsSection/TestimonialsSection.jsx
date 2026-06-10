@@ -1,3 +1,5 @@
+import './TestimonialsSection.css'
+
 function TestimonialsSection({ items }) {
   return (
     <section className="public-section proof-section" id="proof">

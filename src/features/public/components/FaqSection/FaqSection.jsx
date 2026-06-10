@@ -1,3 +1,5 @@
+import './FaqSection.css'
+
 function FaqSection({ groups }) {
   return (
     <section className="public-section faq-section" id="faq">

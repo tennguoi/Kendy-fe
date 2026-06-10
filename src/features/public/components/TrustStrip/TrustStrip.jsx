@@ -1,3 +1,5 @@
+import './TrustStrip.css'
+
 function TrustStrip({ items }) {
   return (
     <section className="trust-strip" aria-label="Cam kết tạo niềm tin">

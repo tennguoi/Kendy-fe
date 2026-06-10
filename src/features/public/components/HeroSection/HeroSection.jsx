@@ -1,4 +1,5 @@
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import './HeroSection.css'
 
 function HeroSection({ logo, notice, onLoginClick, serviceSignals }) {
   return (

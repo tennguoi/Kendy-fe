@@ -1,0 +1,271 @@
+.public-home .auto-deposit-section.public-section {
+  width: min(1180px, calc(100% - 48px));
+  max-width: 1180px;
+  margin: 48px auto 0;
+
+  display: grid;
+  grid-template-columns: minmax(360px, 0.92fr) minmax(480px, 1.08fr);
+  gap: 32px;
+  align-items: start;
+
+  padding: 58px 34px 34px;
+  box-sizing: border-box;
+  border-radius: 26px;
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, rgba(24, 196, 199, 0.22) 0%, rgba(20, 124, 255, 0) 48%),
+    #0f172a;
+  box-shadow: 0 26px 70px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+}
+
+.deposit-copy {
+  max-width: 520px;
+  padding-top: 28px;
+}
+
+.deposit-copy .eyebrow {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: #9beffd;
+}
+
+.deposit-copy h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(26px, 2.2vw, 31px);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+}
+
+.deposit-copy p {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.72;
+}
+
+.deposit-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 14px 16px;
+  border: 1px solid rgba(245, 158, 11, 0.36);
+  border-radius: 16px;
+  color: #fffbeb;
+  background: rgba(245, 158, 11, 0.12);
+  line-height: 1.55;
+}
+
+.deposit-warning svg {
+  flex: 0 0 auto;
+  color: #fbbf24;
+}
+
+.deposit-showcase {
+  display: grid;
+  gap: 16px;
+}
+
+.deposit-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.qr-box {
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.deposit-lines {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.deposit-lines span {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.deposit-lines strong {
+  color: #ffffff;
+  font-size: 24px;
+  overflow-wrap: anywhere;
+}
+
+.deposit-lines button {
+  width: max-content;
+  max-width: 100%;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  color: #d8feff;
+  background: rgba(255, 255, 255, 0.1);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.deposit-card em {
+  justify-self: end;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #fffbeb;
+  background: rgba(245, 158, 11, 0.22);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.deposit-flow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.deposit-flow > .deposit-flow-step:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.deposit-flow-step {
+  min-width: 0;
+  min-height: 168px;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.deposit-flow-step svg {
+  color: #9beffd;
+}
+
+.flow-index {
+  color: var(--kd-blue);
+  font-size: 26px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.deposit-flow-step h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.deposit-flow-step p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.64;
+}
+
+@media (max-width: 920px) {
+  .public-home .auto-deposit-section.public-section {
+    width: min(100% - 36px, 1180px);
+    grid-template-columns: 1fr;
+    padding: 32px 28px 28px;
+  }
+
+  .deposit-copy {
+    max-width: 720px;
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 680px) {
+  .public-home .auto-deposit-section.public-section {
+    width: min(100% - 28px, 1180px);
+    padding: 28px 24px 24px;
+    border-radius: 22px;
+  }
+
+  .deposit-flow {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .deposit-flow > .deposit-flow-step:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .deposit-flow-step {
+    min-height: 0;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .deposit-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .deposit-card em {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 520px) {
+  .public-home .auto-deposit-section.public-section {
+    width: min(100% - 20px, 1180px);
+    padding: 24px 20px 20px;
+    border-radius: 18px;
+  }
+
+  .deposit-copy h2 {
+    font-size: 25px;
+    line-height: 1.22;
+  }
+
+  .deposit-copy p {
+    font-size: 14px;
+    line-height: 1.62;
+  }
+
+  .deposit-warning {
+    padding: 13px 14px;
+    font-size: 14px;
+  }
+
+  .deposit-flow-step h3 {
+    font-size: 17px;
+  }
+
+  .qr-box {
+    width: 82px;
+    height: 82px;
+    border-radius: 16px;
+  }
+
+  .deposit-lines strong {
+    font-size: 21px;
+  }
+}
+
+@media (max-width: 420px) {
+  .deposit-lines button {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

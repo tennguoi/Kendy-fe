@@ -2,20 +2,20 @@ import { useMemo, useState, useEffect } from 'react'
 import { Clapperboard, Megaphone, PackageCheck, ShieldCheck, Users } from 'lucide-react'
 import heroImg from '../../assets/hero.png'
 import { publicApi } from '../../api/public.api'
-import AutoDepositSection from './components/AutoDepositSection'
-import ConsultSection from './components/ConsultSection'
-import FeaturedServices from './components/FeaturedServices'
-import FaqSection from './components/FaqSection'
-import FinalCta from './components/FinalCta'
-import HeroSection from './components/HeroSection'
-import PublicFooter from './components/PublicFooter'
-import PublicHeader from './components/PublicHeader'
-import ServiceCategories from './components/ServiceCategories'
-import ServiceTableSection from './components/ServiceTableSection'
-import TestimonialsSection from './components/TestimonialsSection'
-import TrustStrip from './components/TrustStrip'
-import WhyChooseSection from './components/WhyChooseSection'
-import WorkflowSection from './components/WorkflowSection'
+import AutoDepositSection from './components/AutoDepositSection/AutoDepositSection'
+import ConsultSection from './components/ConsultSection/ConsultSection'
+import FeaturedServices from './components/FeaturedServices/FeaturedServices'
+import FaqSection from './components/FaqSection/FaqSection'
+import FinalCta from './components/FinalCta/FinalCta'
+import HeroSection from './components/HeroSection/HeroSection'
+import PublicFooter from './components/PublicFooter/PublicFooter'
+import PublicHeader from './components/PublicHeader/PublicHeader'
+import ServiceCategories from './components/ServiceCategories/ServiceCategories'
+import ServiceTableSection from './components/ServiceTableSection/ServiceTableSection'
+import TestimonialsSection from './components/TestimonialsSection/TestimonialsSection'
+import TrustStrip from './components/TrustStrip/TrustStrip'
+import WhyChooseSection from './components/WhyChooseSection/WhyChooseSection'
+import WorkflowSection from './components/WorkflowSection/WorkflowSection'
 import { faqGroups } from './data/faqs.public'
 import { footerGroups, policyHighlights } from './data/policies.public'
 import {
@@ -81,7 +81,7 @@ function buildFeaturedServices(apiServices) {
 }
 
 function mapApiServiceToFeaturedRow(service) {
-  const slug = pickCategorySlug(service.categoryName || service.type)
+  //const slug = pickCategorySlug(service.categoryName || service.type)
   return {
     name: service.name,
     description: service.shortDescription || service.description || '',

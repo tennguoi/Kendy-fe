@@ -1,4 +1,5 @@
 import { Send } from 'lucide-react'
+import './ConsultSection.css'
 
 function ConsultSection({ onSubmit }) {
   return (

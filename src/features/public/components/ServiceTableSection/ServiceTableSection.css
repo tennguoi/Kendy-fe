@@ -1,0 +1,238 @@
+.service-toolbar,
+.service-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.service-toolbar {
+  justify-content: space-between;
+}
+
+.service-search {
+  width: min(520px, 100%);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--kd-muted);
+}
+
+.service-search input,
+.service-toolbar select {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--kd-text);
+  font: inherit;
+}
+
+.service-toolbar select {
+  width: auto;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.service-filter-row {
+  flex-wrap: wrap;
+}
+
+.service-filter-row button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--kd-border);
+  border-radius: 999px;
+  color: #334155;
+  background: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.service-filter-row button.active {
+  border-color: transparent;
+  color: #ffffff;
+  background: var(--kd-blue);
+}
+
+.service-table {
+  overflow: hidden;
+  border: 1px solid var(--kd-border);
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: var(--kd-soft-shadow);
+}
+
+.service-table-head,
+.service-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.35fr) 0.72fr 0.7fr 0.78fr 0.74fr 0.76fr;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.service-table-head {
+  color: var(--kd-muted);
+  background: #f8fafc;
+  font-size: 12px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.service-row {
+  border-top: 1px solid var(--kd-border);
+}
+
+.service-row span {
+  color: #334155;
+  line-height: 1.45;
+}
+
+.service-name-cell {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.service-name-cell svg {
+  flex: 0 0 auto;
+  color: var(--kd-blue);
+}
+
+.service-name-cell strong {
+  min-width: 0;
+  color: var(--kd-text);
+  line-height: 1.35;
+}
+
+.service-row button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 12px;
+  color: #ffffff;
+  background: #0f172a;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 1180px) {
+  .service-table-head,
+  .service-row {
+    grid-template-columns: minmax(220px, 1.2fr) 0.7fr 0.62fr 0.72fr 0.72fr;
+  }
+
+  .service-table-head span:nth-child(5),
+  .service-row > span:nth-of-type(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .service-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .service-toolbar select {
+    width: 100%;
+  }
+
+  .service-table {
+    display: grid;
+    gap: 12px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .service-table-head {
+    display: none;
+  }
+
+  .service-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 16px;
+    border: 1px solid var(--kd-border);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: var(--kd-soft-shadow);
+  }
+
+  .service-row > span {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding-top: 8px;
+    border-top: 1px solid var(--kd-border);
+    text-align: right;
+  }
+
+  .service-row > span:nth-of-type(4) {
+    display: flex;
+  }
+
+  .service-row > span::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    color: var(--kd-muted);
+    font-size: 12px;
+    font-weight: 850;
+    text-align: left;
+  }
+
+  .service-name-cell {
+    align-items: flex-start;
+  }
+
+  .service-name-cell strong {
+    overflow-wrap: anywhere;
+  }
+
+  .service-row button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .service-filter-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .service-filter-row button {
+    flex: 0 0 auto;
+  }
+
+  .service-search,
+  .service-toolbar select {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 420px) {
+  .service-row > span {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+    text-align: left;
+  }
+}

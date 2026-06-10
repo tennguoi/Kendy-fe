@@ -1,3 +1,5 @@
+import './PublicFooter.css'
+
 function PublicFooter({ logo, footerGroups }) {
   return (
     <footer className="public-footer">

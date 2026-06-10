@@ -1,4 +1,5 @@
 import { ArrowRight, LogIn } from 'lucide-react'
+import './FinalCta.css'
 
 function FinalCta({ onLoginClick }) {
   return (

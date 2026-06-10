@@ -1,4 +1,5 @@
 import { AlertCircle, Copy, QrCode } from 'lucide-react'
+import './AutoDepositSection.css'
 
 function AutoDepositSection({ flow }) {
   return (

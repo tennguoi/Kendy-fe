@@ -1,3 +1,5 @@
+import './WhyChooseSection.css'
+
 function WhyChooseSection({ items, policies }) {
   return (
     <section className="public-section why-section" id="policies">

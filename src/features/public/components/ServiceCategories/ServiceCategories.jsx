@@ -1,3 +1,5 @@
+import './ServiceCategories.css'
+
 function ServiceCategories({ categories }) {
   return (
     <section className="public-section" id="services">

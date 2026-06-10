@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import './ServiceTableSection.css'
 
 function ServiceTableSection({ filters, rows, onActionClick }) {
   const [activeFilter, setActiveFilter] = useState('all')
@@ -88,11 +89,11 @@ function ServiceTableSection({ filters, rows, onActionClick }) {
                 <Icon size={20} strokeWidth={2} aria-hidden="true" />
                 <strong>{row.name}</strong>
               </div>
-              <span>{row.categoryLabel}</span>
-              <span>{row.price}</span>
-              <span>{row.processingTime}</span>
-              <span>{row.warranty}</span>
-              <button type="button" onClick={onActionClick}>
+              <span data-label="Nhóm">{row.categoryLabel}</span>
+              <span data-label="Giá từ">{row.price}</span>
+              <span data-label="Thời gian">{row.processingTime}</span>
+              <span data-label="Bảo hành">{row.warranty}</span>
+              <button type="button" data-label="Hành động" onClick={onActionClick}>
                 {row.cta}
               </button>
             </article>

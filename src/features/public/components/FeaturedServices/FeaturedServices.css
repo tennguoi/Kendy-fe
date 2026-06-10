@@ -1,0 +1,165 @@
+.pricing-section {
+  padding-top: 84px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pricing-card {
+  min-width: 0;
+  min-height: 430px;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--kd-border);
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: var(--kd-soft-shadow);
+}
+
+.pricing-head {
+  display: grid;
+  gap: 8px;
+}
+
+.pricing-head strong {
+  margin: 0;
+  color: var(--kd-text);
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.pricing-head p {
+  margin: 0;
+  color: var(--kd-muted);
+  line-height: 1.58;
+}
+
+.pricing-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pricing-badges span,
+.pricing-badges em {
+  width: max-content;
+  max-width: 100%;
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pricing-badges span {
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
+.pricing-badges em {
+  color: #1d4ed8;
+  background: #dbeafe;
+  font-style: normal;
+}
+
+.price-line {
+  display: grid;
+  gap: 7px;
+  padding: 15px 0;
+  border-top: 1px solid var(--kd-border);
+  border-bottom: 1px solid var(--kd-border);
+}
+
+.price-line strong {
+  color: var(--kd-blue);
+  font-size: 25px;
+  line-height: 1.1;
+}
+
+.price-line span {
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.service-meta {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.service-meta div {
+  display: grid;
+  gap: 3px;
+}
+
+.service-meta dt {
+  color: var(--kd-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.service-meta dd {
+  margin: 0;
+  color: var(--kd-text);
+  font-weight: 850;
+  line-height: 1.4;
+}
+
+.condition-list {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  margin: 0 0 2px;
+  padding: 0;
+  list-style: none;
+}
+
+.condition-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.48;
+}
+
+.condition-list svg {
+  flex: 0 0 auto;
+  color: var(--kd-success);
+  margin-top: 1px;
+}
+
+.pricing-card .public-btn {
+  align-self: end;
+  margin-top: auto;
+}
+
+@media (max-width: 1180px) {
+  .pricing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .pricing-card {
+    min-height: 0;
+    padding: 16px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .pricing-head strong {
+    font-size: 17px;
+  }
+}

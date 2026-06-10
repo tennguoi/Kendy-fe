@@ -1,4 +1,5 @@
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import './FeaturedServices.css'
 
 function FeaturedServices({ services, onPurchaseClick }) {
   return (

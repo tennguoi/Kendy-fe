@@ -52,6 +52,11 @@ export const faqGroups = [
         answer:
           'Tùy gói, bạn có thể cần email nhận gói, thông tin tài khoản cần nâng cấp hoặc yêu cầu sử dụng cụ thể.',
       },
+      {
+        question: 'Tôi có thể đổi gói sau khi mua không?',
+        answer:
+          'Nếu bạn muốn nâng cấp hoặc thay đổi gói, tạo ticket kèm mã đơn và yêu cầu; đội hỗ trợ sẽ kiểm tra khả năng chuyển đổi và chênh lệch giá (nếu có).',
+      },
     ],
   },
   {
