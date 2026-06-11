@@ -1,0 +1,92 @@
+/* ================================================
+ * tickets.css — CSS riêng cho Admin Tickets/Support
+ * Dùng bởi: features/admin/tickets/**
+ * ================================================ */
+
+.admin-ticket-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-ticket-list button {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #edf2f7;
+  border-radius: 14px;
+  color: var(--kd-text);
+  background: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-ticket-list button:hover,
+.admin-ticket-list button.selected {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.admin-ticket-list strong,
+.admin-ticket-list small {
+  display: block;
+}
+
+.admin-ticket-list small,
+.admin-ticket-meta small {
+  color: var(--kd-muted);
+  font-size: 13px;
+}
+
+.admin-ticket-meta {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.admin-conversation {
+  max-height: 360px;
+  display: grid;
+  gap: 10px;
+  overflow: auto;
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.admin-message-bubble {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.admin-message-bubble.admin {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.admin-message-bubble span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--kd-blue);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-message-bubble p {
+  margin: 0;
+}
+
+.admin-message-bubble small {
+  color: var(--kd-muted);
+  font-size: 12px;
+}

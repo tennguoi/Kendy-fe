@@ -42,7 +42,7 @@ function DepositHistoryTable({
         </select>
         <input type="date" value={filterFromDate} onChange={(event) => setFilterFromDate(event.target.value)} placeholder="Từ ngày" />
         <input type="date" value={filterToDate} onChange={(event) => setFilterToDate(event.target.value)} placeholder="Đến ngày" />
-        <button type="button" onClick={() => onFiltersChange?.({ status: filterStatus, fromDate: filterFromDate, toDate: filterToDate })}>Lọc</button>
+        <button type="button" className="primary-button" onClick={() => onFiltersChange?.({ status: filterStatus, ...(filterFromDate ? { fromDate: filterFromDate } : {}), ...(filterToDate ? { toDate: filterToDate } : {}) })}>Lọc</button>
         {(filterStatus || filterFromDate || filterToDate) && (
           <button type="button" className="admin-danger-button" onClick={clearFilters}>Xóa lọc</button>
         )}

@@ -1,0 +1,936 @@
+/* ================================================
+ * shared.css — CSS dùng chung giữa user và admin
+ * Bao gồm: status badge, admin buttons, table rows,
+ *           section head, admin panel primitives,
+ *           shared card styles, micro-animations
+ * ================================================ */
+
+/* Base input shared across user and admin features */
+.dashboard-input,
+.deposit-form input,
+.ticket-form input,
+.ticket-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: #ffffff;
+  color: var(--kd-text);
+  font: inherit;
+}
+
+.ticket-form textarea {
+  min-height: 132px;
+  resize: vertical;
+}
+
+/* Status badges (user-facing) */
+.status {
+  width: max-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.status.active,
+.status.completed,
+.status.credit {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.status.processing,
+.status.maintenance {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.status.refunded,
+.status.debit {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+/* Shared card/panel styles */
+.metric,
+.service-card,
+.ledger-panel,
+.table-panel,
+.deposit-form,
+.bank-panel,
+.ticket-form,
+.ticket-list {
+  background: #ffffff;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  box-shadow: var(--kd-soft-shadow);
+}
+
+/* Metric cards */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.metric {
+  padding: 18px;
+  border-left: 4px solid var(--kd-success);
+}
+
+.metric.orange { border-left-color: var(--kd-warning); }
+.metric.blue   { border-left-color: var(--kd-info); }
+.metric.red    { border-left-color: var(--kd-danger); }
+
+.metric span {
+  color: var(--kd-muted);
+  font-size: 14px;
+}
+
+.metric strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+/* Shared section head */
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  border-bottom: 1px solid var(--kd-border);
+}
+
+.section-head h2,
+.service-card h2,
+.deposit-form h2,
+.ticket-form h2 {
+  margin: 0;
+  color: var(--kd-text);
+}
+
+.section-head button,
+.info-line button,
+.quick-amounts button,
+.service-card button {
+  color: var(--kd-blue);
+  background: #eff6ff;
+  padding: 0 12px;
+  font-weight: 700;
+}
+
+.section-head button:hover,
+.info-line button:hover,
+.quick-amounts button:hover,
+.service-card button:hover {
+  background: #dbeafe;
+}
+
+/* Data table (shared table rows) */
+.data-table {
+  overflow-x: auto;
+}
+
+.table-row {
+  min-width: 760px;
+  display: grid;
+  grid-template-columns: 1.1fr 1.4fr 1fr 1fr 1.2fr;
+  gap: 14px;
+  align-items: center;
+  padding: 15px 18px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.table-row.has-actions {
+  grid-template-columns: 1.1fr 1.4fr 1fr 1fr 1.2fr 1.1fr;
+}
+
+.table-row:last-child {
+  border-bottom: 0;
+}
+
+.table-head {
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.table-actions button {
+  min-height: 32px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  color: var(--kd-blue);
+  background: #eff6ff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.table-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* admin-view wrapper */
+.admin-view {
+  display: grid;
+  gap: 18px;
+}
+
+/* Admin buttons */
+.admin-icon-button,
+.admin-primary-button,
+.admin-panel-head button,
+.admin-form button {
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-icon-button,
+.admin-panel-head button {
+  color: var(--kd-blue);
+  background: #eff6ff;
+  border-color: #dbeafe;
+}
+
+.admin-primary-button,
+.admin-form button[type='submit'] {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
+}
+
+.admin-icon-button:disabled,
+.admin-form button:disabled,
+.admin-panel-head button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.admin-danger-button {
+  min-height: 40px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  color: #991b1b;
+  background: #fee2e2;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-danger-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.admin-danger-button.slim {
+  min-height: 32px;
+  width: max-content;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.admin-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.admin-message {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #bae6fd;
+  border-radius: 14px;
+  color: #075985;
+  background: #e0f2fe;
+  font-weight: 700;
+}
+
+.admin-message.error {
+  color: #991b1b;
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+
+.admin-empty-state {
+  margin: 0;
+  padding: 18px;
+  color: var(--kd-muted);
+  text-align: center;
+}
+
+/* Admin status badges */
+.admin-status {
+  width: max-content;
+  max-width: 100%;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  color: #334155;
+  background: #e2e8f0;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.admin-status.active,
+.admin-status.completed,
+.admin-status.credited,
+.admin-status.resolved,
+.admin-status.credit,
+.admin-status.available { color: #166534; background: #dcfce7; }
+
+.admin-status.pending,
+.admin-status.processing,
+.admin-status.pending-admin,
+.admin-status.pending-user,
+.admin-status.manual-review,
+.admin-status.pending-verify { color: #92400e; background: #fef3c7; }
+
+.admin-status.failed,
+.admin-status.cancelled,
+.admin-status.locked,
+.admin-status.disabled,
+.admin-status.expired,
+.admin-status.debit { color: #991b1b; background: #fee2e2; }
+
+.admin-status.refunded,
+.admin-status.closed,
+.admin-status.duplicate,
+.admin-status.ignored,
+.admin-status.out-of-stock { color: #334155; background: #e2e8f0; }
+
+.admin-status.consulting-only,
+.admin-status.matched,
+.admin-status.open,
+.admin-status.new { color: #1d4ed8; background: #dbeafe; }
+
+/* Glassmorphism + micro-animations */
+.metric,
+.service-card,
+.ledger-panel,
+.table-panel,
+.deposit-form,
+.bank-panel,
+.ticket-form,
+.ticket-list,
+.admin-metric,
+.admin-empty-panel,
+.admin-panel,
+.admin-form.service-editor,
+.admin-form.pricing-editor {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric:hover,
+.service-card:hover,
+.admin-metric:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.09);
+}
+
+/* Redesign overrides */
+.metric-grid,
+.admin-metrics {
+  gap: 12px;
+}
+
+.metric,
+.admin-metric,
+.service-card,
+.quick-service-card,
+.ledger-panel,
+.table-panel,
+.deposit-form,
+.bank-panel,
+.ticket-form,
+.ticket-list,
+.admin-empty-panel,
+.admin-panel,
+.admin-form.service-editor,
+.admin-form.pricing-editor,
+.quick-services-panel,
+.services-catalog {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.metric,
+.admin-metric {
+  padding: 16px;
+}
+
+.metric strong,
+.admin-metric strong {
+  font-size: 26px;
+}
+
+.section-head,
+.admin-panel-head {
+  padding: 16px;
+}
+
+.admin-panel .admin-panel-head {
+  padding: 0;
+}
+
+.table-row,
+.deposit-row,
+.admin-pricing-row,
+.admin-data-row,
+.ledger-row {
+  border-bottom-color: #eef2f7;
+}
+
+.table-head,
+.admin-pricing-row.head,
+.admin-data-row.head {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.admin-icon-button,
+.admin-panel-head button,
+.section-head button,
+.info-line button,
+.quick-amounts button,
+.service-card button,
+.table-actions button {
+  border-radius: 9px;
+  color: #0f5fd8;
+  background: #eff6ff;
+}
+
+.status,
+.admin-status,
+.service-detail-list > span {
+  border-radius: 999px;
+}
+
+.metric:hover,
+.service-card:hover,
+.admin-metric:hover {
+  transform: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.metric,
+.service-card,
+.ledger-panel,
+.table-panel,
+.deposit-form,
+.bank-panel,
+.ticket-form,
+.ticket-list,
+.admin-metric,
+.admin-empty-panel,
+.admin-panel,
+.admin-form.service-editor,
+.admin-form.pricing-editor {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* === Responsive shared === */
+@media (max-width: 1024px) {
+  .metric-grid,
+  .quick-service-list,
+  .service-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .metric-grid,
+  .split-layout,
+  .quick-service-list,
+  .deposit-tool,
+  .support-layout,
+  .service-grid,
+  .admin-metrics,
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bank-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .qr-box {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    max-width: 360px;
+    align-self: center;
+  }
+}
+
+/* Beautiful Table-to-Card transformations for small screens */
+@media (max-width: 768px) {
+  .table-row.head,
+  .table-row.table-head,
+  .deposit-row.head,
+  .deposit-row.table-head,
+  .admin-pricing-row.head,
+  .admin-pricing-row.table-head,
+  .admin-data-row.head,
+  .admin-data-row.table-head {
+    display: none !important;
+  }
+
+  .table-row,
+  .deposit-row,
+  .admin-pricing-row,
+  .admin-data-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    border: 1px solid var(--kd-border) !important;
+    border-radius: 16px !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .table-row > *,
+  .deposit-row > *,
+  .admin-pricing-row > *,
+  .admin-data-row > * {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    text-align: right !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .table-row > *:first-child,
+  .deposit-row > *:first-child,
+  .admin-pricing-row > *:first-child,
+  .admin-data-row > *:first-child {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+    text-align: left !important;
+    font-weight: 700;
+  }
+
+  .table-actions {
+    justify-content: flex-end;
+  }
+
+  .data-table,
+  .admin-data-table,
+  .admin-pricing-table {
+    display: grid;
+    gap: 10px;
+    overflow: visible;
+  }
+
+  .table-row,
+  .deposit-row,
+  .admin-pricing-row,
+  .admin-data-row {
+    border-radius: 12px !important;
+    box-shadow: none !important;
+  }
+
+  .table-row > *,
+  .deposit-row > *,
+  .admin-pricing-row > *,
+  .admin-data-row > * {
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+}
+
+/* Operational UI refresh */
+.metric,
+.service-card,
+.quick-service-card,
+.ledger-panel,
+.table-panel,
+.deposit-form,
+.bank-panel,
+.ticket-form,
+.ticket-list,
+.admin-metric,
+.admin-empty-panel,
+.admin-panel,
+.admin-form.service-editor,
+.admin-form.pricing-editor,
+.quick-services-panel,
+.services-catalog {
+  border: 1px solid var(--kd-border);
+  border-radius: var(--kd-radius);
+  background: var(--kd-card);
+  box-shadow: var(--kd-soft-shadow);
+}
+
+.metric-grid,
+.admin-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric,
+.admin-metric {
+  position: relative;
+  min-height: 104px;
+  padding: 16px;
+  overflow: hidden;
+  border-left: 0;
+}
+
+.metric::before,
+.admin-metric::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--kd-success);
+}
+
+.metric.orange::before { background: var(--kd-warning); }
+.metric.blue::before { background: var(--kd-info); }
+.metric.red::before { background: var(--kd-danger); }
+.admin-metric:nth-child(2n)::before { background: var(--kd-info); }
+.admin-metric:nth-child(3n)::before { background: var(--kd-warning); }
+.admin-metric:nth-child(4n)::before { background: var(--kd-danger); }
+
+.metric span,
+.admin-metric span {
+  color: var(--kd-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.metric strong,
+.admin-metric strong {
+  display: block;
+  margin-top: 12px;
+  color: var(--kd-text);
+  font-size: 25px;
+  line-height: 1.1;
+}
+
+.operations-band {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid var(--kd-border);
+  border-radius: var(--kd-radius);
+  background: #111827;
+  color: #ffffff;
+  box-shadow: var(--kd-soft-shadow);
+}
+
+.operations-band .eyebrow {
+  color: #93c5fd;
+}
+
+.operations-band h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.ops-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ops-list button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--kd-radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ops-list button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.quick-services-panel {
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.quick-service-list,
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+
+.quick-service-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  box-shadow: none;
+}
+
+.quick-service-card > div:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.quick-service-card span {
+  color: var(--kd-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.quick-service-card h3 {
+  min-height: 44px;
+  margin: 0;
+  color: var(--kd-text);
+  font-size: 16px;
+  line-height: 1.32;
+}
+
+.quick-service-card p {
+  min-height: 40px;
+  margin: 0;
+  color: #475467;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.quick-service-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quick-service-meta strong {
+  color: var(--kd-text);
+}
+
+.section-head {
+  min-height: 62px;
+  padding: 14px 16px;
+  border-bottom-color: var(--kd-border);
+}
+
+.section-head h2,
+.admin-panel-head h3,
+.admin-empty-panel h2 {
+  color: var(--kd-text);
+  font-size: 18px;
+  line-height: 1.28;
+}
+
+.section-head button,
+.info-line button,
+.quick-amounts button,
+.service-card button,
+.quick-service-card button,
+.table-actions button,
+.admin-icon-button,
+.admin-panel-head button {
+  min-height: 36px;
+  border-radius: var(--kd-radius-sm);
+  border-color: #c7d7fe;
+  background: #eef4ff;
+  color: #174ea6;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.section-head button:hover,
+.info-line button:hover,
+.quick-amounts button:hover,
+.service-card button:hover,
+.quick-service-card button:hover,
+.table-actions button:hover,
+.admin-icon-button:hover,
+.admin-panel-head button:hover {
+  background: #dbeafe;
+}
+
+.primary-button,
+.admin-primary-button,
+.admin-form button[type='submit'],
+.quick-service-card > button {
+  border-color: #111827;
+  background: #111827;
+  color: #ffffff;
+}
+
+.primary-button:hover,
+.admin-primary-button:hover,
+.admin-form button[type='submit']:hover,
+.quick-service-card > button:hover {
+  background: #1f2937;
+  filter: none;
+}
+
+.dashboard-input,
+.deposit-form input,
+.ticket-form input,
+.ticket-form textarea,
+.admin-form input,
+.admin-form select,
+.admin-form textarea,
+.admin-filters input,
+.admin-filters select {
+  border-radius: var(--kd-radius-sm);
+  border-color: var(--kd-border);
+}
+
+.dashboard-input:focus,
+.deposit-form input:focus,
+.ticket-form input:focus,
+.ticket-form textarea:focus,
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus,
+.admin-filters input:focus,
+.admin-filters select:focus {
+  border-color: #93c5fd;
+  box-shadow: var(--kd-ring);
+}
+
+.data-table,
+.admin-data-table,
+.admin-pricing-table {
+  overflow-x: auto;
+}
+
+.table-row,
+.admin-data-row,
+.admin-pricing-row,
+.deposit-row,
+.ledger-row {
+  border-bottom-color: #edf1f5;
+}
+
+.table-head,
+.admin-data-row.head,
+.admin-pricing-row.head,
+.deposit-row.head {
+  background: #f8fafc;
+  color: #667085;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.status,
+.admin-status {
+  min-height: 26px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.admin-message {
+  border-radius: var(--kd-radius);
+}
+
+.metric:hover,
+.service-card:hover,
+.quick-service-card:hover,
+.admin-metric:hover {
+  transform: none;
+  box-shadow: var(--kd-soft-shadow);
+}
+
+@media (max-width: 1100px) {
+  .metric-grid,
+  .admin-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-service-list,
+  .service-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .operations-band {
+    grid-template-columns: 1fr;
+  }
+
+  .ops-list {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .metric-grid,
+  .admin-metrics,
+  .quick-service-list,
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-service-list,
+  .service-grid {
+    padding: 12px;
+  }
+}

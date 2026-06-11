@@ -33,7 +33,7 @@ function OverviewView({
   return (
     <>
       <MetricGrid metrics={metrics} />
-      <OperationsBand />
+      <OperationsBand onViewChange={onViewChange} />
       <QuickServicesPanel onOpenServices={onOpenServices} onPurchase={onPurchase} services={quickServices} />
 
       <section className="split-layout">

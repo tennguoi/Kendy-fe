@@ -7,6 +7,10 @@ import ServicesView from './services/ServicesView'
 import SettingsView from './settings/SettingsView'
 import SupportView from './support/SupportView'
 import './user.css'
+import './deposit/deposit.css'
+import './overview/overview.css'
+import './services/services.css'
+import './support/support.css'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')
@@ -34,6 +38,7 @@ function UserRoutes({
   onCurrentUserChange,
   onDeleteAttachment,
   onFileChange,
+  onFiltersChange,
   onLoadTicket,
   onOpenServices,
   onPurchase,
@@ -98,6 +103,7 @@ function UserRoutes({
           onCancelDeposit={onCancelDeposit}
           onCopy={onCopy}
           onCreateDeposit={onCreateDeposit}
+          onFiltersChange={onFiltersChange}
           onRefreshDeposit={onRefreshDeposit}
         />
       ),

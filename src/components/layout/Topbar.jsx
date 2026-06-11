@@ -26,6 +26,7 @@ function Topbar({
   onMarkNotificationRead,
   onOpenNotifications,
   onViewChange,
+  searchTargetView,
   showBalance = true,
   subtitle = 'Tài khoản & quảng cáo Facebook',
   onToggleSidebar,
@@ -34,8 +35,8 @@ function Topbar({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
 
   const handleSearchKeyDown = (event) => {
-    if (event.key === 'Enter' && searchQuery.trim() && onViewChange) {
-      onViewChange('services')
+    if (event.key === 'Enter' && searchQuery.trim() && onViewChange && searchTargetView) {
+      onViewChange(searchTargetView)
     }
   }
 

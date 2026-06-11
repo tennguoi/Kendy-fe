@@ -1,0 +1,110 @@
+/* ================================================
+ * pricing.css — CSS riêng cho tính năng Pricing
+ * Dùng bởi: features/admin/pricing/**
+ * ================================================ */
+
+.admin-pricing-table {
+  overflow-x: auto;
+}
+
+.admin-pricing-row {
+  min-width: 760px;
+  display: grid;
+  grid-template-columns: minmax(240px, 1.4fr) minmax(130px, 0.75fr) minmax(110px, 0.5fr) minmax(150px, 0.75fr);
+  gap: 14px;
+  align-items: center;
+  padding: 13px 12px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+button.admin-pricing-row {
+  width: 100%;
+  border-width: 0 0 1px;
+  border-color: #edf2f7;
+  background: #ffffff;
+  color: var(--kd-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-pricing-row.head {
+  color: var(--kd-muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  background: #f8fafc;
+  border-radius: 12px 12px 0 0;
+}
+
+button.admin-pricing-row:hover,
+button.admin-pricing-row.selected {
+  background: #eff6ff;
+}
+
+.admin-pricing-row strong,
+.admin-pricing-row small {
+  display: block;
+}
+
+.admin-pricing-row small {
+  color: var(--kd-muted);
+  font-size: 13px;
+}
+
+.pricing-editor {
+  position: sticky;
+  top: 18px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .pricing-editor {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-pricing-table {
+    display: grid;
+    gap: 10px;
+    overflow: visible;
+  }
+
+  .admin-pricing-row.head,
+  .admin-pricing-row.table-head {
+    display: none !important;
+  }
+
+  .admin-pricing-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    border: 1px solid var(--kd-border) !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-pricing-row > * {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .admin-pricing-row > *:first-child {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+}

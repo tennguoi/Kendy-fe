@@ -5,7 +5,7 @@ import { adminNavItems } from './features/admin/adminNavigation'
 import { navItems } from './features/user/navigation'
 import AdminRoutes from './features/admin/AdminRoutes'
 import AuthScreen from './features/auth/AuthScreen'
-import DashboardShell from './features/dashboard/DashboardShell'
+import DashboardShell from './components/layout/DashboardShell'
 import UserRoutes from './features/user/UserRoutes'
 import PublicHome from './features/public/PublicHome'
 import { useClipboard } from './hooks/useClipboard'
@@ -1059,6 +1059,7 @@ function App() {
       activeView={userActiveView}
       currentUser={currentUser}
       displayBalance={displayBalance}
+      items={navItems}
       notificationCount={unreadNotifications}
       notifications={notifications}
       notificationsLoading={notificationsLoading}

@@ -1,5 +1,9 @@
 import { formatAdminMoney } from '../adminFormat'
 
+function maxValue(rows, key) {
+  return Math.max(1, ...rows.map((row) => Number(row[key]) || 0))
+}
+
 function AdminOverviewView({
   categories,
   dashboard,
@@ -24,6 +28,9 @@ function AdminOverviewView({
     { label: 'Dịch vụ đang bật', value: activeServices },
     { label: 'Nhóm dịch vụ', value: categories.length },
   ]
+  const recentRevenue = revenueChart.slice(-7)
+  const maxRevenue = maxValue(recentRevenue, 'grossRevenue')
+  const maxOrders = maxValue(servicePerformance, 'orderCount')
 
   return (
     <section className="admin-view">
@@ -63,30 +70,44 @@ function AdminOverviewView({
       <div className="admin-grid two-columns">
         <div className="admin-panel">
           <div className="admin-panel-head">
-            <h3>Revenue chart</h3>
+            <h3>Doanh thu 7 ngày</h3>
             <span>{revenueChart.length} ngày</span>
           </div>
-          <div className="admin-mini-list">
-            {revenueChart.slice(-7).map((row) => (
+          <div className="admin-trend-list">
+            {recentRevenue.map((row) => (
               <article key={row.date}>
-                <strong>{row.date}</strong>
-                <span>Deposit {formatAdminMoney(row.depositVolume)} · Revenue {formatAdminMoney(row.grossRevenue)} · Refund {formatAdminMoney(row.refunds)}</span>
+                <div>
+                  <strong>{row.date}</strong>
+                  <span>Nạp {formatAdminMoney(row.depositVolume)} · Hoàn {formatAdminMoney(row.refunds)}</span>
+                </div>
+                <div className="admin-trend-value">
+                  <strong>{formatAdminMoney(row.grossRevenue)}</strong>
+                  <span style={{ width: `${Math.max(8, ((Number(row.grossRevenue) || 0) / maxRevenue) * 100)}%` }} />
+                </div>
               </article>
             ))}
+            {recentRevenue.length === 0 && <p className="admin-empty-state">Chưa có dữ liệu doanh thu.</p>}
           </div>
         </div>
         <div className="admin-panel">
           <div className="admin-panel-head">
-            <h3>Service performance</h3>
+            <h3>Hiệu suất dịch vụ</h3>
             <span>{servicePerformance.length} dịch vụ</span>
           </div>
-          <div className="admin-mini-list">
+          <div className="admin-trend-list">
             {servicePerformance.map((item) => (
               <article key={item.serviceId}>
-                <strong>{item.serviceName}</strong>
-                <span>{item.orderCount} đơn · {formatAdminMoney(item.revenue)}</span>
+                <div>
+                  <strong>{item.serviceName}</strong>
+                  <span>{formatAdminMoney(item.revenue)}</span>
+                </div>
+                <div className="admin-trend-value">
+                  <strong>{item.orderCount} đơn</strong>
+                  <span style={{ width: `${Math.max(8, ((Number(item.orderCount) || 0) / maxOrders) * 100)}%` }} />
+                </div>
               </article>
             ))}
+            {servicePerformance.length === 0 && <p className="admin-empty-state">Chưa có dữ liệu dịch vụ.</p>}
           </div>
         </div>
       </div>

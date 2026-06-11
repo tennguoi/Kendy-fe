@@ -1,0 +1,35 @@
+/* ================================================
+ * support.css — CSS riêng cho tính năng Hỗ trợ (Ticket)
+ * Dùng bởi: features/user/support/**
+ * ================================================ */
+
+.support-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 18px;
+}
+
+.ticket-form {
+  display: grid;
+  gap: 16px;
+}
+
+.ticket-list {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.ticket-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Responsive */
+@media (max-width: 820px) {
+  .support-layout {
+    grid-template-columns: 1fr;
+  }
+}

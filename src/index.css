@@ -1,27 +1,31 @@
 :root {
   --sans: Inter, 'Segoe UI', Roboto, system-ui, sans-serif;
-  --kd-deep: #0f172a;
-  --kd-navy: #102033;
-  --kd-blue: #147cff;
-  --kd-blue-hover: #1687f2;
-  --kd-cyan: #18c4c7;
-  --kd-teal: #20bfc8;
-  --kd-bg: #f5f8fc;
+  --kd-deep: #111827;
+  --kd-navy: #172033;
+  --kd-blue: #2563eb;
+  --kd-blue-hover: #1d4ed8;
+  --kd-cyan: #0891b2;
+  --kd-teal: #0f766e;
+  --kd-bg: #f6f7f9;
   --kd-card: #ffffff;
-  --kd-border: #e2e8f0;
-  --kd-text: #0f172a;
-  --kd-muted: #64748b;
+  --kd-border: #dde3ea;
+  --kd-border-strong: #cbd5e1;
+  --kd-text: #111827;
+  --kd-muted: #667085;
   --kd-success: #16a34a;
-  --kd-warning: #f59e0b;
+  --kd-warning: #d97706;
   --kd-danger: #dc2626;
   --kd-info: #2563eb;
-  --kd-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
-  --kd-soft-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+  --kd-shadow: 0 18px 44px rgba(17, 24, 39, 0.12);
+  --kd-soft-shadow: 0 1px 2px rgba(17, 24, 39, 0.05), 0 10px 28px rgba(17, 24, 39, 0.06);
+  --kd-radius: 8px;
+  --kd-radius-sm: 6px;
+  --kd-ring: 0 0 0 3px rgba(37, 99, 235, 0.16);
 
   font: 16px/1.45 var(--sans);
   letter-spacing: 0;
-  color: #0f172a;
-  background: #f5f8fc;
+  color: var(--kd-text);
+  background: var(--kd-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -32,14 +36,36 @@ body {
   margin: 0;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 #root {
   min-height: 100svh;
 }
 
 button,
 input,
+select,
 textarea {
   font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  outline-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--kd-ring);
 }
 
 .eyebrow {

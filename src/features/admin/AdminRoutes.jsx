@@ -8,6 +8,11 @@ import AdminSettingsView from './settings/AdminSettingsView'
 import AdminTicketsView from './tickets/AdminTicketsView'
 import AdminUsersView from './users/AdminUsersView'
 import './admin.css'
+import './finance/finance.css'
+import './overview/overview.css'
+import './pricing/pricing.css'
+import './services/services.css'
+import './tickets/tickets.css'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')

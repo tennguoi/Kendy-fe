@@ -1,12 +1,11 @@
 import { X } from 'lucide-react'
 import heroImg from '../../assets/hero.png'
-import { navItems } from '../user/navigation'
 
 function Sidebar({
   activeView,
   footerLabel = 'Hỗ trợ',
   footerTitle = 'Ticket sau mua',
-  items = navItems,
+  items = [],
   onViewChange,
   isOpen,
   onClose,

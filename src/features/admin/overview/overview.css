@@ -1,0 +1,139 @@
+/* ================================================
+ * overview.css — CSS riêng cho tính năng Admin Overview
+ * Dùng bởi: features/admin/overview/**
+ * ================================================ */
+
+.admin-report-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-report-grid div {
+  padding: 14px;
+  border: 1px solid #edf2f7;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.admin-report-grid span,
+.admin-report-grid strong {
+  display: block;
+}
+
+.admin-report-grid span {
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-report-grid strong {
+  margin-top: 6px;
+  font-size: 20px;
+}
+
+.admin-report-grid.compact-report {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+
+/* Responsive */
+@media (max-width: 820px) {
+  .admin-report-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-report-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-report-grid div {
+  border-radius: var(--kd-radius);
+  background: #f8fafc;
+}
+
+.admin-report-grid span {
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.admin-report-grid strong {
+  color: var(--kd-text);
+  font-size: 22px;
+}
+
+.admin-trend-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-trend-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 0.46fr);
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #edf1f5;
+  border-radius: var(--kd-radius);
+  background: #ffffff;
+}
+
+.admin-trend-list strong,
+.admin-trend-list span {
+  display: block;
+}
+
+.admin-trend-list article > div:first-child {
+  min-width: 0;
+}
+
+.admin-trend-list article > div:first-child strong {
+  overflow: hidden;
+  color: var(--kd-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-trend-list article > div:first-child span {
+  margin-top: 3px;
+  color: var(--kd-muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.admin-trend-value {
+  display: grid;
+  gap: 8px;
+  text-align: right;
+}
+
+.admin-trend-value strong {
+  color: var(--kd-text);
+  font-size: 13px;
+}
+
+.admin-trend-value span {
+  justify-self: end;
+  height: 6px;
+  max-width: 100%;
+  border-radius: 999px;
+  background: #2563eb;
+}
+
+@media (max-width: 640px) {
+  .admin-trend-list article {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-trend-value {
+    text-align: left;
+  }
+
+  .admin-trend-value span {
+    justify-self: start;
+  }
+}

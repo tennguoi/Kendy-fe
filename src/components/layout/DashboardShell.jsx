@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { navItems } from '../user/navigation'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
-import './Dashboard.css'
+import './layout.css'
+import './shared.css'
 
 function DashboardShell({
   activeView,
@@ -11,7 +11,7 @@ function DashboardShell({
   displayBalance,
   footerLabel,
   footerTitle,
-  items = navItems,
+  items = [],
   notificationCount = 0,
   notifications = [],
   notificationsLoading = false,
@@ -24,6 +24,7 @@ function DashboardShell({
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const activeTitle = items.find((item) => item.id === activeView)?.label || 'Tổng quan'
+  const searchTargetView = items.find((item) => item.id === 'services' || item.id === 'admin-services')?.id
 
   const handleCloseSidebar = () => setIsSidebarOpen(false)
   const handleToggleSidebar = () => setIsSidebarOpen((prev) => !prev)
@@ -56,6 +57,7 @@ function DashboardShell({
           onLogout={onLogout}
           onMarkNotificationRead={onMarkNotificationRead}
           onOpenNotifications={onOpenNotifications}
+          searchTargetView={searchTargetView}
           onViewChange={(view) => {
             onViewChange(view)
             handleCloseSidebar()
