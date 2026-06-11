@@ -309,14 +309,20 @@
 }
 
 .kd-modal-body .user-tools-title {
-  padding: 0 0 12px;
-  border-bottom: 0;
+  display: none;
 }
 
 .kd-modal-body .user-tools-body {
   margin: 0;
   padding: 0;
   background: transparent;
+}
+
+.kd-modal-body .user-tool-section {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 @media (max-width: 768px) {

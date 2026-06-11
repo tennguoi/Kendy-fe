@@ -1,5 +1,6 @@
 import { RefreshCw, Plus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { adminApi } from '../../../api/admin.api'
 import { parseMoneyInput } from '../../../utils/moneyInput'
 import CategoryEditor from './components/CategoryEditor'
@@ -133,6 +134,7 @@ function AdminServicesView({
   onSetNotice,
   token,
 }) {
+  const location = useLocation()
   const [categories, setCategories] = useState([])
   const [categoryForm, setCategoryForm] = useState(emptyCategoryForm)
   const [error, setError] = useState('')
@@ -150,7 +152,7 @@ function AdminServicesView({
 
   // Layout & Navigation States
   const [activeTab, setActiveTab] = useState('services')
-  const [activeEditor, setActiveEditor] = useState('service') // 'service' | 'category' | null
+  const [activeEditor, setActiveEditor] = useState(null) // 'service' | 'category' | null
   const [showCreateDropdown, setShowCreateDropdown] = useState(false)
 
   const activeServices = services.filter((service) => service.status === 'ACTIVE').length
@@ -206,15 +208,12 @@ function AdminServicesView({
     return () => window.clearTimeout(timer)
   }, [loadServices])
 
-  // Setup initial editor selection when data loads
   useEffect(() => {
-    if (services.length > 0 && selectedServiceId === null) {
-      const matched = services.find((s) => s.id === services[0]?.id)
-      if (matched) {
-        selectService(matched)
-      }
+    if (location.pathname !== '/admin/services') {
+      setActiveEditor(null)
+      setShowCreateDropdown(false)
     }
-  }, [services])
+  }, [location.pathname])
 
   // Close dropdown on click outside
   useEffect(() => {

@@ -37,16 +37,30 @@ body.kd-modal-open {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 16px 24px;
   border-bottom: 1px solid var(--kd-border, #edf2f7);
   background: #fbfdff;
 }
 
 .kd-modal-header h3 {
+  min-width: 0;
+  flex: 1;
   margin: 0;
   font-size: 18px;
   font-weight: 800;
   color: var(--kd-navy, #0f172a);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kd-modal-header-actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 .kd-modal-close-btn {

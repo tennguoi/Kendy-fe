@@ -1,5 +1,6 @@
 import { Lock, MoreHorizontal, Save, Unlock, UserRoundCog } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import Modal from '../../../../components/Modal/Modal'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminMoney } from '../../adminFormat'
@@ -22,9 +23,15 @@ function UserListPanel({
   submitting,
   users = [],
 }) {
+  const location = useLocation()
   const [openToolbarId, setOpenToolbarId] = useState(null)
   const [activeToolTab, setActiveToolTab] = useState('wallet')
   const [toolsUser, setToolsUser] = useState(null)
+
+  useEffect(() => {
+    setOpenToolbarId(null)
+    setToolsUser(null)
+  }, [location.pathname])
 
   const handleSelectUser = (userId) => {
     onSelectUser(userId)

@@ -183,9 +183,33 @@
 
 .service-editor-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 8px;
   justify-content: flex-end;
+  min-width: 0;
+}
+
+.service-editor-actions button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.kd-modal-body .admin-service-editor {
+  position: static;
+  max-height: none;
+  overflow: visible;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.kd-modal-body .admin-service-editor > .admin-panel-head {
+  margin-bottom: 14px !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid var(--kd-border);
 }
 
 .service-editor-sections {
@@ -262,10 +286,18 @@
     grid-template-columns: 1fr;
   }
 
-  .service-section-title,
-  .service-editor-actions {
+  .service-section-title {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .service-editor-actions {
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .service-editor-actions button span {
+    display: none;
   }
 
   .service-section-title span {
