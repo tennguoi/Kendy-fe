@@ -4,6 +4,7 @@ import { adminApi } from '../../../api/admin.api'
 import OrderDetailPanel from './components/OrderDetailPanel'
 import OrderFilterBar from './components/OrderFilterBar'
 import OrderListPanel from './components/OrderListPanel'
+import Loading from '../../../components/Loading/Loading'
 
 function formFromOrder(order) {
   return {
@@ -259,7 +260,8 @@ function AdminOrdersView({
         </button>
       </div>
 
-      {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải đơn hàng...'}</p>}
+      {error && <p className="admin-message error">{error}</p>}
+      {!error && loading && <Loading fullScreen={false} message="Đang tải đơn hàng..." subMessage="" />}
 
       <OrderFilterBar
         onQueryChange={setQuery}

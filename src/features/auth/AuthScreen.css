@@ -619,22 +619,15 @@
     grid-template-columns: 1fr;
   }
 
-  .auth-brand-panel,
-  .auth-brand-content,
-  .auth-form-panel {
-    min-height: auto;
-  }
-
-  .auth-brand-content {
-    padding: 28px;
-  }
-
-  .auth-hero-copy h1 {
-    font-size: 42px;
+  .auth-brand-panel {
+    display: none !important; /* Hide intro completely on mobile */
   }
 
   .auth-form-panel {
+    min-height: 100svh !important; /* Take full viewport height */
     padding: 78px 28px 28px;
+    display: grid;
+    place-items: center; /* Center the login card */
   }
 
   .auth-home-link {

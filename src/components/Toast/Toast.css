@@ -1,7 +1,7 @@
 .kd-toast-wrap {
   position: fixed;
+  top: 24px;
   right: 24px;
-  bottom: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -13,35 +13,103 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(2,6,23,0.2);
+  padding: 14px 16px;
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   color: white;
-  background: linear-gradient(135deg, #0f172a, #147cff);
-  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(2px);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  animation: toastSlideIn 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
 }
 
-.kd-toast .kd-toast-body { flex: 1; }
-.kd-toast-title { font-weight: 800; margin-bottom: 4px; }
-.kd-toast-message { font-size: 13px; opacity: 0.92; }
+/* Hiệu ứng khi thoát */
+.kd-toast-exit {
+  animation: none;
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* Animation xuất hiện */
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kd-toast .kd-toast-body {
+  flex: 1;
+}
+
+.kd-toast-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+  letter-spacing: -0.2px;
+}
+
+.kd-toast-message {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
 
 .kd-toast-close {
   border: 0;
-  background: transparent;
-  color: rgba(255,255,255,0.9);
-  font-size: 18px;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 300;
+  line-height: 1;
 }
 
-.kd-toast-info { background: linear-gradient(135deg, #0f172a, #147cff); }
-.kd-toast-success { background: linear-gradient(135deg, #063f1b, #16a34a); }
-.kd-toast-error { background: linear-gradient(135deg, #4c0f0f, #dc2626); }
+.kd-toast-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+}
 
+.kd-toast-close:active {
+  transform: scale(0.96);
+}
+
+/* Các loại toast */
+.kd-toast-info {
+  background: linear-gradient(135deg, #0f172a, #147cff);
+  border-left: 3px solid #60a5fa;
+}
+
+.kd-toast-success {
+  background: linear-gradient(135deg, #064e3b, #10b981);
+  border-left: 3px solid #34d399;
+}
+
+.kd-toast-error {
+  background: linear-gradient(135deg, #7f1a1a, #ef4444);
+  border-left: 3px solid #fca5a5;
+}
+
+/* Responsive trên mobile */
 @media (max-width: 640px) {
-  .kd-toast-wrap { right: 12px; left: 12px; bottom: 18px; max-width: none; }
+  .kd-toast-wrap {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+  }
+  
+  .kd-toast {
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
 }

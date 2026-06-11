@@ -13,6 +13,7 @@ import './overview/overview.css'
 import './pricing/pricing.css'
 import './services/services.css'
 import './tickets/tickets.css'
+import './users/users.css'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')

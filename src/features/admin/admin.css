@@ -284,10 +284,6 @@
   border-bottom: 1px solid #edf2f7;
 }
 
-.admin-data-row.users {
-  grid-template-columns: minmax(240px, 1.25fr) 110px 130px 130px;
-}
-
 .admin-data-row.orders {
   grid-template-columns: minmax(150px, 0.8fr) minmax(200px, 1.25fr) 120px 130px 150px;
 }
@@ -821,97 +817,4 @@ button.admin-data-row.selected {
 .admin-panel-head button,
 .admin-form button {
   border-radius: var(--kd-radius-sm);
-}
-
-.user-tools-panel {
-  margin-top: 14px;
-  border: 1px solid var(--kd-border);
-  border-radius: var(--kd-radius);
-  background: #f8fafc;
-}
-
-.user-tools-panel summary {
-  min-height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  color: var(--kd-text);
-  cursor: pointer;
-  list-style: none;
-}
-
-.user-tools-panel summary::-webkit-details-marker {
-  display: none;
-}
-
-.user-tools-panel summary::after {
-  content: 'Mở';
-  min-width: 42px;
-  min-height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #c7d7fe;
-  border-radius: var(--kd-radius-sm);
-  background: #eef4ff;
-  color: #174ea6;
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.user-tools-panel[open] summary {
-  border-bottom: 1px solid var(--kd-border);
-}
-
-.user-tools-panel[open] summary::after {
-  content: 'Đóng';
-}
-
-.user-tools-panel summary strong,
-.user-tools-panel summary span {
-  display: block;
-}
-
-.user-tools-panel summary strong {
-  font-size: 14px;
-}
-
-.user-tools-panel summary span {
-  margin-top: 2px;
-  color: var(--kd-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.user-tools-body {
-  display: grid;
-  gap: 10px;
-  padding: 12px;
-}
-
-.user-tool-section {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 12px;
-  border: 1px solid #edf1f5;
-  border-radius: var(--kd-radius);
-  background: #ffffff;
-}
-
-.user-tool-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--kd-text);
-}
-
-.user-tool-head svg {
-  color: var(--kd-muted);
-}
-
-.user-tool-head strong {
-  font-size: 13px;
 }

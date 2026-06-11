@@ -1,10 +1,12 @@
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, Plus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
 import { parseMoneyInput } from '../../../utils/moneyInput'
-import CategoryPanel from './components/CategoryPanel'
+import CategoryEditor from './components/CategoryEditor'
 import ServiceEditor from './components/ServiceEditor'
 import ServiceListPanel from './components/ServiceListPanel'
+import Loading from '../../../components/Loading/Loading'
+import Modal from '../../../components/Modal/Modal'
 
 const emptyServiceForm = {
   benefits: '',
@@ -146,6 +148,15 @@ function AdminServicesView({
   const [statusFilter, setStatusFilter] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  // Layout & Navigation States
+  const [activeTab, setActiveTab] = useState('services')
+  const [activeEditor, setActiveEditor] = useState('service') // 'service' | 'category' | null
+  const [showCreateDropdown, setShowCreateDropdown] = useState(false)
+
+  const activeServices = services.filter((service) => service.status === 'ACTIVE').length
+  const visibleServices = services.filter((service) => service.publicVisible !== false).length
+  const ungroupedServices = services.filter((service) => !service.categoryId && !service.categoryName).length
+
   const setViewError = useCallback((message) => {
     setError(message)
     onSetError(message)
@@ -195,6 +206,24 @@ function AdminServicesView({
     return () => window.clearTimeout(timer)
   }, [loadServices])
 
+  // Setup initial editor selection when data loads
+  useEffect(() => {
+    if (services.length > 0 && selectedServiceId === null) {
+      const matched = services.find((s) => s.id === services[0]?.id)
+      if (matched) {
+        selectService(matched)
+      }
+    }
+  }, [services])
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    if (!showCreateDropdown) return
+    const handleOutsideClick = () => setShowCreateDropdown(false)
+    window.addEventListener('click', handleOutsideClick)
+    return () => window.removeEventListener('click', handleOutsideClick)
+  }, [showCreateDropdown])
+
   const updateServiceForm = (field, value) => {
     setServiceForm((current) => {
       const next = {
@@ -223,11 +252,13 @@ function AdminServicesView({
     setServiceForm(emptyServiceForm)
     setServiceOrders([])
     setSelectedServiceCategories([])
+    setActiveEditor('service')
   }
 
   const selectService = async (service) => {
     setSelectedServiceId(service.id)
     setServiceForm(serviceToForm(service))
+    setActiveEditor('service')
     try {
       const [orders, serviceCategories] = await Promise.all([
         adminApi.getServiceOrders(service.id, token),
@@ -243,6 +274,7 @@ function AdminServicesView({
 
   const selectCategory = async (category) => {
     setSelectedCategoryId(category.id)
+    setActiveEditor('category')
     try {
       const detail = await adminApi.getServiceCategory(category.id, token)
       setCategoryForm({
@@ -266,6 +298,7 @@ function AdminServicesView({
   const startCreateCategory = () => {
     setSelectedCategoryId(null)
     setCategoryForm(emptyCategoryForm)
+    setActiveEditor('category')
   }
 
   const submitCategory = async (event) => {
@@ -289,6 +322,8 @@ function AdminServicesView({
       })
       setSelectedCategoryId(saved.id)
       setCategoryForm(emptyCategoryForm)
+      setActiveEditor(null)
+      await reloadAll()
       onSetNotice(`Đã lưu nhóm ${saved.name}.`)
     } catch (err) {
       setViewError(err.message || 'Không lưu được nhóm dịch vụ.')
@@ -307,7 +342,10 @@ function AdminServicesView({
     try {
       await adminApi.deleteServiceCategory(selectedCategoryId, token)
       setCategories((items) => items.filter((item) => item.id !== selectedCategoryId))
-      startCreateCategory()
+      setSelectedCategoryId(null)
+      setCategoryForm(emptyCategoryForm)
+      setActiveEditor(null)
+      await loadServices()
       onSetNotice('Đã xóa nhóm dịch vụ.')
     } catch (err) {
       setViewError(err.message || 'Không xóa được nhóm dịch vụ.')
@@ -323,7 +361,7 @@ function AdminServicesView({
     try {
       const isEditing = Boolean(selectedServiceId)
       const payload = buildServicePayload(serviceForm, isEditing)
-      const saved = isEditing 
+      const saved = isEditing
         ? await adminApi.updateService(selectedServiceId, payload, token)
         : await adminApi.createService(payload, token)
       setServices((items) => {
@@ -381,64 +419,207 @@ function AdminServicesView({
     }
   }
 
+  const handleCloseEditor = () => {
+    setActiveEditor(null)
+    setSelectedServiceId(null)
+    setSelectedCategoryId(null)
+  }
+
   const toggleSelected = (serviceId) => {
     setSelectedIds((items) => (items.includes(serviceId) ? items.filter((id) => id !== serviceId) : [...items, serviceId]))
+  }
+
+  // Quick Action Handlers for 3-dots menus
+  const handleUpdateServiceQuick = async (serviceId, patch) => {
+    const service = services.find((s) => s.id === serviceId)
+    if (!service) return
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const currentForm = serviceToForm(service)
+      const updatedForm = { ...currentForm, ...patch }
+      const payload = buildServicePayload(updatedForm, true)
+      const saved = await adminApi.updateService(serviceId, payload, token)
+      setServices((items) => items.map((item) => (item.id === saved.id ? saved : item)))
+      if (selectedServiceId === serviceId) {
+        setServiceForm(serviceToForm(saved))
+      }
+      onSetNotice(`Đã cập nhật dịch vụ ${saved.name}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không cập nhật nhanh được dịch vụ.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteServiceQuick = async (serviceId) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = await adminApi.deleteService(serviceId, token)
+      setServices((items) => items.map((item) => (item.id === saved.id ? saved : item)))
+      if (selectedServiceId === serviceId) {
+        setServiceForm(serviceToForm(saved))
+      }
+      onSetNotice(`Đã ẩn/xóa dịch vụ ${saved.name}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không xóa nhanh được dịch vụ.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteCategoryQuick = async (categoryId) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      await adminApi.deleteServiceCategory(categoryId, token)
+      setCategories((items) => items.filter((item) => item.id !== categoryId))
+      if (selectedCategoryId === categoryId) {
+        setSelectedCategoryId(null)
+        setCategoryForm(emptyCategoryForm)
+        setActiveEditor(null)
+      }
+      await loadServices()
+      onSetNotice('Đã xóa danh mục.')
+    } catch (err) {
+      setViewError(err.message || 'Không xóa nhanh được danh mục.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
         <div>
-          <span className="eyebrow">Service management</span>
-          <h2>Quản lý dịch vụ và nhóm dịch vụ</h2>
+          <span className="eyebrow">Dịch vụ</span>
+          <h2>Quản lý dịch vụ & danh mục</h2>
         </div>
-        <button type="button" className="admin-icon-button" onClick={reloadAll} disabled={loading}>
-          <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Tải lại</span>
-        </button>
+        <div className="admin-toolbar-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center', position: 'relative' }}>
+          <button type="button" className="admin-icon-button" onClick={reloadAll} disabled={loading}>
+            <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
+            <span>Tải lại</span>
+          </button>
+
+          <div className="admin-create-dropdown-container">
+            <button
+              type="button"
+              className="admin-primary-button"
+              onClick={(event) => {
+                event.stopPropagation()
+                setShowCreateDropdown((prev) => !prev)
+              }}
+            >
+              <Plus size={18} strokeWidth={2} />
+              <span>Tạo mới</span>
+            </button>
+            {showCreateDropdown && (
+              <div className="admin-dropdown-menu">
+                <button
+                  type="button"
+                  onClick={() => {
+                    startCreateService()
+                    setShowCreateDropdown(false)
+                  }}
+                >
+                  Sản phẩm mới
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    startCreateCategory()
+                    setShowCreateDropdown(false)
+                  }}
+                >
+                  Danh mục mới
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải dữ liệu admin...'}</p>}
+      {error && <p className="admin-message error">{error}</p>}
+      {!error && loading && <Loading fullScreen={false} message="Đang tải dữ liệu admin..." subMessage="" />}
 
-      <div className="admin-grid two-columns">
-        <CategoryPanel
-          categories={categories}
-          categoryForm={categoryForm}
-          onCategoryFormChange={updateCategoryForm}
-          onDeleteCategory={deleteCategory}
-          onSelectCategory={selectCategory}
-          onStartCreateCategory={startCreateCategory}
-          onSubmitCategory={submitCategory}
-          selectedCategoryId={selectedCategoryId}
-          submitting={submitting}
-        />
+      <div className="admin-services-summary" aria-label="Tổng quan dịch vụ">
+        <div>
+          <span>Danh mục</span>
+          <strong>{categories.length}</strong>
+        </div>
+        <div>
+          <span>Sản phẩm</span>
+          <strong>{services.length}</strong>
+        </div>
+        <div>
+          <span>Đang bán</span>
+          <strong>{activeServices}</strong>
+        </div>
+        <div>
+          <span>Public</span>
+          <strong>{visibleServices}</strong>
+        </div>
+        <div>
+          <span>Chưa phân nhóm</span>
+          <strong>{ungroupedServices}</strong>
+        </div>
+      </div>
+
+      <div className="admin-grid detail-layout">
         <ServiceListPanel
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          categories={categories}
           onBulkStatus={bulkStatus}
           onQueryChange={setQuery}
           onSelectService={selectService}
+          onSelectCategory={selectCategory}
           onStartCreateService={startCreateService}
           onStatusFilterChange={setStatusFilter}
           onToggleSelected={toggleSelected}
           query={query}
           selectedIds={selectedIds}
           selectedServiceId={selectedServiceId}
+          selectedCategoryId={selectedCategoryId}
           services={services}
           statusFilter={statusFilter}
           submitting={submitting}
+          onUpdateServiceQuick={handleUpdateServiceQuick}
+          onDeleteServiceQuick={handleDeleteServiceQuick}
+          onDeleteCategoryQuick={handleDeleteCategoryQuick}
         />
       </div>
 
-      <ServiceEditor
-        categories={categories}
-        onDeleteService={deleteService}
-        onSubmitService={submitService}
-        onUpdateServiceForm={updateServiceForm}
-        selectedServiceCategories={selectedServiceCategories}
-        selectedServiceId={selectedServiceId}
-        serviceForm={serviceForm}
-        serviceOrders={serviceOrders}
-        submitting={submitting}
-      />
+      <Modal isOpen={activeEditor === 'service'} onClose={handleCloseEditor} showHeader={false} maxWidth="1000px">
+        <ServiceEditor
+          key={selectedServiceId || 'new'}
+          categories={categories}
+          onDeleteService={deleteService}
+          onSubmitService={submitService}
+          onUpdateServiceForm={updateServiceForm}
+          selectedServiceCategories={selectedServiceCategories}
+          selectedServiceId={selectedServiceId}
+          serviceForm={serviceForm}
+          serviceOrders={serviceOrders}
+          submitting={submitting}
+          onClose={handleCloseEditor}
+        />
+      </Modal>
+
+      <Modal isOpen={activeEditor === 'category'} onClose={handleCloseEditor} showHeader={false} maxWidth="800px">
+        <CategoryEditor
+          key={selectedCategoryId || 'new'}
+          categories={categories}
+          categoryForm={categoryForm}
+          onCategoryFormChange={updateCategoryForm}
+          onDeleteCategory={deleteCategory}
+          onSubmitCategory={submitCategory}
+          selectedCategoryId={selectedCategoryId}
+          submitting={submitting}
+          onClose={handleCloseEditor}
+        />
+      </Modal>
     </section>
   )
 }

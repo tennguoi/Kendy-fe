@@ -4,6 +4,7 @@ import { adminApi } from '../../../api/admin.api'
 import PricingEditor from './components/PricingEditor'
 import PricingFilterBar from './components/PricingFilterBar'
 import PricingListPanel from './components/PricingListPanel'
+import Loading from '../../../components/Loading/Loading'
 
 function pricingToForm(item) {
   return {
@@ -144,7 +145,8 @@ function AdminPricingView({
         </button>
       </div>
 
-      {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải bảng giá...'}</p>}
+      {error && <p className="admin-message error">{error}</p>}
+      {!error && loading && <Loading fullScreen={false} message="Đang tải bảng giá..." subMessage="" />}
 
       <PricingFilterBar
         categories={categories}

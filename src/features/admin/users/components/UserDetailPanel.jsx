@@ -1,25 +1,14 @@
 import { AdminEmptyState } from '../../AdminShared'
-import UserAdminTools from './UserAdminTools'
 import UserDetailActivity from './UserDetailActivity'
 import UserProfileSummary from './UserProfileSummary'
 
 function UserDetailPanel({
   activeDetailTab,
-  adjustForm,
-  bulkStatusForm,
   detail,
   detailData,
   hasLoadedUsers,
   onActiveDetailTabChange,
-  onAdjustFormChange,
-  onAdjustWallet,
-  onBulkStatusFormChange,
   onRevokeSession,
-  onRoleFormChange,
-  onRunBulkUserStatus,
-  onUpdateRole,
-  onUpdateStatus,
-  roleForm,
   selectedUser,
   submitting,
 }) {
@@ -42,21 +31,6 @@ function UserDetailPanel({
   return (
     <aside className="admin-panel admin-detail-panel">
       <UserProfileSummary detail={detail} selectedUser={selectedUser} />
-
-      <UserAdminTools
-        adjustForm={adjustForm}
-        bulkStatusForm={bulkStatusForm}
-        onAdjustFormChange={onAdjustFormChange}
-        onAdjustWallet={onAdjustWallet}
-        onBulkStatusFormChange={onBulkStatusFormChange}
-        onRoleFormChange={onRoleFormChange}
-        onRunBulkUserStatus={onRunBulkUserStatus}
-        onUpdateRole={onUpdateRole}
-        onUpdateStatus={onUpdateStatus}
-        roleForm={roleForm}
-        selectedUser={selectedUser}
-        submitting={submitting}
-      />
 
       <UserDetailActivity
         activeDetailTab={activeDetailTab}

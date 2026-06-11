@@ -1,0 +1,387 @@
+/* ── Container ── */
+.kd-loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 9999;
+}
+
+.kd-loading-container.fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(10, 20, 50, 0.92) 0%,
+    rgba(5, 10, 30, 0.97) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: kdFadeIn 0.4s ease-out;
+  overflow: hidden;
+}
+
+.kd-loading-container.inline {
+  position: relative;
+  width: 100%;
+  min-height: 220px;
+  padding: 30px;
+  background: transparent;
+}
+
+/* ── Content ── */
+.kd-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+}
+
+/* ── Particles ── */
+.kd-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(20, 124, 255, 0.18);
+  animation: floatParticle linear infinite;
+}
+
+.p-1  { width: 6px;  height: 6px;  left: 10%; animation-duration: 8s;  animation-delay: 0s;   }
+.p-2  { width: 10px; height: 10px; left: 20%; animation-duration: 11s; animation-delay: 1s;   }
+.p-3  { width: 4px;  height: 4px;  left: 35%; animation-duration: 7s;  animation-delay: 2s;   }
+.p-4  { width: 8px;  height: 8px;  left: 50%; animation-duration: 13s; animation-delay: 0.5s; }
+.p-5  { width: 5px;  height: 5px;  left: 65%; animation-duration: 9s;  animation-delay: 1.5s; }
+.p-6  { width: 12px; height: 12px; left: 75%; animation-duration: 10s; animation-delay: 3s;   }
+.p-7  { width: 6px;  height: 6px;  left: 85%; animation-duration: 6s;  animation-delay: 0.8s; }
+.p-8  { width: 4px;  height: 4px;  left: 90%; animation-duration: 14s; animation-delay: 2.5s; }
+.p-9  { width: 9px;  height: 9px;  left: 5%;  animation-duration: 12s; animation-delay: 1.2s; }
+.p-10 { width: 7px;  height: 7px;  left: 45%; animation-duration: 8s;  animation-delay: 4s;   }
+.p-11 { width: 5px;  height: 5px;  left: 55%; animation-duration: 10s; animation-delay: 0.3s; }
+.p-12 { width: 11px; height: 11px; left: 30%; animation-duration: 15s; animation-delay: 2s;   }
+
+@keyframes floatParticle {
+  0%   { transform: translateY(110vh) scale(0.5); opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.3; }
+  100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+}
+
+/* ── Brand Mark ── */
+.kd-brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #147cff 0%, #18c4c7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 20px rgba(20, 124, 255, 0.5),
+    0 0 40px rgba(20, 124, 255, 0.2);
+  animation: brandPulse 2s ease-in-out infinite;
+}
+
+.brand-letter {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+@keyframes brandPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(20, 124, 255, 0.5),
+      0 0 40px rgba(20, 124, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(20, 124, 255, 0.8),
+      0 0 60px rgba(20, 124, 255, 0.4);
+  }
+}
+
+/* ── Spinner ── */
+.kd-loader-spinner {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inner-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+
+.inner-ring.ring-1 {
+  inset: 0;
+  border-top-color: #147cff;
+  animation: spinClockwise 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  filter: drop-shadow(0 0 6px #147cff);
+}
+
+.inner-ring.ring-2 {
+  inset: 8px;
+  border-right-color: #18c4c7;
+  animation: spinCounterClockwise 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 4px #18c4c7);
+}
+
+.inner-ring.ring-3 {
+  inset: 16px;
+  border-bottom-color: rgba(20, 124, 255, 0.4);
+  animation: spinClockwise 1.6s linear infinite;
+  opacity: 0.6;
+}
+
+.inner-ring.ring-4 {
+  inset: 24px;
+  border-left-color: rgba(24, 196, 199, 0.3);
+  animation: spinCounterClockwise 2s linear infinite;
+  opacity: 0.4;
+}
+
+.loader-dot {
+  width: 10px;
+  height: 10px;
+  background: #147cff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 10px #147cff,
+    0 0 20px rgba(20, 124, 255, 0.5);
+  animation: pulseDot 1.2s ease-in-out infinite;
+}
+
+/* ── Progress Bar ── */
+.kd-progress-wrap {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.kd-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #147cff, #18c4c7);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px rgba(20, 124, 255, 0.6);
+}
+
+/* ── Text ── */
+.kd-loading-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-message {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmer 2.2s linear infinite;
+}
+
+.loading-dots {
+  display: inline-block;
+  width: 20px;
+  text-align: left;
+}
+
+.loading-submessage {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.loading-tip {
+  animation: tipFadeIn 0.5s ease-out;
+}
+
+/* ── Status Badges ── */
+.kd-status-badges {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 99px;
+  letter-spacing: 0.02em;
+}
+
+.badge-secure {
+  background: rgba(20, 124, 255, 0.12);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(20, 124, 255, 0.25);
+}
+
+.badge-live {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+/* ── Inline Overrides ── */
+.kd-loading-container.inline .loading-message {
+  background: linear-gradient(
+    90deg,
+    #0f172a 0%,
+    rgba(15, 23, 42, 0.5) 50%,
+    #0f172a 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.kd-loading-container.inline .loading-submessage {
+  color: #64748b;
+}
+
+.kd-loading-container.inline .badge-secure {
+  color: #64748b;
+  border-color: rgba(100, 116, 139, 0.3);
+  background: rgba(100, 116, 139, 0.08);
+}
+
+.kd-loading-container.inline .badge-live {
+  color: #22c55e;
+}
+
+.kd-loading-container.inline .kd-brand-mark {
+  box-shadow:
+    0 0 16px rgba(20, 124, 255, 0.3),
+    0 0 32px rgba(20, 124, 255, 0.1);
+}
+
+.kd-loading-container.inline .kd-progress-wrap {
+  background: rgba(15, 23, 42, 0.1);
+}
+
+/* ── Animations ── */
+@keyframes kdFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes spinClockwise {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spinCounterClockwise {
+  0%   { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+}
+
+@keyframes textShimmer {
+  to { background-position: 200% center; }
+}
+
+@keyframes tipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .kd-loader-spinner {
+    width: 64px;
+    height: 64px;
+  }
+
+  .kd-brand-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand-letter {
+    font-size: 18px;
+  }
+
+  .loading-message {
+    font-size: 15px;
+  }
+
+  .loading-submessage {
+    font-size: 12px;
+  }
+
+  .kd-progress-wrap {
+    width: 160px;
+  }
+
+  .kd-status-badges {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .inner-ring,
+  .loader-dot,
+  .kd-brand-mark,
+  .loading-message,
+  .particle {
+    animation: none;
+  }
+
+  .kd-loading-container.fullscreen {
+    animation: none;
+  }
+
+  .kd-progress-bar {
+    transition: none;
+  }
+}

@@ -49,6 +49,9 @@ function SettingsView({
   const [twoFactorForm, setTwoFactorForm] = useState({ code: '', password: '' })
   const [twoFactorEmailSent, setTwoFactorEmailSent] = useState(false)
 
+  // Mobile optimization tab state
+  const [activeSettingsTab, setActiveSettingsTab] = useState('general') // 'general' | 'security' | 'apikeys' | 'notifications'
+
   const setViewError = useCallback((message) => {
     setError(message)
     onSetError(message)
@@ -370,174 +373,196 @@ function SettingsView({
         </article>
       </div>
 
-      <div className="admin-grid two-columns">
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <h3>Hồ sơ của tôi</h3>
-            <AdminStatusBadge status={currentUser?.status || 'UNKNOWN'} />
-          </div>
-          <dl className="admin-detail-list">
-            <div><dt>User ID</dt><dd>#{currentUser?.id || '-'}</dd></div>
-            <div><dt>Public ID</dt><dd>{currentUser?.publicId || '-'}</dd></div>
-            <div><dt>Email</dt><dd>{currentUser?.email || '-'}</dd></div>
-            <div><dt>Role</dt><dd>{currentUser?.role || '-'}</dd></div>
-            <div><dt>Xác minh email</dt><dd>{currentUser?.emailVerifiedAt ? formatAdminDate(currentUser.emailVerifiedAt) : 'Chưa xác minh'}</dd></div>
-            <div><dt>OAuth</dt><dd>{currentUser?.oauthProvider || 'Không liên kết'}</dd></div>
-          </dl>
-          <form className="admin-form compact" onSubmit={updateProfile}>
-            <label>
-              <span>Tên hiển thị</span>
-              <input value={profileForm.name} onChange={(event) => setProfileForm((current) => ({ ...current, name: event.target.value }))} required />
-            </label>
-            <label>
-              <span>Số điện thoại</span>
-              <input value={profileForm.phone} onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))} />
-            </label>
-            <button type="submit" disabled={submitting}>
-              <Save size={17} strokeWidth={2} aria-hidden="true" />
-              <span>Lưu hồ sơ</span>
-            </button>
-          </form>
-        </div>
-
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <h3>Tổng quan sử dụng</h3>
-            <span>{dashboard?.orderCount ?? 0} đơn</span>
-          </div>
-          <div className="admin-report-grid compact-report">
-            <div><span>Đơn xử lý</span><strong>{dashboard?.processingOrders ?? 0}</strong></div>
-            <div><span>Đơn hoàn tất</span><strong>{dashboard?.completedOrders ?? 0}</strong></div>
-            <div><span>Nạp hoàn tất</span><strong>{dashboard?.completedDeposits ?? 0}</strong></div>
-            <div><span>Ticket</span><strong>{dashboard?.ticketCount ?? 0}</strong></div>
-          </div>
-          <div className="admin-report-grid compact-report">
-            <div><span>Đã nạp</span><strong>{formatAdminMoney(dashboard?.completedDepositAmount)}</strong></div>
-            <div><span>Đã mua</span><strong>{formatAdminMoney(dashboard?.purchaseAmount)}</strong></div>
-            <div><span>Refund</span><strong>{formatAdminMoney(dashboard?.refundAmount)}</strong></div>
-            <div><span>GD ví</span><strong>{dashboard?.walletTransactionCount ?? 0}</strong></div>
-          </div>
-        </div>
+      {/* Settings section tabs for mobile / layout clean up */}
+      <div className="admin-tabs" style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '6px', borderBottom: '1px solid var(--kd-border)', paddingBottom: '12px' }}>
+        <button type="button" className={activeSettingsTab === 'general' ? 'active' : ''} onClick={() => setActiveSettingsTab('general')}>
+          Hồ sơ & Sử dụng
+        </button>
+        <button type="button" className={activeSettingsTab === 'security' ? 'active' : ''} onClick={() => setActiveSettingsTab('security')}>
+          Bảo mật & Phiên
+        </button>
+        <button type="button" className={activeSettingsTab === 'apikeys' ? 'active' : ''} onClick={() => setActiveSettingsTab('apikeys')}>
+          API Keys
+        </button>
+        <button type="button" className={activeSettingsTab === 'notifications' ? 'active' : ''} onClick={() => setActiveSettingsTab('notifications')}>
+          Thông báo ({notificationList.filter(n => !n.readAt).length} mới)
+        </button>
       </div>
 
-      <div className="admin-grid two-columns">
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <h3>Đổi mật khẩu</h3>
-            <Shield size={18} strokeWidth={2} aria-hidden="true" />
-          </div>
-          <form className="admin-form compact" onSubmit={changePassword}>
-            <label>
-              <span>Mật khẩu hiện tại</span>
-              <input value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))} type="password" required />
-            </label>
-            <label>
-              <span>Mật khẩu mới</span>
-              <input value={passwordForm.newPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))} minLength="8" type="password" required />
-            </label>
-            <label>
-              <span>Xác nhận mật khẩu mới</span>
-              <input value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))} minLength="8" type="password" required />
-            </label>
-            <button type="submit" disabled={submitting}>Đổi mật khẩu</button>
-          </form>
-        </div>
-
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <h3>Bảo mật</h3>
-            <AdminStatusBadge status={security?.twoFactorEnabled ? 'ACTIVE' : 'DISABLED'} />
-          </div>
-          <dl className="admin-detail-list">
-            <div><dt>Email</dt><dd>{security?.emailVerified ? 'Đã xác minh' : 'Chưa xác minh'}</dd></div>
-            <div><dt>Đổi mật khẩu</dt><dd>{formatAdminDate(security?.passwordChangedAt)}</dd></div>
-            <div><dt>Session active</dt><dd>{security?.activeSessions ?? 0}</dd></div>
-            <div><dt>API key active</dt><dd>{security?.activeApiKeys ?? 0}</dd></div>
-          </dl>
-          {!security?.twoFactorEnabled && (
-            <form className="admin-form compact" onSubmit={enableEmailTwoFactor}>
-              <div className="admin-action-row">
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={sendEmailTwoFactorCode}>
-                  Gửi mã 2FA email
-                </button>
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={setupTotp}>
-                  Setup TOTP
-                </button>
-              </div>
-              {twoFactorEmailSent && (
-                <label>
-                  <span>Mã email</span>
-                  <input value={twoFactorForm.code} onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.replace(/\D/g, '').slice(0, 6) }))} inputMode="numeric" />
-                </label>
-              )}
-              {twoFactorEmailSent && <button type="submit" disabled={submitting || twoFactorForm.code.length < 6}>Bật 2FA email</button>}
-            </form>
-          )}
-          {totpSetup && (
-            <div className="admin-code-block">
-              <strong>TOTP secret</strong>
-              <pre>{totpSetup.secret}</pre>
-              {totpSetup.qrCodeBase64 && <img alt="TOTP QR" src={`data:image/png;base64,${totpSetup.qrCodeBase64}`} />}
-              <pre>{(totpSetup.backupCodes || []).join('\n')}</pre>
+      {activeSettingsTab === 'general' && (
+        <div className="admin-grid two-columns">
+          <div className="admin-panel">
+            <div className="admin-panel-head">
+              <h3>Hồ sơ của tôi</h3>
+              <AdminStatusBadge status={currentUser?.status || 'UNKNOWN'} />
             </div>
-          )}
-          {totpSetup && (
-            <form className="admin-form compact" onSubmit={enableTotp}>
+            <dl className="admin-detail-list">
+              <div><dt>User ID</dt><dd>#{currentUser?.id || '-'}</dd></div>
+              <div><dt>Public ID</dt><dd>{currentUser?.publicId || '-'}</dd></div>
+              <div><dt>Email</dt><dd>{currentUser?.email || '-'}</dd></div>
+              <div><dt>Role</dt><dd>{currentUser?.role || '-'}</dd></div>
+              <div><dt>Xác minh email</dt><dd>{currentUser?.emailVerifiedAt ? formatAdminDate(currentUser.emailVerifiedAt) : 'Chưa xác minh'}</dd></div>
+              <div><dt>OAuth</dt><dd>{currentUser?.oauthProvider || 'Không liên kết'}</dd></div>
+            </dl>
+            <form className="admin-form compact" onSubmit={updateProfile}>
               <label>
-                <span>Mã TOTP</span>
-                <input value={totpCode} onChange={(event) => setTotpCode(event.target.value.trim())} />
+                <span>Tên hiển thị</span>
+                <input value={profileForm.name} onChange={(event) => setProfileForm((current) => ({ ...current, name: event.target.value }))} required />
               </label>
-              <button type="submit" disabled={submitting || !totpCode}>Bật TOTP</button>
+              <label>
+                <span>Số điện thoại</span>
+                <input value={profileForm.phone} onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))} />
+              </label>
+              <button type="submit" disabled={submitting}>
+                <Save size={17} strokeWidth={2} aria-hidden="true" />
+                <span>Lưu hồ sơ</span>
+              </button>
             </form>
-          )}
-          {security?.twoFactorEnabled && (
-            <form className="admin-form compact" onSubmit={(event) => event.preventDefault()}>
-              <label>
-                <span>Mật khẩu hiện tại</span>
-                <input value={twoFactorForm.password} onChange={(event) => setTwoFactorForm((current) => ({ ...current, password: event.target.value }))} type="password" />
-              </label>
-              <label>
-                <span>Mã 2FA hoặc backup code</span>
-                <input value={twoFactorForm.code} onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.trim() }))} />
-              </label>
-              <div className="admin-action-row">
-                <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => runTwoFactorProtectedAction('disable')}>Tắt 2FA</button>
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runTwoFactorProtectedAction('reset')}>Reset TOTP</button>
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runTwoFactorProtectedAction('backup')}>Tạo backup codes</button>
+          </div>
+
+          <div className="admin-panel">
+            <div className="admin-panel-head">
+              <h3>Tổng quan sử dụng</h3>
+              <span>{dashboard?.orderCount ?? 0} đơn</span>
+            </div>
+            <div className="admin-report-grid compact-report">
+              <div><span>Đơn xử lý</span><strong>{dashboard?.processingOrders ?? 0}</strong></div>
+              <div><span>Đơn hoàn tất</span><strong>{dashboard?.completedOrders ?? 0}</strong></div>
+              <div><span>Nạp hoàn tất</span><strong>{dashboard?.completedDeposits ?? 0}</strong></div>
+              <div><span>Ticket</span><strong>{dashboard?.ticketCount ?? 0}</strong></div>
+            </div>
+            <div className="admin-report-grid compact-report" style={{ marginTop: '10px' }}>
+              <div><span>Đã nạp</span><strong>{formatAdminMoney(dashboard?.completedDepositAmount)}</strong></div>
+              <div><span>Đã mua</span><strong>{formatAdminMoney(dashboard?.purchaseAmount)}</strong></div>
+              <div><span>Refund</span><strong>{formatAdminMoney(dashboard?.refundAmount)}</strong></div>
+              <div><span>GD ví</span><strong>{dashboard?.walletTransactionCount ?? 0}</strong></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeSettingsTab === 'security' && (
+        <div style={{ display: 'grid', gap: '18px' }}>
+          <div className="admin-grid two-columns">
+            <div className="admin-panel">
+              <div className="admin-panel-head">
+                <h3>Đổi mật khẩu</h3>
+                <Shield size={18} strokeWidth={2} aria-hidden="true" />
               </div>
-            </form>
-          )}
-        </div>
-      </div>
+              <form className="admin-form compact" onSubmit={changePassword}>
+                <label>
+                  <span>Mật khẩu hiện tại</span>
+                  <input value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))} type="password" required />
+                </label>
+                <label>
+                  <span>Mật khẩu mới</span>
+                  <input value={passwordForm.newPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))} minLength="8" type="password" required />
+                </label>
+                <label>
+                  <span>Xác nhận mật khẩu mới</span>
+                  <input value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))} minLength="8" type="password" required />
+                </label>
+                <button type="submit" disabled={submitting}>Đổi mật khẩu</button>
+              </form>
+            </div>
 
-      <div className="admin-grid two-columns">
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <h3>Phiên đăng nhập</h3>
-            <button type="button" className="admin-danger-button slim" disabled={submitting || sessionList.length === 0} onClick={revokeAllSessions}>
-              Thu hồi tất cả
-            </button>
+            <div className="admin-panel">
+              <div className="admin-panel-head">
+                <h3>Bảo mật</h3>
+                <AdminStatusBadge status={security?.twoFactorEnabled ? 'ACTIVE' : 'DISABLED'} />
+              </div>
+              <dl className="admin-detail-list">
+                <div><dt>Email</dt><dd>{security?.emailVerified ? 'Đã xác minh' : 'Chưa xác minh'}</dd></div>
+                <div><dt>Đổi mật khẩu</dt><dd>{formatAdminDate(security?.passwordChangedAt)}</dd></div>
+                <div><dt>Session active</dt><dd>{security?.activeSessions ?? 0}</dd></div>
+                <div><dt>API key active</dt><dd>{security?.activeApiKeys ?? 0}</dd></div>
+              </dl>
+              {!security?.twoFactorEnabled && (
+                <form className="admin-form compact" onSubmit={enableEmailTwoFactor}>
+                  <div className="admin-action-row">
+                    <button type="button" className="admin-icon-button" disabled={submitting} onClick={sendEmailTwoFactorCode}>
+                      Gửi mã 2FA email
+                    </button>
+                    <button type="button" className="admin-icon-button" disabled={submitting} onClick={setupTotp}>
+                      Setup TOTP
+                    </button>
+                  </div>
+                  {twoFactorEmailSent && (
+                    <label>
+                      <span>Mã email</span>
+                      <input value={twoFactorForm.code} onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.replace(/\D/g, '').slice(0, 6) }))} inputMode="numeric" />
+                    </label>
+                  )}
+                  {twoFactorEmailSent && <button type="submit" disabled={submitting || twoFactorForm.code.length < 6}>Bật 2FA email</button>}
+                </form>
+              )}
+              {totpSetup && (
+                <div className="admin-code-block">
+                  <strong>TOTP secret</strong>
+                  <pre>{totpSetup.secret}</pre>
+                  {totpSetup.qrCodeBase64 && <img alt="TOTP QR" src={`data:image/png;base64,${totpSetup.qrCodeBase64}`} />}
+                  <pre>{(totpSetup.backupCodes || []).join('\n')}</pre>
+                </div>
+              )}
+              {totpSetup && (
+                <form className="admin-form compact" onSubmit={enableTotp}>
+                  <label>
+                    <span>Mã TOTP</span>
+                    <input value={totpCode} onChange={(event) => setTotpCode(event.target.value.trim())} />
+                  </label>
+                  <button type="submit" disabled={submitting || !totpCode}>Bật TOTP</button>
+                </form>
+              )}
+              {security?.twoFactorEnabled && (
+                <form className="admin-form compact" onSubmit={(event) => event.preventDefault()}>
+                  <label>
+                    <span>Mật khẩu hiện tại</span>
+                    <input value={twoFactorForm.password} onChange={(event) => setTwoFactorForm((current) => ({ ...current, password: event.target.value }))} type="password" />
+                  </label>
+                  <label>
+                    <span>Mã 2FA hoặc backup code</span>
+                    <input value={twoFactorForm.code} onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.trim() }))} />
+                  </label>
+                  <div className="admin-action-row">
+                    <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => runTwoFactorProtectedAction('disable')}>Tắt 2FA</button>
+                    <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runTwoFactorProtectedAction('reset')}>Reset TOTP</button>
+                    <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runTwoFactorProtectedAction('backup')}>Tạo backup codes</button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
-          <div className="admin-mini-list">
-            {sessionList.map((session) => (
-              <article key={session.id}>
-                <strong>Session #{session.id}</strong>
-                <span>Tạo {formatAdminDate(session.createdAt)} · Dùng gần nhất {formatAdminDate(session.lastUsedAt)} · Hết hạn {formatAdminDate(session.expiresAt)}</span>
-                <button type="button" className="admin-danger-button slim" disabled={submitting || session.revokedAt} onClick={() => revokeSession(session.id)}>
-                  Thu hồi
-                </button>
-              </article>
-            ))}
-            {sessionList.length === 0 && <AdminEmptyState message="Không có session đang hiển thị." />}
+
+          <div className="admin-panel">
+            <div className="admin-panel-head">
+              <h3>Phiên đăng nhập</h3>
+              <button type="button" className="admin-danger-button slim" disabled={submitting || sessionList.length === 0} onClick={revokeAllSessions}>
+                Thu hồi tất cả
+              </button>
+            </div>
+            <div className="admin-mini-list">
+              {sessionList.map((session) => (
+                <article key={session.id}>
+                  <strong>Session #{session.id}</strong>
+                  <span>Tạo {formatAdminDate(session.createdAt)} · Dùng gần nhất {formatAdminDate(session.lastUsedAt)} · Hết hạn {formatAdminDate(session.expiresAt)}</span>
+                  <button type="button" className="admin-danger-button slim" disabled={submitting || session.revokedAt} onClick={() => revokeSession(session.id)}>
+                    Thu hồi
+                  </button>
+                </article>
+              ))}
+              {sessionList.length === 0 && <AdminEmptyState message="Không có session đang hiển thị." />}
+            </div>
           </div>
         </div>
+      )}
 
+      {activeSettingsTab === 'apikeys' && (
         <div className="admin-panel">
           <div className="admin-panel-head">
             <h3>API keys</h3>
             <KeyRound size={18} strokeWidth={2} aria-hidden="true" />
           </div>
-          <form className="admin-form compact" onSubmit={createApiKey}>
+          <form className="admin-form compact" onSubmit={createApiKey} style={{ marginBottom: '20px' }}>
             <label>
               <span>Tên API key</span>
               <input value={apiKeyForm.name} onChange={(event) => setApiKeyForm((current) => ({ ...current, name: event.target.value }))} />
@@ -546,11 +571,11 @@ function SettingsView({
               <span>Scopes</span>
               <input value={apiKeyForm.scopes} onChange={(event) => setApiKeyForm((current) => ({ ...current, scopes: event.target.value }))} />
             </label>
-            <button type="submit" disabled={submitting}>Tạo API key</button>
+            <button type="submit" disabled={submitting} className="admin-primary-button" style={{ height: '38px' }}>Tạo API key</button>
           </form>
           {createdApiToken && (
-            <div className="admin-code-block">
-              <strong>Token mới</strong>
+            <div className="admin-code-block" style={{ marginBottom: '20px' }}>
+              <strong>Token mới (Hãy copy ngay vì nó sẽ ẩn đi khi tải lại trang)</strong>
               <pre>{createdApiToken}</pre>
             </div>
           )}
@@ -568,30 +593,32 @@ function SettingsView({
             {apiKeyList.length === 0 && <AdminEmptyState message="Chưa có API key." />}
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="admin-panel">
-        <div className="admin-panel-head">
-          <h3>Thông báo</h3>
-          <button type="button" className="admin-icon-button" disabled={submitting} onClick={markAllNotificationsRead}>
-            Đọc tất cả
-          </button>
+      {activeSettingsTab === 'notifications' && (
+        <div className="admin-panel">
+          <div className="admin-panel-head">
+            <h3>Thông báo hệ thống</h3>
+            <button type="button" className="admin-icon-button" disabled={submitting} onClick={markAllNotificationsRead}>
+              Đọc tất cả
+            </button>
+          </div>
+          <div className="admin-mini-list">
+            {notificationList.map((notification) => (
+              <article key={notification.id}>
+                <strong>{notification.title || notification.type || `Thông báo #${notification.id}`}</strong>
+                <span>{notification.message || notification.content || 'Không có nội dung'} · {formatAdminDate(notification.createdAt)}</span>
+                {!notification.readAt && (
+                  <button type="button" className="admin-icon-button slim" disabled={submitting} onClick={() => markNotificationRead(notification.id)}>
+                    Đã đọc
+                  </button>
+                )}
+              </article>
+            ))}
+            {notificationList.length === 0 && <AdminEmptyState message="Chưa có thông báo." />}
+          </div>
         </div>
-        <div className="admin-mini-list">
-          {notificationList.map((notification) => (
-            <article key={notification.id}>
-              <strong>{notification.title || notification.type || `Thông báo #${notification.id}`}</strong>
-              <span>{notification.message || notification.content || 'Không có nội dung'} · {formatAdminDate(notification.createdAt)}</span>
-              {!notification.readAt && (
-                <button type="button" className="admin-icon-button slim" disabled={submitting} onClick={() => markNotificationRead(notification.id)}>
-                  Đã đọc
-                </button>
-              )}
-            </article>
-          ))}
-          {notificationList.length === 0 && <AdminEmptyState message="Chưa có thông báo." />}
-        </div>
-      </div>
+      )}
     </section>
   )
 }

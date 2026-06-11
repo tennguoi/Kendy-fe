@@ -190,6 +190,7 @@
   background: #ffffff;
   border: 1px solid var(--kd-border);
   border-radius: 14px;
+  margin-left: auto;
 }
 
 .search span {
@@ -635,44 +636,53 @@
   }
 
   .topbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
   }
 
   .topbar-left {
-    justify-content: space-between;
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .topbar p {
+    display: none; /* Hide subtitle to save vertical space on mobile */
   }
 
   .topbar h1 {
-    font-size: 26px;
+    font-size: 22px;
   }
 
   .top-actions {
-    flex-wrap: wrap;
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
     gap: 8px;
   }
 
-  .top-actions > * {
-    flex: 0 1 auto;
-  }
-
   .search {
+    grid-column: 1 / -1;
+    grid-row: 2;
     width: 100%;
-    flex-basis: 100%;
-    order: -1;
+    margin-left: 0;
   }
 
   .search input {
     width: 100%;
   }
 
-  .balance-button {
-    flex: 1 1 180px;
+  .account-chip {
+    display: none; /* Hide account details to prevent overflow */
   }
 
-  .account-chip {
-    flex: 1 1 220px;
+  .balance-button {
+    padding: 0 10px;
+    font-size: 13px;
+    height: 38px;
+    min-height: 38px;
   }
 }
 
@@ -685,16 +695,6 @@
     margin-top: 2px;
   }
 
-  .top-actions {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-  }
-
-  .search,
-  .balance-button {
-    grid-column: 1 / -1;
-  }
-
   .logout-button {
     width: 42px;
     padding: 0;
@@ -703,14 +703,6 @@
 
   .logout-button span {
     display: none;
-  }
-
-  .account-chip {
-    display: none;
-  }
-
-  .notification-menu {
-    justify-self: end;
   }
 
   .notification-panel {

@@ -4,6 +4,7 @@ import { adminApi } from '../../../api/admin.api'
 import TicketDetailPanel from './components/TicketDetailPanel'
 import TicketFilterBar from './components/TicketFilterBar'
 import TicketListPanel from './components/TicketListPanel'
+import Loading from '../../../components/Loading/Loading'
 
 function AdminTicketsView({
   onSetError,
@@ -230,7 +231,8 @@ function AdminTicketsView({
         </button>
       </div>
 
-      {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải ticket...'}</p>}
+      {error && <p className="admin-message error">{error}</p>}
+      {!error && loading && <Loading fullScreen={false} message="Đang tải hỗ trợ..." subMessage="" />}
 
       <TicketFilterBar
         categoryFilter={categoryFilter}

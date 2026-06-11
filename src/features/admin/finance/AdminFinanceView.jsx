@@ -6,6 +6,7 @@ import { formatAdminDate, formatAdminMoney } from '../adminFormat'
 import BankPanel from './components/BankPanel'
 import DepositPanel from './components/DepositPanel'
 import WalletPanel from './components/WalletPanel'
+import Loading from '../../../components/Loading/Loading'
 
 const financeTabs = [
   { id: 'bank', label: 'Bank transactions' },
@@ -377,7 +378,8 @@ function AdminFinanceView({
         </button>
       </div>
 
-      {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải tài chính...'}</p>}
+      {error && <p className="admin-message error">{error}</p>}
+      {!error && loading && <Loading fullScreen={false} message="Đang tải tài chính..." subMessage="" />}
 
       <div className="admin-metrics">
         {financeMetrics.map((metric) => (

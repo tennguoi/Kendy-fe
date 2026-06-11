@@ -8,6 +8,7 @@ import AuthScreen from './features/auth/AuthScreen'
 import DashboardShell from './components/layout/DashboardShell'
 import UserRoutes from './features/user/UserRoutes'
 import PublicHome from './features/public/PublicHome'
+import Loading from './components/Loading/Loading'
 import { useClipboard } from './hooks/useClipboard'
 import { adminApi } from './api/admin.api'
 import { authApi } from './api/auth.api'
@@ -1008,7 +1009,7 @@ function App() {
   }
 
   if (!authInit) {
-    return <div className="loading">Đang tải...</div>
+    return <Loading message="Đang khởi tạo ứng dụng..." subMessage="Vui lòng chờ trong giây lát" />
   }
 
   if (isAdmin) {
@@ -1069,7 +1070,7 @@ function App() {
       onViewChange={handleUserViewChange}
     >
       {routeLoading && userActiveView !== 'support' && userActiveView !== 'settings' && (
-        <p className="admin-message">Đang tải dữ liệu...</p>
+        <Loading fullScreen={false} message="Đang tải dữ liệu..." subMessage="" />
       )}
       <UserRoutes
         activeDeposit={activeDeposit}

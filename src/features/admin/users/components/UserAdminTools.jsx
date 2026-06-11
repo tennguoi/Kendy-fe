@@ -1,45 +1,58 @@
-import { Save, Shield, Wallet } from 'lucide-react'
+import { Eye, EyeOff, Shield, UserRoundCog, Wallet } from 'lucide-react'
+import { useState } from 'react'
 import { userRoles } from '../users.constants'
 
+const userToolTabs = [
+  { id: 'bulk', label: 'Bulk', icon: Shield },
+  { id: 'role', label: 'Vai trò', icon: UserRoundCog },
+  { id: 'wallet', label: 'Ví', icon: Wallet },
+]
+
 function UserAdminTools({
+  activeToolTab,
   adjustForm,
   bulkStatusForm,
+  onActiveToolTabChange,
   onAdjustFormChange,
   onAdjustWallet,
   onBulkStatusFormChange,
   onRoleFormChange,
   onRunBulkUserStatus,
   onUpdateRole,
-  onUpdateStatus,
   roleForm,
   selectedUser,
   submitting,
 }) {
+  const [showPassword, setShowPassword] = useState(false)
+
   return (
-    <details className="user-tools-panel">
-      <summary>
+    <div className="user-tools-panel">
+      <div className="user-tools-title">
         <div>
           <strong>Công cụ quản trị</strong>
-          <span>Khóa/mở user, đổi role, điều chỉnh ví</span>
+          <span>{selectedUser?.email || 'User đang chọn'}</span>
         </div>
-      </summary>
-
+      </div>
+      <div className="user-tool-tabs" role="tablist" aria-label="Công cụ quản trị user">
+        {userToolTabs.map((tab) => {
+          const Icon = tab.icon
+          return (
+            <button
+              type="button"
+              className={activeToolTab === tab.id ? 'active' : ''}
+              key={tab.id}
+              role="tab"
+              aria-selected={activeToolTab === tab.id}
+              onClick={() => onActiveToolTabChange(tab.id)}
+            >
+              <Icon size={16} strokeWidth={2} aria-hidden="true" />
+              <span>{tab.label}</span>
+            </button>
+          )
+        })}
+      </div>
       <div className="user-tools-body">
-        <section className="user-tool-section">
-          <div className="user-tool-head">
-            <Shield size={18} strokeWidth={2} aria-hidden="true" />
-            <strong>Trạng thái</strong>
-          </div>
-          <div className="admin-action-row">
-            <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => onUpdateStatus('ACTIVE')}>
-              Mở user
-            </button>
-            <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => onUpdateStatus('LOCKED')}>
-              Khóa user
-            </button>
-          </div>
-        </section>
-
+        {activeToolTab === 'bulk' && (
         <form className="admin-form compact user-tool-section" onSubmit={(event) => event.preventDefault()}>
           <div className="user-tool-head">
             <Shield size={18} strokeWidth={2} aria-hidden="true" />
@@ -57,14 +70,14 @@ function UserAdminTools({
             <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => onBulkStatusFormChange((current) => ({ ...current, ids: selectedUser ? String(selectedUser.id) : current.ids }))}>
               Dùng user đang chọn
             </button>
-            <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => onRunBulkUserStatus('ACTIVE')}>Bulk mở</button>
-            <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => onRunBulkUserStatus('LOCKED')}>Bulk khóa</button>
           </div>
         </form>
+        )}
 
-        <form className="admin-form compact user-tool-section" onSubmit={onUpdateRole}>
+        {activeToolTab === 'role' && (
+        <form className="admin-form compact user-tool-section" id="user-role-form" onSubmit={onUpdateRole}>
           <div className="user-tool-head">
-            <Shield size={18} strokeWidth={2} aria-hidden="true" />
+            <UserRoundCog size={18} strokeWidth={2} aria-hidden="true" />
             <strong>Vai trò</strong>
           </div>
           <label>
@@ -77,13 +90,11 @@ function UserAdminTools({
             <span>Lý do</span>
             <textarea value={roleForm.reason} onChange={(event) => onRoleFormChange((current) => ({ ...current, reason: event.target.value }))} rows="2" />
           </label>
-          <button type="submit" disabled={submitting}>
-            <Save size={17} strokeWidth={2} aria-hidden="true" />
-            <span>Lưu role</span>
-          </button>
         </form>
+        )}
 
-        <form className="admin-form compact user-tool-section" onSubmit={onAdjustWallet}>
+        {activeToolTab === 'wallet' && (
+        <form className="admin-form compact user-tool-section" id="user-wallet-form" onSubmit={onAdjustWallet}>
           <div className="user-tool-head">
             <Wallet size={18} strokeWidth={2} aria-hidden="true" />
             <strong>Điều chỉnh ví</strong>
@@ -105,15 +116,26 @@ function UserAdminTools({
           </label>
           <label>
             <span>Mật khẩu xác nhận</span>
-            <input value={adjustForm.confirmationPassword} onChange={(event) => onAdjustFormChange((current) => ({ ...current, confirmationPassword: event.target.value }))} type="password" required />
+            <span className="user-password-control">
+              <input value={adjustForm.confirmationPassword} onChange={(event) => onAdjustFormChange((current) => ({ ...current, confirmationPassword: event.target.value }))} type={showPassword ? 'text' : 'password'} required />
+              <button
+                type="button"
+                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                onClick={() => setShowPassword((current) => !current)}
+              >
+                {showPassword ? (
+                  <EyeOff size={18} strokeWidth={2} aria-hidden="true" />
+                ) : (
+                  <Eye size={18} strokeWidth={2} aria-hidden="true" />
+                )}
+              </button>
+            </span>
           </label>
-          <button type="submit" disabled={submitting}>
-            <Save size={17} strokeWidth={2} aria-hidden="true" />
-            <span>Lưu điều chỉnh</span>
-          </button>
         </form>
+        )}
       </div>
-    </details>
+    </div>
   )
 }
 

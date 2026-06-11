@@ -4,6 +4,7 @@ import { adminApi } from '../../../api/admin.api'
 import UserDetailPanel from './components/UserDetailPanel'
 import UserListPanel from './components/UserListPanel'
 import UsersFilterBar from './components/UsersFilterBar'
+import Loading from '../../../components/Loading/Loading'
 
 function normalizeList(value) {
   if (Array.isArray(value)) {
@@ -118,19 +119,20 @@ function AdminUsersView({
     setUsers((items) => normalizeList(items).map((item) => (item.id === saved.id ? saved : item)))
   }
 
-  const updateStatus = async (status) => {
-    if (!selectedUser) {
+  const updateStatus = async (status, targetUser = selectedUser) => {
+    if (!targetUser) {
       return
     }
 
     setSubmitting(true)
     setViewError('')
     try {
-      const saved = await adminApi.updateUserStatus(selectedUser.id, {
+      const saved = await adminApi.updateUserStatus(targetUser.id, {
         reason: status === 'LOCKED' ? 'Khóa từ màn hình quản trị' : 'Mở lại từ màn hình quản trị',
         status,
       }, token)
       patchUser(saved)
+      setSelectedId(saved.id)
       onSetNotice(`Đã cập nhật trạng thái ${saved.email}.`)
     } catch (err) {
       setViewError(err.message || 'Không cập nhật được trạng thái user.')
@@ -249,7 +251,8 @@ function AdminUsersView({
         </button>
       </div>
 
-      {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải user...'}</p>}
+      {error && <p className="admin-message error">{error}</p>}
+      {!error && loading && <Loading fullScreen={false} message="Đang tải danh sách người dùng..." subMessage="" />}
 
       <UsersFilterBar
         onQueryChange={setQuery}
@@ -260,28 +263,29 @@ function AdminUsersView({
 
       <div className="admin-grid detail-layout">
         <UserListPanel
+          adjustForm={adjustForm}
+          bulkStatusForm={bulkStatusForm}
           hasLoadedUsers={hasLoadedUsers}
+          onAdjustFormChange={setAdjustForm}
+          onAdjustWallet={adjustWallet}
+          onBulkStatusFormChange={setBulkStatusForm}
+          onRoleFormChange={setRoleForm}
+          onRunBulkUserStatus={runBulkUserStatus}
           onSelectUser={setSelectedId}
+          onUpdateRole={updateRole}
+          onUpdateStatus={updateStatus}
+          roleForm={roleForm}
           selectedUser={selectedUser}
+          submitting={submitting}
           users={users}
         />
         <UserDetailPanel
           activeDetailTab={activeDetailTab}
-          adjustForm={adjustForm}
-          bulkStatusForm={bulkStatusForm}
           detail={detail}
           detailData={detailData}
           hasLoadedUsers={hasLoadedUsers}
           onActiveDetailTabChange={setActiveDetailTab}
-          onAdjustFormChange={setAdjustForm}
-          onAdjustWallet={adjustWallet}
-          onBulkStatusFormChange={setBulkStatusForm}
           onRevokeSession={revokeSession}
-          onRoleFormChange={setRoleForm}
-          onRunBulkUserStatus={runBulkUserStatus}
-          onUpdateRole={updateRole}
-          onUpdateStatus={updateStatus}
-          roleForm={roleForm}
           selectedUser={selectedUser}
           submitting={submitting}
         />

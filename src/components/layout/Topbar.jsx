@@ -64,17 +64,17 @@ function Topbar({
           <h1>{title}</h1>
         </div>
       </div>
+      <label className="search">
+        <Search size={17} strokeWidth={2} aria-hidden="true" />
+        <input
+          type="search"
+          placeholder="Đơn, dịch vụ, giao dịch"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={handleSearchKeyDown}
+        />
+      </label>
       <div className="top-actions">
-        <label className="search">
-          <Search size={17} strokeWidth={2} aria-hidden="true" />
-          <input
-            type="search"
-            placeholder="Đơn, dịch vụ, giao dịch"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-          />
-        </label>
         {showBalance && (
           <button type="button" className="balance-button">
             {money.format(displayBalance)}

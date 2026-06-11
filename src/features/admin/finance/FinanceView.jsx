@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
 import { AdminEmptyState, AdminStatusBadge } from '../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../adminFormat'
+import Loading from '../../../components/Loading/Loading'
 
 const financeTabs = [
   { id: 'bank', label: 'Bank transactions' },
@@ -374,7 +375,8 @@ function FinanceView({
         </button>
       </div>
 
-      {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải tài chính...'}</p>}
+      {error && <p className="admin-message error">{error}</p>}
+      {!error && loading && <Loading fullScreen={false} message="Đang tải tài chính..." subMessage="" />}
 
       <div className="admin-metrics">
         {financeMetrics.map((metric) => (
