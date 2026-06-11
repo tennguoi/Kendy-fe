@@ -1,18 +1,37 @@
-import { Bell, LogOut, Search } from 'lucide-react'
+import { Bell, LogOut, Menu, Search } from 'lucide-react'
 import { useState } from 'react'
 import { money } from '../../utils/currency'
+
+function formatNotificationTime(value) {
+  if (!value) {
+    return ''
+  }
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    month: '2-digit',
+  }).format(new Date(value))
+}
 
 function Topbar({
   currentUser,
   title,
   displayBalance,
   notificationCount = 0,
+  notifications = [],
+  notificationsLoading = false,
   onLogout,
+  onMarkNotificationRead,
+  onOpenNotifications,
   onViewChange,
   showBalance = true,
   subtitle = 'Tài khoản & quảng cáo Facebook',
+  onToggleSidebar,
 }) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
 
   const handleSearchKeyDown = (event) => {
     if (event.key === 'Enter' && searchQuery.trim() && onViewChange) {
@@ -20,19 +39,31 @@ function Topbar({
     }
   }
 
+  const handleToggleNotifications = () => {
+    const nextOpen = !isNotificationsOpen
+    setIsNotificationsOpen(nextOpen)
+    if (nextOpen) {
+      onOpenNotifications?.()
+    }
+  }
+
   return (
     <header className="topbar">
-      <div>
-        <p>{subtitle}</p>
-        <h1>{title}</h1>
+      <div className="topbar-left">
+        <button
+          type="button"
+          className="menu-toggle"
+          onClick={onToggleSidebar}
+          aria-label="Mở menu"
+        >
+          <Menu size={22} strokeWidth={2} />
+        </button>
+        <div>
+          <p>{subtitle}</p>
+          <h1>{title}</h1>
+        </div>
       </div>
       <div className="top-actions">
-        {currentUser && (
-          <div className="account-chip">
-            <strong>{currentUser.name || 'Chưa đặt tên'}</strong>
-            <span>{currentUser.email}</span>
-          </div>
-        )}
         <label className="search">
           <Search size={17} strokeWidth={2} aria-hidden="true" />
           <input
@@ -48,10 +79,51 @@ function Topbar({
             {money.format(displayBalance)}
           </button>
         )}
-        <button type="button" className="notification-bell" title="Thông báo">
-          <Bell size={18} strokeWidth={2} aria-hidden="true" />
-          {notificationCount > 0 && <span className="notification-badge">{notificationCount > 99 ? '99+' : notificationCount}</span>}
-        </button>
+        <div className="notification-menu">
+          <button
+            type="button"
+            className="notification-bell"
+            title="Thông báo"
+            aria-expanded={isNotificationsOpen}
+            aria-haspopup="dialog"
+            onClick={handleToggleNotifications}
+          >
+            <Bell size={18} strokeWidth={2} aria-hidden="true" />
+            {notificationCount > 0 && <span className="notification-badge">{notificationCount > 99 ? '99+' : notificationCount}</span>}
+          </button>
+          {isNotificationsOpen && (
+            <div className="notification-panel" role="dialog" aria-label="Thông báo">
+              <div className="notification-panel-head">
+                <strong>Thông báo</strong>
+                <span>{notificationCount} chưa đọc</span>
+              </div>
+              <div className="notification-list">
+                {notificationsLoading && <p className="notification-empty">Đang tải thông báo...</p>}
+                {!notificationsLoading && notifications.map((notification) => (
+                  <button
+                    type="button"
+                    className={notification.readAt ? 'notification-item' : 'notification-item unread'}
+                    key={notification.id}
+                    onClick={() => onMarkNotificationRead?.(notification)}
+                  >
+                    <strong>{notification.title || 'Thông báo'}</strong>
+                    <span>{notification.message || 'Bạn có thông báo mới.'}</span>
+                    <small>{formatNotificationTime(notification.createdAt)}</small>
+                  </button>
+                ))}
+                {!notificationsLoading && notifications.length === 0 && (
+                  <p className="notification-empty">Chưa có thông báo.</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        {currentUser && (
+          <div className="account-chip">
+            <strong>{currentUser.name || 'Chưa đặt tên'}</strong>
+            <span>{currentUser.email}</span>
+          </div>
+        )}
         <button type="button" className="logout-button" onClick={onLogout} title="Đăng xuất">
           <LogOut size={18} strokeWidth={2} aria-hidden="true" />
           <span>Đăng xuất</span>

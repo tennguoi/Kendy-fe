@@ -9,12 +9,36 @@ export function toApiUrl(path) {
   return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+export function toWebSocketUrl(path) {
+  const baseUrl = new URL(API_BASE_URL);
+  baseUrl.protocol = baseUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+  baseUrl.pathname = path.startsWith('/') ? path : `/${path}`;
+  baseUrl.search = '';
+  return baseUrl.toString();
+}
+
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+function htmlErrorMessage(payload) {
+  if (typeof payload !== 'string') {
+    return '';
+  }
+
+  if (payload.includes('ERR_NGROK_8012') || payload.includes('upstream web service at localhost:8080')) {
+    return 'Ngrok không kết nối được tới backend localhost:8080. Hãy chạy lại backend hoặc chỉnh lại tunnel ngrok.';
+  }
+
+  if (payload.trim().startsWith('<!DOCTYPE html') || payload.trim().startsWith('<html')) {
+    return 'API trả về trang HTML lỗi thay vì JSON. Kiểm tra backend hoặc cấu hình API/ngrok.';
+  }
+
+  return '';
+}
 
 // Interceptor cho request (gắn token)
 axiosClient.interceptors.request.use(
@@ -40,7 +64,11 @@ axiosClient.interceptors.response.use(
     let message;
     if (error.response) {
       const payload = error.response.data;
-      message = payload?.message || payload?.error || payload?.detail || `API ${error.config.method.toUpperCase()} ${error.config.url} failed with ${error.response.status}`;
+      message = htmlErrorMessage(payload)
+        || payload?.message
+        || payload?.error
+        || payload?.detail
+        || `API ${error.config?.method?.toUpperCase() || 'REQUEST'} ${error.config?.url || ''} failed with ${error.response.status}`;
     } else if (error.request) {
       message = 'Không thể kết nối đến máy chủ.';
     } else {

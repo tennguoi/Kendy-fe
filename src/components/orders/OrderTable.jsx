@@ -63,8 +63,8 @@ function OrderTable({
           <span>Ngày tạo</span>
           {!compact && <span>Thao tác</span>}
         </div>
-        {visibleOrders.map((order) => (
-          <div className={`table-row ${compact ? '' : 'has-actions'}`} key={order.code || order.orderCode}>
+        {visibleOrders.map((order, index) => (
+          <div className={`table-row ${compact ? '' : 'has-actions'}`} key={order.id || order.orderCode || order.code || `order-${index}`}>
             <strong>{order.code || order.orderCode}</strong>
             <span>{order.service || order.serviceName}</span>
             <span>{money.format(order.amount)}</span>

@@ -1,15 +1,32 @@
+import { X } from 'lucide-react'
 import heroImg from '../../assets/hero.png'
 import { navItems } from '../user/navigation'
 
-function Sidebar({ activeView, footerLabel = 'Hỗ trợ', footerTitle = 'Ticket sau mua', items = navItems, onViewChange }) {
+function Sidebar({
+  activeView,
+  footerLabel = 'Hỗ trợ',
+  footerTitle = 'Ticket sau mua',
+  items = navItems,
+  onViewChange,
+  isOpen,
+  onClose,
+}) {
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="brand">
         <img src={heroImg} alt="Kendy Digital" />
         <div>
           <strong>Kendy Digital</strong>
           <span>Ví mua dịch vụ</span>
         </div>
+        <button
+          type="button"
+          className="sidebar-close"
+          onClick={onClose}
+          aria-label="Đóng menu"
+        >
+          <X size={20} strokeWidth={2} />
+        </button>
       </div>
 
       <nav className="nav">

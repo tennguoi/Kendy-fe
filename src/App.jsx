@@ -13,8 +13,10 @@ import { adminApi } from './api/admin.api'
 import { authApi } from './api/auth.api'
 import { publicApi } from './api/public.api'
 import { userApi } from './api/user.api'
+import { toWebSocketUrl } from './lib/api'
 import { money } from './utils/currency'
 import { createIdempotencyKey } from './utils/idempotency'
+import { parseMoneyInput } from './utils/moneyInput'
 import { clearOAuthCallbackUrl, readOAuthCallback } from './utils/oauthCallback'
 import {
   clearStoredAccessToken,
@@ -25,6 +27,7 @@ import {
 
 const initialOAuthCallback = readOAuthCallback()
 const adminRoutePaths = adminNavItems.map((item) => item.path)
+const MIN_DEPOSIT_AMOUNT = 1000
 
 async function fetchUserBootstrap(token) {
   const me = await userApi.getMe(token)
@@ -65,6 +68,81 @@ function normalizePathname(pathname) {
   return normalized || '/'
 }
 
+function resolveServiceId(service) {
+  return service?.id ?? service?.serviceId
+}
+
+function purchaseErrorMessage(error) {
+  const message = error?.message || ''
+  if (message === 'Insufficient wallet balance') {
+    return 'Số dư ví không đủ để mua dịch vụ này. Vui lòng nạp thêm tiền.'
+  }
+  if (message === 'Service requires consultation before purchase') {
+    return 'Dịch vụ này cần tư vấn trước khi mua. Vui lòng tạo ticket hỗ trợ.'
+  }
+  if (message === 'Service price must be greater than zero') {
+    return 'Dịch vụ chưa có giá hợp lệ để tạo đơn.'
+  }
+  return message || 'Không tạo được đơn. Kiểm tra số dư ví hoặc trạng thái dịch vụ.'
+}
+
+function notificationRoute(actionUrl) {
+  if (!actionUrl) {
+    return ''
+  }
+  if (actionUrl.startsWith('/orders')) {
+    return '/orders'
+  }
+  if (actionUrl.startsWith('/deposits')) {
+    return '/deposit'
+  }
+  if (actionUrl.startsWith('/tickets')) {
+    return '/support'
+  }
+  return actionUrl
+}
+
+function depositStatusNotice(depositCode, status) {
+  const normalizedStatus = String(status || '').toUpperCase()
+  if (normalizedStatus === 'COMPLETED') {
+    return {
+      message: `Yêu cầu nạp ${depositCode} đã hoàn tất. Số dư đã được cập nhật.`,
+      title: 'Đã nhận tiền',
+      type: 'success',
+    }
+  }
+
+  if (normalizedStatus === 'PENDING') {
+    return {
+      message: `Yêu cầu nạp ${depositCode} vẫn đang chờ thanh toán/webhook SePay.`,
+      title: 'Đang chờ',
+      type: 'info',
+    }
+  }
+
+  if (normalizedStatus === 'MANUAL_REVIEW') {
+    return {
+      message: `Yêu cầu nạp ${depositCode} cần admin kiểm tra thủ công.`,
+      title: 'Cần kiểm tra',
+      type: 'error',
+    }
+  }
+
+  if (normalizedStatus === 'CANCELLED') {
+    return {
+      message: `Yêu cầu nạp ${depositCode} đã bị hủy.`,
+      title: 'Đã hủy',
+      type: 'error',
+    }
+  }
+
+  return {
+    message: `Trạng thái ${depositCode}: ${normalizedStatus || 'không xác định'}.`,
+    title: 'Đã cập nhật',
+    type: 'info',
+  }
+}
+
 function App() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -87,6 +165,8 @@ function App() {
   const [routeLoading, setRouteLoading] = useState(false)
   const [userDashboard, setUserDashboard] = useState(null)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
+  const [notifications, setNotifications] = useState([])
+  const [notificationsLoading, setNotificationsLoading] = useState(false)
   const [supportAttachments, setSupportAttachments] = useState([])
   const [supportFile, setSupportFile] = useState(null)
   const [supportLoading, setSupportLoading] = useState(false)
@@ -263,6 +343,64 @@ function App() {
   }, [accessToken, isAdmin])
 
   useEffect(() => {
+    if (!accessToken || !authInit || !currentUser) {
+      return undefined
+    }
+
+    let socket = null
+    let reconnectTimer = 0
+    let closedByClient = false
+
+    const connect = () => {
+      const wsUrl = `${toWebSocketUrl('/ws/notifications')}?token=${encodeURIComponent(accessToken)}`
+      socket = new WebSocket(wsUrl)
+
+      socket.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data)
+          if (payload.type !== 'notification.created') {
+            return
+          }
+
+          if (Number.isFinite(Number(payload.unreadCount))) {
+            setUnreadNotifications(Number(payload.unreadCount))
+          } else {
+            setUnreadNotifications((count) => count + 1)
+          }
+
+          if (payload.notification) {
+            setNotifications((items) => [
+              payload.notification,
+              ...normalizeList(items).filter((item) => item.id !== payload.notification.id),
+            ].slice(0, 20))
+            notify(payload.notification.message || payload.notification.title || 'Bạn có thông báo mới.', 'info', payload.notification.title || 'Thông báo mới')
+          }
+        } catch {
+          // Ignore malformed websocket messages from stale connections.
+        }
+      }
+
+      socket.onclose = () => {
+        if (!closedByClient) {
+          reconnectTimer = window.setTimeout(connect, 3000)
+        }
+      }
+
+      socket.onerror = () => {
+        socket?.close()
+      }
+    }
+
+    connect()
+
+    return () => {
+      closedByClient = true
+      window.clearTimeout(reconnectTimer)
+      socket?.close()
+    }
+  }, [accessToken, authInit, currentUser, notify])
+
+  useEffect(() => {
     if (authInit && accessToken && currentUser && !isAdmin && isAdminPath) {
       navigate('/', { replace: true })
     }
@@ -372,6 +510,8 @@ function App() {
     setRecentServices([])
     setUserDashboard(null)
     setUnreadNotifications(0)
+    setNotifications([])
+    setNotificationsLoading(false)
     setSupportAttachments([])
     setSupportFile(null)
     setSupportMessage('')
@@ -419,8 +559,51 @@ function App() {
     }
   }, [notify])
 
+  const loadNotifications = useCallback(async () => {
+    if (!accessToken) {
+      return
+    }
+
+    setNotificationsLoading(true)
+    try {
+      const [items, count] = await Promise.all([
+        userApi.getNotifications(accessToken),
+        userApi.getUnreadNotificationCount(accessToken),
+      ])
+      setNotifications(normalizeList(items))
+      setUnreadNotifications(Number(count?.unread || 0))
+    } catch (err) {
+      notify(err.message || 'Không tải được thông báo.', 'error')
+    } finally {
+      setNotificationsLoading(false)
+    }
+  }, [accessToken, notify])
+
+  const handleMarkNotificationRead = useCallback(async (notification) => {
+    if (!accessToken || !notification?.id) {
+      return
+    }
+
+    const route = notificationRoute(notification.actionUrl)
+    if (route) {
+      navigate(route)
+    }
+
+    if (notification.readAt) {
+      return
+    }
+
+    try {
+      const saved = await userApi.markNotificationRead(notification.id, accessToken)
+      setNotifications((items) => normalizeList(items).map((item) => (item.id === saved.id ? saved : item)))
+      setUnreadNotifications((count) => Math.max(0, count - 1))
+    } catch (err) {
+      notify(err.message || 'Không cập nhật được thông báo.', 'error')
+    }
+  }, [accessToken, navigate, notify])
+
   const handleDepositAmountChange = (value) => {
-    setDepositAmount(value.replace(/\D/g, ''))
+    setDepositAmount(parseMoneyInput(value))
   }
 
   const refreshBootstrapData = useCallback(async () => {
@@ -436,6 +619,13 @@ function App() {
       const message = 'Vui lòng đăng nhập trước khi tạo yêu cầu nạp.'
       setApiNotice(message)
       notify(message, 'info')
+      return
+    }
+
+    if (amountNumber <= MIN_DEPOSIT_AMOUNT) {
+      const message = 'Số tiền nạp phải lớn hơn 1.000đ.'
+      setApiNotice(message)
+      notify(message, 'error')
       return
     }
 
@@ -462,26 +652,32 @@ function App() {
 
     try {
       if (depositCode) {
-        const [deposit, status] = await Promise.all([
+        const [deposit, status, walletData] = await Promise.all([
           userApi.getDeposit(depositCode, accessToken),
           userApi.getDepositStatus(depositCode, accessToken),
+          userApi.getWallet(accessToken),
         ])
         const merged = { ...deposit, ...status }
         setActiveDeposit(merged)
         setApiDeposits((items) => normalizeList(items).map((item) => (item.depositCode === depositCode ? merged : item)))
-        notify(`Đã cập nhật trạng thái ${depositCode}.`, 'success')
+        setWallet(walletData)
+        const notice = depositStatusNotice(depositCode, merged.status)
+        notify(notice.message, notice.type, notice.title)
       } else {
-        const deposits = normalizeList(await userApi.getDeposits({ size: 20 }, accessToken))
+        const [depositData, walletData] = await Promise.all([
+          userApi.getDeposits({ size: 20 }, accessToken),
+          userApi.getWallet(accessToken),
+        ])
+        const deposits = normalizeList(depositData)
         setApiDeposits(deposits)
         setActiveDeposit((current) => (
           current && deposits.some((deposit) => deposit.depositCode === current.depositCode)
             ? deposits.find((deposit) => deposit.depositCode === current.depositCode)
             : deposits.find((deposit) => deposit.status === 'PENDING') || deposits[0] || null
         ))
+        setWallet(walletData)
         notify('Đã tải lại lịch sử nạp tiền.', 'success')
       }
-      const walletData = await userApi.getWallet(accessToken)
-      setWallet(walletData)
     } catch (err) {
       notify(err.message || 'Không cập nhật được yêu cầu nạp.', 'error')
     }
@@ -511,19 +707,37 @@ function App() {
     }
 
     try {
+      const serviceId = resolveServiceId(service)
+      if (!serviceId) {
+        throw new Error('Dịch vụ chưa có mã hợp lệ để tạo đơn.')
+      }
+
+      if (service.ctaType && service.ctaType !== 'BUY_NOW') {
+        throw new Error('Dịch vụ này cần tư vấn trước khi mua. Vui lòng tạo ticket hỗ trợ.')
+      }
+
+      const servicePrice = Number(service.price)
+      if (Number.isFinite(servicePrice) && servicePrice > displayBalance) {
+        throw new Error('Số dư ví không đủ để mua dịch vụ này. Vui lòng nạp thêm tiền.')
+      }
+
       const order = await userApi.createOrder({
-        serviceId: service.id,
+        serviceId,
         inputData: JSON.stringify({ source: 'dashboard' }),
-        idempotencyKey: createIdempotencyKey(service.id),
+        idempotencyKey: createIdempotencyKey(serviceId),
       }, accessToken)
+
+      if (!order?.orderCode) {
+        throw new Error('API tạo đơn không trả về mã đơn. Vui lòng tải lại trang và thử lại.')
+      }
 
       setApiOrders((items) => [order, ...normalizeList(items).filter((item) => item.orderCode !== order.orderCode)])
       await refreshBootstrapData()
       const message = `Đã tạo đơn ${order.orderCode}.`
       setApiNotice(message)
       notify(message, 'success')
-    } catch {
-      const message = 'Không tạo được đơn. Kiểm tra số dư ví hoặc trạng thái dịch vụ.'
+    } catch (err) {
+      const message = purchaseErrorMessage(err)
       setApiNotice(message)
       notify(message, 'error')
     }
@@ -787,7 +1001,12 @@ function App() {
         footerLabel="Admin"
         footerTitle="Dịch vụ & bảng giá"
         items={adminNavItems}
+        notificationCount={unreadNotifications}
+        notifications={notifications}
+        notificationsLoading={notificationsLoading}
         onLogout={handleLogout}
+        onMarkNotificationRead={handleMarkNotificationRead}
+        onOpenNotifications={loadNotifications}
         onViewChange={handleAdminViewChange}
         showBalance={false}
         subtitle="Quản trị nội dung public site"
@@ -822,7 +1041,11 @@ function App() {
       currentUser={currentUser}
       displayBalance={displayBalance}
       notificationCount={unreadNotifications}
+      notifications={notifications}
+      notificationsLoading={notificationsLoading}
       onLogout={handleLogout}
+      onMarkNotificationRead={handleMarkNotificationRead}
+      onOpenNotifications={loadNotifications}
       onViewChange={handleUserViewChange}
     >
       {routeLoading && userActiveView !== 'support' && userActiveView !== 'settings' && (

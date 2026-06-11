@@ -2,7 +2,7 @@ import InfoLine from '../../../components/bank/InfoLine'
 import StatusBadge from '../../../components/status/StatusBadge'
 import { money } from '../../../utils/currency'
 
-const quickAmounts = [100000, 250000, 500000, 1000000]
+const quickAmounts = [5000, 10000, 100000, 250000, 500000, 1000000]
 
 function formatDate(value) {
   if (!value) {
@@ -37,7 +37,12 @@ function DepositView({
           <h2>Nạp tiền qua chuyển khoản</h2>
           <label>
             Số tiền
-            <input value={depositAmount} inputMode="numeric" onChange={(event) => onAmountChange(event.target.value)} />
+            <input
+              value={depositAmount}
+              inputMode="text"
+              onChange={(event) => onAmountChange(event.target.value)}
+              placeholder="250k, 500k, 1tr..."
+            />
           </label>
           <div className="quick-amounts">
             {quickAmounts.map((amount) => (

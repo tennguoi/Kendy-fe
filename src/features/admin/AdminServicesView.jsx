@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../api/admin.api'
 import { AdminEmptyState } from './AdminShared'
 import { formatAdminDate, formatAdminMoney } from './adminFormat'
+import { parseMoneyInput } from '../../utils/moneyInput'
 
 const emptyServiceForm = {
   benefits: '',
@@ -54,12 +55,25 @@ const facebookSchema = JSON.stringify({
   type: 'object',
 }, null, 2)
 
+function slugify(text) {
+  return (text || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'd')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9 -]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+}
+
 function toMoney(value, fallback = undefined) {
-  if (value === '' || value == null) {
+  const parsed = parseMoneyInput(value)
+  if (parsed === '' || parsed == null) {
     return fallback
   }
 
-  return Number(value)
+  return Number(parsed)
 }
 
 function serviceToForm(service) {
@@ -194,11 +208,26 @@ function AdminServicesView({
   }, [loadServices])
 
   const updateServiceForm = (field, value) => {
-    setServiceForm((current) => ({ ...current, [field]: value }))
+    setServiceForm((current) => {
+      const next = {
+        ...current,
+        [field]: field === 'price' || field === 'costPrice' ? parseMoneyInput(value) : value,
+      }
+      if (field === 'name' && (!current.slug || current.slug === slugify(current.name))) {
+        next.slug = slugify(value)
+      }
+      return next
+    })
   }
 
   const updateCategoryForm = (field, value) => {
-    setCategoryForm((current) => ({ ...current, [field]: value }))
+    setCategoryForm((current) => {
+      const next = { ...current, [field]: value }
+      if (field === 'name' && (!current.slug || current.slug === slugify(current.name))) {
+        next.slug = slugify(value)
+      }
+      return next
+    })
   }
 
   const startCreateService = () => {
@@ -527,7 +556,13 @@ function AdminServicesView({
           </label>
           <label>
             <span>Giá số</span>
-            <input value={serviceForm.price} onChange={(event) => updateServiceForm('price', event.target.value)} inputMode="decimal" required />
+            <input
+              value={serviceForm.price}
+              onChange={(event) => updateServiceForm('price', event.target.value)}
+              inputMode="text"
+              placeholder="390k, 1tr..."
+              required
+            />
           </label>
           <label>
             <span>Giá hiển thị</span>
@@ -535,7 +570,12 @@ function AdminServicesView({
           </label>
           <label>
             <span>Giá vốn</span>
-            <input value={serviceForm.costPrice} onChange={(event) => updateServiceForm('costPrice', event.target.value)} inputMode="decimal" />
+            <input
+              value={serviceForm.costPrice}
+              onChange={(event) => updateServiceForm('costPrice', event.target.value)}
+              inputMode="text"
+              placeholder="250k, 500k..."
+            />
           </label>
           <label>
             <span>Badge bảng giá</span>
