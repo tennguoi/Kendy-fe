@@ -159,6 +159,7 @@ function App() {
   const [apiOrders, setApiOrders] = useState([])
   const [apiTickets, setApiTickets] = useState([])
   const [apiDeposits, setApiDeposits] = useState([])
+  const [depositFilters, setDepositFilters] = useState({})
   const [apiWalletTransactions, setApiWalletTransactions] = useState([])
   const [favoriteServices, setFavoriteServices] = useState([])
   const [recentServices, setRecentServices] = useState([])
@@ -432,7 +433,14 @@ function App() {
         }
 
         if (userActiveView === 'deposit') {
-          const deposits = normalizeList(await userApi.getDeposits({ size: 20 }, accessToken))
+          const params = { size: 20, ...depositFilters }
+          if (params.fromDate) {
+            params.fromDate = params.fromDate + 'T00:00:00Z'
+          }
+          if (params.toDate) {
+            params.toDate = params.toDate + 'T23:59:59Z'
+          }
+          const deposits = normalizeList(await userApi.getDeposits(params, accessToken))
           if (cancelled) return
           setApiDeposits(deposits)
           setActiveDeposit((current) => (
@@ -477,7 +485,7 @@ function App() {
       cancelled = true
       setRouteLoading(false)
     }
-  }, [accessToken, authInit, isAdmin, isAdminPath, notify, userActiveView])
+  }, [accessToken, authInit, depositFilters, isAdmin, isAdminPath, notify, userActiveView])
 
   const handleAuthSuccess = (response, remember = true) => {
     setRememberSession(remember)
@@ -645,6 +653,10 @@ function App() {
     }
   }
 
+  const handleDepositFiltersChange = (filters) => {
+    setDepositFilters(filters)
+  }
+
   const handleRefreshDeposit = async (depositCode) => {
     if (!accessToken) {
       return
@@ -664,8 +676,15 @@ function App() {
         const notice = depositStatusNotice(depositCode, merged.status)
         notify(notice.message, notice.type, notice.title)
       } else {
+        const params = { size: 20, ...depositFilters }
+        if (params.fromDate) {
+          params.fromDate = params.fromDate + 'T00:00:00Z'
+        }
+        if (params.toDate) {
+          params.toDate = params.toDate + 'T23:59:59Z'
+        }
         const [depositData, walletData] = await Promise.all([
-          userApi.getDeposits({ size: 20 }, accessToken),
+          userApi.getDeposits(params, accessToken),
           userApi.getWallet(accessToken),
         ])
         const deposits = normalizeList(depositData)
@@ -1076,6 +1095,7 @@ function App() {
         onOpenServices={() => handleUserViewChange('services')}
         onPurchase={handlePurchase}
         onRefreshDeposit={handleRefreshDeposit}
+        onFiltersChange={handleDepositFiltersChange}
         onRefreshTickets={loadTickets}
         onReopenTicket={(ticketCode) => handleTicketState(ticketCode, 'reopen')}
         onReorder={handleReorder}

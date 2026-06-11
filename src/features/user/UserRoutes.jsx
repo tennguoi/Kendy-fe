@@ -6,6 +6,7 @@ import OverviewView from './overview/OverviewView'
 import ServicesView from './services/ServicesView'
 import SettingsView from './settings/SettingsView'
 import SupportView from './support/SupportView'
+import './user.css'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')

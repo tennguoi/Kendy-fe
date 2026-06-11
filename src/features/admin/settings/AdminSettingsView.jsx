@@ -1,9 +1,9 @@
 import { RefreshCw, RotateCcw, Save } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { adminApi } from '../../api/admin.api'
-import { userApi } from '../../api/user.api'
-import { AdminEmptyState, AdminStatusBadge } from './AdminShared'
-import { formatAdminDate } from './adminFormat'
+import { adminApi } from '../../../api/admin.api'
+import { userApi } from '../../../api/user.api'
+import { AdminEmptyState, AdminStatusBadge } from '../AdminShared'
+import { formatAdminDate } from '../adminFormat'
 
 const tabs = [
   { id: 'settings', label: 'Settings' },

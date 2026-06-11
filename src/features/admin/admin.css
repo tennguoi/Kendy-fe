@@ -1,0 +1,11 @@
+/* Admin feature styles live here when they are not part of the shared dashboard shell.
+   Shared primitives such as .admin-panel and .admin-form are still in dashboard/Dashboard.css
+   because both admin and user screens currently reuse them. */
+
+.admin-grid.detail-layout {
+  align-items: start;
+}
+
+.admin-detail-panel {
+  min-width: 0;
+}

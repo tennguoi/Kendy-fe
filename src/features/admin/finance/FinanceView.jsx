@@ -1,8 +1,8 @@
 import { Ban, Download, RefreshCw, RotateCcw, Save } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { adminApi } from '../../api/admin.api'
-import { AdminEmptyState, AdminStatusBadge } from './AdminShared'
-import { formatAdminDate, formatAdminMoney } from './adminFormat'
+import { adminApi } from '../../../api/admin.api'
+import { AdminEmptyState, AdminStatusBadge } from '../AdminShared'
+import { formatAdminDate, formatAdminMoney } from '../adminFormat'
 
 const financeTabs = [
   { id: 'bank', label: 'Bank transactions' },
@@ -28,7 +28,7 @@ function downloadTextFile(fileName, content) {
   downloadBlobFile(fileName, new Blob([content], { type: 'text/csv;charset=utf-8' }))
 }
 
-function AdminFinanceView({
+function FinanceView({
   onSetError,
   onSetNotice,
   token,
@@ -655,4 +655,4 @@ function AdminFinanceView({
   )
 }
 
-export default AdminFinanceView
+export default FinanceView

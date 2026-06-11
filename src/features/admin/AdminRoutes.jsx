@@ -1,12 +1,13 @@
 import { Navigate, useLocation } from 'react-router-dom'
-import AdminFinanceView from './AdminFinanceView'
-import AdminOrdersView from './AdminOrdersView'
-import AdminOverviewView from './AdminOverviewView'
-import AdminPricingView from './AdminPricingView'
-import AdminServicesView from './AdminServicesView'
-import AdminSettingsView from './AdminSettingsView'
-import AdminTicketsView from './AdminTicketsView'
-import AdminUsersView from './AdminUsersView'
+import AdminFinanceView from './finance/AdminFinanceView'
+import AdminOrdersView from './orders/AdminOrdersView'
+import AdminOverviewView from './overview/AdminOverviewView'
+import AdminPricingView from './pricing/AdminPricingView'
+import AdminServicesView from './services/AdminServicesView'
+import AdminSettingsView from './settings/AdminSettingsView'
+import AdminTicketsView from './tickets/AdminTicketsView'
+import AdminUsersView from './users/AdminUsersView'
+import './admin.css'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')

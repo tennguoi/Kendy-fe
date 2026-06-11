@@ -1331,6 +1331,28 @@ button.deposit-row:hover {
   align-items: center;
 }
 
+.deposit-filters {
+  display: grid;
+  grid-template-columns: 140px 150px 150px auto auto;
+  gap: 10px;
+  margin-bottom: 14px;
+  align-items: center;
+}
+
+.deposit-filters input,
+.deposit-filters select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #ffffff;
+  color: var(--kd-text);
+  font: inherit;
+  outline: none;
+}
+
 .admin-service-list {
   max-height: 460px;
   overflow: auto;

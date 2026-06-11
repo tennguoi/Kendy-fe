@@ -1,0 +1,1 @@
+export const quickDepositAmounts = [5000, 10000, 100000, 250000, 500000, 1000000]

@@ -1,0 +1,14 @@
+/* User feature styles live here when they are not part of the shared dashboard shell.
+   Shared primitives such as .admin-panel, .admin-form and tables are still in
+   dashboard/Dashboard.css because both admin and user screens currently reuse them. */
+
+.services-catalog,
+.support-layout,
+.deposit-tool {
+  min-width: 0;
+}
+
+.quick-service-card,
+.service-card {
+  min-width: 0;
+}

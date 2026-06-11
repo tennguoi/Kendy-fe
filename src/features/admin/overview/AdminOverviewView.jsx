@@ -1,4 +1,4 @@
-import { formatAdminMoney } from './adminFormat'
+import { formatAdminMoney } from '../adminFormat'
 
 function AdminOverviewView({
   categories,
