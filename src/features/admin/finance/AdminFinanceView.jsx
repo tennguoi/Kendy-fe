@@ -398,7 +398,6 @@ function AdminFinanceView({
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
           <div>
-            <span className="eyebrow">Finance</span>
             <h2>Quản lý tài chính</h2>
           </div>
         </div>

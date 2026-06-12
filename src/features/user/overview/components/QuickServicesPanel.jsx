@@ -10,7 +10,6 @@ function QuickServicesPanel({
     <section className="quick-services-panel">
       <div className="section-head">
         <div>
-          <span className="eyebrow">Dịch vụ nên dùng</span>
           <h2>Mua nhanh từ dịch vụ yêu thích và gần đây</h2>
         </div>
         <button type="button" onClick={onOpenServices}>Mở catalog</button>

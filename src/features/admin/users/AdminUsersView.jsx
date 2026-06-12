@@ -252,7 +252,6 @@ function AdminUsersView({
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
           <div>
-            <span className="eyebrow">Users</span>
             <h2>Quản lý người dùng</h2>
           </div>
           {users.length > 0 && (

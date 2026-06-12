@@ -492,7 +492,6 @@ function AdminServicesView({
     <section className="admin-view">
       <div className="admin-toolbar">
         <div>
-          <span className="eyebrow">Dịch vụ</span>
           <h2>Quản lý dịch vụ & danh mục</h2>
         </div>
         <div className="admin-toolbar-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center', position: 'relative' }}>

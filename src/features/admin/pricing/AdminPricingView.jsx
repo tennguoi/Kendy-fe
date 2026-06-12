@@ -139,7 +139,6 @@ function AdminPricingView({
     <section className="admin-view">
       <div className="admin-toolbar">
         <div>
-          <span className="eyebrow">Pricing management</span>
           <h2>Quản lý bảng giá public</h2>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadPricing} disabled={loading}>

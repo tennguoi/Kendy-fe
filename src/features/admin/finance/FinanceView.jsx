@@ -366,7 +366,6 @@ function FinanceView({
     <section className="admin-view">
       <div className="admin-toolbar">
         <div>
-          <span className="eyebrow">Finance</span>
           <h2>Quản lý tài chính</h2>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadFinance} disabled={loading}>

@@ -255,7 +255,6 @@ function AdminOrdersView({
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
           <div>
-            <span className="eyebrow">Orders</span>
             <h2>Quản lý đơn hàng</h2>
           </div>
           {orders.length > 0 && (

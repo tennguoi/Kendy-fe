@@ -25,6 +25,9 @@ function AdminRoutes({
   currentUser,
   dashboard,
   dashboardSummary,
+  auditLogs,
+  bankTransactions,
+  health,
   onSetError,
   onSetNotice,
   onCurrentUserChange,
@@ -48,6 +51,9 @@ function AdminRoutes({
           categories={categories}
           dashboard={dashboard}
           dashboardSummary={dashboardSummary}
+          auditLogs={auditLogs}
+          bankTransactions={bankTransactions}
+          health={health}
           pricingItems={pricingItems}
           revenue={revenue}
           revenueChart={revenueChart}

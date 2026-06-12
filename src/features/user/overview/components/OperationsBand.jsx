@@ -11,7 +11,6 @@ function OperationsBand({ onViewChange }) {
   return (
     <section className="operations-band">
       <div>
-        <span className="eyebrow">Workspace</span>
         <h2>Thao tác nhanh</h2>
       </div>
       <div className="ops-list">

@@ -753,7 +753,6 @@ function AdminSettingsView({
     <section className="admin-view">
       <div className="admin-toolbar">
         <div>
-          <span className="eyebrow">Settings</span>
           <h2>Cài đặt hệ thống</h2>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadSettings} disabled={loading}>

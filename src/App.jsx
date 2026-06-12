@@ -194,6 +194,9 @@ function App() {
   const [adminRevenueChart, setAdminRevenueChart] = useState([])
   const [adminServicePerformance, setAdminServicePerformance] = useState([])
   const [adminUserActivity, setAdminUserActivity] = useState(null)
+  const [adminHealth, setAdminHealth] = useState(null)
+  const [adminAuditLogs, setAdminAuditLogs] = useState([])
+  const [adminBankTransactions, setAdminBankTransactions] = useState([])
   const [adminOverviewError, setAdminOverviewError] = useState('')
   const [activeDeposit, setActiveDeposit] = useState(null)
   const [apiNotice, setApiNotice] = useState(() => {
@@ -228,14 +231,34 @@ function App() {
 
   const metrics = useMemo(
     () => [
-      { label: 'Số dư ví', value: money.format(displayBalance), tone: 'green' },
       {
+        detail: 'Khả dụng để mua dịch vụ',
+        label: 'Số dư ví',
+        progress: Math.min(100, Math.max(12, displayBalance / 1000000 * 100)),
+        tone: 'green',
+        value: money.format(displayBalance),
+      },
+      {
+        detail: 'Cần theo dõi tiến độ',
         label: 'Đơn đang xử lý',
+        progress: Math.min(100, Math.max(12, Number(userDashboard?.processingOrders ?? orderList.filter((order) => order.status === 'PROCESSING').length) * 18)),
         value: String(userDashboard?.processingOrders ?? orderList.filter((order) => order.status === 'PROCESSING').length).padStart(2, '0'),
         tone: 'orange',
       },
-      { label: 'Ticket chờ phản hồi', value: String(userDashboard?.pendingUserTickets ?? ticketList.filter((ticket) => ticket.status === 'PENDING_USER').length).padStart(2, '0'), tone: 'blue' },
-      { label: 'Thông báo mới', value: String(unreadNotifications).padStart(2, '0'), tone: 'red' },
+      {
+        detail: 'Đang chờ phản hồi của bạn',
+        label: 'Ticket chờ phản hồi',
+        progress: Math.min(100, Math.max(12, Number(userDashboard?.pendingUserTickets ?? ticketList.filter((ticket) => ticket.status === 'PENDING_USER').length) * 22)),
+        tone: 'blue',
+        value: String(userDashboard?.pendingUserTickets ?? ticketList.filter((ticket) => ticket.status === 'PENDING_USER').length).padStart(2, '0'),
+      },
+      {
+        detail: 'Cập nhật mới từ hệ thống',
+        label: 'Thông báo mới',
+        progress: Math.min(100, Math.max(12, unreadNotifications * 16)),
+        tone: 'red',
+        value: String(unreadNotifications).padStart(2, '0'),
+      },
     ],
     [displayBalance, orderList, ticketList, unreadNotifications, userDashboard],
   )
@@ -323,6 +346,9 @@ function App() {
       adminApi.getRevenueChart(accessToken),
       adminApi.getServicePerformance(accessToken),
       adminApi.getUserActivity(accessToken),
+      adminApi.getHealth(accessToken),
+      adminApi.getAuditLogs({ limit: 12 }, accessToken),
+      adminApi.getBankTransactions(accessToken),
     ]).then((results) => {
       if (cancelled) return
       setAdminDashboard(settledValue(results[0], null))
@@ -334,6 +360,9 @@ function App() {
       setAdminRevenueChart(settledValue(results[6], []))
       setAdminServicePerformance(settledValue(results[7], []))
       setAdminUserActivity(settledValue(results[8], null))
+      setAdminHealth(settledValue(results[9], null))
+      setAdminAuditLogs(normalizeList(settledValue(results[10], [])))
+      setAdminBankTransactions(normalizeList(settledValue(results[11], [])))
       setAdminOverviewError(results.some((r) => r.status === 'rejected') ? 'Một phần dữ liệu tổng quan admin chưa tải được.' : '')
     }).catch(() => {
       if (!cancelled) setAdminOverviewError('Không tải được dữ liệu tổng quan admin. Kiểm tra quyền hoặc trạng thái backend.')
@@ -535,6 +564,9 @@ function App() {
     setAdminRevenueChart([])
     setAdminServicePerformance([])
     setAdminUserActivity(null)
+    setAdminHealth(null)
+    setAdminAuditLogs([])
+    setAdminBankTransactions([])
     setAdminOverviewError('')
     setShowAuthScreen(false)
     const message = 'Đã đăng xuất.'
@@ -1044,6 +1076,9 @@ function App() {
           pricingItems={adminPricing}
           revenue={adminRevenue}
           revenueChart={adminRevenueChart}
+          health={adminHealth}
+          auditLogs={adminAuditLogs}
+          bankTransactions={adminBankTransactions}
           servicePerformance={adminServicePerformance}
           services={adminServices}
           token={accessToken}

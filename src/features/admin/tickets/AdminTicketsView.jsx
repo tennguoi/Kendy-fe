@@ -230,7 +230,6 @@ function AdminTicketsView({
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
           <div>
-            <span className="eyebrow">Tickets</span>
             <h2>Quản lý hỗ trợ</h2>
           </div>
           {tickets.length > 0 && (

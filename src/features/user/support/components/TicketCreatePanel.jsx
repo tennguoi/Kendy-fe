@@ -13,7 +13,6 @@ function TicketCreatePanel({
     <article className="ticket-form">
       <div className="admin-panel-head">
         <div>
-          <span className="eyebrow">Ticket</span>
           <h2>Yêu cầu hỗ trợ</h2>
         </div>
         <button type="button" className="admin-icon-button" disabled={loading} onClick={onRefresh}>

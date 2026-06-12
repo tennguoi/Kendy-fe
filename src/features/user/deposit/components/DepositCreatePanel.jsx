@@ -8,7 +8,6 @@ function DepositCreatePanel({
 }) {
   return (
     <div className="deposit-form">
-      <span className="eyebrow">Tạo mã nạp</span>
       <h2>Nạp tiền qua chuyển khoản</h2>
       <label>
         Số tiền

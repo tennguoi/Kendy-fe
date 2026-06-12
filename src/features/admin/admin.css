@@ -24,6 +24,16 @@
   line-height: 1.16;
 }
 
+.admin-panel-head > div {
+  min-width: 0;
+}
+
+.admin-panel-head > div span {
+  display: block;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
 /* Admin buttons */
 .admin-icon-button,
 .admin-primary-button,
@@ -1453,4 +1463,3 @@ button.admin-data-row:nth-child(even).selected,
     display: none;
   }
 }
-
