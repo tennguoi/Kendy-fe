@@ -1,6 +1,7 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import AdminDrawer from '../AdminDrawer'
 import UserDetailPanel from './components/UserDetailPanel'
 import UserListPanel from './components/UserListPanel'
 import UsersFilterBar from './components/UsersFilterBar'
@@ -30,6 +31,7 @@ function AdminUsersView({
   const [bulkStatusForm, setBulkStatusForm] = useState({ ids: '', reason: '' })
   const [detail, setDetail] = useState(null)
   const [detailData, setDetailData] = useState({ audit: [], orders: [], sessions: [], tickets: [], wallet: [] })
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [error, setError] = useState('')
   const [hasLoadedUsers, setHasLoadedUsers] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -238,6 +240,13 @@ function AdminUsersView({
     }
   }
 
+  const selectUser = (userId, options = {}) => {
+    setSelectedId(userId)
+    if (options.openDrawer !== false) {
+      setDrawerOpen(true)
+    }
+  }
+
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
@@ -261,24 +270,30 @@ function AdminUsersView({
         statusFilter={statusFilter}
       />
 
-      <div className="admin-grid detail-layout">
-        <UserListPanel
-          adjustForm={adjustForm}
-          bulkStatusForm={bulkStatusForm}
-          hasLoadedUsers={hasLoadedUsers}
-          onAdjustFormChange={setAdjustForm}
-          onAdjustWallet={adjustWallet}
-          onBulkStatusFormChange={setBulkStatusForm}
-          onRoleFormChange={setRoleForm}
-          onRunBulkUserStatus={runBulkUserStatus}
-          onSelectUser={setSelectedId}
-          onUpdateRole={updateRole}
-          onUpdateStatus={updateStatus}
-          roleForm={roleForm}
-          selectedUser={selectedUser}
-          submitting={submitting}
-          users={users}
-        />
+      <UserListPanel
+        adjustForm={adjustForm}
+        bulkStatusForm={bulkStatusForm}
+        hasLoadedUsers={hasLoadedUsers}
+        onAdjustFormChange={setAdjustForm}
+        onAdjustWallet={adjustWallet}
+        onBulkStatusFormChange={setBulkStatusForm}
+        onRoleFormChange={setRoleForm}
+        onRunBulkUserStatus={runBulkUserStatus}
+        onSelectUser={selectUser}
+        onUpdateRole={updateRole}
+        onUpdateStatus={updateStatus}
+        roleForm={roleForm}
+        selectedUser={selectedUser}
+        submitting={submitting}
+        users={users}
+      />
+
+      <AdminDrawer
+        isOpen={drawerOpen && Boolean(selectedUser)}
+        onClose={() => setDrawerOpen(false)}
+        title={selectedUser?.name || selectedUser?.email || 'Chi tiết user'}
+        width="600px"
+      >
         <UserDetailPanel
           activeDetailTab={activeDetailTab}
           detail={detail}
@@ -289,7 +304,7 @@ function AdminUsersView({
           selectedUser={selectedUser}
           submitting={submitting}
         />
-      </div>
+      </AdminDrawer>
     </section>
   )
 }

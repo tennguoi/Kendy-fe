@@ -39,7 +39,7 @@ function UserListPanel({
 
   const handleOpenTools = (event, user) => {
     event.stopPropagation()
-    onSelectUser(user.id)
+    onSelectUser(user.id, { openDrawer: false })
     setActiveToolTab('wallet')
     setToolsUser(user)
     setOpenToolbarId(null)
@@ -47,13 +47,13 @@ function UserListPanel({
 
   const handleToggleToolbar = (event, userId) => {
     event.stopPropagation()
-    onSelectUser(userId)
+    onSelectUser(userId, { openDrawer: false })
     setOpenToolbarId((current) => (current === userId ? null : userId))
   }
 
   const handleUpdateStatus = (event, user, status) => {
     event.stopPropagation()
-    onSelectUser(user.id)
+    onSelectUser(user.id, { openDrawer: false })
     onUpdateStatus(status, user)
   }
 

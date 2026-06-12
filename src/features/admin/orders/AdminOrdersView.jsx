@@ -1,6 +1,7 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import AdminDrawer from '../AdminDrawer'
 import OrderDetailPanel from './components/OrderDetailPanel'
 import OrderFilterBar from './components/OrderFilterBar'
 import OrderListPanel from './components/OrderListPanel'
@@ -25,6 +26,7 @@ function AdminOrdersView({
   const [draft, setDraft] = useState(null)
   const [bulkRefundCodes, setBulkRefundCodes] = useState('')
   const [error, setError] = useState('')
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [orders, setOrders] = useState([])
   const [query, setQuery] = useState('')
@@ -99,6 +101,7 @@ function AdminOrdersView({
   const selectOrder = (orderId) => {
     setSelectedId(orderId)
     setDraft(null)
+    setDrawerOpen(true)
   }
 
   const updateDraft = (field, value) => {
@@ -270,12 +273,18 @@ function AdminOrdersView({
         statusFilter={statusFilter}
       />
 
-      <div className="admin-grid detail-layout">
-        <OrderListPanel
-          onSelectOrder={selectOrder}
-          orders={orders}
-          selectedOrder={selectedOrder}
-        />
+      <OrderListPanel
+        onSelectOrder={selectOrder}
+        orders={orders}
+        selectedOrder={selectedOrder}
+      />
+
+      <AdminDrawer
+        isOpen={drawerOpen && Boolean(selectedOrder)}
+        onClose={() => setDrawerOpen(false)}
+        title={selectedOrder?.orderCode || 'Chi tiết đơn hàng'}
+        width="620px"
+      >
         <OrderDetailPanel
           activeOrder={activeOrder}
           bulkRefundCodes={bulkRefundCodes}
@@ -290,7 +299,7 @@ function AdminOrdersView({
           selectedOrder={selectedOrder}
           submitting={submitting}
         />
-      </div>
+      </AdminDrawer>
     </section>
   )
 }

@@ -3,10 +3,7 @@ import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 
 function WalletPanel({
   balanceIssues,
-  loadBalanceIntegrityReport,
-  runBalanceCheck,
-  runReconciliation,
-  submitting,
+  onOpenTools,
   walletTransactions,
   walletType,
   walletTypes,
@@ -20,9 +17,7 @@ function WalletPanel({
         </select>
       </div>
       <div className="admin-action-row">
-        <button type="button" className="admin-icon-button" disabled={submitting} onClick={runBalanceCheck}>Balance check</button>
-        <button type="button" className="admin-icon-button" disabled={submitting} onClick={runReconciliation}>Reconciliation preview</button>
-        <button type="button" className="admin-icon-button" disabled={submitting} onClick={loadBalanceIntegrityReport}>Balance report</button>
+        <button type="button" className="admin-primary-button" onClick={onOpenTools}>Công cụ đối soát</button>
       </div>
       <div className="admin-data-table">
         <div className="admin-data-row head wallet">

@@ -1,12 +1,16 @@
 import { Ban, Download, RefreshCw, RotateCcw, Save } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
-import { AdminEmptyState, AdminStatusBadge } from '../AdminShared'
-import { formatAdminDate, formatAdminMoney } from '../adminFormat'
+import AdminDrawer from '../AdminDrawer'
+import { formatAdminMoney } from '../adminFormat'
+import BankDetailPanel from './components/BankDetailPanel'
 import BankPanel from './components/BankPanel'
+import DepositDetailPanel from './components/DepositDetailPanel'
 import DepositPanel from './components/DepositPanel'
+import FinanceTools from './components/FinanceTools'
 import WalletPanel from './components/WalletPanel'
 import Loading from '../../../components/Loading/Loading'
+import Modal from '../../../components/Modal/Modal'
 
 const financeTabs = [
   { id: 'bank', label: 'Bank transactions' },
@@ -42,9 +46,11 @@ function AdminFinanceView({
   const [bankBulkForm, setBankBulkForm] = useState({ depositCode: '', ids: '', reason: '', userId: '' })
   const [bankStatus, setBankStatus] = useState('')
   const [bankTransactions, setBankTransactions] = useState([])
+  const [bankDrawerOpen, setBankDrawerOpen] = useState(false)
   const [balanceIssues, setBalanceIssues] = useState([])
   const [dashboard, setDashboard] = useState(null)
   const [depositActionForm, setDepositActionForm] = useState({ minutes: '60', reason: '' })
+  const [depositDrawerOpen, setDepositDrawerOpen] = useState(false)
   const [depositStatus, setDepositStatus] = useState('')
   const [deposits, setDeposits] = useState([])
   const [error, setError] = useState('')
@@ -54,6 +60,8 @@ function AdminFinanceView({
   const [selectedBankId, setSelectedBankId] = useState(null)
   const [selectedDepositCode, setSelectedDepositCode] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [toolsOpen, setToolsOpen] = useState(false)
+  const [activeToolTab, setActiveToolTab] = useState('bank')
   const [exportFormat, setExportFormat] = useState('xlsx')
   const [walletTransactions, setWalletTransactions] = useState([])
   const [walletType, setWalletType] = useState('')
@@ -111,6 +119,11 @@ function AdminFinanceView({
     const timer = window.setTimeout(loadFinance, 250)
     return () => window.clearTimeout(timer)
   }, [loadFinance])
+
+  useEffect(() => {
+    setBankDrawerOpen(false)
+    setDepositDrawerOpen(false)
+  }, [activeTab])
 
   useEffect(() => {
     if (!token || !selectedBank?.id) {
@@ -206,7 +219,7 @@ function AdminFinanceView({
   }
 
   const runBulkBankCredit = async (event) => {
-    event.preventDefault()
+    event?.preventDefault?.()
     const bankTransactionIds = bankBulkForm.ids
       .split(/[\s,]+/)
       .map((id) => Number(id))
@@ -365,6 +378,21 @@ function AdminFinanceView({
     }
   }
 
+  const openFinanceTools = (tab = activeTab) => {
+    setActiveToolTab(tab)
+    setToolsOpen(true)
+  }
+
+  const selectBank = (bankId) => {
+    setSelectedBankId(bankId)
+    setBankDrawerOpen(true)
+  }
+
+  const selectDeposit = (depositCode) => {
+    setSelectedDepositCode(depositCode)
+    setDepositDrawerOpen(true)
+  }
+
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
@@ -440,35 +468,23 @@ function AdminFinanceView({
 
         {activeTab === 'bank' && (
           <BankPanel
-            bankActionForm={bankActionForm}
-            bankBulkForm={bankBulkForm}
             bankStatus={bankStatus}
             bankStatuses={bankStatuses}
             bankTransactions={bankTransactions}
-            runBankAction={runBankAction}
-            runBulkBankCredit={runBulkBankCredit}
             selectedBank={selectedBank}
-            selectedBankId={selectedBankId}
-            setBankActionForm={setBankActionForm}
-            setBankBulkForm={setBankBulkForm}
             setBankStatus={setBankStatus}
-            setSelectedBankId={setSelectedBankId}
-            submitting={submitting}
+            setSelectedBankId={selectBank}
           />
         )}
 
         {activeTab === 'deposits' && (
           <DepositPanel
-            depositActionForm={depositActionForm}
             depositStatus={depositStatus}
             depositStatuses={depositStatuses}
             deposits={deposits}
-            runDepositAction={runDepositAction}
             selectedDeposit={selectedDeposit}
-            setDepositActionForm={setDepositActionForm}
             setDepositStatus={setDepositStatus}
-            setSelectedDepositCode={setSelectedDepositCode}
-            submitting={submitting}
+            setSelectedDepositCode={selectDeposit}
           />
         )}
 
@@ -483,9 +499,107 @@ function AdminFinanceView({
             walletType={walletType}
             walletTypes={walletTypes}
             setWalletType={setWalletType}
+            onOpenTools={() => openFinanceTools('wallet')}
           />
         )}
       </div>
+
+      <AdminDrawer
+        isOpen={bankDrawerOpen && activeTab === 'bank' && Boolean(selectedBank)}
+        onClose={() => setBankDrawerOpen(false)}
+        title={selectedBank ? `Bank #${selectedBank.id}` : 'Chi tiết bank'}
+        width="560px"
+      >
+        <BankDetailPanel
+          onOpenTools={() => openFinanceTools('bank')}
+          selectedBank={selectedBank}
+          submitting={submitting}
+        />
+      </AdminDrawer>
+
+      <AdminDrawer
+        isOpen={depositDrawerOpen && activeTab === 'deposits' && Boolean(selectedDeposit)}
+        onClose={() => setDepositDrawerOpen(false)}
+        title={selectedDeposit?.depositCode || 'Chi tiết nạp'}
+        width="560px"
+      >
+        <DepositDetailPanel
+          onOpenTools={() => openFinanceTools('deposits')}
+          selectedDeposit={selectedDeposit}
+          submitting={submitting}
+        />
+      </AdminDrawer>
+
+      <Modal
+        headerActions={(
+          <div className="finance-modal-actions">
+            {activeToolTab === 'bank' && (
+              <>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runBankAction('match')}>
+                  <Save size={16} strokeWidth={2} aria-hidden="true" />
+                  <span>Match</span>
+                </button>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting || !bankActionForm.userId} onClick={() => runBankAction('manual-credit')}>
+                  <Save size={16} strokeWidth={2} aria-hidden="true" />
+                  <span>Credit</span>
+                </button>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runBankAction('reprocess')}>
+                  <RotateCcw size={16} strokeWidth={2} aria-hidden="true" />
+                  <span>Reprocess</span>
+                </button>
+                <button type="button" className="admin-danger-button finance-modal-action" disabled={submitting} onClick={() => runBankAction('ignore')}>
+                  <Ban size={16} strokeWidth={2} aria-hidden="true" />
+                  <span>Ignore</span>
+                </button>
+                <button type="button" className="admin-primary-button finance-modal-action" disabled={submitting} onClick={() => runBulkBankCredit()}>
+                  <Save size={16} strokeWidth={2} aria-hidden="true" />
+                  <span>Bulk</span>
+                </button>
+              </>
+            )}
+            {activeToolTab === 'deposits' && (
+              <>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('extend')}>Gia hạn</button>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('manual-credit')}>
+                  <Save size={16} strokeWidth={2} aria-hidden="true" />
+                  <span>Credit</span>
+                </button>
+                <button type="button" className="admin-danger-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('cancel')}>
+                  <Ban size={16} strokeWidth={2} aria-hidden="true" />
+                  <span>Hủy</span>
+                </button>
+              </>
+            )}
+            {activeToolTab === 'wallet' && (
+              <>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={runBalanceCheck}>Check</button>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={runReconciliation}>Preview</button>
+                <button type="button" className="admin-primary-button finance-modal-action" disabled={submitting} onClick={loadBalanceIntegrityReport}>Report</button>
+              </>
+            )}
+          </div>
+        )}
+        isOpen={toolsOpen}
+        maxWidth="760px"
+        onClose={() => setToolsOpen(false)}
+        title="Công cụ tài chính"
+      >
+        <FinanceTools
+          activeToolTab={activeToolTab}
+          bankActionForm={bankActionForm}
+          bankBulkForm={bankBulkForm}
+          depositActionForm={depositActionForm}
+          loadBalanceIntegrityReport={loadBalanceIntegrityReport}
+          onActiveToolTabChange={setActiveToolTab}
+          runBalanceCheck={runBalanceCheck}
+          runReconciliation={runReconciliation}
+          selectedBank={selectedBank}
+          selectedDeposit={selectedDeposit}
+          setBankActionForm={setBankActionForm}
+          setBankBulkForm={setBankBulkForm}
+          setDepositActionForm={setDepositActionForm}
+        />
+      </Modal>
     </section>
   )
 }

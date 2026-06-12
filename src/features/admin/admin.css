@@ -572,6 +572,106 @@ button.admin-data-row.selected {
   background: #ffffff;
 }
 
+/* Admin drawer */
+body.admin-drawer-open {
+  overflow: hidden !important;
+}
+
+.admin-drawer-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(15, 23, 42, 0.24);
+}
+
+.admin-drawer {
+  width: min(var(--admin-drawer-width, 520px), 100vw);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--kd-border);
+  background: #ffffff;
+  box-shadow: -24px 0 48px rgba(15, 23, 42, 0.16);
+  animation: adminDrawerIn 0.22s ease-out forwards;
+}
+
+.admin-drawer-head {
+  flex: 0 0 auto;
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--kd-border);
+  background: #fbfdff;
+}
+
+.admin-drawer-head h3 {
+  min-width: 0;
+  margin: 0;
+  color: var(--kd-text);
+  font-size: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-drawer-head button {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--kd-radius-sm);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: #edf2f7;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.admin-drawer-head button:hover {
+  background: #e2e8f0;
+  color: var(--kd-text);
+}
+
+.admin-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px;
+}
+
+.admin-drawer-body > .admin-panel,
+.admin-drawer-body > .admin-form.pricing-editor,
+.admin-drawer-body > .admin-detail-panel {
+  position: static;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.admin-drawer-body .admin-detail-panel.inline-detail {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+@keyframes adminDrawerIn {
+  from {
+    opacity: 0.7;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .settings-row {
   padding: 14px;
 }

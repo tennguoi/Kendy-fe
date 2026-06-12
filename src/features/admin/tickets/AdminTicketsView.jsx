@@ -1,6 +1,7 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import AdminDrawer from '../AdminDrawer'
 import TicketDetailPanel from './components/TicketDetailPanel'
 import TicketFilterBar from './components/TicketFilterBar'
 import TicketListPanel from './components/TicketListPanel'
@@ -16,6 +17,7 @@ function AdminTicketsView({
   const [categoryFilter, setCategoryFilter] = useState('')
   const [editor, setEditor] = useState({ assignedAdminId: '', category: '', priority: 'NORMAL', status: 'OPEN' })
   const [error, setError] = useState('')
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -218,6 +220,11 @@ function AdminTicketsView({
     }
   }
 
+  const selectTicket = (ticketCode) => {
+    setSelectedCode(ticketCode)
+    setDrawerOpen(true)
+  }
+
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
@@ -252,12 +259,18 @@ function AdminTicketsView({
         <div><span>Phút xử lý TB</span><strong>{averageResolutionText}</strong></div>
       </div>
 
-      <div className="admin-grid detail-layout">
-        <TicketListPanel
-          onSelectTicket={setSelectedCode}
-          selectedTicket={selectedTicket}
-          tickets={tickets}
-        />
+      <TicketListPanel
+        onSelectTicket={selectTicket}
+        selectedTicket={selectedTicket}
+        tickets={tickets}
+      />
+
+      <AdminDrawer
+        isOpen={drawerOpen && Boolean(selectedTicket)}
+        onClose={() => setDrawerOpen(false)}
+        title={selectedTicket?.ticketCode || 'Chi tiết ticket'}
+        width="640px"
+      >
         <TicketDetailPanel
           admins={admins}
           attachments={attachments}
@@ -274,7 +287,7 @@ function AdminTicketsView({
           selectedTicket={selectedTicket}
           submitting={submitting}
         />
-      </div>
+      </AdminDrawer>
     </section>
   )
 }

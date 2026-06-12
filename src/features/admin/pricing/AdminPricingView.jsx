@@ -1,6 +1,7 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import AdminDrawer from '../AdminDrawer'
 import PricingEditor from './components/PricingEditor'
 import PricingFilterBar from './components/PricingFilterBar'
 import PricingListPanel from './components/PricingListPanel'
@@ -33,6 +34,7 @@ function AdminPricingView({
   const [featuredOnly, setFeaturedOnly] = useState(false)
   const [query, setQuery] = useState('')
   const [formDraft, setFormDraft] = useState(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [pricingItems, setPricingItems] = useState([])
   const [selectedId, setSelectedId] = useState(null)
@@ -82,6 +84,7 @@ function AdminPricingView({
   const selectItem = (item) => {
     setSelectedId(item.id)
     setFormDraft(null)
+    setDrawerOpen(true)
   }
 
   const updateForm = (field, value) => {
@@ -160,12 +163,18 @@ function AdminPricingView({
         sort={sort}
       />
 
-      <div className="admin-grid pricing-layout">
-        <PricingListPanel
-          onSelectItem={selectItem}
-          pricingItems={pricingItems}
-          selectedItem={selectedItem}
-        />
+      <PricingListPanel
+        onSelectItem={selectItem}
+        pricingItems={pricingItems}
+        selectedItem={selectedItem}
+      />
+
+      <AdminDrawer
+        isOpen={drawerOpen && Boolean(selectedItem)}
+        onClose={() => setDrawerOpen(false)}
+        title={selectedItem?.name || 'Chi tiết bảng giá'}
+        width="540px"
+      >
         <PricingEditor
           form={form}
           onSubmit={submit}
@@ -173,7 +182,7 @@ function AdminPricingView({
           selectedItem={selectedItem}
           submitting={submitting}
         />
-      </div>
+      </AdminDrawer>
     </section>
   )
 }
