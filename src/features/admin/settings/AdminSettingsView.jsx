@@ -1,62 +1,23 @@
-import { RefreshCw, RotateCcw, Save } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
 import { userApi } from '../../../api/user.api'
-import { AdminEmptyState, AdminStatusBadge } from '../AdminShared'
-import { formatAdminDate } from '../adminFormat'
-
-const tabs = [
-  { id: 'settings', label: 'Settings' },
-  { id: 'webhooks', label: 'Webhook' },
-  { id: 'notifications', label: 'Notifications' },
-  { id: 'admins', label: 'Admins' },
-  { id: 'audit', label: 'Audit' },
-  { id: 'files', label: 'Files' },
-  { id: 'jobs', label: 'Jobs' },
-  { id: 'health', label: 'Health' },
-]
-
-function downloadBlobFile(fileName, blob) {
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = fileName
-  anchor.click()
-  URL.revokeObjectURL(url)
-}
-
-function downloadTextFile(fileName, content) {
-  downloadBlobFile(fileName, new Blob([content], { type: 'text/csv;charset=utf-8' }))
-}
-
-function toMap(settingsList) {
-  const map = {}
-  settingsList.forEach((setting) => {
-    map[setting.key] = setting.value
-  })
-  return map
-}
-
-function configToObject(items) {
-  const config = {}
-  items.forEach((item) => {
-    config[item.key.replace(/^sepay\./, '')] = item.value
-  })
-  return config
-}
-
-function mergeSettings(currentSettings, savedSettings) {
-  const savedByKey = new Map(savedSettings.map((setting) => [setting.key, setting]))
-  const merged = currentSettings.map((setting) => savedByKey.get(setting.key) || setting)
-
-  savedSettings.forEach((setting) => {
-    if (!currentSettings.some((item) => item.key === setting.key)) {
-      merged.push(setting)
-    }
-  })
-
-  return merged
-}
+import AdminAccessTab from './components/AdminAccessTab'
+import AuditTab from './components/AuditTab'
+import FilesTab from './components/FilesTab'
+import HealthTab from './components/HealthTab'
+import JobsTab from './components/JobsTab'
+import NotificationsTab from './components/NotificationsTab'
+import SettingsTab from './components/SettingsTab'
+import WebhooksTab from './components/WebhooksTab'
+import { settingsTabs } from './settings.constants'
+import {
+  downloadBlobFile,
+  downloadTextFile,
+  mergeSettings,
+  sepayConfigToObject,
+  toSettingsMap,
+} from './settings.utils'
 
 function AdminSettingsView({
   currentUser,
@@ -107,7 +68,7 @@ function AdminSettingsView({
   const [twoFactorCode, setTwoFactorCode] = useState('')
   const [twoFactorEmailSent, setTwoFactorEmailSent] = useState(false)
 
-  const settingsMap = toMap(settings)
+  const settingsMap = toSettingsMap(settings)
   const twoFactorRequired = settingsMap.admin_2fa_required === 'true'
   const selectedAdmin = admins.find((admin) => admin.id === selectedAdminId) || admins[0]
   const selectedRole = roles.find((role) => role.id === selectedRoleId)
@@ -153,7 +114,7 @@ function AdminSettingsView({
       setSettings(settingsData)
       setSepayStatus(sepayStatusData)
       setSepayLogs(sepayLogsData)
-      setSepayConfigText(JSON.stringify(configToObject(sepayConfigData), null, 2))
+      setSepayConfigText(JSON.stringify(sepayConfigToObject(sepayConfigData), null, 2))
       setNotificationSetting(notificationData)
       setNotifications(notificationItems)
       setAdmins(adminsData)
@@ -749,6 +710,19 @@ function AdminSettingsView({
     }
   }
 
+  const markNotificationRead = async (notificationId) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = await adminApi.markNotificationRead(notificationId, token)
+      setNotifications((items) => items.map((item) => (item.id === saved.id ? saved : item)))
+    } catch (err) {
+      setViewError(err.message || 'Không cập nhật được notification.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
@@ -768,7 +742,7 @@ function AdminSettingsView({
       )}
 
       <div className="admin-tabs">
-        {tabs.map((tab) => (
+        {settingsTabs.map((tab) => (
           <button type="button" className={activeTab === tab.id ? 'active' : ''} key={tab.id} onClick={() => setActiveTab(tab.id)}>
             {tab.label}
           </button>
@@ -776,532 +750,125 @@ function AdminSettingsView({
       </div>
 
       {activeTab === 'settings' && (
-        <div className="admin-grid two-columns">
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Bảo mật</h3>
-              <button type="button" onClick={backupSettings} disabled={submitting}>Backup</button>
-            </div>
-            <div className="admin-panel-subsection">
-              <div className="admin-panel-head compact-head">
-                <h3>2FA tài khoản admin</h3>
-                <AdminStatusBadge status={currentUser?.twoFactorEnabled ? 'ACTIVE' : 'DISABLED'} />
-              </div>
-              <p className="admin-empty-state">
-                {currentUser?.twoFactorEnabled
-                  ? 'Tài khoản này sẽ nhận mã email ở mỗi lần đăng nhập.'
-                  : 'Bật 2FA sẽ gửi mã xác thực qua email và yêu cầu mã này ở mỗi lần đăng nhập.'}
-              </p>
-              {!currentUser?.twoFactorEnabled && (
-                <form className="admin-form compact" onSubmit={enableEmailTwoFactor}>
-                  <button type="button" className="admin-icon-button" disabled={submitting} onClick={sendTwoFactorEnableCode}>
-                    Gửi mã xác thực
-                  </button>
-                  {twoFactorEmailSent && (
-                    <label>
-                      <span>Mã email</span>
-                      <input
-                        value={twoFactorCode}
-                        onChange={(event) => setTwoFactorCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-                        inputMode="numeric"
-                        placeholder="Nhập mã 6 số"
-                        required
-                      />
-                    </label>
-                  )}
-                  {twoFactorEmailSent && (
-                    <button type="submit" disabled={submitting || twoFactorCode.length < 6}>
-                      Xác nhận bật 2FA
-                    </button>
-                  )}
-                </form>
-              )}
-            </div>
-            <div className="admin-check-row settings-row">
-              <label>
-                <input checked={twoFactorRequired} disabled={submitting} onChange={toggleTwoFactor} type="checkbox" />
-                <span>Policy: yêu cầu admin dùng 2FA khi truy cập admin</span>
-              </label>
-            </div>
-          </div>
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>System settings</h3>
-              <span>{settings.length} key</span>
-            </div>
-            <div className="admin-filters single-filter">
-              <input value={settingSearch} onChange={(event) => setSettingSearch(event.target.value)} placeholder="Tìm setting key" type="search" />
-            </div>
-            <div className="admin-mini-list">
-              {settings.map((setting) => (
-                <article key={setting.key}>
-                  <strong>{setting.key}</strong>
-                  <span>{setting.value || 'Trống'} · {setting.publicSetting ? 'public' : 'private'}</span>
-                </article>
-              ))}
-            </div>
-            <form className="admin-form compact" onSubmit={loadSettingHistory}>
-              <div className="admin-panel-head compact-head">
-                <h3>Setting history</h3>
-              </div>
-              <label>
-                <span>Setting key</span>
-                <input value={settingHistoryKey} onChange={(event) => setSettingHistoryKey(event.target.value)} placeholder="VD: admin_2fa_required" />
-              </label>
-              <button type="submit" disabled={submitting}>Tải history</button>
-            </form>
-            <div className="admin-mini-list">
-              {settingHistory.map((item) => (
-                <article key={item.id}>
-                  <strong>{item.key}</strong>
-                  <span>{item.oldValue || 'Trống'} {'->'} {item.newValue || 'Trống'} · {formatAdminDate(item.createdAt)}</span>
-                </article>
-              ))}
-            </div>
-            <form className="admin-form compact" onSubmit={restoreSettingsFromText}>
-              <div className="admin-panel-head compact-head">
-                <h3>Restore settings</h3>
-              </div>
-              <label>
-                <span>JSON</span>
-                <textarea value={restoreText} onChange={(event) => setRestoreText(event.target.value)} rows="6" />
-              </label>
-              <button type="submit" className="admin-danger-button" disabled={submitting}>Restore</button>
-            </form>
-          </div>
-        </div>
+        <SettingsTab
+          currentUser={currentUser}
+          enableEmailTwoFactor={enableEmailTwoFactor}
+          loadSettingHistory={loadSettingHistory}
+          onBackupSettings={backupSettings}
+          onRestoreSettingsFromText={restoreSettingsFromText}
+          onSendTwoFactorEnableCode={sendTwoFactorEnableCode}
+          onSetRestoreText={setRestoreText}
+          onSetSettingHistoryKey={setSettingHistoryKey}
+          onSetSettingSearch={setSettingSearch}
+          onSetTwoFactorCode={setTwoFactorCode}
+          onToggleTwoFactor={toggleTwoFactor}
+          restoreText={restoreText}
+          settingHistory={settingHistory}
+          settingHistoryKey={settingHistoryKey}
+          settingSearch={settingSearch}
+          settings={settings}
+          submitting={submitting}
+          twoFactorCode={twoFactorCode}
+          twoFactorEmailSent={twoFactorEmailSent}
+          twoFactorRequired={twoFactorRequired}
+        />
       )}
 
       {activeTab === 'webhooks' && (
-        <div className="admin-grid two-columns">
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Webhook status</h3>
-              <AdminStatusBadge status={sepayStatus?.requireApiKey ? 'PROTECTED' : 'OPEN'} />
-            </div>
-            <dl className="admin-detail-list">
-              <div><dt>API key</dt><dd>{sepayStatus?.requireApiKey ? 'Bắt buộc' : 'Không bắt buộc'}</dd></div>
-              <div><dt>Header</dt><dd>{sepayStatus?.apiKeyHeader || 'Chưa cấu hình'}</dd></div>
-              <div><dt>HMAC</dt><dd>{sepayStatus?.requireHmac ? 'Bật' : 'Tắt'}</dd></div>
-              <div><dt>Signature</dt><dd>{sepayStatus?.signatureHeader || 'Chưa cấu hình'}</dd></div>
-            </dl>
-            <label className="admin-form">
-              <span>Webhook config JSON</span>
-              <textarea value={sepayConfigText} onChange={(event) => setSepayConfigText(event.target.value)} rows="10" />
-            </label>
-            <button type="button" className="admin-primary-button" onClick={saveSepayConfig} disabled={submitting}>
-              <Save size={17} strokeWidth={2} aria-hidden="true" />
-              <span>Lưu config</span>
-            </button>
-          </div>
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Webhook logs & retry</h3>
-            </div>
-            <form className="admin-form compact" onSubmit={retryWebhook}>
-              <label>
-                <span>Bank transaction ID</span>
-                <input value={retryForm.bankTransactionId} onChange={(event) => setRetryForm((current) => ({ ...current, bankTransactionId: event.target.value.replace(/\D/g, '') }))} inputMode="numeric" required />
-              </label>
-              <label>
-                <span>Mã nạp</span>
-                <input value={retryForm.depositCode} onChange={(event) => setRetryForm((current) => ({ ...current, depositCode: event.target.value }))} />
-              </label>
-              <label>
-                <span>Lý do</span>
-                <textarea value={retryForm.reason} onChange={(event) => setRetryForm((current) => ({ ...current, reason: event.target.value }))} rows="3" required />
-              </label>
-              <button type="submit" disabled={submitting}>
-                <RotateCcw size={17} strokeWidth={2} aria-hidden="true" />
-                <span>Retry</span>
-              </button>
-            </form>
-            <div className="admin-mini-list">
-              {sepayLogs.map((log) => (
-                <article key={log.id}>
-                  <strong>{log.action}</strong>
-                  <span>{log.metadata || 'Không có metadata'} · {formatAdminDate(log.createdAt)}</span>
-                </article>
-              ))}
-              {sepayLogs.length === 0 && <AdminEmptyState message="Chưa có webhook log." />}
-            </div>
-          </div>
-        </div>
+        <WebhooksTab
+          onRetryFormChange={(patch) => setRetryForm((current) => ({ ...current, ...patch }))}
+          onSaveSepayConfig={saveSepayConfig}
+          onSetSepayConfigText={setSepayConfigText}
+          retryForm={retryForm}
+          retryWebhook={retryWebhook}
+          sepayConfigText={sepayConfigText}
+          sepayLogs={sepayLogs}
+          sepayStatus={sepayStatus}
+          submitting={submitting}
+        />
       )}
 
       {activeTab === 'notifications' && (
-        <div className="admin-grid two-columns">
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Notification settings</h3>
-              <button type="button" onClick={updateNotificationSetting} disabled={submitting}>Lưu</button>
-            </div>
-            <label className="admin-form">
-              <span>JSON value</span>
-              <textarea value={notificationSetting?.value || '{}'} onChange={(event) => setNotificationSetting((current) => ({ ...(current || {}), value: event.target.value }))} rows="10" />
-            </label>
-          </div>
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Admin notifications</h3>
-              <button type="button" onClick={markAllNotificationsRead} disabled={submitting}>Đọc tất cả</button>
-            </div>
-            <div className="admin-mini-list">
-              {notifications.map((notification) => (
-                <article key={notification.id}>
-                  <strong>{notification.title || notification.type || `Notification #${notification.id}`}</strong>
-                  <span>{notification.message || notification.payload || 'Không có nội dung'} · {formatAdminDate(notification.createdAt)}</span>
-                  {!notification.readAt && (
-                    <button type="button" className="admin-icon-button slim" disabled={submitting} onClick={async () => {
-                      const saved = await adminApi.markNotificationRead(notification.id, token)
-                      setNotifications((items) => items.map((item) => (item.id === saved.id ? saved : item)))
-                    }}>
-                      Đã đọc
-                    </button>
-                  )}
-                </article>
-              ))}
-              {notifications.length === 0 && <AdminEmptyState message="Chưa có notification." />}
-            </div>
-          </div>
-        </div>
+        <NotificationsTab
+          notifications={notifications}
+          notificationSetting={notificationSetting}
+          onMarkAllNotificationsRead={markAllNotificationsRead}
+          onMarkNotificationRead={markNotificationRead}
+          onSetNotificationSetting={setNotificationSetting}
+          onUpdateNotificationSetting={updateNotificationSetting}
+          submitting={submitting}
+        />
       )}
 
       {activeTab === 'admins' && (
-        <div className="admin-grid two-columns">
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Admins</h3>
-              <span>{admins.length} admin</span>
-            </div>
-            <div className="admin-mini-list">
-              {admins.map((admin) => (
-                <article key={admin.id}>
-                  <strong>{admin.name || admin.email}</strong>
-                  <span>{admin.email} · {admin.role} · {admin.status}</span>
-                  <button type="button" className="admin-icon-button slim" onClick={() => setSelectedAdminId(admin.id)}>
-                    Chọn
-                  </button>
-                </article>
-              ))}
-              {admins.length === 0 && <AdminEmptyState message="Chưa có admin." />}
-            </div>
-            {selectedAdmin && (
-              <form className="admin-form compact" onSubmit={saveAdminAccess}>
-                <div className="admin-panel-head compact-head">
-                  <h3>{selectedAdmin.email}</h3>
-                  <AdminStatusBadge status={selectedAdmin.status} />
-                </div>
-                <label>
-                  <span>Legacy role</span>
-                  <select value={adminEditor.legacyRole} onChange={(event) => setAdminEditor((current) => ({ ...current, legacyRole: event.target.value }))}>
-                    <option value="ADMIN">ADMIN</option>
-                    <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-                  </select>
-                </label>
-                <label>
-                  <span>Lý do</span>
-                  <textarea value={adminEditor.reason} onChange={(event) => setAdminEditor((current) => ({ ...current, reason: event.target.value }))} rows="2" />
-                </label>
-                <div className="admin-check-row settings-row">
-                  {roles.map((role) => (
-                    <label key={role.id}>
-                      <input
-                        checked={adminEditor.roleIds.includes(role.id)}
-                        onChange={() => setAdminEditor((current) => ({
-                          ...current,
-                          roleIds: current.roleIds.includes(role.id)
-                            ? current.roleIds.filter((id) => id !== role.id)
-                            : [...current.roleIds, role.id],
-                        }))}
-                        type="checkbox"
-                      />
-                      <span>{role.name}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="admin-check-row settings-row">
-                  {permissions.map((permission) => (
-                    <label key={permission.id}>
-                      <input
-                        checked={adminEditor.permissionCodes.includes(permission.code)}
-                        onChange={() => setAdminEditor((current) => ({
-                          ...current,
-                          permissionCodes: current.permissionCodes.includes(permission.code)
-                            ? current.permissionCodes.filter((code) => code !== permission.code)
-                            : [...current.permissionCodes, permission.code],
-                        }))}
-                        type="checkbox"
-                      />
-                      <span>{permission.code}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="admin-action-row">
-                  <button type="submit" disabled={submitting}>Lưu quyền</button>
-                  <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => setAdminStatus('ACTIVE')}>Mở khóa</button>
-                  <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => setAdminStatus('LOCKED')}>Khóa</button>
-                </div>
-              </form>
-            )}
-          </div>
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Roles & permissions</h3>
-              <span>{roles.length} role · {permissions.length} permission</span>
-            </div>
-            <form className="admin-form compact" onSubmit={saveRole}>
-              <div className="admin-action-row">
-                <select value={selectedRoleId || ''} onChange={(event) => selectRoleForEdit(event.target.value ? Number(event.target.value) : null)}>
-                  <option value="">Tạo role mới</option>
-                  {roles.map((role) => <option value={role.id} key={role.id}>{role.name}</option>)}
-                </select>
-                {selectedRole && !selectedRole.system && (
-                  <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={deleteRole}>Xóa role</button>
-                )}
-              </div>
-              <label>
-                <span>Tên role</span>
-                <input value={roleDraft.name} onChange={(event) => setRoleDraft((current) => ({ ...current, name: event.target.value }))} required />
-              </label>
-              <label>
-                <span>Mô tả</span>
-                <textarea value={roleDraft.description} onChange={(event) => setRoleDraft((current) => ({ ...current, description: event.target.value }))} rows="2" />
-              </label>
-              <div className="admin-check-row settings-row">
-                {permissions.map((permission) => (
-                  <label key={permission.id}>
-                    <input checked={roleDraft.permissionIds.includes(permission.id)} onChange={() => togglePermission(permission.id)} type="checkbox" />
-                    <span>{permission.code}</span>
-                  </label>
-                ))}
-              </div>
-              <button type="submit" disabled={submitting || selectedRole?.system}>
-                <Save size={17} strokeWidth={2} aria-hidden="true" />
-                <span>{selectedRole ? 'Lưu role' : 'Tạo role'}</span>
-              </button>
-            </form>
-            <div className="admin-mini-list">
-              {roles.map((role) => (
-                <article key={role.id || role.name}>
-                  <strong>{role.name}</strong>
-                  <span>{role.description || 'Không có mô tả'} · {(role.permissions || []).join(', ') || 'Chưa có permission'}</span>
-                </article>
-              ))}
-            </div>
-          </div>
-          {selectedAdmin && (
-            <div className="admin-panel">
-              <div className="admin-panel-head">
-                <h3>Admin 2FA</h3>
-                <AdminStatusBadge status={selectedAdmin.twoFactorEnabled ? 'ACTIVE' : 'DISABLED'} />
-              </div>
-              <div className="admin-action-row">
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runAdminTwoFactor('setup')}>Setup</button>
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runAdminTwoFactor('reset')}>Reset</button>
-                <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => runAdminTwoFactor('disable')}>Disable</button>
-              </div>
-              {totpSetup && (
-                <div className="admin-code-block">
-                  <strong>Secret</strong>
-                  <pre>{totpSetup.secret}</pre>
-                  {totpSetup.qrCodeBase64 && <img alt="Admin 2FA QR" src={`data:image/png;base64,${totpSetup.qrCodeBase64}`} />}
-                  <pre>{(totpSetup.backupCodes || []).join('\n')}</pre>
-                </div>
-              )}
-              <form className="admin-form compact" onSubmit={(event) => { event.preventDefault(); runAdminTwoFactor('enable') }}>
-                <label>
-                  <span>Mã xác thực</span>
-                  <input value={adminEditor.verificationCode} onChange={(event) => setAdminEditor((current) => ({ ...current, verificationCode: event.target.value.trim() }))} />
-                </label>
-                <button type="submit" disabled={submitting || !adminEditor.verificationCode}>Enable 2FA</button>
-              </form>
-            </div>
-          )}
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Admin sessions</h3>
-              <span>{adminSessions.length} session</span>
-            </div>
-            <div className="admin-mini-list">
-              {adminSessions.map((session) => (
-                <article key={session.id}>
-                  <strong>Session #{session.id}</strong>
-                  <span>Tạo {formatAdminDate(session.createdAt)} · Hết hạn {formatAdminDate(session.expiresAt)}</span>
-                  <button type="button" className="admin-danger-button slim" disabled={submitting || session.revokedAt} onClick={() => revokeAdminSession(session.id)}>
-                    Thu hồi
-                  </button>
-                </article>
-              ))}
-              {adminSessions.length === 0 && <AdminEmptyState message="Admin chưa có session." />}
-            </div>
-          </div>
-        </div>
+        <AdminAccessTab
+          adminEditor={adminEditor}
+          adminSessions={adminSessions}
+          admins={admins}
+          onDeleteRole={deleteRole}
+          onRevokeAdminSession={revokeAdminSession}
+          onRunAdminTwoFactor={runAdminTwoFactor}
+          onSaveAdminAccess={saveAdminAccess}
+          onSaveRole={saveRole}
+          onSelectAdmin={setSelectedAdminId}
+          onSelectRoleForEdit={selectRoleForEdit}
+          onSetAdminEditor={setAdminEditor}
+          onSetAdminStatus={setAdminStatus}
+          onSetRoleDraft={setRoleDraft}
+          onTogglePermission={togglePermission}
+          permissions={permissions}
+          roleDraft={roleDraft}
+          roles={roles}
+          selectedAdmin={selectedAdmin}
+          selectedRole={selectedRole}
+          selectedRoleId={selectedRoleId}
+          submitting={submitting}
+          totpSetup={totpSetup}
+        />
       )}
 
       {activeTab === 'audit' && (
-        <div className="admin-grid two-columns">
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Audit logs</h3>
-              <div className="admin-action-row">
-                <span className="admin-format-toggle">
-                  <button type="button" className={auditExportFormat === 'csv' ? 'active' : ''} onClick={() => setAuditExportFormat('csv')}>CSV</button>
-                  <button type="button" className={auditExportFormat === 'xlsx' ? 'active' : ''} onClick={() => setAuditExportFormat('xlsx')}>XLSX</button>
-                </span>
-                <button type="button" onClick={exportAudit} disabled={submitting}>Export</button>
-              </div>
-            </div>
-            <form className="admin-form compact" onSubmit={loadAuditLogs}>
-              <div className="admin-form-grid single">
-                <label>
-                  <span>Từ khóa</span>
-                  <input value={auditFilter.query} onChange={(event) => setAuditFilter((current) => ({ ...current, query: event.target.value }))} />
-                </label>
-                <label>
-                  <span>Action</span>
-                  <input value={auditFilter.action} onChange={(event) => setAuditFilter((current) => ({ ...current, action: event.target.value }))} />
-                </label>
-                <label>
-                  <span>Admin/User ID</span>
-                  <input value={auditFilter.adminId} onChange={(event) => setAuditFilter((current) => ({ ...current, adminId: event.target.value.replace(/\D/g, '') }))} inputMode="numeric" />
-                </label>
-                <label>
-                  <span>Target type</span>
-                  <input value={auditFilter.targetType} onChange={(event) => setAuditFilter((current) => ({ ...current, targetType: event.target.value }))} />
-                </label>
-                <label>
-                  <span>Target ID</span>
-                  <input value={auditFilter.targetId} onChange={(event) => setAuditFilter((current) => ({ ...current, targetId: event.target.value.replace(/\D/g, '') }))} inputMode="numeric" />
-                </label>
-              </div>
-              <div className="admin-action-row">
-                <button type="submit" disabled={submitting}>Tải audit search</button>
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={loadAuditList}>Audit list</button>
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={loadAdminActions}>Admin actions</button>
-              </div>
-            </form>
-            <div className="admin-mini-list">
-              {auditLogs.map((log) => (
-                <article key={log.id}>
-                  <strong>{log.action}</strong>
-                  <span>{log.actorRole || 'SYSTEM'} #{log.actorUserId || '-'} · {log.targetType || 'TARGET'} #{log.targetId || '-'} · {formatAdminDate(log.createdAt)}</span>
-                  <button type="button" className="admin-icon-button slim" disabled={submitting} onClick={() => loadAuditDetail(log.id)}>
-                    Chi tiết
-                  </button>
-                </article>
-              ))}
-              {auditLogs.length === 0 && <AdminEmptyState message="Chưa tải audit log." />}
-            </div>
-          </div>
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Audit detail</h3>
-              {selectedAudit && <span>#{selectedAudit.id}</span>}
-            </div>
-            {selectedAudit ? (
-              <>
-                <dl className="admin-detail-list">
-                  <div><dt>Action</dt><dd>{selectedAudit.action}</dd></div>
-                  <div><dt>Actor</dt><dd>{selectedAudit.actorRole || '-'} #{selectedAudit.actorUserId || '-'}</dd></div>
-                  <div><dt>Target</dt><dd>{selectedAudit.targetType || '-'} #{selectedAudit.targetId || '-'}</dd></div>
-                  <div><dt>Time</dt><dd>{formatAdminDate(selectedAudit.createdAt)}</dd></div>
-                </dl>
-                <div className="admin-code-block">
-                  <strong>Metadata</strong>
-                  <pre>{selectedAudit.metadata || 'Không có metadata'}</pre>
-                </div>
-              </>
-            ) : <AdminEmptyState message="Chọn audit log để xem chi tiết." />}
-          </div>
-        </div>
+        <AuditTab
+          auditExportFormat={auditExportFormat}
+          auditFilter={auditFilter}
+          auditLogs={auditLogs}
+          loadAdminActions={loadAdminActions}
+          loadAuditDetail={loadAuditDetail}
+          loadAuditList={loadAuditList}
+          loadAuditLogs={loadAuditLogs}
+          onExportAudit={exportAudit}
+          onSetAuditExportFormat={setAuditExportFormat}
+          onSetAuditFilter={setAuditFilter}
+          selectedAudit={selectedAudit}
+          submitting={submitting}
+        />
       )}
 
       {activeTab === 'files' && (
-        <div className="admin-grid two-columns">
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Upload file</h3>
-            </div>
-            <form className="admin-form compact" onSubmit={uploadAdminFile}>
-              <label>
-                <span>File</span>
-                <input onChange={(event) => setFileToUpload(event.target.files?.[0] || null)} type="file" />
-              </label>
-              <button type="submit" disabled={submitting || !fileToUpload}>Upload</button>
-            </form>
-            <div className="admin-mini-list">
-              {uploadedFiles.map((file) => (
-                <article key={file.id}>
-                  <strong>{file.fileName}</strong>
-                  <span>#{file.id} · {file.contentType || 'file'} · {file.sizeBytes} bytes</span>
-                  <div className="admin-action-row">
-                    <button type="button" className="admin-icon-button slim" disabled={submitting} onClick={() => downloadAdminFile('preview', file.id)}>Preview</button>
-                    <button type="button" className="admin-icon-button slim" disabled={submitting} onClick={() => downloadAdminFile('download', file.id)}>Download</button>
-                    <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={() => deleteAdminFile(file.id)}>Delete</button>
-                  </div>
-                </article>
-              ))}
-              {uploadedFiles.length === 0 && <AdminEmptyState message="Chưa upload file trong phiên này." />}
-            </div>
-          </div>
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>File by ID</h3>
-            </div>
-            <div className="admin-form compact">
-              <label>
-                <span>File ID</span>
-                <input value={fileIdInput} onChange={(event) => setFileIdInput(event.target.value.replace(/\D/g, ''))} inputMode="numeric" />
-              </label>
-              <div className="admin-action-row">
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => downloadAdminFile('preview')}>Preview</button>
-                <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => downloadAdminFile('download')}>Download</button>
-                <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => deleteAdminFile()}>Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <FilesTab
+          fileIdInput={fileIdInput}
+          fileToUpload={fileToUpload}
+          onDeleteAdminFile={deleteAdminFile}
+          onDownloadAdminFile={downloadAdminFile}
+          onSetFileIdInput={setFileIdInput}
+          onSetFileToUpload={setFileToUpload}
+          onUploadAdminFile={uploadAdminFile}
+          submitting={submitting}
+          uploadedFiles={uploadedFiles}
+        />
       )}
 
       {activeTab === 'jobs' && (
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <h3>Jobs</h3>
-            <div className="admin-action-row">
-              <span>{jobs.length} job</span>
-              <button type="button" className="admin-icon-button slim" disabled={submitting} onClick={loadJobLogs}>Logs</button>
-            </div>
-          </div>
-          <div className="admin-mini-list">
-            {jobs.map((job) => (
-              <article key={job.id}>
-                <strong>{job.name || `Job #${job.id}`}</strong>
-                <span>{job.status} · {formatAdminDate(job.createdAt || job.updatedAt)}</span>
-                <div className="admin-action-row">
-                  <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => refreshJobStatus(job.id)}>Status</button>
-                  <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runJobAction(job.id, 'retry')}>Retry</button>
-                  <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={() => runJobAction(job.id, 'cancel')}>Cancel</button>
-                </div>
-              </article>
-            ))}
-            {jobs.length === 0 && <AdminEmptyState message="Chưa có job." />}
-          </div>
-        </div>
+        <JobsTab
+          jobs={jobs}
+          loadJobLogs={loadJobLogs}
+          onRefreshJobStatus={refreshJobStatus}
+          onRunJobAction={runJobAction}
+          submitting={submitting}
+        />
       )}
 
-      {activeTab === 'health' && (
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <h3>Health</h3>
-            <AdminStatusBadge status={health?.status || 'UNKNOWN'} />
-          </div>
-          <dl className="admin-detail-list">
-            <div><dt>Service</dt><dd>{health?.service || 'Unknown'}</dd></div>
-            <div><dt>Time</dt><dd>{formatAdminDate(health?.timestamp)}</dd></div>
-          </dl>
-        </div>
-      )}
+      {activeTab === 'health' && <HealthTab health={health} />}
     </section>
   )
 }

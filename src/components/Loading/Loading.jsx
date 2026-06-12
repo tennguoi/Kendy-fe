@@ -1,106 +1,97 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import './loading.css'
 
-const TIPS = [
-  'Hệ thống đang xử lý yêu cầu của bạn...',
-  'Đang kết nối máy chủ an toàn...',
-  'Đang tải dữ liệu mới nhất...',
-  'Sắp xong rồi, vui lòng chờ...',
+const SUB_LINES = [
+  'Vui lòng chờ trong giây lát',
+  'Máy chủ đang thức dậy...',
+  'Gần xong rồi, promise',
+  'Đừng tắt tab nha bạn ơi',
+  'Đang pha cà phê cho server',
 ]
+
+function useTypewriter(lines) {
+  const [displayed, setDisplayed] = useState('')
+  const stateRef = useRef({ li: 0, ci: 0, deleting: false })
+
+  useEffect(() => {
+    let timer
+    function tick() {
+      const { li, ci, deleting } = stateRef.current
+      const txt = lines[li]
+      if (!deleting) {
+        const next = ci + 1
+        stateRef.current.ci = next
+        setDisplayed(txt.slice(0, next))
+        if (next === txt.length) {
+          timer = setTimeout(() => { stateRef.current.deleting = true; tick() }, 1800)
+          return
+        }
+        timer = setTimeout(tick, 52)
+      } else {
+        const next = ci - 1
+        stateRef.current.ci = next
+        setDisplayed(txt.slice(0, next))
+        if (next === 0) {
+          stateRef.current.deleting = false
+          stateRef.current.li = (li + 1) % lines.length
+          timer = setTimeout(tick, 300)
+          return
+        }
+        timer = setTimeout(tick, 28)
+      }
+    }
+    timer = setTimeout(tick, 52)
+    return () => clearTimeout(timer)
+  }, [lines])
+
+  return displayed
+}
 
 function Loading({
   fullScreen = true,
-  message = 'Đang tải dữ liệu...',
-  subMessage = 'Vui lòng chờ trong giây lát',
-  showTips = false,
+  message = 'Đang tải',
   showProgress = false,
 }) {
-  const [tipIndex, setTipIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   const [dots, setDots] = useState('')
+  const subText = useTypewriter(SUB_LINES)
 
-  // Rotating tips
-  useEffect(() => {
-    if (!showTips) return
-    const interval = setInterval(() => {
-      setTipIndex((prev) => (prev + 1) % TIPS.length)
-    }, 2500)
-    return () => clearInterval(interval)
-  }, [showTips])
-
-  // Fake progress bar
   useEffect(() => {
     if (!showProgress) return
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) return prev
-        return prev + Math.random() * 8
-      })
+    const id = setInterval(() => {
+      setProgress(p => p >= 90 ? p : p + Math.random() * 8)
     }, 400)
-    return () => clearInterval(interval)
+    return () => clearInterval(id)
   }, [showProgress])
 
-  // Animated dots
   useEffect(() => {
-    const interval = setInterval(() => {
-      setDots((prev) => (prev.length >= 3 ? '' : prev + '.'))
+    const id = setInterval(() => {
+      setDots(d => d.length >= 3 ? '' : d + '.')
     }, 500)
-    return () => clearInterval(interval)
+    return () => clearInterval(id)
   }, [])
 
   return (
     <div className={`kd-loading-container ${fullScreen ? 'fullscreen' : 'inline'}`}>
-      {/* Particles background (fullscreen only) */}
-      {fullScreen && (
-        <div className="kd-particles" aria-hidden="true">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <span key={i} className={`particle p-${i + 1}`} />
-          ))}
-        </div>
-      )}
-
       <div className="kd-loading-content">
-        {/* Logo / Brand mark */}
-        <div className="kd-brand-mark" aria-hidden="true">
-          <span className="brand-letter">K</span>
+        <div className="kd-spinner" aria-hidden="true">
+          <div className="spinner-track" />
+          <div className="spinner-arc" />
         </div>
 
-        {/* Spinner */}
-        <div className="kd-loader-spinner" aria-hidden="true">
-          <div className="inner-ring ring-1" />
-          <div className="inner-ring ring-2" />
-          <div className="inner-ring ring-3" />
-          <div className="inner-ring ring-4" />
-          <div className="loader-dot" />
-        </div>
-
-        {/* Progress bar */}
         {showProgress && (
           <div className="kd-progress-wrap">
             <div className="kd-progress-bar" style={{ width: `${progress}%` }} />
           </div>
         )}
 
-        {/* Text */}
         <div className="kd-loading-text">
-          <h3 className="loading-message">
-            {message}
-            <span className="loading-dots">{dots}</span>
-          </h3>
-          {subMessage && !showTips && (
-            <p className="loading-submessage">{subMessage}</p>
-          )}
-          {showTips && (
-            <p className="loading-submessage loading-tip" key={tipIndex}>
-              {TIPS[tipIndex]}
-            </p>
-          )}
-        </div>
-
-        {/* Status badges */}
-        <div className="kd-status-badges">
-          <span className="badge badge-secure">🔒 Bảo mật</span>
-          <span className="badge badge-live">● Trực tuyến</span>
+          <p className="loading-message">
+            {message}<span className="loading-dots">{dots}</span>
+          </p>
+          <p className="loading-submessage">
+            {subText}<span className="loading-cursor" aria-hidden="true" />
+          </p>
         </div>
       </div>
     </div>

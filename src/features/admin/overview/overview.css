@@ -233,13 +233,40 @@
   font-weight: 950;
 }
 
-.ov-tone-blue { --tone: var(--ov-blue); --tone-soft: rgba(37, 99, 235, 0.1); }
-.ov-tone-cyan { --tone: var(--ov-cyan); --tone-soft: rgba(8, 145, 178, 0.11); }
-.ov-tone-green { --tone: var(--ov-green); --tone-soft: rgba(22, 163, 74, 0.11); }
-.ov-tone-orange { --tone: var(--ov-orange); --tone-soft: rgba(217, 119, 6, 0.12); }
-.ov-tone-rose { --tone: var(--ov-rose); --tone-soft: rgba(225, 29, 72, 0.11); }
-.ov-tone-violet { --tone: var(--ov-violet); --tone-soft: rgba(124, 58, 237, 0.11); }
-.ov-tone-slate { --tone: var(--ov-slate); --tone-soft: rgba(71, 85, 105, 0.11); }
+.ov-tone-blue {
+  --tone: var(--ov-blue);
+  --tone-soft: rgba(37, 99, 235, 0.1);
+}
+
+.ov-tone-cyan {
+  --tone: var(--ov-cyan);
+  --tone-soft: rgba(8, 145, 178, 0.11);
+}
+
+.ov-tone-green {
+  --tone: var(--ov-green);
+  --tone-soft: rgba(22, 163, 74, 0.11);
+}
+
+.ov-tone-orange {
+  --tone: var(--ov-orange);
+  --tone-soft: rgba(217, 119, 6, 0.12);
+}
+
+.ov-tone-rose {
+  --tone: var(--ov-rose);
+  --tone-soft: rgba(225, 29, 72, 0.11);
+}
+
+.ov-tone-violet {
+  --tone: var(--ov-violet);
+  --tone-soft: rgba(124, 58, 237, 0.11);
+}
+
+.ov-tone-slate {
+  --tone: var(--ov-slate);
+  --tone-soft: rgba(71, 85, 105, 0.11);
+}
 
 .ov-grid {
   display: grid;
@@ -256,8 +283,63 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.ov-insight-grid {
+  align-items: stretch;
+  grid-auto-rows: minmax(286px, auto);
+}
+
+.ov-insight-grid > .ov-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ov-insight-grid .ov-panel-head {
+  flex: 0 0 auto;
+}
+
+.ov-top-customers-panel .ov-customer-list,
+.ov-bank-panel .ov-mini-grid,
+.ov-order-quality-panel .ov-donut-layout,
+.ov-top-services-panel .ov-progress-list {
+  flex: 1 1 auto;
+}
+
+.ov-bank-panel .ov-mini-grid {
+  align-content: center;
+}
+
+.ov-top-customers-panel .ov-customer-list {
+  min-height: 0;
+}
+
+.ov-top-customers-panel .ov-empty-state {
+  height: 100%;
+  min-height: 118px;
+  display: grid;
+  place-items: center;
+}
+
+.ov-top-services-panel .ov-progress-list {
+  min-height: 0;
+}
+
+.ov-top-services-panel .ov-empty-state {
+  height: 100%;
+  min-height: 118px;
+  display: grid;
+  place-items: center;
+}
+
 .ov-align-start {
   align-items: start;
+}
+
+.ov-dashboard-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
 }
 
 .ov-panel {
@@ -285,7 +367,7 @@
   line-height: 1.15;
 }
 
-.ov-panel-head > svg,
+.ov-panel-head>svg,
 .ov-count {
   flex: 0 0 auto;
   color: var(--ov-muted);
@@ -303,9 +385,15 @@
   min-height: 394px;
 }
 
+.ov-grid-main > .ov-panel {
+  height: 100%;
+}
+
 .ov-side-panel {
-  max-height: 394px;
+  min-height: 394px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .ov-area-chart {
@@ -352,19 +440,43 @@
   stroke-width: 2.5;
 }
 
-.ov-chart-blue { --chart-color: var(--ov-blue); --chart-shadow: rgba(37, 99, 235, 0.18); }
-.ov-chart-cyan { --chart-color: var(--ov-cyan); --chart-shadow: rgba(8, 145, 178, 0.18); }
-.ov-chart-green { --chart-color: var(--ov-green); --chart-shadow: rgba(22, 163, 74, 0.18); }
-.ov-chart-violet { --chart-color: var(--ov-violet); --chart-shadow: rgba(124, 58, 237, 0.18); }
-.ov-chart-orange { --chart-color: var(--ov-orange); --chart-shadow: rgba(217, 119, 6, 0.18); }
-.ov-chart-rose { --chart-color: var(--ov-rose); --chart-shadow: rgba(225, 29, 72, 0.18); }
+.ov-chart-blue {
+  --chart-color: var(--ov-blue);
+  --chart-shadow: rgba(37, 99, 235, 0.18);
+}
+
+.ov-chart-cyan {
+  --chart-color: var(--ov-cyan);
+  --chart-shadow: rgba(8, 145, 178, 0.18);
+}
+
+.ov-chart-green {
+  --chart-color: var(--ov-green);
+  --chart-shadow: rgba(22, 163, 74, 0.18);
+}
+
+.ov-chart-violet {
+  --chart-color: var(--ov-violet);
+  --chart-shadow: rgba(124, 58, 237, 0.18);
+}
+
+.ov-chart-orange {
+  --chart-color: var(--ov-orange);
+  --chart-shadow: rgba(217, 119, 6, 0.18);
+}
+
+.ov-chart-rose {
+  --chart-color: var(--ov-rose);
+  --chart-shadow: rgba(225, 29, 72, 0.18);
+}
 
 .ov-feed {
   display: grid;
   gap: 0;
-  max-height: 302px;
+  flex: 1 1 auto;
   overflow: auto;
   padding-right: 4px;
+  min-height: 0;
 }
 
 .ov-feed article {
@@ -476,7 +588,7 @@
   border-radius: var(--ov-radius);
 }
 
-.ov-spark-card > div,
+.ov-spark-card>div,
 .ov-spark-card svg {
   position: relative;
   z-index: 1;
@@ -597,9 +709,17 @@
   transition: width 0.55s ease;
 }
 
-.ov-bank-stack-bar .success { background: var(--ov-green); }
-.ov-bank-stack-bar .pending { background: var(--ov-orange); }
-.ov-bank-stack-bar .failed { background: var(--ov-rose); }
+.ov-bank-stack-bar .success {
+  background: var(--ov-green);
+}
+
+.ov-bank-stack-bar .pending {
+  background: var(--ov-orange);
+}
+
+.ov-bank-stack-bar .failed {
+  background: var(--ov-rose);
+}
 
 .ov-bank-legend {
   display: flex;
@@ -612,9 +732,17 @@
   font-weight: 950;
 }
 
-.ov-bank-legend .success { color: var(--ov-green); }
-.ov-bank-legend .pending { color: var(--ov-orange); }
-.ov-bank-legend .failed { color: var(--ov-rose); }
+.ov-bank-legend .success {
+  color: var(--ov-green);
+}
+
+.ov-bank-legend .pending {
+  color: var(--ov-orange);
+}
+
+.ov-bank-legend .failed {
+  color: var(--ov-rose);
+}
 
 .ov-health-list,
 .ov-progress-list,
@@ -640,10 +768,21 @@
   color: var(--health);
 }
 
-.ov-health-row.healthy { --health: var(--ov-green); }
-.ov-health-row.warning { --health: var(--ov-orange); }
-.ov-health-row.down { --health: var(--ov-rose); }
-.ov-health-row.unknown { --health: var(--ov-slate); }
+.ov-health-row.healthy {
+  --health: var(--ov-green);
+}
+
+.ov-health-row.warning {
+  --health: var(--ov-orange);
+}
+
+.ov-health-row.down {
+  --health: var(--ov-rose);
+}
+
+.ov-health-row.unknown {
+  --health: var(--ov-slate);
+}
 
 .ov-health-row strong,
 .ov-health-row span {
@@ -741,8 +880,15 @@
 }
 
 @keyframes ovBarGrow {
-  from { transform: scaleX(0); transform-origin: left; }
-  to { transform: scaleX(1); transform-origin: left; }
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
 }
 
 .ov-customer-list article {
@@ -758,7 +904,7 @@
   transition: transform 0.14s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.ov-customer-list article > span {
+.ov-customer-list article>span {
   width: 38px;
   height: 38px;
   display: grid;

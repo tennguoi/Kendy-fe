@@ -27,7 +27,7 @@ import {
 } from './utils/session'
 
 const initialOAuthCallback = readOAuthCallback()
-const adminRoutePaths = adminNavItems.map((item) => item.path)
+const adminRoutePaths = [...adminNavItems.map((item) => item.path), '/admin/settings', '/admin/profile']
 const MIN_DEPOSIT_AMOUNT = 1000
 
 async function fetchUserBootstrap(token) {
@@ -226,8 +226,14 @@ function App() {
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
   const normalizedPathname = normalizePathname(location.pathname)
   const isAdminPath = normalizedPathname === '/admin' || normalizedPathname.startsWith('/admin/')
-  const adminActiveView = adminNavItems.find((item) => item.path === normalizedPathname)?.id || 'admin-overview'
-  const userActiveView = navItems.find((item) => item.path === normalizedPathname)?.id || 'overview'
+  const adminActiveView = normalizedPathname === '/admin/profile'
+    ? 'admin-profile'
+    : normalizedPathname === '/admin/settings'
+    ? 'admin-settings'
+    : adminNavItems.find((item) => item.path === normalizedPathname)?.id || 'admin-overview'
+  const userActiveView = (normalizedPathname === '/settings' || normalizedPathname === '/profile')
+    ? 'profile'
+    : navItems.find((item) => item.path === normalizedPathname)?.id || 'overview'
 
   const metrics = useMemo(
     () => [
@@ -583,11 +589,23 @@ function App() {
   }
 
   const handleAdminViewChange = useCallback((viewId) => {
+    if (viewId === 'admin-profile') {
+      navigate('/admin/profile')
+      return
+    }
+    if (viewId === 'admin-settings') {
+      navigate('/admin/settings')
+      return
+    }
     const nextItem = adminNavItems.find((item) => item.id === viewId)
     navigate(nextItem?.path || '/admin')
   }, [navigate])
 
   const handleUserViewChange = useCallback((viewId) => {
+    if (viewId === 'settings') {
+      navigate('/profile')
+      return
+    }
     const nextItem = navItems.find((item) => item.id === viewId)
     navigate(nextItem?.path || '/')
   }, [navigate])
@@ -1102,7 +1120,7 @@ function App() {
       onOpenNotifications={loadNotifications}
       onViewChange={handleUserViewChange}
     >
-      {routeLoading && userActiveView !== 'support' && userActiveView !== 'settings' && (
+      {routeLoading && userActiveView !== 'support' && userActiveView !== 'profile' && (
         <Loading fullScreen={false} message="Đang tải dữ liệu..." subMessage="" />
       )}
       <UserRoutes

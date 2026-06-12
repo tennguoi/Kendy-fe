@@ -241,7 +241,10 @@ function ActivityFeed({ logs = [] }) {
           <span className="ov-feed-dot" />
           <div>
             <strong>{log.action || log.event || log.description || 'Hoạt động hệ thống'}</strong>
-            <small>{log.actorName || log.adminEmail || log.username || log.entityType || 'System'} · {formatDateTime(log.createdAt || log.timestamp)}</small>
+            <small>
+              {log.actorName || log.adminEmail || log.username || log.entityType || 'System'}
+              {log.ipAddress ? ` (${log.ipAddress})` : ''} · {formatDateTime(log.createdAt || log.timestamp)}
+            </small>
           </div>
         </article>
       ))}
@@ -475,27 +478,31 @@ function AdminOverviewView({
         </article>
       </div>
 
-      <div className="ov-grid ov-grid-two ov-align-start">
-        <section className="ov-panel">
+      <div className="ov-grid ov-grid-two ov-insight-grid">
+        <section className="ov-panel ov-top-customers-panel">
           <div className="ov-panel-head compact">
             <div>
-              <span className="ov-eyebrow">User Growth</span>
-              <h2>Tăng trưởng user</h2>
-              <p>{data.newUsersMonth} user mới trong tháng · {data.newUsersToday} hôm nay</p>
+              <span className="ov-eyebrow">Top Customers</span>
+              <h2>Khách hàng giá trị cao</h2>
             </div>
+            <span className="ov-count">{data.topCustomers.length} khách</span>
           </div>
-          {data.userGrowth.length ? (
-            <AreaChart rows={data.userGrowth} keys={['count', 'users', 'newUsers']} labelKey="date" valueFormatter={(v) => `${v}`} tone="green" />
-          ) : (
-            <div className="ov-mini-grid three">
-              <MiniStat icon={UserPlus} label="Hôm nay" value={data.newUsersToday} tone="green" />
-              <MiniStat icon={Users} label="Trong tháng" value={data.newUsersMonth} tone="blue" />
-              <MiniStat icon={XCircle} label="User khóa" value={data.lockedUsers} tone="rose" />
-            </div>
-          )}
+          <div className="ov-customer-list compact">
+            {data.topCustomers.slice(0, 4).map((customer, index) => (
+              <article key={customer.userId || customer.id || customer.email || index}>
+                <span>#{index + 1}</span>
+                <div>
+                  <strong>{customer.fullName || customer.name || customer.email || `Khách hàng ${index + 1}`}</strong>
+                  <small>{customer.email || customer.username || '-'}</small>
+                </div>
+                <b>{formatAdminMoney(customer.revenue ?? customer.totalRevenue ?? customer.totalSpent ?? customer.amount)}</b>
+              </article>
+            ))}
+            {!data.topCustomers.length && <EmptyState text="Backend chưa trả dữ liệu top khách hàng." />}
+          </div>
         </section>
 
-        <section className="ov-panel">
+        <section className="ov-panel ov-order-quality-panel">
           <div className="ov-panel-head compact">
             <div>
               <span className="ov-eyebrow">Order Quality</span>
@@ -512,10 +519,7 @@ function AdminOverviewView({
             </div>
           </div>
         </section>
-      </div>
-
-      <div className="ov-grid ov-grid-two ov-align-start">
-        <section className="ov-panel">
+        <section className="ov-panel ov-bank-panel">
           <div className="ov-panel-head compact">
             <div>
               <span className="ov-eyebrow">Bank Monitoring</span>
@@ -532,26 +536,7 @@ function AdminOverviewView({
           </div>
         </section>
 
-        <section className="ov-panel">
-          <div className="ov-panel-head compact">
-            <div>
-              <span className="ov-eyebrow">System Health</span>
-              <h2>Trạng thái hệ thống</h2>
-              <p>Theo dõi các dịch vụ quan trọng.</p>
-            </div>
-            <Server size={20} />
-          </div>
-          <div className="ov-health-list">
-            <HealthRow icon={Zap} label="API Server" note="Endpoint backend chính" status="healthy" />
-            <HealthRow icon={Database} label="Database" note="PostgreSQL connection" status="healthy" />
-            <HealthRow icon={RefreshCcw} label="SePay Sync" note="Đồng bộ giao dịch ngân hàng" status={data.manualReviewBankTransactions > 0 ? 'warning' : 'healthy'} />
-            <HealthRow icon={ShieldAlert} label="Risk Monitor" note="Giao dịch lỗi / trùng" status={data.bankFailed > 0 ? 'warning' : 'healthy'} />
-          </div>
-        </section>
-      </div>
-
-      <div className="ov-grid ov-grid-two ov-align-start">
-        <section className="ov-panel">
+        <section className="ov-panel ov-top-services-panel">
           <div className="ov-panel-head compact">
             <div>
               <span className="ov-eyebrow">Top Services</span>
@@ -571,29 +556,6 @@ function AdminOverviewView({
               />
             ))}
             {!data.serviceRows.length && <EmptyState text="Chưa có dữ liệu dịch vụ." />}
-          </div>
-        </section>
-
-        <section className="ov-panel">
-          <div className="ov-panel-head compact">
-            <div>
-              <span className="ov-eyebrow">Top Customers</span>
-              <h2>Khách hàng giá trị cao</h2>
-            </div>
-            <span className="ov-count">{data.topCustomers.length} khách</span>
-          </div>
-          <div className="ov-customer-list">
-            {data.topCustomers.map((customer, index) => (
-              <article key={customer.userId || customer.id || customer.email || index}>
-                <span>#{index + 1}</span>
-                <div>
-                  <strong>{customer.fullName || customer.name || customer.email || `Khách hàng ${index + 1}`}</strong>
-                  <small>{customer.email || customer.username || '-'}</small>
-                </div>
-                <b>{formatAdminMoney(customer.revenue ?? customer.totalRevenue ?? customer.totalSpent ?? customer.amount)}</b>
-              </article>
-            ))}
-            {!data.topCustomers.length && <EmptyState text="Backend chưa trả dữ liệu top khách hàng." />}
           </div>
         </section>
       </div>

@@ -5,7 +5,10 @@ import { AdminEmptyState, AdminStatusBadge } from '../../admin/AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../admin/adminFormat'
 
 function profileToForm(user) {
+  const avatarUrl = user?.avatarUrl || user?.avatar || user?.picture || user?.imageUrl || user?.photoUrl || ''
   return {
+    avatarUrl,
+    email: user?.email || '',
     name: user?.name || '',
     phone: user?.phone || '',
   }
@@ -106,10 +109,22 @@ function SettingsView({
     setSubmitting(true)
     setViewError('')
     try {
-      const saved = await userApi.updateProfile({
+      const currentAvatarUrl = currentUser?.avatarUrl || currentUser?.avatar || currentUser?.picture || currentUser?.imageUrl || currentUser?.photoUrl || ''
+      const payload = {
+        email: profileForm.email.trim() || undefined,
         name: profileForm.name.trim(),
         phone: profileForm.phone.trim() || undefined,
-      }, token)
+      }
+
+      if (profileForm.avatarUrl.trim() !== currentAvatarUrl) {
+        payload.avatarUrl = profileForm.avatarUrl.trim() || undefined
+      }
+
+      if (profileForm.email.trim() === currentUser?.email) {
+        delete payload.email
+      }
+
+      const saved = await userApi.updateProfile(payload, token)
       onCurrentUserChange(saved)
       setProfileForm(profileToForm(saved))
       onSetNotice('Đã cập nhật thông tin tài khoản.')
@@ -119,6 +134,10 @@ function SettingsView({
       setSubmitting(false)
     }
   }
+
+  const avatarUrl = profileForm.avatarUrl || currentUser?.avatarUrl || currentUser?.avatar || currentUser?.picture || currentUser?.imageUrl || currentUser?.photoUrl
+  const profileInitial = (profileForm.name || profileForm.email || currentUser?.name || currentUser?.email || 'U').charAt(0).toUpperCase()
+  const oauthProvider = currentUser?.oauthProvider || currentUser?.provider || currentUser?.loginProvider
 
   const changePassword = async (event) => {
     event.preventDefault()
@@ -343,7 +362,7 @@ function SettingsView({
     <section className="admin-view">
       <div className="admin-toolbar">
         <div>
-          <h2>Thông tin tài khoản</h2>
+          <h2>Hồ sơ của tôi</h2>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadSettings} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
@@ -352,6 +371,19 @@ function SettingsView({
       </div>
 
       {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải tài khoản...'}</p>}
+
+      <div className="profile-hero-panel">
+        {avatarUrl ? (
+          <img className="profile-hero-avatar" src={avatarUrl} alt="" />
+        ) : (
+          <div className="profile-hero-avatar fallback">{profileInitial}</div>
+        )}
+        <div className="profile-hero-copy">
+          <span className="eyebrow">Account</span>
+          <h2>{currentUser?.name || currentUser?.email || 'Người dùng'}</h2>
+          <p>{currentUser?.email || 'Chưa có email'}{oauthProvider ? ` · Đăng nhập bằng ${oauthProvider}` : ''}</p>
+        </div>
+      </div>
 
       <div className="admin-metrics">
         <article className="admin-metric">
@@ -375,7 +407,7 @@ function SettingsView({
       {/* Settings section tabs for mobile / layout clean up */}
       <div className="admin-tabs" style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '6px', borderBottom: '1px solid var(--kd-border)', paddingBottom: '12px' }}>
         <button type="button" className={activeSettingsTab === 'general' ? 'active' : ''} onClick={() => setActiveSettingsTab('general')}>
-          Hồ sơ & Sử dụng
+          Hồ sơ cá nhân
         </button>
         <button type="button" className={activeSettingsTab === 'security' ? 'active' : ''} onClick={() => setActiveSettingsTab('security')}>
           Bảo mật & Phiên
@@ -407,6 +439,14 @@ function SettingsView({
               <label>
                 <span>Tên hiển thị</span>
                 <input value={profileForm.name} onChange={(event) => setProfileForm((current) => ({ ...current, name: event.target.value }))} required />
+              </label>
+              <label>
+                <span>Email</span>
+                <input value={profileForm.email} onChange={(event) => setProfileForm((current) => ({ ...current, email: event.target.value }))} type="email" required />
+              </label>
+              <label>
+                <span>Ảnh đại diện</span>
+                <input value={profileForm.avatarUrl} onChange={(event) => setProfileForm((current) => ({ ...current, avatarUrl: event.target.value }))} placeholder="https://..." />
               </label>
               <label>
                 <span>Số điện thoại</span>

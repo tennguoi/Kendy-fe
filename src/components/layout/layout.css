@@ -241,6 +241,55 @@
   background: var(--kd-hover);
 }
 
+.topbar-profile-button {
+  max-width: 220px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px 0 8px;
+  border: 1px solid var(--kd-border);
+  border-radius: var(--kd-radius);
+  background: #ffffff;
+  color: var(--kd-text);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.topbar-profile-button img,
+.topbar-profile-button > span {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+}
+
+.topbar-profile-button img {
+  object-fit: cover;
+  border: 1px solid var(--kd-border);
+}
+
+.topbar-profile-button > span {
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
+  font-size: 12px;
+}
+
+.topbar-profile-button strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-profile-button:hover {
+  background: #f8fafc;
+}
+
 .notification-badge {
   position: absolute;
   top: -4px;
@@ -977,6 +1026,24 @@
   font-weight: 800;
   font-size: 15px;
   flex-shrink: 0;
+}
+
+.sidebar-account-chip .avatar-image {
+  object-fit: cover;
+  border: 1px solid var(--kd-border);
+  background: #ffffff;
+}
+
+@media (max-width: 820px) {
+  .topbar-profile-button {
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .topbar-profile-button strong {
+    display: none;
+  }
 }
 
 .sidebar-account-chip .account-details {

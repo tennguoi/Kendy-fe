@@ -72,7 +72,7 @@ function UserRoutes({
 }) {
   const location = useLocation()
   const activePath = normalizePathname(location.pathname)
-  const mountedPaths = navItems.map((item) => item.path)
+  const mountedPaths = [...navItems.map((item) => item.path), '/profile']
   const routes = [
     {
       path: '/',
@@ -155,7 +155,7 @@ function UserRoutes({
       ),
     },
     {
-      path: '/settings',
+      path: '/profile',
       element: (
         <SettingsView
           currentUser={currentUser}
@@ -170,6 +170,10 @@ function UserRoutes({
 
   if (activePath === '/overview') {
     return <Navigate to="/" replace />
+  }
+
+  if (activePath === '/settings') {
+    return <Navigate to="/profile" replace />
   }
 
   if (!routes.some((route) => route.path === activePath)) {

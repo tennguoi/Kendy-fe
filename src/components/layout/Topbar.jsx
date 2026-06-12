@@ -1,4 +1,4 @@
-import { Bell, LogOut, Menu, Search } from 'lucide-react'
+import { Bell, Menu, Search, User } from 'lucide-react'
 import { useState } from 'react'
 import { money } from '../../utils/currency'
 
@@ -33,6 +33,9 @@ function Topbar({
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
+  const avatarUrl = currentUser?.avatarUrl || currentUser?.avatar || currentUser?.picture || currentUser?.imageUrl || currentUser?.photoUrl
+  const userInitial = (currentUser?.name || currentUser?.email || 'U').charAt(0).toUpperCase()
 
   const handleSearchKeyDown = (event) => {
     if (event.key === 'Enter' && searchQuery.trim() && onViewChange && searchTargetView) {
@@ -119,6 +122,21 @@ function Topbar({
             </div>
           )}
         </div>
+        {currentUser && (
+          <button
+            type="button"
+            className="topbar-profile-button"
+            onClick={() => onViewChange?.(isAdmin ? 'admin-settings' : 'profile')}
+            title="Hồ sơ của tôi"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" />
+            ) : (
+              <span>{userInitial || <User size={16} strokeWidth={2} />}</span>
+            )}
+            <strong>{currentUser.name || currentUser.email || 'Hồ sơ'}</strong>
+          </button>
+        )}
 
       </div>
     </header>

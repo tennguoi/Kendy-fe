@@ -121,6 +121,10 @@
   margin-top: 8px;
   font-size: 30px;
   line-height: 1.08;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-empty-panel {
@@ -937,7 +941,9 @@ body.admin-drawer-open {
 .admin-metric {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
+  text-align: left;
   gap: 14px;
   padding: 18px;
   overflow: hidden;
@@ -1004,6 +1010,10 @@ body.admin-drawer-open {
   color: var(--kd-text);
   font-size: 26px;
   line-height: 1.08;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Metric accent variants */

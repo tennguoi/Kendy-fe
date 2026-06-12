@@ -7,11 +7,13 @@ import AdminServicesView from './services/AdminServicesView'
 import AdminSettingsView from './settings/AdminSettingsView'
 import AdminTicketsView from './tickets/AdminTicketsView'
 import AdminUsersView from './users/AdminUsersView'
+import SettingsView from '../user/settings/SettingsView'
 import './admin.css'
 import './finance/finance.css'
 import './overview/overview.css'
 import './pricing/pricing.css'
 import './services/services.css'
+import './settings/settings.css'
 import './tickets/tickets.css'
 import './users/users.css'
 
@@ -73,6 +75,16 @@ function AdminRoutes({
       path: '/admin/settings',
       element: (
         <AdminSettingsView
+          {...sharedProps}
+          currentUser={currentUser}
+          onCurrentUserChange={onCurrentUserChange}
+        />
+      ),
+    },
+    {
+      path: '/admin/profile',
+      element: (
+        <SettingsView
           {...sharedProps}
           currentUser={currentUser}
           onCurrentUserChange={onCurrentUserChange}
