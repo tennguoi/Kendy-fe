@@ -13,6 +13,50 @@
   min-width: 0;
 }
 
+.user-route-stack {
+  position: relative;
+  min-width: 0;
+}
+
+.user-route-panel {
+  min-width: 0;
+}
+
+.user-route-panel.active {
+  position: relative;
+  z-index: 1;
+  animation: userRouteIn 0.22s ease both;
+}
+
+.user-route-panel.inactive {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+@keyframes userRouteIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .user-route-panel.active {
+    animation: none;
+  }
+}
+
 .profile-hero-panel {
   min-width: 0;
   display: grid;

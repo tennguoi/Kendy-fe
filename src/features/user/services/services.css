@@ -287,6 +287,149 @@
   border-color: #fde68a;
 }
 
+.payment-modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.34);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.payment-modal {
+  width: min(520px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+  animation: paymentModalIn 0.18s ease both;
+}
+
+.payment-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.payment-modal-head span,
+.payment-summary span,
+.payment-summary small,
+.payment-options small {
+  color: var(--kd-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.payment-modal-head h2 {
+  margin: 6px 0 0;
+  color: var(--kd-text);
+  font-size: 22px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.payment-modal-head button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: var(--kd-text);
+  background: transparent;
+  cursor: pointer;
+}
+
+.payment-modal-head button:hover {
+  background: #f1f5f9;
+}
+
+.payment-summary {
+  display: grid;
+  gap: 6px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #edf2f7;
+  background: #f8fafc;
+}
+
+.payment-summary strong {
+  color: var(--kd-text);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.payment-options {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px 20px;
+}
+
+.payment-options button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--kd-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.payment-options button:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.payment-options button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.payment-options button > svg {
+  color: var(--kd-blue);
+}
+
+.payment-options strong,
+.payment-options small {
+  display: block;
+  min-width: 0;
+}
+
+.payment-options strong {
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.payment-options small {
+  line-height: 1.4;
+  text-transform: none;
+}
+
+@keyframes paymentModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Operations band */
 .operations-band {
   display: flex;

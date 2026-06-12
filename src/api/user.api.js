@@ -1,4 +1,5 @@
 import { userAccountApi } from './user/account.api';
+import { userCheckoutApi } from './user/checkout.api';
 import { userDepositsApi } from './user/deposits.api';
 import { userNotificationsApi } from './user/notifications.api';
 import { userOrdersApi } from './user/orders.api';
@@ -9,6 +10,7 @@ import { userWalletApi } from './user/wallet.api';
 
 export const userApi = {
   ...userAccountApi,
+  ...userCheckoutApi,
   ...userSecurityApi,
   ...userWalletApi,
   ...userOrdersApi,

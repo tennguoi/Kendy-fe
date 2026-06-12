@@ -181,19 +181,19 @@ function UserRoutes({
   }
 
   return (
-    <>
+    <div className="user-route-stack">
       {routes.map((route) => (
         mountedPaths.includes(route.path) && (
           <div
+            className={`user-route-panel ${route.path === activePath ? 'active' : 'inactive'}`}
             key={route.path}
-            style={route.path === activePath ? undefined : { display: 'none' }}
             aria-hidden={route.path !== activePath}
           >
             {route.element}
           </div>
         )
       ))}
-    </>
+    </div>
   )
 }
 

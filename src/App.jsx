@@ -9,6 +9,8 @@ import DashboardShell from './components/layout/DashboardShell'
 import UserRoutes from './features/user/UserRoutes'
 import PublicHome from './features/public/PublicHome'
 import Loading from './components/Loading/Loading'
+import SupportWidget from './features/user/support/components/SupportWidget'
+import PaymentChoiceModal from './features/user/services/components/PaymentChoiceModal'
 import { useClipboard } from './hooks/useClipboard'
 import { adminApi } from './api/admin.api'
 import { authApi } from './api/auth.api'
@@ -151,6 +153,8 @@ function App() {
     Boolean(initialOAuthCallback?.error || initialOAuthCallback?.oauthTwoFactorChallenge)
   ))
   const [depositAmount, setDepositAmount] = useState('250000')
+  const [checkoutService, setCheckoutService] = useState(null)
+  const [checkoutSubmitting, setCheckoutSubmitting] = useState(false)
   const [accessToken, setAccessToken] = useState(() => initialOAuthCallback?.token || getStoredAccessToken())
   const [rememberSession, setRememberSession] = useState(() => Boolean(initialOAuthCallback?.token) || hasPersistentSession())
   const [currentUser, setCurrentUser] = useState(null)
@@ -177,6 +181,7 @@ function App() {
   const [supportSelectedCode, setSupportSelectedCode] = useState(null)
   const [supportStatus, setSupportStatus] = useState('')
   const [supportSubmitting, setSupportSubmitting] = useState(false)
+  const [activeCheckout, setActiveCheckout] = useState(null)
   const [ticketForm, setTicketForm] = useState({
     category: 'DEPOSIT',
     depositCode: '',
@@ -544,12 +549,15 @@ function App() {
 
     clearStoredAccessToken()
     setAccessToken('')
+    setCheckoutService(null)
+    setCheckoutSubmitting(false)
     setCurrentUser(null)
     setWallet(null)
     setApiOrders([])
     setApiWalletTransactions([])
     setApiDeposits([])
     setApiTickets([])
+    setActiveCheckout(null)
     setFavoriteServices([])
     setRecentServices([])
     setUserDashboard(null)
@@ -714,6 +722,26 @@ function App() {
     }
 
     try {
+      if (depositCode && activeCheckout?.checkoutCode && activeCheckout?.deposit?.depositCode === depositCode) {
+        const checkout = await userApi.getCheckoutStatus(activeCheckout.checkoutCode, accessToken)
+        setActiveCheckout(checkout)
+        if (checkout.deposit) {
+          setActiveDeposit(checkout.deposit)
+          setApiDeposits((items) => normalizeList(items).map((item) => (
+            item.depositCode === checkout.deposit.depositCode ? checkout.deposit : item
+          )))
+        }
+        if (checkout.order) {
+          setApiOrders((items) => [checkout.order, ...normalizeList(items).filter((item) => item.orderCode !== checkout.order.orderCode)])
+          await refreshBootstrapData()
+          notify(`Thanh toán hoàn tất, đã tạo đơn ${checkout.order.orderCode}.`, 'success')
+        } else {
+          const notice = depositStatusNotice(depositCode, checkout.deposit?.status || checkout.status)
+          notify(notice.message, notice.type, notice.title)
+        }
+        return
+      }
+
       if (depositCode) {
         const [deposit, status, walletData] = await Promise.all([
           userApi.getDeposit(depositCode, accessToken),
@@ -787,10 +815,34 @@ function App() {
       }
 
       const servicePrice = Number(service.price)
-      if (Number.isFinite(servicePrice) && servicePrice > displayBalance) {
-        throw new Error('Số dư ví không đủ để mua dịch vụ này. Vui lòng nạp thêm tiền.')
+      if (!Number.isFinite(servicePrice) || servicePrice <= 0) {
+        throw new Error('Service price must be greater than zero')
       }
 
+      setCheckoutService(service)
+    } catch (err) {
+      const message = purchaseErrorMessage(err)
+      setApiNotice(message)
+      notify(message, 'error')
+    }
+  }
+
+  const handlePayWithWallet = async () => {
+    if (!accessToken || !checkoutService) {
+      return
+    }
+
+    const serviceId = resolveServiceId(checkoutService)
+    const servicePrice = Number(checkoutService.price)
+    if (Number.isFinite(servicePrice) && servicePrice > displayBalance) {
+      const message = 'Số dư ví không đủ. Chọn thanh toán chuyển khoản để tạo mã QR đúng số tiền dịch vụ.'
+      setApiNotice(message)
+      notify(message, 'info')
+      return
+    }
+
+    setCheckoutSubmitting(true)
+    try {
       const order = await userApi.createOrder({
         serviceId,
         inputData: JSON.stringify({ source: 'dashboard' }),
@@ -806,10 +858,51 @@ function App() {
       const message = `Đã tạo đơn ${order.orderCode}.`
       setApiNotice(message)
       notify(message, 'success')
+      setCheckoutService(null)
     } catch (err) {
       const message = purchaseErrorMessage(err)
       setApiNotice(message)
       notify(message, 'error')
+    } finally {
+      setCheckoutSubmitting(false)
+    }
+  }
+
+  const handlePayByTransfer = async () => {
+    if (!accessToken || !checkoutService) {
+      return
+    }
+
+    const servicePrice = Number(checkoutService.price)
+    if (!Number.isFinite(servicePrice) || servicePrice <= MIN_DEPOSIT_AMOUNT) {
+      const message = 'Số tiền thanh toán phải lớn hơn 1.000đ để tạo mã QR.'
+      setApiNotice(message)
+      notify(message, 'error')
+      return
+    }
+
+    setCheckoutSubmitting(true)
+    try {
+      const serviceId = resolveServiceId(checkoutService)
+      const checkout = await userApi.createServiceCheckout({
+        serviceId,
+        inputData: JSON.stringify({ source: 'checkout' }),
+        idempotencyKey: createIdempotencyKey(serviceId),
+      }, accessToken)
+      const deposit = checkout.deposit
+      setActiveDeposit(deposit)
+      setActiveCheckout(checkout)
+      setApiDeposits((items) => [deposit, ...normalizeList(items).filter((item) => item.depositCode !== deposit.depositCode)])
+      setDepositAmount(String(servicePrice))
+      setCheckoutService(null)
+      handleUserViewChange('deposit')
+      notify(`Đã tạo mã thanh toán ${deposit.depositCode} cho ${checkout.serviceName || checkoutService.name}.`, 'success')
+    } catch (err) {
+      const message = err.message || 'Không tạo được mã thanh toán. Vui lòng thử lại.'
+      setApiNotice(message)
+      notify(message, 'error')
+    } finally {
+      setCheckoutSubmitting(false)
     }
   }
 
@@ -951,14 +1044,20 @@ function App() {
         message: ticketForm.message.trim(),
         orderCode: ticketForm.orderCode.trim() || undefined,
         priority: ticketForm.priority,
-        subject: ticketForm.subject.trim(),
+        subject: ticketForm.subject.trim() || `Yêu cầu hỗ trợ ${ticketForm.category}`,
       }, accessToken)
+      if (supportFile) {
+        await userApi.uploadTicketAttachment(saved.ticketCode, supportFile, accessToken)
+        setSupportFile(null)
+      }
       setApiTickets((items) => [saved, ...normalizeList(items).filter((item) => item.ticketCode !== saved.ticketCode)])
       setSupportSelectedCode(saved.ticketCode)
       setTicketForm({ category: 'DEPOSIT', depositCode: '', message: '', orderCode: '', priority: 'NORMAL', subject: '' })
       notify(`Đã tạo ticket ${saved.ticketCode}.`, 'success')
+      return saved
     } catch (err) {
       notify(err.message || 'Không tạo được ticket.', 'error')
+      return null
     } finally {
       setSupportSubmitting(false)
     }
@@ -1175,6 +1274,23 @@ function App() {
         supportSubmitting={supportSubmitting}
         ticketForm={ticketForm}
         token={accessToken}
+      />
+      <SupportWidget
+        file={supportFile}
+        onCreateTicket={handleCreateTicket}
+        onFileChange={setSupportFile}
+        onTicketFormChange={updateTicketForm}
+        orders={orderList}
+        submitting={supportSubmitting}
+        ticketForm={ticketForm}
+      />
+      <PaymentChoiceModal
+        balance={displayBalance}
+        onClose={() => setCheckoutService(null)}
+        onPayTransfer={handlePayByTransfer}
+        onPayWallet={handlePayWithWallet}
+        service={checkoutService}
+        submitting={checkoutSubmitting}
       />
     </DashboardShell>
   )
