@@ -2,7 +2,16 @@ import React, { useEffect } from 'react'
 import { X } from 'lucide-react'
 import './modal.css'
 
-function Modal({ isOpen, onClose, title, children, headerActions = null, maxWidth = '1000px', showHeader = true }) {
+function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  headerActions = null,
+  maxWidth = '1000px',
+  showHeader = true,
+  className = '',
+}) {
   // Lock body scroll when modal is active
   useEffect(() => {
     if (isOpen) {
@@ -33,7 +42,7 @@ function Modal({ isOpen, onClose, title, children, headerActions = null, maxWidt
   return (
     <div className="kd-modal-overlay" onClick={onClose}>
       <div 
-        className="kd-modal-dialog" 
+        className={`kd-modal-dialog ${className}`.trim()} 
         style={{ maxWidth }} 
         onClick={(e) => e.stopPropagation()}
         role="dialog"

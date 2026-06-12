@@ -228,11 +228,18 @@ function AdminTicketsView({
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
-        <div>
-          <span className="eyebrow">Tickets</span>
-          <h2>Quản lý hỗ trợ</h2>
+        <div className="admin-toolbar-info">
+          <div>
+            <span className="eyebrow">Tickets</span>
+            <h2>Quản lý hỗ trợ</h2>
+          </div>
+          {tickets.length > 0 && (
+            <div className="admin-quick-stats">
+              <span className="admin-quick-stat"><strong>{tickets.length}</strong> ticket</span>
+            </div>
+          )}
         </div>
-        <button type="button" className="admin-icon-button" onClick={loadTickets} disabled={loading}>
+        <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadTickets} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
           <span>Tải lại</span>
         </button>

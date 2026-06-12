@@ -1,3 +1,4 @@
+import { Activity, Clock, CreditCard, DollarSign, FolderOpen, Layers, ShieldAlert, Users } from 'lucide-react'
 import { formatAdminMoney } from '../adminFormat'
 
 function maxValue(rows, key) {
@@ -19,14 +20,14 @@ function AdminOverviewView({
   const featuredServices = pricingItems.filter((service) => service.featured).length
   const consultingOnly = pricingItems.filter((service) => service.stockStatus === 'CONSULTING_ONLY').length
   const metrics = [
-    { label: 'User hoạt động', value: dashboard?.activeUsers ?? 0 },
-    { label: 'Đơn đang xử lý', value: dashboard?.processingOrders ?? 0 },
-    { label: 'Nạp cần kiểm tra', value: dashboard?.manualReviewDeposits ?? 0 },
-    { label: 'Ticket chờ admin', value: dashboard?.pendingAdminTickets ?? 0 },
-    { label: 'Ví đang giữ', value: formatAdminMoney(revenue?.walletLiability || dashboard?.totalWalletBalance) },
-    { label: 'Doanh thu hôm nay', value: formatAdminMoney(dashboard?.todayRevenue) },
-    { label: 'Dịch vụ đang bật', value: activeServices },
-    { label: 'Nhóm dịch vụ', value: categories.length },
+    { label: 'User hoạt động', value: dashboard?.activeUsers ?? 0, icon: Users, accent: '' },
+    { label: 'Đơn đang xử lý', value: dashboard?.processingOrders ?? 0, icon: Clock, accent: 'accent-amber' },
+    { label: 'Nạp cần kiểm tra', value: dashboard?.manualReviewDeposits ?? 0, icon: ShieldAlert, accent: 'accent-rose' },
+    { label: 'Ticket chờ admin', value: dashboard?.pendingAdminTickets ?? 0, icon: Activity, accent: 'accent-violet' },
+    { label: 'Ví đang giữ', value: formatAdminMoney(revenue?.walletLiability || dashboard?.totalWalletBalance), icon: CreditCard, accent: '' },
+    { label: 'Doanh thu hôm nay', value: formatAdminMoney(dashboard?.todayRevenue), icon: DollarSign, accent: 'accent-emerald' },
+    { label: 'Dịch vụ đang bật', value: activeServices, icon: Layers, accent: '' },
+    { label: 'Nhóm dịch vụ', value: categories.length, icon: FolderOpen, accent: '' },
   ]
   const recentRevenue = revenueChart.slice(-7)
   const maxRevenue = maxValue(recentRevenue, 'grossRevenue')
@@ -35,12 +36,20 @@ function AdminOverviewView({
   return (
     <section className="admin-view">
       <div className="admin-metrics">
-        {metrics.map((metric) => (
-          <article className="admin-metric" key={metric.label}>
-            <span>{metric.label}</span>
-            <strong>{metric.value}</strong>
-          </article>
-        ))}
+        {metrics.map((metric) => {
+          const Icon = metric.icon
+          return (
+            <article className={`admin-metric ${metric.accent}`} key={metric.label}>
+              <div className="admin-metric-icon">
+                <Icon size={22} strokeWidth={2} />
+              </div>
+              <div className="admin-metric-body">
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+              </div>
+            </article>
+          )
+        })}
       </div>
 
       <div className="admin-grid two-columns">

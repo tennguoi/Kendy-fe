@@ -1,4 +1,4 @@
-import { Ban, Download, RefreshCw, RotateCcw, Save } from 'lucide-react'
+import { Ban, CreditCard, DollarSign, Download, RefreshCw, RotateCcw, Save, ShieldAlert, Wallet } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
 import AdminDrawer from '../AdminDrawer'
@@ -70,10 +70,10 @@ function AdminFinanceView({
   const selectedDeposit = deposits.find((item) => item.depositCode === selectedDepositCode) || deposits[0]
 
   const financeMetrics = [
-    { label: 'Tiền nạp hoàn tất', value: formatAdminMoney(dashboard?.completedDepositAmount) },
-    { label: 'Doanh thu hôm nay', value: formatAdminMoney(dashboard?.todayRevenue) },
-    { label: 'Ví đang giữ', value: formatAdminMoney(revenue?.walletLiability || dashboard?.totalWalletBalance) },
-    { label: 'Bank chưa khớp', value: String(dashboard?.unmatchedBankCount ?? 0) },
+    { label: 'Tiền nạp hoàn tất', value: formatAdminMoney(dashboard?.completedDepositAmount), icon: CreditCard, accent: 'accent-emerald' },
+    { label: 'Doanh thu hôm nay', value: formatAdminMoney(dashboard?.todayRevenue), icon: DollarSign, accent: 'accent-emerald' },
+    { label: 'Ví đang giữ', value: formatAdminMoney(revenue?.walletLiability || dashboard?.totalWalletBalance), icon: Wallet, accent: '' },
+    { label: 'Bank chưa khớp', value: String(dashboard?.unmatchedBankCount ?? 0), icon: ShieldAlert, accent: 'accent-amber' },
   ]
 
   const setViewError = useCallback((message) => {
@@ -396,11 +396,13 @@ function AdminFinanceView({
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
-        <div>
-          <span className="eyebrow">Finance</span>
-          <h2>Quản lý tài chính</h2>
+        <div className="admin-toolbar-info">
+          <div>
+            <span className="eyebrow">Finance</span>
+            <h2>Quản lý tài chính</h2>
+          </div>
         </div>
-        <button type="button" className="admin-icon-button" onClick={loadFinance} disabled={loading}>
+        <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadFinance} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
           <span>Tải lại</span>
         </button>
@@ -410,12 +412,20 @@ function AdminFinanceView({
       {!error && loading && <Loading fullScreen={false} message="Đang tải tài chính..." subMessage="" />}
 
       <div className="admin-metrics">
-        {financeMetrics.map((metric) => (
-          <article className="admin-metric" key={metric.label}>
-            <span>{metric.label}</span>
-            <strong>{metric.value}</strong>
-          </article>
-        ))}
+        {financeMetrics.map((metric) => {
+          const Icon = metric.icon
+          return (
+            <article className={`admin-metric ${metric.accent}`} key={metric.label}>
+              <div className="admin-metric-icon">
+                <Icon size={22} strokeWidth={2} />
+              </div>
+              <div className="admin-metric-body">
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+              </div>
+            </article>
+          )
+        })}
       </div>
 
       <div className="admin-panel">

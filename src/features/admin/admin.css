@@ -918,3 +918,539 @@ body.admin-drawer-open {
 .admin-form button {
   border-radius: var(--kd-radius-sm);
 }
+
+/* ==========================================================================
+   PREMIUM ADMIN UI — Visual Upgrade Layer
+   ========================================================================== */
+
+/* --- 1. Metric Cards Premium --- */
+.admin-metric {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-metric::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.admin-metric:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(17, 24, 39, 0.1), 0 2px 6px rgba(17, 24, 39, 0.06) !important;
+}
+
+.admin-metric:hover::before {
+  opacity: 1;
+}
+
+.admin-metric-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: var(--kd-blue);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.admin-metric:hover .admin-metric-icon {
+  background: var(--kd-blue);
+  color: #ffffff;
+}
+
+.admin-metric-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-metric-body span {
+  display: block;
+  color: var(--kd-muted);
+  font-size: 12.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.admin-metric-body strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--kd-text);
+  font-size: 26px;
+  line-height: 1.08;
+}
+
+/* Metric accent variants */
+.admin-metric.accent-amber .admin-metric-icon {
+  background: #fef3c7;
+  color: #d97706;
+}
+.admin-metric.accent-amber:hover .admin-metric-icon {
+  background: #d97706;
+  color: #ffffff;
+}
+.admin-metric.accent-amber::before {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+}
+
+.admin-metric.accent-emerald .admin-metric-icon {
+  background: #d1fae5;
+  color: #059669;
+}
+.admin-metric.accent-emerald:hover .admin-metric-icon {
+  background: #059669;
+  color: #ffffff;
+}
+.admin-metric.accent-emerald::before {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+}
+
+.admin-metric.accent-rose .admin-metric-icon {
+  background: #ffe4e6;
+  color: #e11d48;
+}
+.admin-metric.accent-rose:hover .admin-metric-icon {
+  background: #e11d48;
+  color: #ffffff;
+}
+.admin-metric.accent-rose::before {
+  background: linear-gradient(180deg, #fb7185 0%, #e11d48 100%);
+}
+
+.admin-metric.accent-violet .admin-metric-icon {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+.admin-metric.accent-violet:hover .admin-metric-icon {
+  background: #7c3aed;
+  color: #ffffff;
+}
+.admin-metric.accent-violet::before {
+  background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+/* --- 2. Toolbar Quick Stats --- */
+.admin-toolbar {
+  align-items: center;
+}
+
+.admin-toolbar-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-toolbar-info h2 {
+  margin: 0;
+}
+
+.admin-quick-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.admin-quick-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--kd-muted);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-quick-stat strong {
+  color: var(--kd-text);
+  font-size: 12px;
+}
+
+.admin-quick-stat.highlight {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.admin-quick-stat.highlight strong {
+  color: #92400e;
+}
+
+/* Refresh button spin animation */
+.admin-icon-button.loading svg {
+  animation: adminSpin 0.8s linear infinite;
+}
+
+@keyframes adminSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* --- 3. Data Table Premium --- */
+.admin-data-row {
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+button.admin-data-row {
+  position: relative;
+}
+
+button.admin-data-row::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--kd-blue);
+  opacity: 0;
+  transform: scaleY(0);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button.admin-data-row:hover::before,
+button.admin-data-row.selected::before,
+.admin-data-row.users.selected::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.admin-data-row.users {
+  position: relative;
+}
+
+.admin-data-row.users::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--kd-blue);
+  opacity: 0;
+  transform: scaleY(0);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button.admin-data-row:hover,
+button.admin-data-row.selected {
+  background: #f0f6ff;
+  border-color: #dbeafe;
+}
+
+/* Zebra striping */
+button.admin-data-row:nth-child(even),
+.admin-user-row-wrap:nth-child(even) .admin-data-row {
+  background: #fafbfc;
+}
+
+button.admin-data-row:nth-child(even):hover,
+button.admin-data-row:nth-child(even).selected,
+.admin-user-row-wrap:nth-child(even) .admin-data-row:hover,
+.admin-user-row-wrap:nth-child(even) .admin-data-row.selected {
+  background: #f0f6ff;
+}
+
+.admin-data-row.head {
+  background: #f1f5f9 !important;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+/* User avatar circle in data rows */
+.admin-user-avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-row-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.admin-row-user-text {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+/* --- 4. Panel Cards Accent Header --- */
+.admin-panel {
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.admin-panel:hover {
+  border-color: #c7d2e0;
+}
+
+.admin-panel > .admin-panel-head {
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.admin-panel > .admin-panel-head::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--kd-blue) 0%, var(--kd-cyan) 40%, transparent 100%);
+  border-radius: 1px;
+  opacity: 0.5;
+}
+
+.admin-panel-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- 5. Status Badges Upgraded --- */
+.admin-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 0 10px;
+  font-size: 11.5px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.admin-status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* Pulse animation for pending states */
+.admin-status.pending::before,
+.admin-status.processing::before,
+.admin-status.pending-admin::before,
+.admin-status.pending-user::before,
+.admin-status.manual-review::before,
+.admin-status.pending-verify::before {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* Status border colors for more definition */
+.admin-status.active,
+.admin-status.completed,
+.admin-status.credited,
+.admin-status.resolved,
+.admin-status.credit,
+.admin-status.available { border-color: #bbf7d0; }
+
+.admin-status.pending,
+.admin-status.processing,
+.admin-status.pending-admin,
+.admin-status.pending-user,
+.admin-status.manual-review,
+.admin-status.pending-verify { border-color: #fde68a; }
+
+.admin-status.failed,
+.admin-status.cancelled,
+.admin-status.locked,
+.admin-status.disabled,
+.admin-status.expired,
+.admin-status.debit { border-color: #fecaca; }
+
+.admin-status.consulting-only,
+.admin-status.matched,
+.admin-status.open,
+.admin-status.new { border-color: #bfdbfe; }
+
+/* --- 6. Empty States Premium --- */
+.admin-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 18px;
+  color: var(--kd-muted);
+  text-align: center;
+}
+
+.admin-empty-state-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.admin-empty-state span {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.admin-empty-state small {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* --- 7. General Polish --- */
+
+/* Smoother buttons */
+.admin-icon-button,
+.admin-primary-button,
+.admin-panel-head button,
+.admin-form button {
+  transition: transform 0.12s ease, filter 0.18s ease,
+              background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.admin-icon-button:hover:not(:disabled) {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
+}
+
+.admin-icon-button:active:not(:disabled),
+.admin-primary-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Panel enter animation */
+.admin-panel,
+.admin-empty-panel {
+  animation: panelFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Metric staggered entrance */
+.admin-metrics .admin-metric:nth-child(1) { animation-delay: 0s; }
+.admin-metrics .admin-metric:nth-child(2) { animation-delay: 0.04s; }
+.admin-metrics .admin-metric:nth-child(3) { animation-delay: 0.08s; }
+.admin-metrics .admin-metric:nth-child(4) { animation-delay: 0.12s; }
+.admin-metrics .admin-metric:nth-child(5) { animation-delay: 0.16s; }
+.admin-metrics .admin-metric:nth-child(6) { animation-delay: 0.2s; }
+.admin-metrics .admin-metric:nth-child(7) { animation-delay: 0.24s; }
+.admin-metrics .admin-metric:nth-child(8) { animation-delay: 0.28s; }
+
+.admin-metric {
+  animation: panelFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Eyebrow label upgrade */
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: var(--kd-blue);
+  font-size: 11.5px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Filter inputs focus ring */
+.admin-filters input:focus,
+.admin-filters select:focus,
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus {
+  border-color: var(--kd-blue);
+  box-shadow: var(--kd-ring);
+}
+
+/* Responsive adjustments for premium metric layout */
+@media (max-width: 820px) {
+  .admin-toolbar-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .admin-quick-stats {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-metric {
+    min-height: auto;
+  }
+
+  .admin-metric-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .admin-metric-body strong {
+    font-size: 22px;
+  }
+
+  .admin-empty-state {
+    padding: 24px 14px;
+  }
+
+  /* Disable staggered animation on mobile for perf */
+  .admin-metrics .admin-metric {
+    animation-delay: 0s !important;
+  }
+
+  button.admin-data-row::before,
+  .admin-data-row.users::before {
+    display: none;
+  }
+}
+

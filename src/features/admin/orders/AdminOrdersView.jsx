@@ -253,11 +253,18 @@ function AdminOrdersView({
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
-        <div>
-          <span className="eyebrow">Orders</span>
-          <h2>Quản lý đơn hàng</h2>
+        <div className="admin-toolbar-info">
+          <div>
+            <span className="eyebrow">Orders</span>
+            <h2>Quản lý đơn hàng</h2>
+          </div>
+          {orders.length > 0 && (
+            <div className="admin-quick-stats">
+              <span className="admin-quick-stat"><strong>{orders.length}</strong> đơn</span>
+            </div>
+          )}
         </div>
-        <button type="button" className="admin-icon-button" onClick={loadOrders} disabled={loading}>
+        <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadOrders} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
           <span>Tải lại</span>
         </button>

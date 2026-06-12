@@ -9,8 +9,6 @@ function DashboardShell({
   children,
   currentUser,
   displayBalance,
-  footerLabel,
-  footerTitle,
   items = [],
   notificationCount = 0,
   notifications = [],
@@ -36,8 +34,6 @@ function DashboardShell({
       )}
       <Sidebar
         activeView={activeView}
-        footerLabel={footerLabel}
-        footerTitle={footerTitle}
         items={items}
         onViewChange={(view) => {
           onViewChange(view)
@@ -45,6 +41,8 @@ function DashboardShell({
         }}
         isOpen={isSidebarOpen}
         onClose={handleCloseSidebar}
+        currentUser={currentUser}
+        onLogout={onLogout}
       />
       <main className="workspace">
         <Topbar

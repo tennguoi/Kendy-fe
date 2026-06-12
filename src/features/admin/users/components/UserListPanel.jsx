@@ -81,8 +81,13 @@ function UserListPanel({
                 onClick={() => handleSelectUser(user.id)}
               >
                 <button type="button" className="admin-row-user" onClick={() => handleSelectUser(user.id)}>
-                  <strong>{user.name || 'Chưa đặt tên'}</strong>
-                  <small>{user.email}</small>
+                  <div className="admin-row-user-info">
+                    <div className="admin-user-avatar">{(user.name || user.email || 'U').charAt(0).toUpperCase()}</div>
+                    <div className="admin-row-user-text">
+                      <strong>{user.name || 'Chưa đặt tên'}</strong>
+                      <small>{user.email}</small>
+                    </div>
+                  </div>
                 </button>
                 <span>{user.role}</span>
                 <span>{formatAdminMoney(user.balance)}</span>

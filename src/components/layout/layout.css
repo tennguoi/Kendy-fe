@@ -936,3 +936,165 @@
     font-size: 24px;
   }
 }
+
+/* ==========================================================================
+   Sidebar Account Menu — Premium User Section & Dropdown Styles
+   ========================================================================== */
+.sidebar-account-container {
+  position: relative;
+  width: 100%;
+  margin-top: auto;
+}
+
+.sidebar-account-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.sidebar-account-chip:hover,
+.sidebar-account-chip.active {
+  background: #f3f5f8;
+  border-color: var(--kd-border);
+}
+
+.sidebar-account-chip .avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--kd-blue, #107cff) 0%, var(--kd-cyan, #00d8ff) 100%);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.sidebar-account-chip .account-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.sidebar-account-chip .account-details strong {
+  color: var(--kd-text);
+  font-size: 13.5px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-account-chip .account-details span {
+  color: var(--kd-muted);
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-account-chip .more-icon {
+  color: #64748b;
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar-account-chip:hover .more-icon {
+  opacity: 1;
+}
+
+/* Dropdown styling */
+.sidebar-account-dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #ffffff;
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+  padding: 6px;
+  animation: dropdownRise 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dropdownRise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sidebar-account-dropdown .dropdown-user-info {
+  padding: 10px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.sidebar-account-dropdown .dropdown-user-info strong {
+  font-size: 13.5px;
+  color: var(--kd-text);
+}
+
+.sidebar-account-dropdown .dropdown-user-info span {
+  font-size: 11px;
+  color: var(--kd-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-account-dropdown .dropdown-divider {
+  height: 1px;
+  background: #edf2f7;
+  margin: 4px 6px;
+}
+
+.sidebar-account-dropdown .dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-account-dropdown .dropdown-item:hover {
+  background: #f8fafc;
+  color: var(--kd-text);
+}
+
+.sidebar-account-dropdown .dropdown-item.logout {
+  color: #ef4444;
+}
+
+.sidebar-account-dropdown .dropdown-item.logout:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}

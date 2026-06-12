@@ -19,7 +19,7 @@ function ServiceEditor({
   const [activeTab, setActiveTab] = useState('basic') // 'basic' | 'pricing' | 'content' | 'seo' | 'orders'
 
   return (
-    <form className="admin-form service-editor admin-service-editor" onSubmit={onSubmitService}>
+    <form className="admin-form service-editor admin-service-editor product-editor" onSubmit={onSubmitService}>
       <div 
         className="admin-panel-head" 
         style={{ 

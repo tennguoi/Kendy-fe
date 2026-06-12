@@ -172,13 +172,20 @@
   }
 }
 
-/* Sticky forms */
+/* Sticky forms override for modal container */
 .admin-service-editor {
-  position: sticky;
-  top: 18px;
-  max-height: calc(100vh - 120px);
-  overflow: auto;
   animation: editorFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.kd-modal-dialog.service-editor-modal {
+  height: 80vh;
+}
+
+@media (min-width: 641px) {
+  .kd-modal-dialog.service-editor-modal {
+    height: 780px;
+    max-height: 85vh;
+  }
 }
 
 .service-editor-actions {

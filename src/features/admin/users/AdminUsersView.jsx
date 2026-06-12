@@ -250,11 +250,18 @@ function AdminUsersView({
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
-        <div>
-          <span className="eyebrow">Users</span>
-          <h2>Quản lý người dùng</h2>
+        <div className="admin-toolbar-info">
+          <div>
+            <span className="eyebrow">Users</span>
+            <h2>Quản lý người dùng</h2>
+          </div>
+          {users.length > 0 && (
+            <div className="admin-quick-stats">
+              <span className="admin-quick-stat"><strong>{users.length}</strong> tài khoản</span>
+            </div>
+          )}
         </div>
-        <button type="button" className="admin-icon-button" onClick={loadUsers} disabled={loading}>
+        <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadUsers} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
           <span>Tải lại</span>
         </button>

@@ -119,16 +119,7 @@ function Topbar({
             </div>
           )}
         </div>
-        {currentUser && (
-          <div className="account-chip">
-            <strong>{currentUser.name || 'Chưa đặt tên'}</strong>
-            <span>{currentUser.email}</span>
-          </div>
-        )}
-        <button type="button" className="logout-button" onClick={onLogout} title="Đăng xuất">
-          <LogOut size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Đăng xuất</span>
-        </button>
+
       </div>
     </header>
   )

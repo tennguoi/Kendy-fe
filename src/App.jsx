@@ -1018,8 +1018,6 @@ function App() {
         activeView={adminActiveView}
         currentUser={currentUser}
         displayBalance={displayBalance}
-        footerLabel="Admin"
-        footerTitle="Dịch vụ & bảng giá"
         items={adminNavItems}
         notificationCount={unreadNotifications}
         notifications={notifications}
