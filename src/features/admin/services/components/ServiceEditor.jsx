@@ -282,13 +282,46 @@ function ServiceEditor({
                 <span>Icon URL</span>
                 <input value={serviceForm.iconUrl} onChange={(event) => onUpdateServiceForm('iconUrl', event.target.value)} />
               </label>
+              <div className="wide admin-check-row">
+                <label style={{ cursor: 'pointer' }}>
+                  <input checked={serviceForm.inputSchemaEnabled} onChange={(event) => onUpdateServiceForm('inputSchemaEnabled', event.target.checked)} type="checkbox" />
+                  <span>Bật form đầu vào khi mua hàng</span>
+                </label>
+              </div>
               <label className="wide">
                 <span>Input schema (Cấu hình Form mua hàng - JSON)</span>
-                <textarea value={serviceForm.inputSchema} onChange={(event) => onUpdateServiceForm('inputSchema', event.target.value)} rows="6" placeholder='{"type":"object","required":["facebookUrl"],"properties":{...}}' style={{ fontFamily: 'monospace' }} />
+                <textarea
+                  disabled={!serviceForm.inputSchemaEnabled}
+                  value={serviceForm.inputSchema}
+                  onChange={(event) => onUpdateServiceForm('inputSchema', event.target.value)}
+                  rows="6"
+                  placeholder={serviceForm.inputSchemaEnabled ? '{"type":"object","required":["facebookUrl"],"properties":{...}}' : 'Đang tắt form đầu vào. Backend sẽ không validate inputData.'}
+                  style={{ fontFamily: 'monospace' }}
+                />
               </label>
               <div className="wide admin-action-row" style={{ display: 'flex', gap: '8px' }}>
-                <button type="button" className="admin-icon-button" style={{ height: '32px', minHeight: '32px', fontSize: '13px' }} onClick={() => onUpdateServiceForm('inputSchema', facebookSchema)}>Mẫu Facebook</button>
-                <button type="button" className="admin-icon-button" style={{ height: '32px', minHeight: '32px', fontSize: '13px' }} onClick={() => onUpdateServiceForm('inputSchema', '')}>Xóa schema</button>
+                <button
+                  type="button"
+                  className="admin-icon-button"
+                  style={{ height: '32px', minHeight: '32px', fontSize: '13px' }}
+                  onClick={() => {
+                    onUpdateServiceForm('inputSchemaEnabled', true)
+                    onUpdateServiceForm('inputSchema', facebookSchema)
+                  }}
+                >
+                  Bật mẫu Facebook
+                </button>
+                <button
+                  type="button"
+                  className="admin-icon-button"
+                  style={{ height: '32px', minHeight: '32px', fontSize: '13px' }}
+                  onClick={() => {
+                    onUpdateServiceForm('inputSchemaEnabled', false)
+                    onUpdateServiceForm('inputSchema', '')
+                  }}
+                >
+                  Tắt schema
+                </button>
               </div>
             </div>
           </section>

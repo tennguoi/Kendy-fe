@@ -1,8 +1,9 @@
-import { Ban, CircleCheck, CircleX, RefreshCw, RotateCcw, Save } from 'lucide-react'
+import { Ban, CircleCheck, CircleX, Download, RefreshCw, RotateCcw, Save } from 'lucide-react'
 import { useState } from 'react'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { safeOrderBlock } from '../orders.utils'
+import { printOrderInvoice } from '../../../../utils/invoicePrint'
 
 function OrderDetailPanel({
   activeOrder,
@@ -35,7 +36,13 @@ function OrderDetailPanel({
           <h3>{selectedOrder.orderCode}</h3>
           <span style={{ fontSize: '13px', display: 'block', color: 'var(--kd-muted)' }}>{selectedOrder.serviceName}</span>
         </div>
-        <AdminStatusBadge status={selectedOrder.status} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button type="button" className="admin-icon-button" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }} onClick={() => printOrderInvoice(selectedOrder)}>
+            <Download size={16} />
+            <span>Hóa đơn</span>
+          </button>
+          <AdminStatusBadge status={selectedOrder.status} />
+        </div>
       </div>
 
       {/* Internal Tabs for Mobile Optimization */}

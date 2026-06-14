@@ -1,5 +1,8 @@
 import { money } from '../../utils/currency'
+import { printOrderInvoice } from '../../utils/invoicePrint'
 import StatusBadge from '../status/StatusBadge'
+import UserOrderDetailModal from './UserOrderDetailModal'
+import { useState } from 'react'
 
 function formatDate(value) {
   if (!value) {
@@ -36,16 +39,28 @@ function downloadCsv(content, filename) {
 
 function OrderTable({
   compact = false,
+  currentUser,
+  detailLoading = false,
+  onLoadOrder,
   onCancelOrder,
   onReorder,
   orders = [],
 }) {
   const visibleOrders = compact ? orders.slice(0, 2) : orders
+  const [selectedOrder, setSelectedOrder] = useState(null)
 
   const handleExportCsv = () => {
     if (orders.length === 0) return
     const csv = rowsToCsv(orders)
     downloadCsv(csv, `don-hang-${new Date().toISOString().slice(0, 10)}.csv`)
+  }
+
+  const handleOpenDetail = async (order) => {
+    setSelectedOrder(order)
+    const detail = await onLoadOrder?.(order)
+    if (detail) {
+      setSelectedOrder(detail)
+    }
   }
 
   return (
@@ -78,6 +93,12 @@ function OrderTable({
                 <button type="button" onClick={() => onReorder?.(order)}>
                   Mua lại
                 </button>
+                <button type="button" onClick={() => handleOpenDetail(order)}>
+                  Chi tiết
+                </button>
+                <button type="button" onClick={() => printOrderInvoice(order, { customer: currentUser })}>
+                  Hóa đơn
+                </button>
               </span>
             )}
           </div>
@@ -86,6 +107,12 @@ function OrderTable({
           <p className="admin-empty-state">Chưa có đơn hàng.</p>
         )}
       </div>
+      <UserOrderDetailModal
+        currentUser={currentUser}
+        loading={detailLoading}
+        onClose={() => setSelectedOrder(null)}
+        order={selectedOrder}
+      />
     </section>
   )
 }

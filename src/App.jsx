@@ -11,140 +11,24 @@ import PublicHome from './features/public/PublicHome'
 import Loading from './components/Loading/Loading'
 import SupportWidget from './features/user/support/components/SupportWidget'
 import PaymentChoiceModal from './features/user/services/components/PaymentChoiceModal'
+import TransferPaymentModal from './features/user/services/components/TransferPaymentModal'
 import { useClipboard } from './hooks/useClipboard'
-import { adminApi } from './api/admin.api'
 import { authApi } from './api/auth.api'
 import { publicApi } from './api/public.api'
 import { userApi } from './api/user.api'
-import { toWebSocketUrl } from './lib/api'
-import { money } from './utils/currency'
 import { createIdempotencyKey } from './utils/idempotency'
 import { parseMoneyInput } from './utils/moneyInput'
-import { clearOAuthCallbackUrl, readOAuthCallback } from './utils/oauthCallback'
+import { clearOAuthCallbackUrl } from './utils/oauthCallback'
 import {
   clearStoredAccessToken,
   getStoredAccessToken,
   hasPersistentSession,
   persistAccessToken,
 } from './utils/session'
-
-const initialOAuthCallback = readOAuthCallback()
-const adminRoutePaths = [...adminNavItems.map((item) => item.path), '/admin/settings', '/admin/profile']
-const MIN_DEPOSIT_AMOUNT = 1000
-
-async function fetchUserBootstrap(token) {
-  const me = await userApi.getMe(token)
-  const results = await Promise.allSettled([
-    userApi.getWallet(token),
-    userApi.getDashboard(token),
-    userApi.getUnreadNotificationCount(token),
-  ])
-
-  return {
-    dashboardData: settledValue(results[1], null),
-    me,
-    notificationCount: settledValue(results[2], { unread: 0 }),
-    walletData: settledValue(results[0], null),
-  }
-}
-
-function settledValue(result, fallback) {
-  return result.status === 'fulfilled' ? result.value : fallback
-}
-
-function normalizeList(value) {
-  if (Array.isArray(value)) {
-    return value
-  }
-
-  if (!value || typeof value !== 'object') {
-    return []
-  }
-
-  const keys = ['content', 'items', 'data', 'records', 'results']
-  const list = keys.map((key) => value[key]).find(Array.isArray)
-  return list || []
-}
-
-function normalizePathname(pathname) {
-  const normalized = pathname.replace(/\/+$/, '')
-  return normalized || '/'
-}
-
-function resolveServiceId(service) {
-  return service?.id ?? service?.serviceId
-}
-
-function purchaseErrorMessage(error) {
-  const message = error?.message || ''
-  if (message === 'Insufficient wallet balance') {
-    return 'Số dư ví không đủ để mua dịch vụ này. Vui lòng nạp thêm tiền.'
-  }
-  if (message === 'Service requires consultation before purchase') {
-    return 'Dịch vụ này cần tư vấn trước khi mua. Vui lòng tạo ticket hỗ trợ.'
-  }
-  if (message === 'Service price must be greater than zero') {
-    return 'Dịch vụ chưa có giá hợp lệ để tạo đơn.'
-  }
-  return message || 'Không tạo được đơn. Kiểm tra số dư ví hoặc trạng thái dịch vụ.'
-}
-
-function notificationRoute(actionUrl) {
-  if (!actionUrl) {
-    return ''
-  }
-  if (actionUrl.startsWith('/orders')) {
-    return '/orders'
-  }
-  if (actionUrl.startsWith('/deposits')) {
-    return '/deposit'
-  }
-  if (actionUrl.startsWith('/tickets')) {
-    return '/support'
-  }
-  return actionUrl
-}
-
-function depositStatusNotice(depositCode, status) {
-  const normalizedStatus = String(status || '').toUpperCase()
-  if (normalizedStatus === 'COMPLETED') {
-    return {
-      message: `Yêu cầu nạp ${depositCode} đã hoàn tất. Số dư đã được cập nhật.`,
-      title: 'Đã nhận tiền',
-      type: 'success',
-    }
-  }
-
-  if (normalizedStatus === 'PENDING') {
-    return {
-      message: `Yêu cầu nạp ${depositCode} vẫn đang chờ thanh toán/webhook SePay.`,
-      title: 'Đang chờ',
-      type: 'info',
-    }
-  }
-
-  if (normalizedStatus === 'MANUAL_REVIEW') {
-    return {
-      message: `Yêu cầu nạp ${depositCode} cần admin kiểm tra thủ công.`,
-      title: 'Cần kiểm tra',
-      type: 'error',
-    }
-  }
-
-  if (normalizedStatus === 'CANCELLED') {
-    return {
-      message: `Yêu cầu nạp ${depositCode} đã bị hủy.`,
-      title: 'Đã hủy',
-      type: 'error',
-    }
-  }
-
-  return {
-    message: `Trạng thái ${depositCode}: ${normalizedStatus || 'không xác định'}.`,
-    title: 'Đã cập nhật',
-    type: 'info',
-  }
-}
+import { adminRoutePaths, depositStatusNotice, fetchUserBootstrap, initialOAuthCallback, initialOAuthNotice, MIN_DEPOSIT_AMOUNT, normalizeList, normalizePathname, purchaseErrorMessage, resolveAdminActiveView, resolveServiceId, resolveUserActiveView } from './utils/appHelpers'
+import { useAdminOverview } from './features/admin/hooks/useAdminOverview'
+import { useDashboardMetrics } from './features/user/overview/hooks/useDashboardMetrics'
+import { useNotifications } from './features/notifications/hooks/useNotifications'
 
 function App() {
   const location = useLocation()
@@ -162,6 +46,7 @@ function App() {
   const [wallet, setWallet] = useState(null)
   const [apiServices, setApiServices] = useState([])
   const [apiOrders, setApiOrders] = useState([])
+  const [detailOrderLoading, setDetailOrderLoading] = useState(false)
   const [apiTickets, setApiTickets] = useState([])
   const [apiDeposits, setApiDeposits] = useState([])
   const [depositFilters, setDepositFilters] = useState({})
@@ -170,9 +55,6 @@ function App() {
   const [recentServices, setRecentServices] = useState([])
   const [routeLoading, setRouteLoading] = useState(false)
   const [userDashboard, setUserDashboard] = useState(null)
-  const [unreadNotifications, setUnreadNotifications] = useState(0)
-  const [notifications, setNotifications] = useState([])
-  const [notificationsLoading, setNotificationsLoading] = useState(false)
   const [supportAttachments, setSupportAttachments] = useState([])
   const [supportFile, setSupportFile] = useState(null)
   const [supportLoading, setSupportLoading] = useState(false)
@@ -190,35 +72,8 @@ function App() {
     priority: 'NORMAL',
     subject: '',
   })
-  const [adminCategories, setAdminCategories] = useState([])
-  const [adminServices, setAdminServices] = useState([])
-  const [adminPricing, setAdminPricing] = useState([])
-  const [adminDashboard, setAdminDashboard] = useState(null)
-  const [adminRevenue, setAdminRevenue] = useState(null)
-  const [adminDashboardSummary, setAdminDashboardSummary] = useState(null)
-  const [adminRevenueChart, setAdminRevenueChart] = useState([])
-  const [adminServicePerformance, setAdminServicePerformance] = useState([])
-  const [adminUserActivity, setAdminUserActivity] = useState(null)
-  const [adminHealth, setAdminHealth] = useState(null)
-  const [adminAuditLogs, setAdminAuditLogs] = useState([])
-  const [adminBankTransactions, setAdminBankTransactions] = useState([])
-  const [adminOverviewError, setAdminOverviewError] = useState('')
   const [activeDeposit, setActiveDeposit] = useState(null)
-  const [apiNotice, setApiNotice] = useState(() => {
-    if (initialOAuthCallback?.oauthTwoFactorChallenge) {
-      return 'Mã xác thực đã được gửi tới email của bạn.'
-    }
-
-    if (initialOAuthCallback?.token) {
-      return 'Đăng nhập bằng tài khoản liên kết thành công.'
-    }
-
-    if (initialOAuthCallback?.error) {
-      return `Đăng nhập bằng tài khoản liên kết thất bại: ${initialOAuthCallback.error}`
-    }
-
-    return ''
-  })
+  const [apiNotice, setApiNotice] = useState(() => initialOAuthNotice())
   const { copied, copyText } = useClipboard()
   const { addToast } = useToast()
 
@@ -231,48 +86,41 @@ function App() {
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
   const normalizedPathname = normalizePathname(location.pathname)
   const isAdminPath = normalizedPathname === '/admin' || normalizedPathname.startsWith('/admin/')
-  const adminActiveView = normalizedPathname === '/admin/profile'
-    ? 'admin-profile'
-    : normalizedPathname === '/admin/settings'
-    ? 'admin-settings'
-    : adminNavItems.find((item) => item.path === normalizedPathname)?.id || 'admin-overview'
-  const userActiveView = (normalizedPathname === '/settings' || normalizedPathname === '/profile')
-    ? 'profile'
-    : navItems.find((item) => item.path === normalizedPathname)?.id || 'overview'
+  const adminActiveView = resolveAdminActiveView(normalizedPathname)
+  const userActiveView = resolveUserActiveView(normalizedPathname)
 
-  const metrics = useMemo(
-    () => [
-      {
-        detail: 'Khả dụng để mua dịch vụ',
-        label: 'Số dư ví',
-        progress: Math.min(100, Math.max(12, displayBalance / 1000000 * 100)),
-        tone: 'green',
-        value: money.format(displayBalance),
-      },
-      {
-        detail: 'Cần theo dõi tiến độ',
-        label: 'Đơn đang xử lý',
-        progress: Math.min(100, Math.max(12, Number(userDashboard?.processingOrders ?? orderList.filter((order) => order.status === 'PROCESSING').length) * 18)),
-        value: String(userDashboard?.processingOrders ?? orderList.filter((order) => order.status === 'PROCESSING').length).padStart(2, '0'),
-        tone: 'orange',
-      },
-      {
-        detail: 'Đang chờ phản hồi của bạn',
-        label: 'Ticket chờ phản hồi',
-        progress: Math.min(100, Math.max(12, Number(userDashboard?.pendingUserTickets ?? ticketList.filter((ticket) => ticket.status === 'PENDING_USER').length) * 22)),
-        tone: 'blue',
-        value: String(userDashboard?.pendingUserTickets ?? ticketList.filter((ticket) => ticket.status === 'PENDING_USER').length).padStart(2, '0'),
-      },
-      {
-        detail: 'Cập nhật mới từ hệ thống',
-        label: 'Thông báo mới',
-        progress: Math.min(100, Math.max(12, unreadNotifications * 16)),
-        tone: 'red',
-        value: String(unreadNotifications).padStart(2, '0'),
-      },
-    ],
-    [displayBalance, orderList, ticketList, unreadNotifications, userDashboard],
-  )
+  const notify = useCallback((message, type = 'info', title = '') => {
+    addToast({
+      message,
+      title: title || (type === 'error' ? 'Lỗi' : type === 'success' ? 'Thành công' : 'Thông báo'),
+      type,
+    })
+  }, [addToast])
+
+  const { adminOverview, resetAdminOverview } = useAdminOverview(accessToken, isAdmin)
+  const {
+    handleMarkNotificationRead,
+    loadNotifications,
+    notifications,
+    notificationsLoading,
+    resetNotifications,
+    setUnreadNotifications,
+    unreadNotifications,
+  } = useNotifications({
+    accessToken,
+    authInit,
+    currentUser,
+    navigate,
+    notify,
+  })
+
+  const metrics = useDashboardMetrics({
+    displayBalance,
+    orderList,
+    ticketList,
+    unreadNotifications,
+    userDashboard,
+  })
 
   const applyBootstrapData = useCallback(({
     dashboardData,
@@ -286,15 +134,7 @@ function App() {
     setUnreadNotifications(Number(notificationCount?.unread || 0))
     setApiNotice('')
     setAuthInit(true)
-  }, [])
-
-  const notify = useCallback((message, type = 'info', title = '') => {
-    addToast({
-      message,
-      title: title || (type === 'error' ? 'Lỗi' : type === 'success' ? 'Thành công' : 'Thông báo'),
-      type,
-    })
-  }, [addToast])
+  }, [setUnreadNotifications])
 
   const handleAdminNotice = useCallback((message) => {
     notify(message, 'success')
@@ -339,108 +179,6 @@ function App() {
         setAuthInit(true)
       })
   }, [accessToken, applyBootstrapData, notify, rememberSession])
-
-  useEffect(() => {
-    if (!accessToken || !isAdmin) {
-      return
-    }
-
-    let cancelled = false
-
-    Promise.allSettled([
-      adminApi.getDashboard(accessToken),
-      adminApi.getRevenueReport(accessToken),
-      adminApi.getServiceCategories(accessToken),
-      adminApi.getServices(accessToken),
-      adminApi.getPricing(accessToken),
-      adminApi.getDashboardSummary(accessToken),
-      adminApi.getRevenueChart(accessToken),
-      adminApi.getServicePerformance(accessToken),
-      adminApi.getUserActivity(accessToken),
-      adminApi.getHealth(accessToken),
-      adminApi.getAuditLogs({ limit: 12 }, accessToken),
-      adminApi.getBankTransactions(accessToken),
-    ]).then((results) => {
-      if (cancelled) return
-      setAdminDashboard(settledValue(results[0], null))
-      setAdminRevenue(settledValue(results[1], null))
-      setAdminCategories(settledValue(results[2], []))
-      setAdminServices(settledValue(results[3], []))
-      setAdminPricing(settledValue(results[4], []))
-      setAdminDashboardSummary(settledValue(results[5], null))
-      setAdminRevenueChart(settledValue(results[6], []))
-      setAdminServicePerformance(settledValue(results[7], []))
-      setAdminUserActivity(settledValue(results[8], null))
-      setAdminHealth(settledValue(results[9], null))
-      setAdminAuditLogs(normalizeList(settledValue(results[10], [])))
-      setAdminBankTransactions(normalizeList(settledValue(results[11], [])))
-      setAdminOverviewError(results.some((r) => r.status === 'rejected') ? 'Một phần dữ liệu tổng quan admin chưa tải được.' : '')
-    }).catch(() => {
-      if (!cancelled) setAdminOverviewError('Không tải được dữ liệu tổng quan admin. Kiểm tra quyền hoặc trạng thái backend.')
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [accessToken, isAdmin])
-
-  useEffect(() => {
-    if (!accessToken || !authInit || !currentUser) {
-      return undefined
-    }
-
-    let socket = null
-    let reconnectTimer = 0
-    let closedByClient = false
-
-    const connect = () => {
-      const wsUrl = `${toWebSocketUrl('/ws/notifications')}?token=${encodeURIComponent(accessToken)}`
-      socket = new WebSocket(wsUrl)
-
-      socket.onmessage = (event) => {
-        try {
-          const payload = JSON.parse(event.data)
-          if (payload.type !== 'notification.created') {
-            return
-          }
-
-          if (Number.isFinite(Number(payload.unreadCount))) {
-            setUnreadNotifications(Number(payload.unreadCount))
-          } else {
-            setUnreadNotifications((count) => count + 1)
-          }
-
-          if (payload.notification) {
-            setNotifications((items) => [
-              payload.notification,
-              ...normalizeList(items).filter((item) => item.id !== payload.notification.id),
-            ].slice(0, 20))
-            notify(payload.notification.message || payload.notification.title || 'Bạn có thông báo mới.', 'info', payload.notification.title || 'Thông báo mới')
-          }
-        } catch {
-          // Ignore malformed websocket messages from stale connections.
-        }
-      }
-
-      socket.onclose = () => {
-        if (!closedByClient) {
-          reconnectTimer = window.setTimeout(connect, 3000)
-        }
-      }
-
-      socket.onerror = () => {
-        socket?.close()
-      }
-    }
-
-    connect()
-
-    return () => {
-      closedByClient = true
-      window.clearTimeout(reconnectTimer)
-      socket?.close()
-    }
-  }, [accessToken, authInit, currentUser, notify])
 
   useEffect(() => {
     if (authInit && accessToken && currentUser && !isAdmin && isAdminPath) {
@@ -554,6 +292,7 @@ function App() {
     setCurrentUser(null)
     setWallet(null)
     setApiOrders([])
+    setDetailOrderLoading(false)
     setApiWalletTransactions([])
     setApiDeposits([])
     setApiTickets([])
@@ -561,27 +300,13 @@ function App() {
     setFavoriteServices([])
     setRecentServices([])
     setUserDashboard(null)
-    setUnreadNotifications(0)
-    setNotifications([])
-    setNotificationsLoading(false)
+    resetNotifications()
     setSupportAttachments([])
     setSupportFile(null)
     setSupportMessage('')
     setSupportSelectedCode(null)
     setActiveDeposit(null)
-    setAdminCategories([])
-    setAdminServices([])
-    setAdminPricing([])
-    setAdminDashboard(null)
-    setAdminRevenue(null)
-    setAdminDashboardSummary(null)
-    setAdminRevenueChart([])
-    setAdminServicePerformance([])
-    setAdminUserActivity(null)
-    setAdminHealth(null)
-    setAdminAuditLogs([])
-    setAdminBankTransactions([])
-    setAdminOverviewError('')
+    resetAdminOverview()
     setShowAuthScreen(false)
     const message = 'Đã đăng xuất.'
     setApiNotice(message)
@@ -625,49 +350,6 @@ function App() {
       notify(message, 'error')
     }
   }, [notify])
-
-  const loadNotifications = useCallback(async () => {
-    if (!accessToken) {
-      return
-    }
-
-    setNotificationsLoading(true)
-    try {
-      const [items, count] = await Promise.all([
-        userApi.getNotifications(accessToken),
-        userApi.getUnreadNotificationCount(accessToken),
-      ])
-      setNotifications(normalizeList(items))
-      setUnreadNotifications(Number(count?.unread || 0))
-    } catch (err) {
-      notify(err.message || 'Không tải được thông báo.', 'error')
-    } finally {
-      setNotificationsLoading(false)
-    }
-  }, [accessToken, notify])
-
-  const handleMarkNotificationRead = useCallback(async (notification) => {
-    if (!accessToken || !notification?.id) {
-      return
-    }
-
-    const route = notificationRoute(notification.actionUrl)
-    if (route) {
-      navigate(route)
-    }
-
-    if (notification.readAt) {
-      return
-    }
-
-    try {
-      const saved = await userApi.markNotificationRead(notification.id, accessToken)
-      setNotifications((items) => normalizeList(items).map((item) => (item.id === saved.id ? saved : item)))
-      setUnreadNotifications((count) => Math.max(0, count - 1))
-    } catch (err) {
-      notify(err.message || 'Không cập nhật được thông báo.', 'error')
-    }
-  }, [accessToken, navigate, notify])
 
   const handleDepositAmountChange = (value) => {
     setDepositAmount(parseMoneyInput(value))
@@ -827,7 +509,7 @@ function App() {
     }
   }
 
-  const handlePayWithWallet = async () => {
+  const handlePayWithWallet = async (formData = {}) => {
     if (!accessToken || !checkoutService) {
       return
     }
@@ -845,7 +527,7 @@ function App() {
     try {
       const order = await userApi.createOrder({
         serviceId,
-        inputData: JSON.stringify({ source: 'dashboard' }),
+        inputData: JSON.stringify({ ...formData, source: 'dashboard' }),
         idempotencyKey: createIdempotencyKey(serviceId),
       }, accessToken)
 
@@ -868,7 +550,7 @@ function App() {
     }
   }
 
-  const handlePayByTransfer = async () => {
+  const handlePayByTransfer = async (formData = {}) => {
     if (!accessToken || !checkoutService) {
       return
     }
@@ -886,7 +568,7 @@ function App() {
       const serviceId = resolveServiceId(checkoutService)
       const checkout = await userApi.createServiceCheckout({
         serviceId,
-        inputData: JSON.stringify({ source: 'checkout' }),
+        inputData: JSON.stringify({ ...formData, source: 'checkout' }),
         idempotencyKey: createIdempotencyKey(serviceId),
       }, accessToken)
       const deposit = checkout.deposit
@@ -895,7 +577,6 @@ function App() {
       setApiDeposits((items) => [deposit, ...normalizeList(items).filter((item) => item.depositCode !== deposit.depositCode)])
       setDepositAmount(String(servicePrice))
       setCheckoutService(null)
-      handleUserViewChange('deposit')
       notify(`Đã tạo mã thanh toán ${deposit.depositCode} cho ${checkout.serviceName || checkoutService.name}.`, 'success')
     } catch (err) {
       const message = err.message || 'Không tạo được mã thanh toán. Vui lòng thử lại.'
@@ -943,6 +624,30 @@ function App() {
       notify(`Đã hủy đơn ${saved.orderCode}.`, 'success')
     } catch (err) {
       notify(err.message || 'Không hủy được đơn hàng.', 'error')
+    }
+  }
+
+  const handleLoadOrderDetail = async (order) => {
+    const orderCode = order?.orderCode || order?.code
+    if (!accessToken || !orderCode) {
+      return order || null
+    }
+
+    setDetailOrderLoading(true)
+    try {
+      const detail = await userApi.getOrder(orderCode, accessToken)
+      setApiOrders((items) => {
+        const list = normalizeList(items)
+        return list.some((item) => (item.orderCode || item.code) === orderCode)
+          ? list.map((item) => ((item.orderCode || item.code) === orderCode ? detail : item))
+          : [detail, ...list]
+      })
+      return detail
+    } catch (err) {
+      notify(err.message || 'Không tải được chi tiết đơn hàng.', 'error')
+      return order || null
+    } finally {
+      setDetailOrderLoading(false)
     }
   }
 
@@ -1178,28 +883,28 @@ function App() {
         showBalance={false}
         subtitle="Quản trị nội dung public site"
       >
-        {adminActiveView === 'admin-overview' && adminOverviewError && (
-          <p className="admin-message error">{adminOverviewError}</p>
+        {adminActiveView === 'admin-overview' && adminOverview.error && (
+          <p className="admin-message error">{adminOverview.error}</p>
         )}
         <AdminRoutes
-          categories={adminCategories}
+          categories={adminOverview.categories}
           currentUser={currentUser}
-          dashboard={adminDashboard}
-          dashboardSummary={adminDashboardSummary}
+          dashboard={adminOverview.dashboard}
+          dashboardSummary={adminOverview.dashboardSummary}
           mountedPaths={adminRoutePaths}
           onCurrentUserChange={setCurrentUser}
           onSetError={handleAdminRouteError}
           onSetNotice={handleAdminNotice}
-          pricingItems={adminPricing}
-          revenue={adminRevenue}
-          revenueChart={adminRevenueChart}
-          health={adminHealth}
-          auditLogs={adminAuditLogs}
-          bankTransactions={adminBankTransactions}
-          servicePerformance={adminServicePerformance}
-          services={adminServices}
+          pricingItems={adminOverview.pricing}
+          revenue={adminOverview.revenue}
+          revenueChart={adminOverview.revenueChart}
+          health={adminOverview.health}
+          auditLogs={adminOverview.auditLogs}
+          bankTransactions={adminOverview.bankTransactions}
+          servicePerformance={adminOverview.servicePerformance}
+          services={adminOverview.services}
           token={accessToken}
-          userActivity={adminUserActivity}
+          userActivity={adminOverview.userActivity}
         />
       </DashboardShell>
     )
@@ -1230,6 +935,7 @@ function App() {
         apiWalletTransactions={apiWalletTransactions}
         copied={copied}
         currentUser={currentUser}
+        detailOrderLoading={detailOrderLoading}
         depositAmount={depositAmount}
         favoriteServices={favoriteServices}
         metrics={metrics}
@@ -1244,6 +950,7 @@ function App() {
         onDeleteAttachment={handleDeleteTicketAttachment}
         onFileChange={setSupportFile}
         onLoadTicket={loadTicketDetail}
+        onLoadOrder={handleLoadOrderDetail}
         onOpenServices={() => handleUserViewChange('services')}
         onPurchase={handlePurchase}
         onRefreshDeposit={handleRefreshDeposit}
@@ -1291,6 +998,20 @@ function App() {
         onPayWallet={handlePayWithWallet}
         service={checkoutService}
         submitting={checkoutSubmitting}
+      />
+      <TransferPaymentModal
+        activeCheckout={activeCheckout}
+        copied={copied}
+        onCopy={copyText}
+        onRefresh={handleRefreshDeposit}
+        onCancel={handleCancelDeposit}
+        onClose={() => {
+          const isCompleted = activeCheckout?.deposit?.status === 'COMPLETED' || activeCheckout?.status === 'COMPLETED'
+          setActiveCheckout(null)
+          if (isCompleted) {
+            handleUserViewChange('orders')
+          }
+        }}
       />
     </DashboardShell>
   )

@@ -270,25 +270,6 @@ function BankStack({ success, pending, failed }) {
   )
 }
 
-function HealthRow({ icon: Icon, label, note, status = 'healthy' }) {
-  const statusLabel = {
-    healthy: 'Online',
-    warning: 'Cần kiểm tra',
-    down: 'Offline',
-    unknown: 'Unknown',
-  }[status] || 'Unknown'
-  return (
-    <article className={`ov-health-row ${status}`}>
-      <Icon size={19} strokeWidth={2.2} />
-      <div>
-        <strong>{label}</strong>
-        <span>{note}</span>
-      </div>
-      <b>{statusLabel}</b>
-    </article>
-  )
-}
-
 function AdminOverviewView({
   auditLogs = [],
   bankTransactions = [],

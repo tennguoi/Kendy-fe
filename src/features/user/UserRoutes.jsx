@@ -26,6 +26,7 @@ function UserRoutes({
   copied,
   currentUser,
   depositAmount,
+  detailOrderLoading,
   favoriteServices,
   metrics,
   onAmountChange,
@@ -40,6 +41,7 @@ function UserRoutes({
   onFileChange,
   onFiltersChange,
   onLoadTicket,
+  onLoadOrder,
   onOpenServices,
   onPurchase,
   onRefreshDeposit,
@@ -122,7 +124,16 @@ function UserRoutes({
     },
     {
       path: '/orders',
-      element: <OrderTable orders={orderList} onCancelOrder={onCancelOrder} onReorder={onReorder} />,
+      element: (
+        <OrderTable
+          currentUser={currentUser}
+          detailLoading={detailOrderLoading}
+          onCancelOrder={onCancelOrder}
+          onLoadOrder={onLoadOrder}
+          onReorder={onReorder}
+          orders={orderList}
+        />
+      ),
     },
     {
       path: '/support',
