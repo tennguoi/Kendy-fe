@@ -20,7 +20,7 @@
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   padding: 10px 12px;
-  background: #ffffff;
+  background: var(--kd-card);
   color: var(--kd-text);
   font: inherit;
   outline: none;
@@ -83,7 +83,7 @@
   align-items: center;
   gap: 7px;
   padding: 0 14px;
-  background: #ffffff;
+  background: var(--kd-card);
   color: #64748b;
   font: inherit;
   font-size: 14px;
@@ -111,7 +111,7 @@
   padding: 16px;
   border: 1px solid #edf1f5;
   border-radius: var(--kd-radius);
-  background: #ffffff;
+  background: var(--kd-card);
 }
 
 .finance-tool-head {
@@ -171,7 +171,7 @@
     margin-bottom: 12px !important;
     border: 1px solid var(--kd-border) !important;
     border-radius: 12px !important;
-    background: #ffffff !important;
+    background: var(--kd-card) !important;
     min-width: 0 !important;
     width: 100% !important;
     box-sizing: border-box !important;

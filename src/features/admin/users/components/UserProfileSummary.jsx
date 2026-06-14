@@ -1,11 +1,44 @@
+import { useState } from 'react'
 import { AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 
+function getUserAvatarUrl(user) {
+  return user?.avatarUrl || user?.avatar || user?.picture || user?.imageUrl || user?.photoUrl || ''
+}
+
+function getUserInitial(user) {
+  return (user?.name || user?.email || 'U').charAt(0).toUpperCase()
+}
+
+function UserProfileAvatar({ user }) {
+  const [failed, setFailed] = useState(false)
+  const avatarUrl = getUserAvatarUrl(user)
+
+  if (avatarUrl && !failed) {
+    return (
+      <img
+        className="admin-user-avatar image large"
+        src={avatarUrl}
+        alt=""
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+      />
+    )
+  }
+
+  return <div className="admin-user-avatar large">{getUserInitial(user)}</div>
+}
+
 function UserProfileSummary({ detail, selectedUser }) {
+  const profileUser = detail?.user || selectedUser
+
   return (
     <>
       <div className="admin-panel-head">
-        <h3>{selectedUser ? selectedUser.name || selectedUser.email : 'Chọn user'}</h3>
+        <div className="admin-user-profile-title">
+          <UserProfileAvatar user={profileUser} />
+          <h3>{selectedUser ? selectedUser.name || selectedUser.email : 'Chọn user'}</h3>
+        </div>
         {selectedUser && <AdminStatusBadge status={selectedUser.status} />}
       </div>
 

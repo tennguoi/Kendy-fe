@@ -57,7 +57,7 @@
 }
 
 .qr-box.real-qr {
-  background: #ffffff;
+  background: var(--kd-card);
   width: 360px;
   max-width: 100%;
   flex-shrink: 0;
@@ -77,7 +77,7 @@
 .qr-mark {
   max-width: 84%;
   padding: 8px;
-  background: #ffffff;
+  background: var(--kd-card);
   border: 1px solid var(--kd-border);
   border-radius: 10px;
   font-size: 12px;
@@ -127,8 +127,8 @@
 button.deposit-row {
   width: 100%;
   border-width: 0 0 1px;
-  border-color: #edf2f7;
-  background: #ffffff;
+  border-color: var(--kd-border);
+  background: var(--kd-card);
   color: var(--kd-text);
   text-align: left;
   cursor: pointer;
@@ -155,7 +155,7 @@ button.deposit-row:hover {
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   padding: 10px 12px;
-  background: #ffffff;
+  background: var(--kd-card);
   color: var(--kd-text);
   font: inherit;
   outline: none;
@@ -186,4 +186,24 @@ button.deposit-row:hover {
   .info-line span {
     grid-column: 1 / -1;
   }
+}
+
+html.dark .info-line,
+html.dark .deposit-row {
+  border-bottom-color: var(--kd-border);
+}
+
+html.dark button.deposit-row:hover {
+  background: var(--kd-hover);
+}
+
+html.dark .deposit-filters input,
+html.dark .deposit-filters select {
+  background: var(--kd-bg);
+  border-color: var(--kd-border);
+  color: var(--kd-text);
+}
+
+html.dark .qr-box.real-qr {
+  background: #ffffff;
 }

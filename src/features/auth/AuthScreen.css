@@ -97,7 +97,7 @@
   height: 64px;
   object-fit: contain;
   border-radius: 18px;
-  background: #ffffff;
+  background: var(--kd-card);
   padding: 8px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
   transition: transform 300ms ease;
@@ -213,25 +213,31 @@
   min-width: 0;
   min-height: 100svh;
   box-sizing: border-box;
-  padding: 40px;
+  padding: 96px 40px 40px;
   display: grid;
   place-items: center;
   overflow-y: auto;
 }
 
-.auth-home-link {
+.auth-public-actions {
   position: absolute;
   top: 28px;
   right: 40px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-home-link,
+.auth-theme-toggle {
   min-height: 42px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 13px;
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   color: var(--kd-text);
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   font: inherit;
   font-weight: 800;
@@ -239,13 +245,26 @@
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
-.auth-home-link:hover {
+.auth-home-link {
+  gap: 8px;
+  padding: 0 14px;
+}
+
+.auth-theme-toggle {
+  width: 42px;
+  justify-content: center;
+  padding: 0;
+}
+
+.auth-home-link:hover,
+.auth-theme-toggle:hover {
   border-color: rgba(20, 124, 255, 0.35);
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
   transform: translateY(-1px);
 }
 
-.auth-home-link:focus-visible {
+.auth-home-link:focus-visible,
+.auth-theme-toggle:focus-visible {
   outline: 3px solid rgba(24, 196, 199, 0.28);
   outline-offset: 3px;
 }
@@ -320,8 +339,9 @@
   padding: 0 12px;
   border: 1px solid var(--kd-border);
   border-radius: 14px;
-  background: #ffffff;
+  background: var(--kd-card);
   color: var(--kd-muted);
+  overflow: hidden;
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
@@ -334,12 +354,22 @@
 .auth-input input {
   width: 100%;
   min-width: 0;
+  height: 100%;
   border: 0;
   outline: 0;
   padding: 12px 0;
   background: transparent;
   color: var(--kd-text);
   font: inherit;
+}
+
+.auth-input input:-webkit-autofill,
+.auth-input input:-webkit-autofill:hover,
+.auth-input input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--kd-text);
+  caret-color: var(--kd-text);
+  box-shadow: 0 0 0 1000px var(--kd-card) inset;
+  transition: background-color 9999s ease-out;
 }
 
 .password-toggle,
@@ -544,7 +574,7 @@
   border: 1px solid var(--kd-border);
   border-radius: 14px;
   color: var(--kd-text);
-  background: #ffffff;
+  background: var(--kd-card);
   font: inherit;
   font-weight: 800;
   cursor: pointer;
@@ -558,17 +588,16 @@
 }
 
 .oauth-button.github {
-  color: #111827;
+  color: var(--kd-text);
 }
 
 .oauth-button.google .oauth-icon {
-  color: #147cff;
-  background: #eff6ff;
+  background: #ffffff;
 }
 
 .oauth-button.github .oauth-icon {
-  color: #ffffff;
-  background: #111827;
+  color: var(--kd-text);
+  background: transparent;
 }
 
 .oauth-icon {
@@ -580,6 +609,14 @@
   border-radius: 999px;
   font-size: 15px;
   font-weight: 900;
+}
+
+html.dark .oauth-button.google .oauth-icon {
+  background: #ffffff;
+}
+
+html.dark .oauth-button.github .oauth-icon {
+  color: #ffffff;
 }
 
 .auth-switch {
@@ -630,7 +667,7 @@
     place-items: center; /* Center the login card */
   }
 
-  .auth-home-link {
+  .auth-public-actions {
     top: 22px;
     right: 28px;
   }
@@ -646,9 +683,18 @@
     padding-top: 74px;
   }
 
-  .auth-home-link {
+  .auth-public-actions {
     top: 18px;
     right: 18px;
+    left: 18px;
+    justify-content: flex-end;
+  }
+
+  .auth-home-link span {
+    max-width: 88px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .auth-logo-lockup img {

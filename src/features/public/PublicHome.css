@@ -90,7 +90,7 @@
 .public-btn.ghost {
   border: 1px solid var(--kd-border);
   color: var(--kd-text);
-  background: #ffffff;
+  background: var(--kd-card);
 }
 
 .public-btn.ghost:hover {

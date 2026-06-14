@@ -66,7 +66,7 @@
   padding: 22px;
   border: 1px solid var(--kd-border);
   border-radius: var(--kd-radius);
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: var(--kd-soft-shadow);
 }
 
@@ -76,7 +76,7 @@
   border-radius: 999px;
   object-fit: cover;
   border: 1px solid var(--kd-border);
-  background: #ffffff;
+  background: var(--kd-card);
 }
 
 .profile-hero-avatar.fallback {

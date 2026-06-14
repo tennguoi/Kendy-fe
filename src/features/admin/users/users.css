@@ -5,7 +5,7 @@
 
 .admin-data-row.users {
   grid-template-columns: minmax(240px, 1.25fr) 110px 130px 130px minmax(54px, auto);
-  background: #ffffff;
+  background: var(--kd-card);
 }
 
 .admin-data-row.users:hover,
@@ -41,7 +41,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: var(--kd-card);
   color: #475467;
   cursor: pointer;
 }
@@ -64,7 +64,7 @@
   padding: 6px;
   border: 1px solid var(--kd-border);
   border-radius: var(--kd-radius);
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: var(--kd-shadow);
   transform: translateY(-50%);
   white-space: nowrap;
@@ -109,7 +109,7 @@
   margin: 0 0 10px;
   border: 1px solid var(--kd-border);
   border-radius: var(--kd-radius);
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
@@ -163,7 +163,7 @@
   align-items: center;
   gap: 7px;
   padding: 0 14px;
-  background: #ffffff;
+  background: var(--kd-card);
   color: #64748b;
   font: inherit;
   font-size: 14px;
@@ -199,7 +199,7 @@
   padding: 16px;
   border: 1px solid #edf1f5;
   border-radius: var(--kd-radius);
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 
@@ -254,7 +254,7 @@
 }
 
 .user-tool-section label > span:first-child {
-  color: #111827;
+  color: var(--kd-text);
   font-size: 13px;
 }
 
@@ -434,4 +434,53 @@
     margin: 0;
     padding: 0;
   }
+}
+
+/* Dark Mode Overrides */
+html.dark .admin-data-row.users:hover,
+html.dark .admin-data-row.users.selected {
+  background: var(--kd-hover);
+}
+html.dark .admin-row-menu-button:hover,
+html.dark .admin-row-menu-button[aria-expanded='true'] {
+  border-color: var(--kd-blue);
+  background: rgba(37, 99, 235, 0.15);
+  color: #93c5fd;
+}
+html.dark .admin-row-menu-button,
+html.dark .user-tool-tabs button,
+html.dark .user-tool-section {
+  background: var(--kd-card);
+  border-color: var(--kd-border);
+  color: var(--kd-muted);
+}
+html.dark .admin-user-row-wrap {
+  border-bottom-color: var(--kd-border);
+}
+html.dark .admin-row-toolbar {
+  background: var(--kd-card);
+  border-color: var(--kd-border);
+}
+html.dark .admin-row-toolbar button {
+  background: rgba(37, 99, 235, 0.16);
+  border-color: rgba(96, 165, 250, 0.34);
+  color: #93c5fd;
+}
+html.dark .admin-row-toolbar button.danger {
+  background: rgba(220, 38, 38, 0.16);
+  border-color: rgba(248, 113, 113, 0.34);
+  color: #fca5a5;
+}
+html.dark .user-tool-tabs button:hover {
+  background: var(--kd-hover);
+  color: var(--kd-text);
+}
+html.dark .user-tool-tabs button.active {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(96, 165, 250, 0.34);
+  color: #93c5fd;
+}
+html.dark .user-password-control button:hover {
+  background: rgba(37, 99, 235, 0.15);
+  color: #93c5fd;
 }

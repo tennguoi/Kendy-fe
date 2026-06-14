@@ -6,6 +6,34 @@ import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminMoney } from '../../adminFormat'
 import UserAdminTools from './UserAdminTools'
 
+function getUserAvatarUrl(user) {
+  return user?.avatarUrl || user?.avatar || user?.picture || user?.imageUrl || user?.photoUrl || ''
+}
+
+function getUserInitial(user) {
+  return (user?.name || user?.email || 'U').charAt(0).toUpperCase()
+}
+
+function AdminUserAvatar({ user }) {
+  const [failed, setFailed] = useState(false)
+  const avatarUrl = getUserAvatarUrl(user)
+
+  if (avatarUrl && !failed) {
+    return (
+      <img
+        className="admin-user-avatar image"
+        src={avatarUrl}
+        alt=""
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+      />
+    )
+  }
+
+  return <div className="admin-user-avatar">{getUserInitial(user)}</div>
+}
+
 function UserListPanel({
   adjustForm,
   bulkStatusForm,
@@ -82,7 +110,7 @@ function UserListPanel({
               >
                 <button type="button" className="admin-row-user" onClick={() => handleSelectUser(user.id)}>
                   <div className="admin-row-user-info">
-                    <div className="admin-user-avatar">{(user.name || user.email || 'U').charAt(0).toUpperCase()}</div>
+                    <AdminUserAvatar user={user} />
                     <div className="admin-row-user-text">
                       <strong>{user.name || 'Chưa đặt tên'}</strong>
                       <small>{user.email}</small>

@@ -18,8 +18,9 @@
   border: 1px solid var(--kd-border);
   border-radius: var(--kd-radius);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.94)),
-    #ffffff;
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 32%),
+    radial-gradient(circle at top right, rgba(8, 145, 178, 0.16), transparent 32%),
+    var(--kd-card);
   box-shadow: var(--kd-soft-shadow);
 }
 

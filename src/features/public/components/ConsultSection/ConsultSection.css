@@ -12,7 +12,7 @@
   box-sizing: border-box;
   border: 1px solid var(--kd-border);
   border-radius: 26px;
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: var(--kd-soft-shadow);
   overflow: hidden;
 }
@@ -77,7 +77,7 @@
   border-radius: 13px;
   outline: 0;
   color: var(--kd-text);
-  background: #f8fafc;
+  background: var(--kd-bg);
   font: inherit;
   font-weight: 650;
 }
@@ -86,7 +86,7 @@
 .consult-form select:focus,
 .consult-form textarea:focus {
   border-color: rgba(37, 99, 235, 0.45);
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
 }
 

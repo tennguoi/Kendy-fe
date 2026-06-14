@@ -14,7 +14,7 @@
   padding: 12px;
   border: 1px solid var(--kd-border);
   border-radius: var(--kd-radius);
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: var(--kd-soft-shadow);
 }
 
@@ -81,7 +81,7 @@
   z-index: 100;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--kd-card);
   border: 1px solid var(--kd-border);
   border-radius: var(--kd-radius);
   box-shadow: var(--kd-shadow);
@@ -228,9 +228,9 @@
   display: grid;
   gap: 12px;
   padding: 14px;
-  border: 1px solid #edf2f7;
+  border: 1px solid var(--kd-border);
   border-radius: var(--kd-radius);
-  background: #fbfdff;
+  background: var(--kd-card);
   animation: sectionFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -267,6 +267,49 @@
 
 .admin-service-editor .admin-panel-subsection {
   margin-top: 12px;
+}
+
+html.dark .service-editor-section {
+  border-color: var(--kd-border);
+  background: #1e293b;
+}
+
+html.dark .service-section-title h4,
+html.dark .admin-service-editor .admin-form-grid label > span,
+html.dark .admin-service-editor .admin-check-row span {
+  color: var(--kd-text);
+}
+
+html.dark .service-section-title span {
+  color: var(--kd-muted);
+}
+
+html.dark .admin-service-editor input,
+html.dark .admin-service-editor select,
+html.dark .admin-service-editor textarea {
+  border-color: #334155;
+  background: #0f172a;
+  color: var(--kd-text);
+}
+
+html.dark .admin-service-editor input::placeholder,
+html.dark .admin-service-editor textarea::placeholder {
+  color: #64748b;
+}
+
+html.dark .admin-service-editor .admin-check-row label {
+  border-color: #334155;
+  background: #182235;
+}
+
+html.dark .admin-service-editor .admin-close-button {
+  background: #182235 !important;
+  color: var(--kd-muted) !important;
+}
+
+html.dark .admin-service-editor .admin-close-button:hover {
+  background: #253247 !important;
+  color: var(--kd-text) !important;
 }
 
 @media (max-width: 1280px) {

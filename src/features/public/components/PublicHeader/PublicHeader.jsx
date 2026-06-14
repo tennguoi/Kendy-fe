@@ -1,9 +1,11 @@
-import { ArrowRight, LogIn, Menu, X } from 'lucide-react'
+import { ArrowRight, LogIn, Menu, Moon, Sun, X } from 'lucide-react'
 import { useState } from 'react'
+import { useTheme } from '../../../../contexts/ThemeContext'
 import './PublicHeader.css'
 
 function PublicHeader({ logo, navItems, onLoginClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { theme, toggleTheme } = useTheme()
 
   const closeMenu = () => setIsMenuOpen(false)
   const openAuth = () => {
@@ -30,6 +32,15 @@ function PublicHeader({ logo, navItems, onLoginClick }) {
       </nav>
 
       <div className="public-header-actions">
+        <button
+          type="button"
+          className="public-theme-toggle"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
+          aria-label={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
+        >
+          {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
+        </button>
         <button type="button" className="public-btn ghost" onClick={openAuth}>
           <LogIn size={17} strokeWidth={2} aria-hidden="true" />
           <span>Đăng nhập</span>

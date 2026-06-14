@@ -85,7 +85,7 @@
   place-items: center;
   border-radius: 18px;
   color: #0f172a;
-  background: #ffffff;
+  background: var(--kd-card);
 }
 
 .deposit-lines {

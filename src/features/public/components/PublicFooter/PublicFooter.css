@@ -17,7 +17,7 @@
   border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 16px;
   object-fit: contain;
-  background: #ffffff;
+  background: var(--kd-card);
 }
 
 .footer-brand strong {

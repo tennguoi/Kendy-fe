@@ -20,8 +20,8 @@
 button.admin-pricing-row {
   width: 100%;
   border-width: 0 0 1px;
-  border-color: #edf2f7;
-  background: #ffffff;
+  border-color: var(--kd-border);
+  background: var(--kd-card);
   color: var(--kd-text);
   text-align: left;
   cursor: pointer;
@@ -32,7 +32,7 @@ button.admin-pricing-row {
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
-  background: #f8fafc;
+  background: var(--kd-bg);
   border-radius: 12px 12px 0 0;
 }
 
@@ -84,7 +84,7 @@ button.admin-pricing-row.selected {
     margin-bottom: 12px !important;
     border: 1px solid var(--kd-border) !important;
     border-radius: 12px !important;
-    background: #ffffff !important;
+    background: var(--kd-card) !important;
     box-shadow: none !important;
     min-width: 0 !important;
     width: 100% !important;
@@ -107,4 +107,13 @@ button.admin-pricing-row.selected {
     margin-bottom: 4px;
     font-weight: 700;
   }
+}
+
+/* Dark Mode Overrides */
+html.dark button.admin-pricing-row:hover,
+html.dark button.admin-pricing-row.selected {
+  background: var(--kd-hover);
+}
+html.dark .admin-pricing-row > *:first-child {
+  border-color: var(--kd-border);
 }

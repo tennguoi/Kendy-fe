@@ -13,7 +13,7 @@
   padding: 22px;
   border: 1px solid var(--kd-border);
   border-radius: 22px;
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: var(--kd-soft-shadow);
 }
 
@@ -61,7 +61,7 @@
   padding: 10px 12px;
   border-radius: 12px;
   color: var(--kd-text);
-  background: #f8fafc;
+  background: var(--kd-bg);
   font-size: 14px;
   font-weight: 750;
   overflow-wrap: anywhere;

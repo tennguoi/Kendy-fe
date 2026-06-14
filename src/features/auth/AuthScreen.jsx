@@ -9,14 +9,17 @@ import {
   LockKeyhole,
   LogIn,
   Mail,
+  Moon,
   Phone,
   Send,
   ShieldCheck,
+  Sun,
   UserRound,
 } from 'lucide-react'
 import heroImg from '../../assets/hero.png'
 import { authHighlights } from './authHighlights'
 import { useToast } from '../../components/Toast'
+import { useTheme } from '../../contexts/ThemeContext'
 import { toApiUrl } from '../../lib/api'
 import { authApi } from '../../api/auth.api'
 import './AuthScreen.css'
@@ -25,6 +28,37 @@ const defaultOAuthProviders = [
   { id: 'google', name: 'Google', authorizationUrl: '/oauth2/authorization/google' },
   { id: 'github', name: 'GitHub', authorizationUrl: '/oauth2/authorization/github' },
 ]
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"
+      />
+    </svg>
+  )
+}
+
+function GithubIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
+      <path d="M12 1.5C6.2 1.5 1.5 6.2 1.5 12c0 4.64 3.01 8.58 7.18 9.97.52.1.72-.23.72-.5v-1.78c-2.92.64-3.54-1.25-3.54-1.25-.48-1.21-1.17-1.53-1.17-1.53-.95-.65.07-.64.07-.64 1.05.07 1.61 1.08 1.61 1.08.94 1.6 2.46 1.14 3.06.87.09-.68.36-1.14.66-1.4-2.33-.27-4.78-1.17-4.78-5.19 0-1.15.41-2.08 1.08-2.82-.11-.27-.47-1.34.1-2.78 0 0 .88-.28 2.89 1.08A9.97 9.97 0 0 1 12 6.76c.89 0 1.78.12 2.62.35 2-1.36 2.88-1.08 2.88-1.08.58 1.44.22 2.51.11 2.78.67.74 1.08 1.67 1.08 2.82 0 4.04-2.45 4.92-4.79 5.18.38.33.72.97.72 1.96v2.9c0 .28.19.61.73.5A10.51 10.51 0 0 0 22.5 12c0-5.8-4.7-10.5-10.5-10.5z" />
+    </svg>
+  )
+}
 
 function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
   const [mode, setMode] = useState('login')
@@ -57,6 +91,7 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
   const [verifyEmail, setVerifyEmail] = useState('')
   const [verifyToken, setVerifyToken] = useState('')
   const { addToast } = useToast()
+  const { theme, toggleTheme } = useTheme()
 
   useEffect(() => {
     let isMounted = true
@@ -320,12 +355,23 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
       </aside>
 
       <main className="auth-form-panel">
-        {onBack && (
-          <button type="button" className="auth-home-link" onClick={onBack}>
-            <ArrowLeft size={17} strokeWidth={2} aria-hidden="true" />
-            <span>Trang chủ</span>
+        <div className="auth-public-actions">
+          <button
+            type="button"
+            className="auth-theme-toggle"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
+            aria-label={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
+          >
+            {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
           </button>
-        )}
+          {onBack && (
+            <button type="button" className="auth-home-link" onClick={onBack}>
+              <ArrowLeft size={17} strokeWidth={2} aria-hidden="true" />
+              <span>Trang chủ</span>
+            </button>
+          )}
+        </div>
 
         <form key={mode + (twoFactorStep ? '-2fa' : '')} className="auth-card" onSubmit={submit}>
           <div className="auth-card-head">
@@ -620,7 +666,7 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
                     onClick={() => startOAuthLogin(provider)}
                   >
                     <span className="oauth-icon" aria-hidden="true">
-                      {provider.id === 'github' ? 'GH' : 'G'}
+                      {provider.id === 'github' ? <GithubIcon /> : <GoogleIcon />}
                     </span>
                     <span>{provider.name}</span>
                   </button>

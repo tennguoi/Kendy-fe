@@ -1,5 +1,6 @@
-import { Bell, Menu, Search, User } from 'lucide-react'
+import { Bell, Menu, Search, User, Sun, Moon } from 'lucide-react'
 import { useState } from 'react'
+import { useTheme } from '../../contexts/ThemeContext'
 import { money } from '../../utils/currency'
 
 function formatNotificationTime(value) {
@@ -33,6 +34,7 @@ function Topbar({
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const { theme, toggleTheme } = useTheme()
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
   const avatarUrl = currentUser?.avatarUrl || currentUser?.avatar || currentUser?.picture || currentUser?.imageUrl || currentUser?.photoUrl
   const userInitial = (currentUser?.name || currentUser?.email || 'U').charAt(0).toUpperCase()
@@ -84,6 +86,15 @@ function Topbar({
           </button>
         )}
         <div className="notification-menu">
+          <button
+            type="button"
+            className="notification-bell"
+            title="Đổi giao diện"
+            onClick={toggleTheme}
+            style={{ marginRight: 10 }}
+          >
+            {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
+          </button>
           <button
             type="button"
             className="notification-bell"

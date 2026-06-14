@@ -15,7 +15,7 @@
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   padding: 11px 12px;
-  background: #ffffff;
+  background: var(--kd-card);
   color: var(--kd-text);
   font: inherit;
 }
@@ -67,7 +67,7 @@
 .bank-panel,
 .ticket-form,
 .ticket-list {
-  background: #ffffff;
+  background: var(--kd-card);
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   box-shadow: var(--kd-soft-shadow);
@@ -426,7 +426,7 @@
 .table-head,
 .admin-pricing-row.head,
 .admin-data-row.head {
-  background: #f8fafc;
+  background: var(--kd-bg);
   color: #475569;
 }
 
@@ -532,7 +532,7 @@
     margin-bottom: 12px !important;
     border: 1px solid var(--kd-border) !important;
     border-radius: 16px !important;
-    background: #ffffff !important;
+    background: var(--kd-card) !important;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
     min-width: 0 !important;
     width: 100% !important;
@@ -825,7 +825,7 @@
 .admin-primary-button,
 .admin-form button[type='submit'],
 .quick-service-card > button {
-  border-color: #111827;
+  border-color: var(--kd-text);
   background: #111827;
   color: #ffffff;
 }
@@ -882,7 +882,7 @@
 .admin-data-row.head,
 .admin-pricing-row.head,
 .deposit-row.head {
-  background: #f8fafc;
+  background: var(--kd-bg);
   color: #667085;
   font-size: 12px;
   letter-spacing: 0;
@@ -941,4 +941,86 @@
   .service-grid {
     padding: 12px;
   }
+}
+
+/* Dark mode consistency fixes for shared dashboard surfaces */
+html.dark .metric,
+html.dark .service-card,
+html.dark .quick-service-card,
+html.dark .ledger-panel,
+html.dark .table-panel,
+html.dark .deposit-form,
+html.dark .bank-panel,
+html.dark .ticket-form,
+html.dark .ticket-list,
+html.dark .admin-metric,
+html.dark .admin-empty-panel,
+html.dark .admin-panel,
+html.dark .admin-form.service-editor,
+html.dark .admin-form.pricing-editor,
+html.dark .quick-services-panel,
+html.dark .services-catalog {
+  background: var(--kd-card);
+  border-color: var(--kd-border);
+}
+
+html.dark .table-row,
+html.dark .admin-data-row,
+html.dark .admin-pricing-row,
+html.dark .deposit-row,
+html.dark .ledger-row,
+html.dark .info-line {
+  border-bottom-color: var(--kd-border);
+}
+
+html.dark .table-head,
+html.dark .admin-data-row.head,
+html.dark .admin-pricing-row.head,
+html.dark .deposit-row.head {
+  background: var(--kd-bg);
+  color: var(--kd-muted);
+}
+
+html.dark .section-head button,
+html.dark .info-line button,
+html.dark .quick-amounts button,
+html.dark .service-card button,
+html.dark .quick-service-card button,
+html.dark .table-actions button,
+html.dark .admin-icon-button,
+html.dark .admin-panel-head button {
+  background: rgba(37, 99, 235, 0.16);
+  border-color: rgba(96, 165, 250, 0.34);
+  color: #93c5fd;
+}
+
+html.dark .section-head button:hover,
+html.dark .info-line button:hover,
+html.dark .quick-amounts button:hover,
+html.dark .service-card button:hover,
+html.dark .quick-service-card button:hover,
+html.dark .table-actions button:hover,
+html.dark .admin-icon-button:hover,
+html.dark .admin-panel-head button:hover {
+  background: rgba(37, 99, 235, 0.24);
+}
+
+html.dark .dashboard-input,
+html.dark .deposit-form input,
+html.dark .ticket-form input,
+html.dark .ticket-form textarea,
+html.dark .admin-form input,
+html.dark .admin-form select,
+html.dark .admin-form textarea,
+html.dark .admin-filters input,
+html.dark .admin-filters select {
+  background: var(--kd-bg);
+  border-color: var(--kd-border);
+  color: var(--kd-text);
+}
+
+html.dark .quick-service-card p,
+html.dark .admin-empty-panel p,
+html.dark .admin-empty-state small {
+  color: var(--kd-muted);
 }

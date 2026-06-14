@@ -17,7 +17,7 @@
   padding: 18px;
   border: 1px solid var(--kd-border);
   border-radius: 18px;
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: var(--kd-soft-shadow);
 }
 

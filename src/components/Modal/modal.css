@@ -20,7 +20,7 @@ body.kd-modal-open {
 }
 
 .kd-modal-dialog {
-  background: #ffffff;
+  background: var(--kd-card);
   border-radius: 20px;
   box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
   border: 1px solid var(--kd-border, #edf2f7);
@@ -118,4 +118,33 @@ body.kd-modal-open {
   .kd-modal-body {
     padding: 18px;
   }
+}
+
+html.dark .kd-modal-overlay {
+  background: rgba(2, 6, 23, 0.62);
+}
+
+html.dark .kd-modal-dialog {
+  background: var(--kd-card);
+  border-color: var(--kd-border);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
+}
+
+html.dark .kd-modal-header {
+  background: var(--kd-bg);
+  border-bottom-color: var(--kd-border);
+}
+
+html.dark .kd-modal-header h3 {
+  color: var(--kd-text);
+}
+
+html.dark .kd-modal-close-btn {
+  color: var(--kd-muted);
+  background: var(--kd-card);
+}
+
+html.dark .kd-modal-close-btn:hover {
+  background: var(--kd-hover);
+  color: var(--kd-text);
 }

@@ -28,7 +28,7 @@
   border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 14px;
   object-fit: contain;
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
@@ -75,6 +75,26 @@
   gap: 10px;
 }
 
+.public-theme-toggle {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  color: var(--kd-text);
+  background: var(--kd-card);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.public-theme-toggle:hover {
+  border-color: rgba(20, 124, 255, 0.35);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
+}
+
 .mobile-menu-button {
   display: none;
   width: 44px;
@@ -83,7 +103,7 @@
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   color: var(--kd-text);
-  background: #ffffff;
+  background: var(--kd-card);
   cursor: pointer;
 }
 
@@ -98,7 +118,7 @@
   padding: 14px;
   border: 1px solid var(--kd-border);
   border-radius: 18px;
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: 0 22px 56px rgba(15, 23, 42, 0.16);
 }
 
@@ -111,7 +131,7 @@
   border: 0;
   border-radius: 12px;
   color: var(--kd-text);
-  background: #f8fafc;
+  background: var(--kd-bg);
   font: inherit;
   font-weight: 700;
   text-decoration: none;
@@ -122,6 +142,20 @@
   justify-content: center;
   color: #ffffff;
   background: linear-gradient(135deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
+}
+
+html.dark .public-site-header {
+  border-bottom-color: rgba(51, 65, 85, 0.9);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+html.dark .public-nav a {
+  color: #cbd5e1;
+}
+
+html.dark .public-nav a:hover,
+html.dark .public-nav a:focus-visible {
+  color: #60a5fa;
 }
 
 @media (max-width: 1180px) {
@@ -157,6 +191,11 @@
   .public-brand small,
   .public-header-actions .ghost {
     display: none;
+  }
+
+  .public-theme-toggle {
+    width: 42px;
+    height: 42px;
   }
 
   .public-header-actions .primary {
@@ -224,6 +263,11 @@
   }
 
   .mobile-menu-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .public-theme-toggle {
     width: 40px;
     height: 40px;
   }

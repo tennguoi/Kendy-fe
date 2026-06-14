@@ -100,7 +100,7 @@
 .admin-panel,
 .admin-form.service-editor,
 .admin-form.pricing-editor {
-  background: #ffffff;
+  background: var(--kd-card);
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   box-shadow: var(--kd-soft-shadow);
@@ -213,7 +213,7 @@
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   padding: 10px 12px;
-  background: #ffffff;
+  background: var(--kd-card);
   color: var(--kd-text);
   font: inherit;
   outline: none;
@@ -253,7 +253,7 @@
   padding: 0 12px;
   border: 1px solid var(--kd-border);
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--kd-card);
 }
 
 .admin-check-row input,
@@ -314,8 +314,8 @@
 button.admin-data-row {
   width: 100%;
   border-width: 0 0 1px;
-  border-color: #edf2f7;
-  background: #ffffff;
+  border-color: var(--kd-border);
+  background: var(--kd-card);
   color: var(--kd-text);
   text-align: left;
   cursor: pointer;
@@ -326,7 +326,7 @@ button.admin-data-row {
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
-  background: #f8fafc;
+  background: var(--kd-bg);
   border-radius: 12px 12px 0 0;
 }
 
@@ -405,7 +405,7 @@ button.admin-data-row.selected {
   padding: 14px;
   border: 1px solid var(--kd-border);
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--kd-card);
 }
 
 .admin-detail-list {
@@ -449,7 +449,7 @@ button.admin-data-row.selected {
   border: 1px solid var(--kd-border);
   border-radius: 999px;
   color: var(--kd-muted);
-  background: #ffffff;
+  background: var(--kd-card);
   font-size: 13px;
   font-weight: 800;
 }
@@ -473,7 +473,7 @@ button.admin-data-row.selected {
   padding: 10px;
   border: 1px solid #edf2f7;
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--kd-bg);
 }
 
 .admin-mini-list strong,
@@ -583,7 +583,7 @@ button.admin-data-row.selected {
   height: auto;
   border: 1px solid var(--kd-border);
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--kd-card);
 }
 
 /* Admin drawer */
@@ -606,7 +606,7 @@ body.admin-drawer-open {
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--kd-border);
-  background: #ffffff;
+  background: var(--kd-card);
   box-shadow: -24px 0 48px rgba(15, 23, 42, 0.16);
   animation: adminDrawerIn 0.22s ease-out forwards;
 }
@@ -814,7 +814,7 @@ body.admin-drawer-open {
     margin-bottom: 12px !important;
     border: 1px solid var(--kd-border) !important;
     border-radius: 12px !important;
-    background: #ffffff !important;
+    background: var(--kd-card) !important;
     box-shadow: none !important;
     min-width: 0 !important;
     width: 100% !important;
@@ -922,7 +922,7 @@ body.admin-drawer-open {
 
 .admin-mini-list article {
   border-radius: var(--kd-radius);
-  background: #f8fafc;
+  background: var(--kd-bg);
 }
 
 .admin-danger-button,
@@ -1212,6 +1212,32 @@ button.admin-data-row:nth-child(even).selected,
   font-weight: 800;
 }
 
+.admin-user-avatar.image {
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.admin-user-avatar.large {
+  width: 44px;
+  height: 44px;
+  font-size: 15px;
+}
+
+.admin-user-profile-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-user-profile-title h3 {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .admin-row-user-info {
   display: flex;
   align-items: center;
@@ -1472,4 +1498,118 @@ button.admin-data-row:nth-child(even).selected,
   .admin-data-row.users::before {
     display: none;
   }
+}
+
+/* Dark Mode Overrides */
+html.dark button.admin-data-row:hover,
+html.dark button.admin-data-row.selected,
+html.dark button.admin-data-row:nth-child(even):hover,
+html.dark button.admin-data-row:nth-child(even).selected,
+html.dark .admin-user-row-wrap:nth-child(even) .admin-data-row:hover,
+html.dark .admin-user-row-wrap:nth-child(even) .admin-data-row.selected {
+  background: var(--kd-hover);
+  border-color: var(--kd-border);
+}
+html.dark button.admin-data-row:nth-child(even),
+html.dark .admin-user-row-wrap:nth-child(even) .admin-data-row {
+  background: rgba(255, 255, 255, 0.02);
+}
+html.dark .admin-data-row.head {
+  background: var(--kd-card) !important;
+  color: var(--kd-muted) !important;
+}
+html.dark .admin-icon-button,
+html.dark .admin-panel-head button {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: transparent;
+  color: #60a5fa;
+}
+html.dark .admin-drawer {
+  background: var(--kd-card);
+  border-left-color: var(--kd-border);
+  box-shadow: -24px 0 56px rgba(0, 0, 0, 0.42);
+}
+html.dark .admin-drawer-layer {
+  background: rgba(2, 6, 23, 0.58);
+}
+html.dark .admin-drawer-head {
+  background: var(--kd-bg);
+  border-bottom-color: var(--kd-border);
+}
+html.dark .admin-drawer-head h3 {
+  color: var(--kd-text);
+}
+html.dark .admin-drawer-head button {
+  background: var(--kd-card);
+  color: var(--kd-muted);
+}
+html.dark .admin-drawer-head button:hover {
+  background: var(--kd-hover);
+  color: var(--kd-text);
+}
+html.dark .admin-panel-subsection,
+html.dark .admin-detail-list div,
+html.dark .admin-mini-list article {
+  border-color: var(--kd-border);
+}
+html.dark .admin-mini-list article {
+  background: var(--kd-bg);
+}
+html.dark .admin-tabs button {
+  background: var(--kd-card);
+  border-color: var(--kd-border);
+  color: var(--kd-muted);
+}
+html.dark .admin-empty-state-icon {
+  background: var(--kd-bg);
+  color: var(--kd-muted);
+}
+html.dark .admin-message {
+  background: rgba(7, 89, 133, 0.2);
+  border-color: rgba(7, 89, 133, 0.4);
+  color: #7dd3fc;
+}
+html.dark .admin-message.error {
+  background: rgba(153, 27, 27, 0.2);
+  border-color: rgba(153, 27, 27, 0.4);
+  color: #fca5a5;
+}
+html.dark .admin-tabs button.active {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: var(--kd-blue);
+  color: #60a5fa;
+}
+html.dark .admin-danger-button {
+  background: rgba(153, 27, 27, 0.15);
+  border-color: rgba(153, 27, 27, 0.3);
+  color: #fca5a5;
+}
+html.dark .admin-format-toggle button {
+  background: var(--kd-card);
+  color: var(--kd-text);
+  border-color: var(--kd-border);
+}
+html.dark .admin-format-toggle button.active {
+  background: var(--kd-blue);
+  color: #ffffff;
+}
+html.dark .admin-status {
+  background: var(--kd-hover);
+  color: var(--kd-text);
+}
+html.dark .admin-status.active, html.dark .admin-status.completed, html.dark .admin-status.resolved, html.dark .admin-status.available, html.dark .admin-status.credit, html.dark .admin-status.credited {
+  background: rgba(22, 163, 74, 0.2);
+  color: #86efac;
+}
+html.dark .admin-status.pending, html.dark .admin-status.processing, html.dark .admin-status.pending-admin, html.dark .admin-status.pending-user, html.dark .admin-status.manual-review, html.dark .admin-status.pending-verify {
+  background: rgba(217, 119, 6, 0.2);
+  color: #fcd34d;
+}
+html.dark .admin-status.failed, html.dark .admin-status.cancelled, html.dark .admin-status.locked, html.dark .admin-status.disabled, html.dark .admin-status.expired, html.dark .admin-status.debit {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+html.dark .admin-status.open, html.dark .admin-status.new, html.dark .admin-status.consulting-only, html.dark .admin-status.matched {
+  background: rgba(37, 99, 235, 0.2);
+  color: #93c5fd;
 }
