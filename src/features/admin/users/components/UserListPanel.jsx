@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import Modal from '../../../../components/Modal/Modal'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
+import { getUserRoleLabel } from '../users.constants'
 import { formatAdminMoney } from '../../adminFormat'
 import UserAdminTools from './UserAdminTools'
 
@@ -117,7 +118,7 @@ function UserListPanel({
                     </div>
                   </div>
                 </button>
-                <span>{user.role}</span>
+                <span>{getUserRoleLabel(user.role)}</span>
                 <span>{formatAdminMoney(user.balance)}</span>
                 <span><AdminStatusBadge status={user.status} /></span>
                 <span className="admin-row-actions">

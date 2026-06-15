@@ -1,7 +1,7 @@
 import { MessageSquare, Paperclip, Send, Trash2 } from 'lucide-react'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
-import { ticketCategories, ticketPriorities, ticketStatuses } from '../tickets.constants'
+import { ticketCategories, ticketPriorities, ticketStatuses, getTicketCategoryLabel, getTicketPriorityLabel, ticketCategoryLabels, ticketPriorityLabels, ticketStatusLabels } from '../tickets.constants'
 
 function TicketDetailPanel({
   admins = [],
@@ -31,8 +31,8 @@ function TicketDetailPanel({
           <dl className="admin-detail-list">
             <div><dt>Chủ đề</dt><dd>{selectedTicket.subject}</dd></div>
             <div><dt>User</dt><dd>#{selectedTicket.userId}</dd></div>
-            <div><dt>Danh mục</dt><dd>{selectedTicket.category}</dd></div>
-            <div><dt>Ưu tiên</dt><dd>{selectedTicket.priority}</dd></div>
+            <div><dt>Danh mục</dt><dd>{getTicketCategoryLabel(selectedTicket.category)}</dd></div>
+            <div><dt>Ưu tiên</dt><dd>{getTicketPriorityLabel(selectedTicket.priority)}</dd></div>
             <div><dt>Đơn liên quan</dt><dd>{selectedTicket.orderId ? `#${selectedTicket.orderId}` : 'Không có'}</dd></div>
             <div><dt>Cập nhật</dt><dd>{formatAdminDate(selectedTicket.updatedAt)}</dd></div>
           </dl>
@@ -64,19 +64,19 @@ function TicketDetailPanel({
               <label>
                 <span>Priority</span>
                 <select value={editor.priority} onChange={(event) => onEditorChange((current) => ({ ...current, priority: event.target.value }))}>
-                  {ticketPriorities.filter(Boolean).map((priority) => <option value={priority} key={priority}>{priority}</option>)}
+                  {ticketPriorities.filter(Boolean).map((priority) => <option value={priority} key={priority}>{ticketPriorityLabels[priority] || priority}</option>)}
                 </select>
               </label>
               <label>
                 <span>Category</span>
                 <select value={editor.category} onChange={(event) => onEditorChange((current) => ({ ...current, category: event.target.value }))}>
-                  {ticketCategories.filter(Boolean).map((category) => <option value={category} key={category}>{category}</option>)}
+                  {ticketCategories.filter(Boolean).map((category) => <option value={category} key={category}>{ticketCategoryLabels[category] || category}</option>)}
                 </select>
               </label>
               <label>
                 <span>Status</span>
                 <select value={editor.status} onChange={(event) => onEditorChange((current) => ({ ...current, status: event.target.value }))}>
-                  {ticketStatuses.filter(Boolean).map((status) => <option value={status} key={status}>{status}</option>)}
+                  {ticketStatuses.filter(Boolean).map((status) => <option value={status} key={status}>{ticketStatusLabels[status] || status}</option>)}
                 </select>
               </label>
             </div>

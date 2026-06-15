@@ -5,6 +5,7 @@ import { userApi } from '../../../api/user.api'
 import AdminAccessTab from './components/AdminAccessTab'
 import AuditTab from './components/AuditTab'
 import FilesTab from './components/FilesTab'
+import GuideTab from './components/GuideTab'
 import HealthTab from './components/HealthTab'
 import JobsTab from './components/JobsTab'
 import NotificationsTab from './components/NotificationsTab'
@@ -869,6 +870,8 @@ function AdminSettingsView({
       )}
 
       {activeTab === 'health' && <HealthTab health={health} />}
+
+      {activeTab === 'guide' && <GuideTab />}
     </section>
   )
 }

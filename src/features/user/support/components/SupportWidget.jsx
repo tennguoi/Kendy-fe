@@ -1,6 +1,6 @@
 import { LifeBuoy, Upload, X } from 'lucide-react'
 import { useRef, useState } from 'react'
-import { supportCategories } from '../support.constants'
+import { supportCategories, supportCategoryLabels } from '../support.constants'
 
 const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024
 
@@ -73,7 +73,7 @@ function SupportWidget({
             <label>
               <span>Bạn cần trợ giúp về vấn đề gì? *</span>
               <select value={ticketForm.category} onChange={(event) => onTicketFormChange('category', event.target.value)} required>
-                {supportCategories.map((category) => <option value={category} key={category}>{category}</option>)}
+                {supportCategories.map((category) => <option value={category} key={category}>{supportCategoryLabels[category] || category}</option>)}
               </select>
             </label>
 

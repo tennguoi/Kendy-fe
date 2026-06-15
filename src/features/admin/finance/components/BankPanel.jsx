@@ -1,5 +1,6 @@
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
+import { statusLabel } from '../../../../data/statusLabels'
 
 function BankPanel({
   bankStatus,
@@ -13,7 +14,7 @@ function BankPanel({
     <div className="admin-data-table">
       <div className="admin-filters single-filter">
         <select value={bankStatus} onChange={(event) => setBankStatus(event.target.value)}>
-          {bankStatuses.map((status) => <option value={status} key={status || 'all'}>{status || 'Tất cả bank status'}</option>)}
+          {bankStatuses.map((status) => <option value={status} key={status || 'all'}>{statusLabel[status] || status || 'Tất cả bank status'}</option>)}
         </select>
       </div>
       <div className="admin-data-row head bank">

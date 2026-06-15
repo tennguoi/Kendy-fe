@@ -1,8 +1,12 @@
 import { Inbox } from 'lucide-react'
+import { statusLabel } from '../../data/statusLabels'
 
 export function AdminStatusBadge({ status }) {
-  const normalized = String(status || 'unknown').toLowerCase().replaceAll('_', '-')
-  return <span className={`admin-status ${normalized}`}>{status || 'UNKNOWN'}</span>
+  const raw = String(status ?? '')
+  const normalized = raw.toLowerCase().replaceAll('_', '-')
+  const label = statusLabel[raw] || raw || 'UNKNOWN'
+  if (!raw) return <span className="admin-status unknown">Không xác định</span>
+  return <span className={`admin-status ${normalized}`}>{label}</span>
 }
 
 export function AdminEmptyState({ message = 'Chưa có dữ liệu phù hợp.', hint = 'Thử thay đổi bộ lọc hoặc tải lại trang.' }) {

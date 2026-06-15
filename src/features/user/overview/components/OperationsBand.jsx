@@ -19,8 +19,8 @@ function OperationsBand({ onViewChange }) {
 
           return (
             <button type="button" key={action.label} onClick={() => onViewChange?.(action.view)}>
-              <Icon size={16} strokeWidth={2} aria-hidden="true" />
-              {action.label}
+              <Icon size={18} strokeWidth={2.2} aria-hidden="true" />
+              <span>{action.label}</span>
             </button>
           )
         })}

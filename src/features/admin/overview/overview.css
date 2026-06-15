@@ -1030,7 +1030,7 @@
 .admin-report-grid span,
 .admin-growth-summary span,
 .admin-bank-grid span {
-  color: var(--ov-muted, #64748b);
+  color: var(--kd-muted, #64748b);
   font-size: 12px;
   font-weight: 950;
   text-transform: uppercase;
@@ -1040,7 +1040,7 @@
 .admin-growth-summary strong,
 .admin-bank-grid strong {
   margin-top: 6px;
-  color: var(--ov-text, #0f172a);
+  color: var(--kd-text, #0f172a);
   font-size: 22px;
   font-weight: 950;
 }

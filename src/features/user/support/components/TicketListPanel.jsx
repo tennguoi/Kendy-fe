@@ -1,5 +1,5 @@
 import StatusBadge from '../../../../components/status/StatusBadge'
-import { supportStatuses } from '../support.constants'
+import { supportStatuses, getSupportCategoryLabel, getSupportPriorityLabel, supportStatusLabels } from '../support.constants'
 import { formatSupportDate } from '../supportFormat'
 
 function TicketListPanel({
@@ -20,7 +20,7 @@ function TicketListPanel({
       <div className="admin-filters single-filter">
         <input value={query} onChange={(event) => onSearchChange(event.target.value)} placeholder="Tìm ticket, chủ đề, mã đơn" type="search" />
         <select value={statusFilter} onChange={(event) => onStatusChange(event.target.value)}>
-          {supportStatuses.map((status) => <option value={status} key={status || 'all'}>{status || 'Tất cả trạng thái'}</option>)}
+          {supportStatuses.map((status) => <option value={status} key={status || 'all'}>{supportStatusLabels[status] || status || 'Tất cả trạng thái'}</option>)}
         </select>
       </div>
       <div className="admin-ticket-list">
@@ -33,11 +33,11 @@ function TicketListPanel({
           >
             <span>
               <strong>{ticket.subject}</strong>
-              <small>{ticket.ticketCode} · {ticket.category} · {formatSupportDate(ticket.updatedAt)}</small>
+              <small>{ticket.ticketCode} · {getSupportCategoryLabel(ticket.category)} · {formatSupportDate(ticket.updatedAt)}</small>
             </span>
             <span className="admin-ticket-meta">
               <StatusBadge status={ticket.status} />
-              <small>{ticket.priority}</small>
+              <small>{getSupportPriorityLabel(ticket.priority)}</small>
             </span>
           </button>
         ))}

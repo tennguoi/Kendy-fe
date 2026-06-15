@@ -1,5 +1,5 @@
 import { RefreshCw } from 'lucide-react'
-import { supportCategories, supportPriorities } from '../support.constants'
+import { supportCategories, supportPriorities, supportCategoryLabels, supportPriorityLabels } from '../support.constants'
 
 function TicketCreatePanel({
   loading,
@@ -29,13 +29,13 @@ function TicketCreatePanel({
         <label>
           <span>Danh mục</span>
           <select value={ticketForm.category} onChange={(event) => onTicketFormChange('category', event.target.value)}>
-            {supportCategories.map((category) => <option value={category} key={category}>{category}</option>)}
+            {supportCategories.map((category) => <option value={category} key={category}>{supportCategoryLabels[category] || category}</option>)}
           </select>
         </label>
         <label>
           <span>Ưu tiên</span>
           <select value={ticketForm.priority} onChange={(event) => onTicketFormChange('priority', event.target.value)}>
-            {supportPriorities.map((priority) => <option value={priority} key={priority}>{priority}</option>)}
+            {supportPriorities.map((priority) => <option value={priority} key={priority}>{supportPriorityLabels[priority] || priority}</option>)}
           </select>
         </label>
         <label>

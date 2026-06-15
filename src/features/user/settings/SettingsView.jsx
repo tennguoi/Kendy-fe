@@ -415,9 +415,7 @@ function SettingsView({
         <button type="button" className={activeSettingsTab === 'apikeys' ? 'active' : ''} onClick={() => setActiveSettingsTab('apikeys')}>
           API Keys
         </button>
-        <button type="button" className={activeSettingsTab === 'notifications' ? 'active' : ''} onClick={() => setActiveSettingsTab('notifications')}>
-          Thông báo ({notificationList.filter(n => !n.readAt).length} mới)
-        </button>
+
       </div>
 
       {activeSettingsTab === 'general' && (
@@ -634,30 +632,7 @@ function SettingsView({
         </div>
       )}
 
-      {activeSettingsTab === 'notifications' && (
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <h3>Thông báo hệ thống</h3>
-            <button type="button" className="admin-icon-button" disabled={submitting} onClick={markAllNotificationsRead}>
-              Đọc tất cả
-            </button>
-          </div>
-          <div className="admin-mini-list">
-            {notificationList.map((notification) => (
-              <article key={notification.id}>
-                <strong>{notification.title || notification.type || `Thông báo #${notification.id}`}</strong>
-                <span>{notification.message || notification.content || 'Không có nội dung'} · {formatAdminDate(notification.createdAt)}</span>
-                {!notification.readAt && (
-                  <button type="button" className="admin-icon-button slim" disabled={submitting} onClick={() => markNotificationRead(notification.id)}>
-                    Đã đọc
-                  </button>
-                )}
-              </article>
-            ))}
-            {notificationList.length === 0 && <AdminEmptyState message="Chưa có thông báo." />}
-          </div>
-        </div>
-      )}
+
     </section>
   )
 }

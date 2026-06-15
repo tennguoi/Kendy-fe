@@ -1,4 +1,4 @@
-import { ticketCategories, ticketPriorities, ticketStatuses } from '../tickets.constants'
+import { ticketCategories, ticketPriorities, ticketStatuses, ticketCategoryLabels, ticketPriorityLabels, ticketStatusLabels } from '../tickets.constants'
 
 function TicketFilterBar({
   categoryFilter,
@@ -22,17 +22,17 @@ function TicketFilterBar({
       <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm ticket, user, chủ đề" type="search" />
       <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>
         {ticketStatuses.map((status) => (
-          <option value={status} key={status || 'all'}>{status || 'Tất cả trạng thái'}</option>
+          <option value={status} key={status || 'all'}>{ticketStatusLabels[status] || status || 'Tất cả trạng thái'}</option>
         ))}
       </select>
       <select value={priorityFilter} onChange={(event) => onPriorityFilterChange(event.target.value)}>
         {ticketPriorities.map((priority) => (
-          <option value={priority} key={priority || 'all'}>{priority || 'Tất cả ưu tiên'}</option>
+          <option value={priority} key={priority || 'all'}>{ticketPriorityLabels[priority] || priority || 'Tất cả ưu tiên'}</option>
         ))}
       </select>
       <select value={categoryFilter} onChange={(event) => onCategoryFilterChange(event.target.value)}>
         {ticketCategories.map((category) => (
-          <option value={category} key={category || 'all'}>{category || 'Tất cả danh mục'}</option>
+          <option value={category} key={category || 'all'}>{ticketCategoryLabels[category] || category || 'Tất cả danh mục'}</option>
         ))}
       </select>
     </div>

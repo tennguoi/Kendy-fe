@@ -1,30 +1,53 @@
 /* ================================================
- * overview.css — CSS riêng cho màn hình Tổng quan
- * Dùng bởi: features/user/overview/**
+ * overview.css — User Dashboard Redesign
  * ================================================ */
 
-/* Visual metrics */
+/* Metric Grid */
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .metric {
+  position: relative;
   min-width: 0;
   display: grid;
-  gap: 10px;
-  padding: 18px;
+  gap: 12px;
+  padding: 20px;
   border: 1px solid var(--kd-border);
-  border-radius: var(--kd-radius);
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 32%),
-    radial-gradient(circle at top right, rgba(8, 145, 178, 0.16), transparent 32%),
-    var(--kd-card);
-  box-shadow: var(--kd-soft-shadow);
+  border-radius: 20px;
+  background: var(--kd-card);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  cursor: default;
+}
+
+.metric::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(circle at top right, var(--metric-soft), transparent 60%);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.metric:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px var(--metric-soft);
+  border-color: var(--metric-accent);
+}
+
+.metric:hover::before {
+  opacity: 1;
 }
 
 .metric-head {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -35,41 +58,55 @@
   min-width: 0;
   color: var(--kd-muted);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .metric-icon {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border-radius: var(--kd-radius-sm);
+  border-radius: 12px;
   color: var(--metric-accent);
   background: var(--metric-soft);
+  transition: transform 0.3s ease;
+}
+
+.metric:hover .metric-icon {
+  transform: scale(1.08) rotate(3deg);
 }
 
 .metric strong {
+  position: relative;
+  z-index: 1;
   display: block;
   color: var(--kd-text);
-  font-size: 28px;
+  font-size: 30px;
   line-height: 1.1;
+  font-weight: 900;
   overflow-wrap: anywhere;
 }
 
 .metric small {
+  position: relative;
+  z-index: 1;
   min-height: 18px;
   color: var(--kd-muted);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .metric-progress {
-  height: 8px;
+  position: relative;
+  z-index: 1;
+  height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e5e7eb;
+  background: var(--kd-soft);
+  margin-top: 4px;
 }
 
 .metric-progress span {
@@ -78,51 +115,251 @@
   max-width: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--metric-accent), var(--metric-accent-2));
-  animation: metricProgressIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: metricProgressIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Tones */
 .metric.green {
-  --metric-accent: #16a34a;
-  --metric-accent-2: #0f766e;
-  --metric-soft: #dcfce7;
+  --metric-accent: #10b981;
+  --metric-accent-2: #059669;
+  --metric-soft: rgba(16, 185, 129, 0.12);
 }
 
 .metric.orange {
-  --metric-accent: #d97706;
-  --metric-accent-2: #ea580c;
-  --metric-soft: #fef3c7;
+  --metric-accent: #f59e0b;
+  --metric-accent-2: #d97706;
+  --metric-soft: rgba(245, 158, 11, 0.12);
 }
 
 .metric.blue {
-  --metric-accent: #2563eb;
-  --metric-accent-2: #0891b2;
-  --metric-soft: #dbeafe;
+  --metric-accent: #3b82f6;
+  --metric-accent-2: #2563eb;
+  --metric-soft: rgba(59, 130, 246, 0.12);
 }
 
 .metric.red {
-  --metric-accent: #dc2626;
-  --metric-accent-2: #e11d48;
-  --metric-soft: #fee2e2;
+  --metric-accent: #ef4444;
+  --metric-accent-2: #dc2626;
+  --metric-soft: rgba(239, 68, 68, 0.12);
 }
 
 @keyframes metricProgressIn {
-  from {
-    transform: scaleX(0);
-    transform-origin: left;
-  }
-  to {
-    transform: scaleX(1);
-    transform-origin: left;
-  }
+  from { transform: scaleX(0); transform-origin: left; }
+  to { transform: scaleX(1); transform-origin: left; }
+}
+
+/* Operations Band */
+.operations-band {
+  margin-bottom: 24px;
+}
+
+.operations-band h2 {
+  font-size: 18px;
+  color: var(--kd-text);
+  margin: 0 0 16px;
+  font-weight: 800;
+}
+
+.ops-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ops-list button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 1px solid var(--kd-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  color: var(--kd-text);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.ops-list button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.08), rgba(8, 145, 178, 0.08));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.ops-list button:hover {
+  transform: translateY(-2px);
+  border-color: #3b82f6;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.ops-list button:hover::before {
+  opacity: 1;
+}
+
+.ops-list button svg {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ops-list button:hover svg {
+  transform: scale(1.15);
+}
+
+.ops-list button span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Quick Services Panel */
+.quick-services-panel {
+  margin-bottom: 24px;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--kd-text);
+  font-weight: 800;
+}
+
+.section-head button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  background: var(--kd-soft);
+  color: var(--kd-text);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.section-head button:hover {
+  background: var(--kd-border);
+  color: var(--kd-blue);
+}
+
+.quick-service-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.quick-service-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid var(--kd-border);
+  border-radius: 20px;
+  background: linear-gradient(145deg, var(--kd-card), rgba(255, 255, 255, 0.01));
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.quick-service-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.06);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.quick-service-card > div:first-child span {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--kd-soft);
+  color: var(--kd-muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.quick-service-card h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--kd-text);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.quick-service-card p {
+  margin: 10px 0 16px;
+  color: var(--kd-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  flex: 1 1 auto;
+}
+
+.quick-service-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--kd-border);
+}
+
+.quick-service-meta strong {
+  font-size: 18px;
+  color: var(--kd-text);
+  font-weight: 900;
+}
+
+.quick-service-card > button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.quick-service-card > button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
+}
+
+.quick-service-card > button:disabled {
+  background: var(--kd-soft);
+  color: var(--kd-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Split layout */
+.split-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 20px;
 }
 
 /* Ledger / Wallet panel */
-.split-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: 18px;
-}
-
 .ledger-list {
   display: grid;
 }
@@ -158,19 +395,11 @@
 
 /* Responsive */
 @media (max-width: 1120px) {
-  .metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 820px) {
-  .split-layout {
-    grid-template-columns: 1fr;
-  }
+  .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .split-layout { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
-  .metric-grid {
-    grid-template-columns: 1fr;
-  }
+  .metric-grid { grid-template-columns: 1fr; }
+  .quick-service-list { grid-template-columns: 1fr; }
 }

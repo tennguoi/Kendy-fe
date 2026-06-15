@@ -433,10 +433,10 @@ function AdminFinanceView({
           <span>Lãi tạm tính {formatAdminMoney(revenue?.profit)}</span>
         </div>
         <div className="admin-report-grid">
-          <div><span>Deposit volume</span><strong>{formatAdminMoney(revenue?.depositVolume)}</strong></div>
-          <div><span>Gross revenue</span><strong>{formatAdminMoney(revenue?.grossRevenue)}</strong></div>
-          <div><span>Refund</span><strong>{formatAdminMoney(revenue?.totalRefunds)}</strong></div>
-          <div><span>Net revenue</span><strong>{formatAdminMoney(revenue?.netRevenue)}</strong></div>
+          <div><span>Tổng tiền user nạp</span><strong>{formatAdminMoney(revenue?.depositVolume)}</strong></div>
+          <div><span>Tổng doanh thu</span><strong>{formatAdminMoney(revenue?.grossRevenue)}</strong></div>
+          <div><span>Tổng hoàn tiền</span><strong>{formatAdminMoney(revenue?.totalRefunds)}</strong></div>
+          <div><span>Doanh thu ròng</span><strong>{formatAdminMoney(revenue?.netRevenue)}</strong></div>
         </div>
         <div className="admin-action-row">
           <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadBankQueue('manual')}>Bank manual review</button>
@@ -546,23 +546,19 @@ function AdminFinanceView({
               <>
                 <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runBankAction('match')}>
                   <Save size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Match</span>
+                  <span>Gán</span>
                 </button>
                 <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting || !bankActionForm.userId} onClick={() => runBankAction('manual-credit')}>
                   <Save size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Credit</span>
+                  <span>Cộng tiền thủ công</span>
                 </button>
                 <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runBankAction('reprocess')}>
                   <RotateCcw size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Reprocess</span>
+                  <span>Xử lý lại</span>
                 </button>
                 <button type="button" className="admin-danger-button finance-modal-action" disabled={submitting} onClick={() => runBankAction('ignore')}>
                   <Ban size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Ignore</span>
-                </button>
-                <button type="button" className="admin-primary-button finance-modal-action" disabled={submitting} onClick={() => runBulkBankCredit()}>
-                  <Save size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Bulk</span>
+                  <span>Bỏ qua</span>
                 </button>
               </>
             )}
@@ -571,7 +567,7 @@ function AdminFinanceView({
                 <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('extend')}>Gia hạn</button>
                 <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('manual-credit')}>
                   <Save size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Credit</span>
+                  <span>Cộng tiền</span>
                 </button>
                 <button type="button" className="admin-danger-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('cancel')}>
                   <Ban size={16} strokeWidth={2} aria-hidden="true" />

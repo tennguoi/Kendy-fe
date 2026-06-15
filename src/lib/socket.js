@@ -1,14 +1,4 @@
 import { toWebSocketUrl } from './api'
-
-/**
- * Tạo một kết nối WebSocket tự động kết nối lại khi bị ngắt.
- * 
- * @param {Object} options
- * @param {string} options.path Đường dẫn WebSocket (vd: '/ws/notifications')
- * @param {string} options.token Token xác thực người dùng
- * @param {function} options.onMessage Callback được gọi khi nhận được tin nhắn hợp lệ
- * @returns {function} Hàm để đóng kết nối
- */
 export function createWebSocket({ path, token, onMessage }) {
   let socket = null
   let reconnectTimer = 0

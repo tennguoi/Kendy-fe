@@ -1,5 +1,6 @@
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
+import { statusLabel } from '../../../../data/statusLabels'
 
 function DepositPanel({
   depositStatus,
@@ -13,7 +14,7 @@ function DepositPanel({
     <div className="admin-data-table">
       <div className="admin-filters single-filter">
         <select value={depositStatus} onChange={(event) => setDepositStatus(event.target.value)}>
-          {depositStatuses.map((status) => <option value={status} key={status || 'all'}>{status || 'Tất cả deposit status'}</option>)}
+          {depositStatuses.map((status) => <option value={status} key={status || 'all'}>{statusLabel[status] || status || 'Tất cả deposit status'}</option>)}
         </select>
       </div>
       <div className="admin-data-row head deposits">

@@ -31,14 +31,7 @@ export function useDashboardMetrics({
         tone: 'blue',
         value: String(userDashboard?.pendingUserTickets ?? ticketList.filter((ticket) => ticket.status === 'PENDING_USER').length).padStart(2, '0'),
       },
-      {
-        detail: 'Cập nhật mới từ hệ thống',
-        label: 'Thông báo mới',
-        progress: Math.min(100, Math.max(12, unreadNotifications * 16)),
-        tone: 'red',
-        value: String(unreadNotifications).padStart(2, '0'),
-      },
     ],
-    [displayBalance, orderList, ticketList, unreadNotifications, userDashboard],
+    [displayBalance, orderList, ticketList, userDashboard],
   )
 }

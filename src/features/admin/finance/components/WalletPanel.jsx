@@ -1,5 +1,6 @@
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
+import { statusLabel } from '../../../../data/statusLabels'
 
 function WalletPanel({
   balanceIssues,
@@ -13,7 +14,7 @@ function WalletPanel({
     <>
       <div className="admin-filters single-filter">
         <select value={walletType} onChange={(event) => setWalletType(event.target.value)}>
-          {walletTypes.map((type) => <option value={type} key={type || 'all'}>{type || 'Tất cả loại ví'}</option>)}
+          {walletTypes.map((type) => <option value={type} key={type || 'all'}>{statusLabel[type] || type || 'Tất cả loại ví'}</option>)}
         </select>
       </div>
       <div className="admin-action-row">
@@ -33,7 +34,7 @@ function WalletPanel({
               <strong>{item.transactionCode}</strong>
               <small>{item.description || item.referenceType}</small>
             </span>
-            <span>{item.type} · {item.direction}</span>
+            <span>{statusLabel[item.type] || item.type} · {statusLabel[item.direction] || item.direction}</span>
             <span>{formatAdminMoney(item.amount)}</span>
             <span>{formatAdminMoney(item.balanceAfter)}</span>
             <span>{formatAdminDate(item.createdAt)}</span>

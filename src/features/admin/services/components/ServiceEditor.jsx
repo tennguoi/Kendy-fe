@@ -2,7 +2,7 @@ import { Save, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
-import { ctaTypes, facebookSchema, serviceStatuses, serviceTypes, stockStatuses } from '../services.constants'
+import { getCtaTypeLabel, getServiceStatusLabel, getServiceTypeLabel, getStockStatusLabel, getOrderStatusLabel, ctaTypes, facebookSchema, serviceStatuses, serviceTypes, stockStatuses } from '../services.constants'
 
 function ServiceEditor({
   categories = [],
@@ -20,14 +20,14 @@ function ServiceEditor({
 
   return (
     <form className="admin-form service-editor admin-service-editor product-editor" onSubmit={onSubmitService}>
-      <div 
-        className="admin-panel-head" 
-        style={{ 
-          marginBottom: '10px', 
+      <div
+        className="admin-panel-head"
+        style={{
+          marginBottom: '10px',
           display: 'flex',
           flexDirection: 'row',
           flexWrap: 'nowrap',
-          alignItems: 'center', 
+          alignItems: 'center',
           justifyContent: 'space-between',
           gap: '12px'
         }}
@@ -147,25 +147,25 @@ function ServiceEditor({
               <label>
                 <span>Loại xử lý</span>
                 <select value={serviceForm.type} onChange={(event) => onUpdateServiceForm('type', event.target.value)}>
-                  {serviceTypes.map((type) => <option value={type} key={type}>{type}</option>)}
+                  {serviceTypes.map((type) => <option value={type} key={type}>{getServiceTypeLabel(type)}</option>)}
                 </select>
               </label>
               <label>
                 <span>Trạng thái</span>
                 <select value={serviceForm.status} onChange={(event) => onUpdateServiceForm('status', event.target.value)}>
-                  {serviceStatuses.map((status) => <option value={status} key={status}>{status}</option>)}
+                  {serviceStatuses.map((status) => <option value={status} key={status}>{getServiceStatusLabel(status)}</option>)}
                 </select>
               </label>
               <label>
                 <span>Tình trạng kho</span>
                 <select value={serviceForm.stockStatus} onChange={(event) => onUpdateServiceForm('stockStatus', event.target.value)}>
-                  {stockStatuses.map((status) => <option value={status} key={status}>{status}</option>)}
+                  {stockStatuses.map((status) => <option value={status} key={status}>{getStockStatusLabel(status)}</option>)}
                 </select>
               </label>
               <label>
                 <span>CTA hiển thị</span>
                 <select value={serviceForm.ctaType} onChange={(event) => onUpdateServiceForm('ctaType', event.target.value)}>
-                  {ctaTypes.map((type) => <option value={type} key={type}>{type}</option>)}
+                  {ctaTypes.map((type) => <option value={type} key={type}>{getCtaTypeLabel(type)}</option>)}
                 </select>
               </label>
               <label>
@@ -343,7 +343,7 @@ function ServiceEditor({
               {serviceOrders.map((order) => (
                 <article key={order.id}>
                   <strong>{order.orderCode}</strong>
-                  <span>User #{order.userId} · {formatAdminMoney(order.amount)} · {order.status} · {formatAdminDate(order.createdAt)}</span>
+                  <span>User #{order.userId} · {formatAdminMoney(order.amount)} · {getOrderStatusLabel(order.status)} · {formatAdminDate(order.createdAt)}</span>
                 </article>
               ))}
               {selectedServiceCategories.length === 0 && serviceOrders.length === 0 && <AdminEmptyState message="Chưa có danh mục hoặc đơn gần đây cho dịch vụ này." />}

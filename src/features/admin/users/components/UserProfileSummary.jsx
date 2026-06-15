@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
+import { getUserRoleLabel } from '../users.constants'
 
 function getUserAvatarUrl(user) {
   return user?.avatarUrl || user?.avatar || user?.picture || user?.imageUrl || user?.photoUrl || ''
@@ -45,7 +46,7 @@ function UserProfileSummary({ detail, selectedUser }) {
       <dl className="admin-detail-list">
         <div><dt>Email</dt><dd>{selectedUser.email}</dd></div>
         <div><dt>Điện thoại</dt><dd>{selectedUser.phone || 'Chưa có'}</dd></div>
-        <div><dt>Vai trò</dt><dd>{selectedUser.role}</dd></div>
+        <div><dt>Vai trò</dt><dd>{getUserRoleLabel(selectedUser.role)}</dd></div>
         <div><dt>Số dư</dt><dd>{formatAdminMoney(selectedUser.balance)}</dd></div>
         <div><dt>2FA</dt><dd>{selectedUser.twoFactorEnabled ? 'Đã bật' : 'Chưa bật'}</dd></div>
         <div><dt>Ngày tạo</dt><dd>{formatAdminDate(selectedUser.createdAt)}</dd></div>

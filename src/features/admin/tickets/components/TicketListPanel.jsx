@@ -1,4 +1,5 @@
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
+import { getTicketPriorityLabel } from '../tickets.constants'
 
 function TicketListPanel({
   onSelectTicket,
@@ -25,7 +26,7 @@ function TicketListPanel({
             </span>
             <span className="admin-ticket-meta">
               <AdminStatusBadge status={ticket.status} />
-              <small>{ticket.priority}</small>
+              <small>{getTicketPriorityLabel(ticket.priority)}</small>
             </span>
           </button>
         ))}

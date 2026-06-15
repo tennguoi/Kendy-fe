@@ -1,6 +1,6 @@
 import { Eye, EyeOff, Shield, UserRoundCog, Wallet } from 'lucide-react'
 import { useState } from 'react'
-import { userRoles } from '../users.constants'
+import { userRoles, userRoleLabels } from '../users.constants'
 
 const userToolTabs = [
   { id: 'bulk', label: 'Bulk', icon: Shield },
@@ -17,7 +17,6 @@ function UserAdminTools({
   onAdjustWallet,
   onBulkStatusFormChange,
   onRoleFormChange,
-  onRunBulkUserStatus,
   onUpdateRole,
   roleForm,
   selectedUser,
@@ -83,7 +82,7 @@ function UserAdminTools({
           <label>
             <span>Role</span>
             <select value={roleForm.role} onChange={(event) => onRoleFormChange((current) => ({ ...current, role: event.target.value }))}>
-              {userRoles.map((role) => <option value={role} key={role}>{role}</option>)}
+              {userRoles.map((role) => <option value={role} key={role}>{userRoleLabels[role] || role}</option>)}
             </select>
           </label>
           <label>

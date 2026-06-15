@@ -35,4 +35,9 @@ export const statusLabel = {
   ACCOUNT: 'Tài khoản',
   SERVICE: 'Dịch vụ',
   OTHER: 'Khác',
+  PURCHASE: 'Thanh toán đơn hàng',
+  REFUND: 'Hoàn tiền',
+  ADJUSTMENT: 'Điều chỉnh số dư',
+  NEW: 'Mới',
+  CREDITED: 'Đã cộng tiền',
 }
