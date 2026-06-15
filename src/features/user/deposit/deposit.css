@@ -57,21 +57,51 @@
 }
 
 .qr-box.real-qr {
-  background: var(--kd-card);
+  overflow: hidden;
+  padding: 0;
+  background: #ffffff;
   width: 360px;
+  height: auto;
   max-width: 100%;
+  aspect-ratio: auto;
   flex-shrink: 0;
+  border: 0;
   border-radius: 12px;
+  box-shadow: none;
   align-self: flex-start;
 }
 
 .qr-box.real-qr img {
   width: 100%;
+  max-width: 100%;
   height: auto;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 12px;
   image-rendering: crisp-edges;
   display: block;
+}
+
+.qr-zoom-close {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #ffffff;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.qr-zoom-close:hover {
+  background: rgba(30, 41, 59, 0.92);
 }
 
 .qr-mark {
@@ -186,6 +216,11 @@ button.deposit-row:hover {
   .info-line span {
     grid-column: 1 / -1;
   }
+
+  .qr-box.real-qr {
+    height: auto;
+    aspect-ratio: auto;
+  }
 }
 
 html.dark .info-line,
@@ -206,4 +241,6 @@ html.dark .deposit-filters select {
 
 html.dark .qr-box.real-qr {
   background: #ffffff;
+  border: 0;
+  box-shadow: none;
 }
