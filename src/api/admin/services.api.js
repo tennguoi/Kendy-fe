@@ -47,6 +47,27 @@ export const adminServicesApi = {
   getServiceOrders: (id, token) =>
     axiosClient.get(`/api/admin/services/${id}/orders?limit=20`, { token }),
 
+  getServiceCredentials: (id, token, params = {}) =>
+    axiosClient.get(`/api/admin/services/${id}/credentials${queryString({ limit: 100, ...params })}`, { token }),
+
+  createServiceCredential: (id, data, token) =>
+    axiosClient.post(`/api/admin/services/${id}/credentials`, data, { token }),
+
+  updateServiceCredential: (id, data, token) =>
+    axiosClient.put(`/api/admin/credentials/${id}`, data, { token }),
+
+  disableServiceCredential: (id, token) =>
+    axiosClient.delete(`/api/admin/credentials/${id}`, { token }),
+
+  revealServiceCredential: (id, token) =>
+    axiosClient.post(`/api/admin/credentials/${id}/reveal`, {}, { token }),
+
+  bulkImportServiceCredentials: (id, data, token) =>
+    axiosClient.post(`/api/admin/services/${id}/credentials/bulk-import`, data, { token }),
+
+  getCredentialsAlerts: (token, params = {}) =>
+    axiosClient.get(`/api/admin/credentials/alerts${queryString(params)}`, { token }),
+
   getPricing: (token) =>
     axiosClient.get('/api/admin/pricing?limit=200&sort=sort_order', { token }),
 

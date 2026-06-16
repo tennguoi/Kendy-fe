@@ -47,6 +47,27 @@ const emptyCategoryForm = {
   sortOrder: '0',
 }
 
+const emptyCredentialForm = {
+  expiresAt: '',
+  internalNote: '',
+  loginIdentifier: '',
+  passwordSecret: '',
+  recoveryInfo: '',
+  twoFactorSecret: '',
+  usageNote: '',
+  warrantyUntil: '',
+}
+
+const emptyCredentialFilters = {
+  createdFrom: '',
+  createdTo: '',
+  deliveredFrom: '',
+  deliveredTo: '',
+  expiresBefore: '',
+  query: '',
+  status: '',
+}
+
 function slugify(text) {
   return (text || '')
     .normalize('NFD')
@@ -131,6 +152,65 @@ function buildServicePayload(form, isEditing) {
   }
 }
 
+function toInstant(value) {
+  if (!value) {
+    return undefined
+  }
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
+}
+
+function toDateTimeInput(value) {
+  if (!value) {
+    return ''
+  }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+  const localTime = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+  return localTime.toISOString().slice(0, 16)
+}
+
+function buildCredentialPayload(form) {
+  return {
+    expiresAt: toInstant(form.expiresAt),
+    internalNote: form.internalNote || undefined,
+    loginIdentifier: form.loginIdentifier.trim(),
+    passwordSecret: form.passwordSecret.trim(),
+    recoveryInfo: form.recoveryInfo || undefined,
+    twoFactorSecret: form.twoFactorSecret || undefined,
+    usageNote: form.usageNote || undefined,
+    warrantyUntil: toInstant(form.warrantyUntil),
+  }
+}
+
+function buildCredentialFilterParams(filters) {
+  return {
+    createdFrom: toInstant(filters.createdFrom),
+    createdTo: toInstant(filters.createdTo),
+    deliveredFrom: toInstant(filters.deliveredFrom),
+    deliveredTo: toInstant(filters.deliveredTo),
+    expiresBefore: toInstant(filters.expiresBefore),
+    query: filters.query?.trim() || undefined,
+    status: filters.status || undefined,
+  }
+}
+
+function credentialToForm(credential) {
+  return {
+    expiresAt: toDateTimeInput(credential.expiresAt),
+    internalNote: credential.internalNote || '',
+    loginIdentifier: credential.loginIdentifier || '',
+    passwordSecret: '',
+    recoveryInfo: '',
+    twoFactorSecret: '',
+    usageNote: credential.usageNote || '',
+    warrantyUntil: toDateTimeInput(credential.warrantyUntil),
+  }
+}
+
 function AdminServicesView({
   onSetError,
   onSetNotice,
@@ -146,6 +226,11 @@ function AdminServicesView({
   const [selectedIds, setSelectedIds] = useState([])
   const [selectedServiceId, setSelectedServiceId] = useState(null)
   const [selectedServiceCategories, setSelectedServiceCategories] = useState([])
+  const [serviceCredentials, setServiceCredentials] = useState([])
+  const [revealedCredentials, setRevealedCredentials] = useState({})
+  const [credentialForm, setCredentialForm] = useState(emptyCredentialForm)
+  const [credentialFilters, setCredentialFilters] = useState(emptyCredentialFilters)
+  const [editingCredentialId, setEditingCredentialId] = useState(null)
   const [serviceForm, setServiceForm] = useState(emptyServiceForm)
   const [serviceOrders, setServiceOrders] = useState([])
   const [services, setServices] = useState([])
@@ -248,28 +333,62 @@ function AdminServicesView({
     })
   }
 
+  const updateCredentialForm = (field, value) => {
+    setCredentialForm((current) => ({ ...current, [field]: value }))
+  }
+
+  const updateCredentialFilter = (field, value) => {
+    setCredentialFilters((current) => ({ ...current, [field]: value }))
+  }
+
   const startCreateService = () => {
     setSelectedServiceId(null)
     setServiceForm(emptyServiceForm)
     setServiceOrders([])
     setSelectedServiceCategories([])
+    setServiceCredentials([])
+    setRevealedCredentials({})
+    setCredentialForm(emptyCredentialForm)
+    setCredentialFilters(emptyCredentialFilters)
+    setEditingCredentialId(null)
     setActiveEditor('service')
   }
+
+  const loadServiceCredentials = useCallback(async (serviceId = selectedServiceId, filters = credentialFilters) => {
+    if (!token || !serviceId) {
+      return []
+    }
+    const credentials = await adminApi.getServiceCredentials(
+      serviceId,
+      token,
+      buildCredentialFilterParams(filters),
+    )
+    setServiceCredentials(credentials)
+    setRevealedCredentials({})
+    return credentials
+  }, [credentialFilters, selectedServiceId, token])
 
   const selectService = async (service) => {
     setSelectedServiceId(service.id)
     setServiceForm(serviceToForm(service))
+    setEditingCredentialId(null)
+    setCredentialForm(emptyCredentialForm)
     setActiveEditor('service')
     try {
-      const [orders, serviceCategories] = await Promise.all([
+      const [orders, serviceCategories, credentials] = await Promise.all([
         adminApi.getServiceOrders(service.id, token),
         adminApi.getServiceCategoryLinks(service.id, token),
+        adminApi.getServiceCredentials(service.id, token, buildCredentialFilterParams(credentialFilters)),
       ])
       setServiceOrders(orders)
       setSelectedServiceCategories(serviceCategories)
+      setServiceCredentials(credentials)
+      setRevealedCredentials({})
     } catch {
       setServiceOrders([])
       setSelectedServiceCategories([])
+      setServiceCredentials([])
+      setRevealedCredentials({})
     }
   }
 
@@ -372,6 +491,9 @@ function AdminServicesView({
       setSelectedServiceId(saved.id)
       setServiceForm(serviceToForm(saved))
       await reloadAll()
+      if (!isEditing) {
+        setServiceCredentials([])
+      }
       onSetNotice(`Đã lưu dịch vụ ${saved.name}.`)
     } catch (err) {
       setViewError(err.message || 'Không lưu được dịch vụ.')
@@ -415,6 +537,123 @@ function AdminServicesView({
       onSetNotice(`Đã xóa/ẩn dịch vụ ${saved.name}.`)
     } catch (err) {
       setViewError(err.message || 'Không xóa được dịch vụ.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const createCredential = async () => {
+    if (!selectedServiceId) {
+      setViewError('Lưu sản phẩm trước khi nhập kho tài khoản.')
+      return
+    }
+    if (!credentialForm.loginIdentifier.trim() || (!editingCredentialId && !credentialForm.passwordSecret.trim())) {
+      setViewError('Nhập đủ tài khoản/email và mật khẩu.')
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = editingCredentialId
+        ? await adminApi.updateServiceCredential(editingCredentialId, buildCredentialPayload(credentialForm), token)
+        : await adminApi.createServiceCredential(selectedServiceId, buildCredentialPayload(credentialForm), token)
+      setServiceCredentials((items) => (
+        editingCredentialId
+          ? items.map((item) => (item.id === saved.id ? saved : item))
+          : [saved, ...items]
+      ))
+      setEditingCredentialId(null)
+      setCredentialForm(emptyCredentialForm)
+      await loadServices()
+      onSetNotice(editingCredentialId ? `Đã cập nhật tài khoản ${saved.loginIdentifier}.` : `Đã nhập kho tài khoản ${saved.loginIdentifier}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không lưu được tài khoản trong kho.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const startEditCredential = (credential) => {
+    if (!credential) {
+      setEditingCredentialId(null)
+      setCredentialForm(emptyCredentialForm)
+      return
+    }
+    setEditingCredentialId(credential.id)
+    setCredentialForm(credentialToForm(credential))
+  }
+
+  const bulkImportCredentials = async (csvContent) => {
+    if (!selectedServiceId) {
+      throw new Error('Lưu sản phẩm trước khi import kho tài khoản.')
+    }
+    const result = await adminApi.bulkImportServiceCredentials(
+      selectedServiceId,
+      { csvContent, skipDuplicates: true },
+      token,
+    )
+    await loadServiceCredentials(selectedServiceId, credentialFilters)
+    await loadServices()
+    onSetNotice(`Đã import ${result.created || 0} tài khoản, bỏ qua ${result.skipped || 0}.`)
+    return result
+  }
+
+  const applyCredentialFilters = async () => {
+    if (!selectedServiceId) {
+      return
+    }
+    setSubmitting(true)
+    setViewError('')
+    try {
+      await loadServiceCredentials(selectedServiceId, credentialFilters)
+    } catch (err) {
+      setViewError(err.message || 'Không lọc được kho tài khoản.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const resetCredentialFilters = async () => {
+    setCredentialFilters(emptyCredentialFilters)
+    if (!selectedServiceId) {
+      return
+    }
+    setSubmitting(true)
+    setViewError('')
+    try {
+      await loadServiceCredentials(selectedServiceId, emptyCredentialFilters)
+    } catch (err) {
+      setViewError(err.message || 'Không tải lại được kho tài khoản.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const disableCredential = async (credential) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = await adminApi.disableServiceCredential(credential.id, token)
+      setServiceCredentials((items) => items.map((item) => (item.id === saved.id ? saved : item)))
+      await loadServices()
+      onSetNotice(`Đã khóa tài khoản ${saved.loginIdentifier}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không khóa được tài khoản trong kho.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const revealCredential = async (credential) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const revealed = await adminApi.revealServiceCredential(credential.id, token)
+      setRevealedCredentials((items) => ({ ...items, [credential.id]: revealed }))
+      onSetNotice(`Đã hiển thị thông tin tài khoản ${revealed.loginIdentifier}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không hiển thị được thông tin tài khoản.')
     } finally {
       setSubmitting(false)
     }
@@ -597,9 +836,23 @@ function AdminServicesView({
           categories={categories}
           onDeleteService={deleteService}
           onSubmitService={submitService}
+          editingCredentialId={editingCredentialId}
+          credentialFilters={credentialFilters}
+          onApplyCredentialFilters={applyCredentialFilters}
+          onBulkImportCredentials={bulkImportCredentials}
+          onCreateCredential={createCredential}
+          onDisableCredential={disableCredential}
+          onRevealCredential={revealCredential}
+          onResetCredentialFilters={resetCredentialFilters}
+          onStartEditCredential={startEditCredential}
+          onUpdateCredentialForm={updateCredentialForm}
+          onUpdateCredentialFilter={updateCredentialFilter}
           onUpdateServiceForm={updateServiceForm}
+          credentialForm={credentialForm}
           selectedServiceCategories={selectedServiceCategories}
           selectedServiceId={selectedServiceId}
+          revealedCredentials={revealedCredentials}
+          serviceCredentials={serviceCredentials}
           serviceForm={serviceForm}
           serviceOrders={serviceOrders}
           submitting={submitting}

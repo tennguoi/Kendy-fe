@@ -1,4 +1,4 @@
-import { Ban, CircleCheck, CircleX, Download, RefreshCw, RotateCcw, Save } from 'lucide-react'
+import { Ban, CircleCheck, CircleX, Download, RefreshCw, RotateCcw, Save, UserCheck, ListTodo } from 'lucide-react'
 import { useState } from 'react'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
@@ -14,12 +14,14 @@ function OrderDetailPanel({
   onSaveAdminNote,
   onSaveUserNote,
   onUpdateDraft,
+  onUpdateManualWorkflow,
   orderForm,
   refundableOrder,
   selectedOrder,
   submitting,
 }) {
-  const [activeTab, setActiveTab] = useState('info') // 'info' | 'process' | 'notes' | 'bulk'
+  const [activeTab, setActiveTab] = useState('info') // 'info' | 'process' | 'notes' | 'bulk' | 'manual'
+  const isManualOrder = selectedOrder?.serviceType === 'MANUAL'
 
   if (!selectedOrder) {
     return (
@@ -79,6 +81,16 @@ function OrderDetailPanel({
         >
           Bulk refund
         </button>
+        {isManualOrder && (
+          <button
+            type="button"
+            className={activeTab === 'manual' ? 'active' : ''}
+            onClick={() => setActiveTab('manual')}
+            style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}
+          >
+            Thủ công
+          </button>
+        )}
       </div>
 
       <div className="service-editor-sections">
@@ -92,6 +104,22 @@ function OrderDetailPanel({
               <div><dt>Hạn xử lý</dt><dd>{formatAdminDate(selectedOrder.processingDeadlineAt)}</dd></div>
               <div><dt>Hoàn thành</dt><dd>{formatAdminDate(selectedOrder.completedAt)}</dd></div>
             </dl>
+
+            {selectedOrder.delivery && (
+              <div className="admin-code-block" style={{ marginTop: '12px' }}>
+                <strong>Tài khoản đã giao</strong>
+                <dl className="admin-detail-list" style={{ marginTop: '10px' }}>
+                  <div><dt>Tài khoản</dt><dd>{selectedOrder.delivery.loginIdentifier || '-'}</dd></div>
+                  <div><dt>Mật khẩu</dt><dd>{selectedOrder.delivery.passwordSecret || '-'}</dd></div>
+                  <div><dt>Recovery</dt><dd>{selectedOrder.delivery.recoveryInfo || '-'}</dd></div>
+                  <div><dt>2FA</dt><dd>{selectedOrder.delivery.twoFactorSecret || '-'}</dd></div>
+                  <div><dt>Đã giao</dt><dd>{formatAdminDate(selectedOrder.delivery.deliveredAt)}</dd></div>
+                  <div><dt>Hết hạn</dt><dd>{formatAdminDate(selectedOrder.delivery.expiresAt)}</dd></div>
+                  <div><dt>Bảo hành</dt><dd>{formatAdminDate(selectedOrder.delivery.warrantyUntil)}</dd></div>
+                </dl>
+                {selectedOrder.delivery.usageNote && <pre>{selectedOrder.delivery.usageNote}</pre>}
+              </div>
+            )}
 
             <div className="admin-code-block" style={{ marginTop: '12px' }}>
               <strong>Input khách gửi</strong>
@@ -244,6 +272,69 @@ function OrderDetailPanel({
                 Bắt đầu Bulk Refund
               </button>
             </div>
+          </form>
+        )}
+
+        {activeTab === 'manual' && isManualOrder && (
+          <form className="admin-form compact" onSubmit={(event) => { event.preventDefault(); onUpdateManualWorkflow(selectedOrder.orderCode) }}>
+            <div className="admin-panel-head compact-head" style={{ marginTop: 0 }}>
+              <h3>Xử lý thủ công</h3>
+              <ListTodo size={18} strokeWidth={2} aria-hidden="true" />
+            </div>
+            <label>
+              <span>Admin ID phụ trách</span>
+              <input
+                value={orderForm.assignedAdminId || ''}
+                onChange={(event) => onUpdateDraft('assignedAdminId', event.target.value)}
+                placeholder="Nhập ID admin"
+                inputMode="numeric"
+              />
+            </label>
+            <label>
+              <span>Hạn xử lý</span>
+              <input
+                type="datetime-local"
+                value={orderForm.processingDeadlineAt || ''}
+                onChange={(event) => onUpdateDraft('processingDeadlineAt', event.target.value)}
+              />
+            </label>
+            <label>
+              <span>Checklist thao tác (mỗi dòng một bước)</span>
+              <textarea
+                value={orderForm.manualChecklist || ''}
+                onChange={(event) => onUpdateDraft('manualChecklist', event.target.value)}
+                placeholder={`1. Kiểm tra thông tin khách hàng\n2. Xác nhận thanh toán\n3. Thực hiện dịch vụ\n4. Báo cáo kết quả`}
+                rows="5"
+              />
+            </label>
+            <label>
+              <span>Ghi chú admin</span>
+              <textarea
+                value={orderForm.adminNote || ''}
+                onChange={(event) => onUpdateDraft('adminNote', event.target.value)}
+                placeholder="Ghi chú nội bộ về tiến trình xử lý"
+                rows="3"
+              />
+            </label>
+            <div className="admin-action-row">
+              <button type="submit" className="admin-primary-button" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }} disabled={submitting}>
+                <Save size={16} />
+                <span>Cập nhật workflow</span>
+              </button>
+            </div>
+
+            {selectedOrder.assignedAdminId && (
+              <div className="admin-code-block" style={{ marginTop: '12px' }}>
+                <strong><UserCheck size={15} /> Admin đã phân công: #{selectedOrder.assignedAdminId}</strong>
+                {selectedOrder.processingDeadlineAt && <p>Hạn: {formatAdminDate(selectedOrder.processingDeadlineAt)}</p>}
+                {selectedOrder.manualChecklist && (
+                  <>
+                    <p>Checklist:</p>
+                    <pre>{selectedOrder.manualChecklist}</pre>
+                  </>
+                )}
+              </div>
+            )}
           </form>
         )}
       </div>

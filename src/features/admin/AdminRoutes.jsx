@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom'
+import AdminCouponsView from './coupons/AdminCouponsView'
 import AdminFinanceView from './finance/AdminFinanceView'
 import AdminOrdersView from './orders/AdminOrdersView'
 import AdminOverviewView from './overview/AdminOverviewView'
@@ -7,6 +8,7 @@ import AdminServicesView from './services/AdminServicesView'
 import AdminSettingsView from './settings/AdminSettingsView'
 import AdminTicketsView from './tickets/AdminTicketsView'
 import AdminUsersView from './users/AdminUsersView'
+import AdminWarrantyView from './warranty/AdminWarrantyView'
 import SettingsView from '../user/settings/SettingsView'
 import './admin.css'
 import './finance/finance.css'
@@ -16,6 +18,7 @@ import './services/services.css'
 import './settings/settings.css'
 import './tickets/tickets.css'
 import './users/users.css'
+import './warranty/warranty.css'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')
@@ -71,6 +74,8 @@ function AdminRoutes({
     { path: '/admin/tickets', element: <AdminTicketsView {...sharedProps} /> },
     { path: '/admin/services', element: <AdminServicesView {...sharedProps} /> },
     { path: '/admin/pricing', element: <AdminPricingView {...sharedProps} /> },
+    { path: '/admin/coupons', element: <AdminCouponsView {...sharedProps} /> },
+    { path: '/admin/warranty', element: <AdminWarrantyView {...sharedProps} /> },
     {
       path: '/admin/settings',
       element: (

@@ -37,4 +37,7 @@ export const adminOrdersApi = {
 
   bulkRefundOrders: (data, token) =>
     axiosClient.post('/api/admin/orders/bulk-refund', data, { token }),
+
+  updateManualWorkflow: (orderCode, data, token) =>
+    axiosClient.post(`/api/admin/orders/${orderCode}/manual-workflow`, data, { token }),
 };

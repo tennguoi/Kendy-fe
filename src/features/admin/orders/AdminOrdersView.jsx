@@ -10,8 +10,11 @@ import Loading from '../../../components/Loading/Loading'
 function formFromOrder(order) {
   return {
     adminNote: order?.adminNote || '',
+    assignedAdminId: order?.assignedAdminId || '',
+    manualChecklist: order?.manualChecklist || '',
     minutes: '60',
     orderCode: order?.orderCode || '',
+    processingDeadlineAt: order?.processingDeadlineAt || '',
     reason: '',
     resultData: order?.resultData || '',
     userNote: order?.userNote || '',
@@ -223,6 +226,27 @@ function AdminOrdersView({
     }
   }
 
+  const updateManualWorkflow = async (orderCode) => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = await adminApi.updateManualWorkflow(orderCode, {
+        assignedAdminId: draft?.assignedAdminId ? Number(draft.assignedAdminId) : null,
+        processingDeadlineAt: draft?.processingDeadlineAt || null,
+        manualChecklist: draft?.manualChecklist?.trim() || null,
+        adminNote: draft?.adminNote?.trim() || null,
+      }, token)
+      patchOrder(saved)
+      setDraft(formFromOrder(saved))
+      await loadOrders()
+      onSetNotice(`Đã cập nhật workflow cho đơn ${saved.orderCode}.`)
+    } catch (err) {
+      setViewError(err.message || 'Không cập nhật được workflow thủ công.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const runBulkRefund = async (event) => {
     event.preventDefault()
     const orderCodes = bulkRefundCodes
@@ -300,6 +324,7 @@ function AdminOrdersView({
           onSaveAdminNote={saveAdminNote}
           onSaveUserNote={saveUserNote}
           onUpdateDraft={updateDraft}
+          onUpdateManualWorkflow={updateManualWorkflow}
           orderForm={orderForm}
           refundableOrder={refundableOrder}
           selectedOrder={selectedOrder}

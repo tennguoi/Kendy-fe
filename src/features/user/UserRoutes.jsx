@@ -6,6 +6,7 @@ import OverviewView from './overview/OverviewView'
 import ServicesView from './services/ServicesView'
 import SettingsView from './settings/SettingsView'
 import SupportView from './support/SupportView'
+import WarrantyView from './warranty/WarrantyView'
 import './user.css'
 import './deposit/deposit.css'
 import './overview/overview.css'
@@ -131,7 +132,9 @@ function UserRoutes({
           onCancelOrder={onCancelOrder}
           onLoadOrder={onLoadOrder}
           onReorder={onReorder}
+          onSetNotice={onSetNotice}
           orders={orderList}
+          token={token}
         />
       ),
     },
@@ -162,6 +165,15 @@ function UserRoutes({
           submitting={supportSubmitting}
           ticketForm={ticketForm}
           tickets={apiTickets}
+        />
+      ),
+    },
+    {
+      path: '/warranty',
+      element: (
+        <WarrantyView
+          onSetNotice={onSetNotice}
+          token={token}
         />
       ),
     },

@@ -2,7 +2,7 @@ import { FolderTree, Lock, MoreHorizontal, Plus, Search, Trash2, Eye, EyeOff, Ch
 import { useState } from 'react'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminMoney } from '../../adminFormat'
-import { serviceStatuses } from '../services.constants'
+import { getServiceStatusLabel, serviceStatuses } from '../services.constants'
 
 function ServiceListPanel({
   activeTab = 'services',
@@ -128,7 +128,7 @@ function ServiceListPanel({
             <option value="">Tất cả trạng thái</option>
             {serviceStatuses.map((status) => (
               <option value={status} key={status}>
-                {status}
+                {getServiceStatusLabel(status)}
               </option>
             ))}
           </select>

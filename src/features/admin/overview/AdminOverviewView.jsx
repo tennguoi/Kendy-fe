@@ -10,7 +10,6 @@ import {
   CircleDollarSign,
   Clock3,
   CreditCard,
-  Database,
   FolderOpen,
   Gauge,
   Layers,
@@ -19,7 +18,6 @@ import {
   Plus,
   RefreshCcw,
   Search,
-  Server,
   ShieldAlert,
   ShoppingCart,
   Sparkles,
@@ -29,7 +27,6 @@ import {
   Users,
   WalletCards,
   XCircle,
-  Zap,
 } from 'lucide-react'
 import { formatAdminMoney } from '../adminFormat'
 
@@ -305,6 +302,10 @@ function AdminOverviewView({
     const newUsersMonth = firstNumber(userActivity?.newUsersThisMonth, userActivity?.monthlyNewUsers, dashboard?.newUsersThisMonth)
     const lockedUsers = firstNumber(userActivity?.lockedUsers, dashboardSummary?.lockedUsers)
     const activeServices = safeArray(services).filter((item) => normalizeStatus(item.status) === 'ACTIVE').length
+    const manualProcessingOrders = firstNumber(dashboard?.manualProcessingOrders)
+    const openWarrantyRequests = firstNumber(dashboard?.openWarrantyRequests)
+    const lowStockServices = firstNumber(dashboard?.lowStockServices)
+    const expiringCredentials = firstNumber(dashboard?.expiringCredentials)
     const featuredServices = safeArray(pricingItems).filter((item) => item.featured).length
     const consultingOnly = safeArray(pricingItems).filter((item) => normalizeStatus(item.stockStatus) === 'CONSULTING_ONLY').length
 
@@ -345,6 +346,10 @@ function AdminOverviewView({
       totalRevenue14: sumBy(revenueRows14, ['grossRevenue', 'revenue', 'amount']),
       totalDeposits7: sumBy(revenueRows7, ['depositVolume', 'depositAmount', 'deposits']),
       totalRefunds7: sumBy(revenueRows7, ['refunds', 'refundAmount', 'failedAmount']),
+      manualProcessingOrders,
+      openWarrantyRequests,
+      lowStockServices,
+      expiringCredentials,
     }
   }, [bankTransactions, categories, dashboard, dashboardSummary, pricingItems, revenue, revenueChart, servicePerformance, services, userActivity])
 
@@ -383,6 +388,14 @@ function AdminOverviewView({
         <MetricCard icon={Ticket} label="Ticket chờ xử lý" value={data.pendingTickets} hint="Cần admin phản hồi" tone="orange" onClick={() => navigate('/admin/tickets')} />
         <MetricCard icon={ShieldAlert} label="Nạp cần kiểm tra" value={data.manualReviewBankTransactions} hint="Bank transaction cần đối soát" tone="rose" onClick={() => navigate('/admin/finance')} />
         <MetricCard icon={CreditCard} label="Ví đang giữ" value={formatAdminMoney(data.walletBalance)} hint="Liability hiện tại" tone="slate" />
+        {data.lowStockServices > 0 && (
+          <MetricCard icon={AlertTriangle} label="Sắp hết kho" value={data.lowStockServices} hint="Dịch vụ sắp cạn stock" tone="rose" onClick={() => navigate('/admin/services')} />
+        )}
+        <MetricCard icon={RefreshCcw} label="Đang xử lý thủ công" value={data.manualProcessingOrders} hint="Chờ admin hoàn tất" tone="orange" onClick={() => navigate('/admin/orders')} />
+        <MetricCard icon={LifeBuoy} label="Bảo hành chờ xử lý" value={data.openWarrantyRequests} hint="Yêu cầu bảo hành mới" tone="violet" onClick={() => navigate('/admin/warranty')} />
+        {data.expiringCredentials > 0 && (
+          <MetricCard icon={Clock3} label="Sắp hết hạn" value={data.expiringCredentials} hint="Tài khoản sắp hết hạn" tone="rose" onClick={() => navigate('/admin/services')} />
+        )}
       </div>
 
       <div className="ov-grid ov-grid-main">
@@ -424,6 +437,10 @@ function AdminOverviewView({
             <MiniStat icon={Clock3} label="Đơn xử lý" value={data.processingOrders} tone="orange" />
             <MiniStat icon={AlertTriangle} label="Nạp kiểm tra" value={data.manualReviewBankTransactions} tone="rose" />
             <MiniStat icon={Ticket} label="Ticket admin" value={data.pendingTickets} tone="violet" />
+            {data.manualProcessingOrders > 0 && <MiniStat icon={RefreshCcw} label="Thủ công" value={data.manualProcessingOrders} tone="orange" />}
+            {data.openWarrantyRequests > 0 && <MiniStat icon={LifeBuoy} label="Bảo hành" value={data.openWarrantyRequests} tone="violet" />}
+            {data.lowStockServices > 0 && <MiniStat icon={AlertTriangle} label="Sắp hết kho" value={data.lowStockServices} tone="rose" />}
+            {data.expiringCredentials > 0 && <MiniStat icon={Clock3} label="Hết hạn" value={data.expiringCredentials} tone="rose" />}
           </div>
         </section>
 

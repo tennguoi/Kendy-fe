@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react'
-import { catalogTabs } from '../services.constants'
+import { catalogTabs, getServiceStatusLabel, getServiceTypeLabel } from '../services.constants'
 
 function CatalogControls({
   activeTab,
@@ -33,11 +33,11 @@ function CatalogControls({
       </label>
       <select value={typeFilter} onChange={(event) => onTypeFilterChange(event.target.value)}>
         <option value="">Tất cả loại</option>
-        {serviceTypes.map((type) => <option value={type} key={type}>{type}</option>)}
+        {serviceTypes.map((type) => <option value={type} key={type}>{getServiceTypeLabel(type)}</option>)}
       </select>
       <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>
         <option value="">Tất cả trạng thái</option>
-        {serviceStatuses.map((status) => <option value={status} key={status}>{status}</option>)}
+        {serviceStatuses.map((status) => <option value={status} key={status}>{getServiceStatusLabel(status)}</option>)}
       </select>
     </div>
   )

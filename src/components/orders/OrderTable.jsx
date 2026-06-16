@@ -44,7 +44,9 @@ function OrderTable({
   onLoadOrder,
   onCancelOrder,
   onReorder,
+  onSetNotice,
   orders = [],
+  token,
 }) {
   const visibleOrders = compact ? orders.slice(0, 2) : orders
   const [selectedOrder, setSelectedOrder] = useState(null)
@@ -111,7 +113,9 @@ function OrderTable({
         currentUser={currentUser}
         loading={detailLoading}
         onClose={() => setSelectedOrder(null)}
+        onSetNotice={onSetNotice}
         order={selectedOrder}
+        token={token}
       />
     </section>
   )

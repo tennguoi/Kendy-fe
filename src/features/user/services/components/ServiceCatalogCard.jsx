@@ -1,6 +1,7 @@
 import { Clock3, Star } from 'lucide-react'
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { money } from '../../../../utils/currency'
+import { getServiceTypeLabel } from '../services.constants'
 
 function ServiceCatalogCard({
   isFavorite,
@@ -9,11 +10,16 @@ function ServiceCatalogCard({
   service,
 }) {
   const isDisabled = service.status !== 'ACTIVE' || service.stockStatus === 'OUT_OF_STOCK'
+  const actionLabel = service.type === 'ACCOUNT_STOCK'
+    ? 'Mua và nhận ngay'
+    : service.type === 'MANUAL'
+      ? 'Đặt dịch vụ'
+      : 'Mua dịch vụ'
 
   return (
     <article className="service-card">
       <div className="service-head">
-        <span>{service.categoryName || service.type || 'Dịch vụ'}</span>
+        <span>{service.categoryName || getServiceTypeLabel(service.type) || 'Dịch vụ'}</span>
         <StatusBadge status={service.status} />
       </div>
       <h2>{service.name}</h2>
@@ -31,7 +37,7 @@ function ServiceCatalogCard({
       </div>
       <div className="service-actions">
         <button type="button" disabled={isDisabled} onClick={() => onPurchase(service)}>
-          Mua dịch vụ
+          {actionLabel}
         </button>
         <button
           type="button"

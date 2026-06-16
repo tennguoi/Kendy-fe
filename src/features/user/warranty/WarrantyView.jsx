@@ -1,0 +1,157 @@
+import { RefreshCw, ShieldCheck } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { userApi } from '../../../api/user.api'
+
+const WARRANTY_STATUS_LABELS = {
+  OPEN: 'Mở',
+  REVIEWING: 'Đang xem xét',
+  APPROVED_REPLACE: 'Đã duyệt đổi',
+  APPROVED_REFUND: 'Đã duyệt hoàn tiền',
+  REJECTED: 'Từ chối',
+  RESOLVED: 'Đã xử lý',
+}
+
+function formatDate(value) {
+  if (!value) {
+    return '-'
+  }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return '-'
+  }
+  return new Intl.DateTimeFormat('vi-VN', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}
+
+function statusClass(status) {
+  return `warranty-status warranty-status-${String(status || '').toLowerCase().replaceAll('_', '-')}`
+}
+
+function normalizeWarrantyList(value) {
+  if (Array.isArray(value)) {
+    return value
+  }
+  if (!value || typeof value !== 'object') {
+    return []
+  }
+  const keys = ['content', 'items', 'data', 'records', 'results']
+  return keys.map((key) => value[key]).find(Array.isArray) || []
+}
+
+function WarrantyView({ onSetNotice, token }) {
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [requests, setRequests] = useState([])
+  const [statusFilter, setStatusFilter] = useState('')
+
+  const loadRequests = useCallback(async () => {
+    if (!token) {
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const data = await userApi.getWarranties(token, { limit: 100 })
+      setRequests(normalizeWarrantyList(data))
+    } catch (err) {
+      setError(err.message || 'Không tải được danh sách bảo hành.')
+    } finally {
+      setLoading(false)
+    }
+  }, [token])
+
+  useEffect(() => {
+    loadRequests()
+  }, [loadRequests])
+
+  const filteredRequests = useMemo(() => (
+    statusFilter ? requests.filter((request) => request.status === statusFilter) : requests
+  ), [requests, statusFilter])
+
+  const openCount = requests.filter((request) => request.status === 'OPEN' || request.status === 'REVIEWING').length
+
+  const handleRefresh = async () => {
+    await loadRequests()
+    if (onSetNotice) {
+      onSetNotice('Đã tải lại yêu cầu bảo hành.')
+    }
+  }
+
+  return (
+    <section className="warranty-workspace">
+      <div className="warranty-toolbar">
+        <div>
+          <h2>Bảo hành của tôi</h2>
+          <p>{openCount} yêu cầu đang xử lý</p>
+        </div>
+        <button type="button" className="admin-icon-button" onClick={handleRefresh} disabled={loading}>
+          <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
+          <span>Tải lại</span>
+        </button>
+      </div>
+
+      {error && <p className="admin-message error">{error}</p>}
+
+      <div className="warranty-filter-row">
+        <ShieldCheck size={18} strokeWidth={2} aria-hidden="true" />
+        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+          <option value="">Tất cả trạng thái</option>
+          {Object.entries(WARRANTY_STATUS_LABELS).map(([value, label]) => (
+            <option value={value} key={value}>{label}</option>
+          ))}
+        </select>
+        <span>{filteredRequests.length} yêu cầu</span>
+      </div>
+
+      {loading && <p className="warranty-muted">Đang tải yêu cầu bảo hành...</p>}
+
+      <div className="warranty-list">
+        {filteredRequests.map((request) => (
+          <article className="warranty-item" key={request.id}>
+            <div className="warranty-item-head">
+              <div>
+                <strong>{request.orderCode}</strong>
+                <span>{request.serviceName}</span>
+              </div>
+              <span className={statusClass(request.status)}>
+                {WARRANTY_STATUS_LABELS[request.status] || request.status}
+              </span>
+            </div>
+            <dl className="warranty-meta">
+              <div><dt>Ngày gửi</dt><dd>{formatDate(request.createdAt)}</dd></div>
+              <div><dt>Cập nhật</dt><dd>{formatDate(request.updatedAt || request.resolvedAt)}</dd></div>
+              {request.originalCredentialId && (
+                <div><dt>Credential gốc</dt><dd>#{request.originalCredentialId}</dd></div>
+              )}
+              {request.replacementCredentialId && (
+                <div><dt>Credential mới</dt><dd>#{request.replacementCredentialId}</dd></div>
+              )}
+            </dl>
+            <div className="warranty-copy">
+              <strong>Lý do</strong>
+              <p>{request.reason || '-'}</p>
+            </div>
+            {request.adminNote && (
+              <div className="warranty-copy">
+                <strong>Phản hồi admin</strong>
+                <p>{request.adminNote}</p>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+
+      {!loading && filteredRequests.length === 0 && (
+        <div className="warranty-empty">
+          <ShieldCheck size={28} strokeWidth={2} aria-hidden="true" />
+          <strong>Chưa có yêu cầu bảo hành</strong>
+          <span>Yêu cầu bảo hành được tạo từ chi tiết đơn hàng đã hoàn thành.</span>
+        </div>
+      )}
+    </section>
+  )
+}
+
+export default WarrantyView

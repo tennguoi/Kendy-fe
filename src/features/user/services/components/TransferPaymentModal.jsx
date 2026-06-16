@@ -16,7 +16,10 @@ function TransferPaymentModal({
 
   const deposit = activeCheckout?.deposit
   const status = deposit?.status || activeCheckout?.status || 'PENDING'
+  const checkoutStatus = String(activeCheckout?.status || '').toUpperCase()
   const normalizedStatus = String(status).toUpperCase()
+  const hasOrder = Boolean(activeCheckout?.order)
+  const walletCreditedWithoutOrder = checkoutStatus === 'WALLET_CREDITED'
 
   // Auto-polling when state is PENDING
   useEffect(() => {
@@ -83,7 +86,24 @@ function TransferPaymentModal({
             </div>
           )}
 
-          {normalizedStatus === 'COMPLETED' && (
+          {walletCreditedWithoutOrder && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '12px 16px',
+              background: '#fffbeb',
+              border: '1px solid #fde68a',
+              borderRadius: '10px',
+              color: '#92400e',
+              fontSize: '13.5px'
+            }}>
+              <AlertCircle size={18} />
+              <span>{activeCheckout.statusMessage || 'Thanh toán đã được cộng vào ví, nhưng đơn hàng chưa được tạo tự động. Bạn có thể đặt lại bằng số dư ví hoặc liên hệ admin hỗ trợ.'}</span>
+            </div>
+          )}
+
+          {normalizedStatus === 'COMPLETED' && !walletCreditedWithoutOrder && (
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -96,7 +116,7 @@ function TransferPaymentModal({
               fontSize: '13.5px'
             }}>
               <CheckCircle2 size={18} />
-              <span>Thanh toán hoàn tất! Đơn hàng của bạn đã được khởi tạo thành công.</span>
+              <span>{hasOrder ? 'Thanh toán hoàn tất. Đơn hàng của bạn đã được khởi tạo thành công.' : 'Thanh toán hoàn tất. Hệ thống đang khởi tạo đơn hàng, vui lòng kiểm tra lại trạng thái.'}</span>
             </div>
           )}
 
@@ -274,7 +294,7 @@ function TransferPaymentModal({
                   fontSize: '14px'
                 }}
               >
-                {normalizedStatus === 'COMPLETED' ? 'Đóng và Xem đơn hàng' : 'Đóng'}
+                {normalizedStatus === 'COMPLETED' && hasOrder ? 'Đóng và Xem đơn hàng' : 'Đóng'}
               </button>
             </div>
           </div>

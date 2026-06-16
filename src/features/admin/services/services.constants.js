@@ -1,6 +1,7 @@
-export const serviceTypes = ['MANUAL', 'AUTO', 'SUBSCRIPTION', 'API_CREDIT']
+export const serviceTypes = ['ACCOUNT_STOCK', 'MANUAL', 'AUTO', 'SUBSCRIPTION', 'API_CREDIT']
 export const serviceTypeLabels = {
-  MANUAL: 'Thủ công',
+  ACCOUNT_STOCK: 'Kho tài khoản (giao tự động)',
+  MANUAL: 'Dịch vụ thủ công',
   AUTO: 'Tự động',
   SUBSCRIPTION: 'Đăng ký (Gia hạn)',
   API_CREDIT: 'Tài nguyên API'
@@ -37,6 +38,16 @@ export const orderStatusLabels = {
   REFUNDED: 'Đã hoàn tiền'
 }
 
+export const credentialStatusLabels = {
+  AVAILABLE: 'Sẵn sàng giao',
+  RESERVED: 'Đang giữ cho checkout',
+  DELIVERED: 'Đã giao',
+  REPLACED: 'Đã đổi/bảo hành',
+  REFUNDED: 'Đã refund',
+  DISABLED: 'Đã khóa',
+  EXPIRED: 'Hết hạn'
+}
+
 export const facebookSchema = JSON.stringify({
   properties: {
     facebookUrl: { label: 'Link Facebook', type: 'string' },
@@ -51,4 +62,4 @@ export const getServiceStatusLabel = (status) => serviceStatusLabels[status] || 
 export const getStockStatusLabel = (status) => stockStatusLabels[status] || status
 export const getCtaTypeLabel = (type) => ctaTypeLabels[type] || type
 export const getOrderStatusLabel = (status) => orderStatusLabels[status] || status
-
+export const getCredentialStatusLabel = (status) => credentialStatusLabels[status] || status

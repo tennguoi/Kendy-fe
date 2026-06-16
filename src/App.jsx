@@ -39,6 +39,10 @@ function App() {
   const [depositAmount, setDepositAmount] = useState('250000')
   const [checkoutService, setCheckoutService] = useState(null)
   const [checkoutSubmitting, setCheckoutSubmitting] = useState(false)
+  const [checkoutCouponCode, setCheckoutCouponCode] = useState('')
+  const [checkoutCouponError, setCheckoutCouponError] = useState('')
+  const [checkoutCouponQuote, setCheckoutCouponQuote] = useState(null)
+  const [checkoutCouponSubmitting, setCheckoutCouponSubmitting] = useState(false)
   const [accessToken, setAccessToken] = useState(() => initialOAuthCallback?.token || getStoredAccessToken())
   const [rememberSession, setRememberSession] = useState(() => Boolean(initialOAuthCallback?.token) || hasPersistentSession())
   const [currentUser, setCurrentUser] = useState(null)
@@ -83,6 +87,11 @@ function App() {
   const ticketList = useMemo(() => (Array.isArray(apiTickets) ? apiTickets : []), [apiTickets])
   const selectedTicket = ticketList.find((ticket) => ticket.ticketCode === supportSelectedCode) || ticketList[0] || null
   const displayBalance = Number(wallet?.balance ?? currentUser?.balance ?? 0)
+  const checkoutPayableAmount = Number(
+    checkoutCouponQuote?.valid
+      ? checkoutCouponQuote.payableAmount
+      : checkoutService?.price
+  ) || 0
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
   const normalizedPathname = normalizePathname(location.pathname)
   const isAdminPath = normalizedPathname === '/admin' || normalizedPathname.startsWith('/admin/')
@@ -289,6 +298,10 @@ function App() {
     setAccessToken('')
     setCheckoutService(null)
     setCheckoutSubmitting(false)
+    setCheckoutCouponCode('')
+    setCheckoutCouponError('')
+    setCheckoutCouponQuote(null)
+    setCheckoutCouponSubmitting(false)
     setCurrentUser(null)
     setWallet(null)
     setApiOrders([])
@@ -501,6 +514,9 @@ function App() {
         throw new Error('Service price must be greater than zero')
       }
 
+      setCheckoutCouponCode('')
+      setCheckoutCouponError('')
+      setCheckoutCouponQuote(null)
       setCheckoutService(service)
     } catch (err) {
       const message = purchaseErrorMessage(err)
@@ -509,14 +525,57 @@ function App() {
     }
   }
 
+  const handleCheckoutCouponChange = (value) => {
+    setCheckoutCouponCode(value)
+    setCheckoutCouponError('')
+    setCheckoutCouponQuote(null)
+  }
+
+  const handleApplyCheckoutCoupon = async () => {
+    if (!accessToken || !checkoutService) {
+      return
+    }
+    const code = checkoutCouponCode.trim()
+    if (!code) {
+      setCheckoutCouponError('Vui lòng nhập mã giảm giá.')
+      return
+    }
+
+    setCheckoutCouponSubmitting(true)
+    try {
+      const serviceId = resolveServiceId(checkoutService)
+      const quote = await userApi.validateCoupon({ serviceId, couponCode: code }, accessToken)
+      if (!quote?.valid) {
+        setCheckoutCouponQuote(null)
+        setCheckoutCouponError(quote?.message || 'Mã giảm giá không hợp lệ.')
+        return
+      }
+      setCheckoutCouponQuote(quote)
+      setCheckoutCouponCode(quote.couponCode || code)
+      setCheckoutCouponError('')
+    } catch (err) {
+      setCheckoutCouponQuote(null)
+      setCheckoutCouponError(err.message || 'Không kiểm tra được mã giảm giá.')
+    } finally {
+      setCheckoutCouponSubmitting(false)
+    }
+  }
+
+  const closeCheckoutModal = () => {
+    setCheckoutService(null)
+    setCheckoutCouponCode('')
+    setCheckoutCouponError('')
+    setCheckoutCouponQuote(null)
+  }
+
   const handlePayWithWallet = async (formData = {}) => {
     if (!accessToken || !checkoutService) {
       return
     }
 
     const serviceId = resolveServiceId(checkoutService)
-    const servicePrice = Number(checkoutService.price)
-    if (Number.isFinite(servicePrice) && servicePrice > displayBalance) {
+    const payableAmount = checkoutPayableAmount
+    if (Number.isFinite(payableAmount) && payableAmount > displayBalance) {
       const message = 'Số dư ví không đủ. Chọn thanh toán chuyển khoản để tạo mã QR đúng số tiền dịch vụ.'
       setApiNotice(message)
       notify(message, 'info')
@@ -529,6 +588,7 @@ function App() {
         serviceId,
         inputData: JSON.stringify({ ...formData, source: 'dashboard' }),
         idempotencyKey: createIdempotencyKey(serviceId),
+        couponCode: checkoutCouponCode.trim() || undefined,
       }, accessToken)
 
       if (!order?.orderCode) {
@@ -540,7 +600,7 @@ function App() {
       const message = `Đã tạo đơn ${order.orderCode}.`
       setApiNotice(message)
       notify(message, 'success')
-      setCheckoutService(null)
+      closeCheckoutModal()
     } catch (err) {
       const message = purchaseErrorMessage(err)
       setApiNotice(message)
@@ -555,8 +615,8 @@ function App() {
       return
     }
 
-    const servicePrice = Number(checkoutService.price)
-    if (!Number.isFinite(servicePrice) || servicePrice <= MIN_DEPOSIT_AMOUNT) {
+    const payableAmount = checkoutPayableAmount
+    if (!Number.isFinite(payableAmount) || payableAmount <= MIN_DEPOSIT_AMOUNT) {
       const message = 'Số tiền thanh toán phải lớn hơn 1.000đ để tạo mã QR.'
       setApiNotice(message)
       notify(message, 'error')
@@ -570,13 +630,14 @@ function App() {
         serviceId,
         inputData: JSON.stringify({ ...formData, source: 'checkout' }),
         idempotencyKey: createIdempotencyKey(serviceId),
+        couponCode: checkoutCouponCode.trim() || undefined,
       }, accessToken)
       const deposit = checkout.deposit
       setActiveDeposit(deposit)
       setActiveCheckout(checkout)
       setApiDeposits((items) => [deposit, ...normalizeList(items).filter((item) => item.depositCode !== deposit.depositCode)])
-      setDepositAmount(String(servicePrice))
-      setCheckoutService(null)
+      setDepositAmount(String(payableAmount))
+      closeCheckoutModal()
       notify(`Đã tạo mã thanh toán ${deposit.depositCode} cho ${checkout.serviceName || checkoutService.name}.`, 'success')
     } catch (err) {
       const message = err.message || 'Không tạo được mã thanh toán. Vui lòng thử lại.'
@@ -993,7 +1054,13 @@ function App() {
       />
       <PaymentChoiceModal
         balance={displayBalance}
-        onClose={() => setCheckoutService(null)}
+        couponCode={checkoutCouponCode}
+        couponError={checkoutCouponError}
+        couponQuote={checkoutCouponQuote}
+        couponSubmitting={checkoutCouponSubmitting}
+        onApplyCoupon={handleApplyCheckoutCoupon}
+        onClose={closeCheckoutModal}
+        onCouponChange={handleCheckoutCouponChange}
         onPayTransfer={handlePayByTransfer}
         onPayWallet={handlePayWithWallet}
         service={checkoutService}

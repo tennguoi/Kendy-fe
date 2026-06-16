@@ -302,6 +302,10 @@
   grid-template-columns: minmax(150px, 0.8fr) minmax(200px, 1.25fr) 120px 130px 150px;
 }
 
+.admin-data-row.coupons {
+  grid-template-columns: minmax(130px, 0.8fr) minmax(150px, 0.9fr) minmax(110px, 0.7fr) minmax(190px, 1.2fr) 110px;
+}
+
 .admin-data-row.bank {
   grid-template-columns: minmax(170px, 0.9fr) 120px minmax(260px, 1.4fr) 140px 150px;
 }

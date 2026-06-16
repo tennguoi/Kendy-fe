@@ -1,5 +1,6 @@
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { money } from '../../../../utils/currency'
+import { getServiceTypeLabel } from '../../services/services.constants'
 
 function QuickServicesPanel({
   onOpenServices,
@@ -18,7 +19,7 @@ function QuickServicesPanel({
         {services.map((service) => (
           <article className="quick-service-card" key={service.id}>
             <div>
-              <span>{service.categoryName || service.type || 'Dịch vụ'}</span>
+              <span>{service.categoryName || getServiceTypeLabel(service.type) || 'Dịch vụ'}</span>
               <h3>{service.name}</h3>
             </div>
             <p>{service.shortDescription || service.description || 'Dịch vụ đang sẵn sàng xử lý theo quy trình Kendy Digital.'}</p>
@@ -31,7 +32,7 @@ function QuickServicesPanel({
               disabled={service.status !== 'ACTIVE' || service.stockStatus === 'OUT_OF_STOCK'}
               onClick={() => onPurchase(service)}
             >
-              Mua ngay
+              {service.type === 'ACCOUNT_STOCK' ? 'Nhận ngay' : service.type === 'MANUAL' ? 'Đặt dịch vụ' : 'Mua ngay'}
             </button>
           </article>
         ))}

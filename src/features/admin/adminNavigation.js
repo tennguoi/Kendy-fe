@@ -4,7 +4,9 @@ import {
   Grid3X3,
   LayoutDashboard,
   MessageSquare,
+  Percent,
   Settings,
+  ShieldCheck,
   Users,
   WalletCards,
 } from 'lucide-react'
@@ -17,5 +19,7 @@ export const adminNavItems = [
   { id: 'admin-tickets', label: 'Ticket', path: '/admin/tickets', icon: MessageSquare },
   { id: 'admin-services', label: 'Dịch vụ', path: '/admin/services', icon: Grid3X3 },
   { id: 'admin-pricing', label: 'Bảng giá', path: '/admin/pricing', icon: BadgeDollarSign },
+  { id: 'admin-coupons', label: 'Coupon', path: '/admin/coupons', icon: Percent },
+  { id: 'admin-warranty', label: 'Bảo hành', path: '/admin/warranty', icon: ShieldCheck },
   { id: 'admin-settings', label: 'Cài đặt', path: '/admin/settings', icon: Settings },
 ]
