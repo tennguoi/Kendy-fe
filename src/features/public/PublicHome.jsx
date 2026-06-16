@@ -11,7 +11,6 @@ import HeroSection from './components/HeroSection/HeroSection'
 import PublicFooter from './components/PublicFooter/PublicFooter'
 import PublicHeader from './components/PublicHeader/PublicHeader'
 import ServiceCategories from './components/ServiceCategories/ServiceCategories'
-import ServiceTableSection from './components/ServiceTableSection/ServiceTableSection'
 import TestimonialsSection from './components/TestimonialsSection/TestimonialsSection'
 import TrustStrip from './components/TrustStrip/TrustStrip'
 import WhyChooseSection from './components/WhyChooseSection/WhyChooseSection'
@@ -30,7 +29,6 @@ import {
 import {
   featuredServices as staticFeaturedServices,
   serviceCategories as staticCategories,
-  serviceTableRows as staticTableRows,
 } from './data/services.public'
 import ScrollReveal from '../../components/ScrollReveal/ScrollReveal'
 import './PublicHome.css'
@@ -61,24 +59,20 @@ function buildServiceCategories(apiCategories) {
       id: slug,
       title: cat.name,
       description: cat.description || '',
-      microcopy: '',
+      microcopy: cat.microcopy || '',
       icon: categoryIcons[slug] || ShieldCheck,
-      priceFrom: 'Theo gói',
-      processingTime: 'Theo dịch vụ',
-      warranty: 'Theo điều kiện',
-      requirements: [],
-      cta: 'Xem chi tiết',
+      priceFrom: cat.priceFrom || 'Theo gói',
+      processingTime: cat.processingTime || 'Theo dịch vụ',
+      warranty: cat.warranty || 'Theo điều kiện',
+      requirements: cat.requirements ? cat.requirements.split('\n').map(r => r.trim()).filter(Boolean) : [],
+      cta: cat.cta || 'Xem chi tiết',
     }
   })
 }
 
 function buildFeaturedServices(apiServices) {
   const services = Array.isArray(apiServices) ? apiServices : []
-  const featured = services.filter((s) => s.featured).slice(0, 4)
-  if (featured.length === 0) {
-    return services.slice(0, 4)
-  }
-  return featured
+  return services.slice(0, 4)
 }
 
 function mapApiServiceToFeaturedRow(service) {
@@ -89,7 +83,7 @@ function mapApiServiceToFeaturedRow(service) {
     category: service.categoryName || service.type || 'Dịch vụ',
     price: service.priceText || `Từ ${Number(service.price).toLocaleString('vi-VN')}đ`,
     processingTime: service.processingTime || 'Theo quy trình',
-    warranty: service.warrantyInfo || 'Theo điều kiện',
+    warranty: service.warrantyPolicy || 'Theo điều kiện',
     badge: service.featured ? 'Nổi bật' : 'Mới',
     status: service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng',
     mode: 'Mua ngay',
@@ -98,40 +92,13 @@ function mapApiServiceToFeaturedRow(service) {
   }
 }
 
-function mapApiServiceToTableRow(service) {
-  const slug = pickCategorySlug(service.categoryName || service.type)
-  return {
-    name: service.name,
-    category: slug,
-    categoryLabel: service.categoryName || service.type || 'Dịch vụ',
-    price: service.priceText || `Từ ${Number(service.price).toLocaleString('vi-VN')}đ`,
-    processingTime: service.processingTime || 'Theo quy trình',
-    warranty: service.warrantyInfo || 'Theo điều kiện',
-    status: service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng',
-    cta: 'Mua ngay',
-    icon: categoryIcons[slug] || ShieldCheck,
-  }
-}
-
-function buildFilters(apiCategories) {
-  const cats = Array.isArray(apiCategories) ? apiCategories : []
-  if (cats.length === 0) return [{ id: 'all', label: 'Tất cả' }]
-  return [
-    { id: 'all', label: 'Tất cả' },
-    ...cats.map((cat) => ({
-      id: pickCategorySlug(cat.name),
-      label: cat.name,
-    })),
-  ]
-}
-
 function PublicHome({ notice, onLoginClick }) {
   const [apiServices, setApiServices] = useState([])
   const [apiCategories, setApiCategories] = useState([])
 
   useEffect(() => {
     Promise.allSettled([
-      publicApi.getServices({ limit: 50 }),
+      publicApi.getServices({ limit: 4, sort: 'popular' }),
       publicApi.getCategories(),
     ]).then((results) => {
       if (results[0].status === 'fulfilled') {
@@ -159,17 +126,6 @@ function PublicHome({ notice, onLoginClick }) {
     return featured.map(mapApiServiceToFeaturedRow)
   }, [apiServices, hasApiData])
 
-  const mergedFilters = useMemo(() => {
-    const filters = buildFilters(apiCategories)
-    if (filters.length > 1) return filters
-    return [{ id: 'all', label: 'Tất cả' }, { id: 'capcut', label: 'CapCut' }, { id: 'facebook', label: 'Facebook' }, { id: 'upgrade', label: 'Nâng cấp' }, { id: 'ads', label: 'Quảng cáo' }]
-  }, [apiCategories])
-
-  const mergedTableRows = useMemo(() => {
-    if (!hasApiData) return staticTableRows
-    return apiServices.map(mapApiServiceToTableRow)
-  }, [apiServices, hasApiData])
-
   const handleConsultSubmit = (event) => {
     event.preventDefault()
     onLoginClick()
@@ -191,13 +147,6 @@ function PublicHome({ notice, onLoginClick }) {
         <ScrollReveal delay={200}><TrustStrip items={trustStats} /></ScrollReveal>
         <ScrollReveal delay={100}><ServiceCategories categories={mergedCategories} /></ScrollReveal>
         <ScrollReveal delay={100}><FeaturedServices services={mergedFeaturedServices} onPurchaseClick={onLoginClick} /></ScrollReveal>
-        <ScrollReveal delay={100}>
-          <ServiceTableSection
-            filters={mergedFilters}
-            rows={mergedTableRows}
-            onActionClick={onLoginClick}
-          />
-        </ScrollReveal>
         <ScrollReveal delay={100}><WorkflowSection steps={workflowSteps} /></ScrollReveal>
         <ScrollReveal delay={100}><AutoDepositSection flow={depositFlow} /></ScrollReveal>
         <ScrollReveal delay={100}><WhyChooseSection items={whyChooseUs} policies={policyHighlights} /></ScrollReveal>

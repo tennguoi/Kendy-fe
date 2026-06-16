@@ -45,6 +45,12 @@ const emptyCategoryForm = {
   parentId: '',
   slug: '',
   sortOrder: '0',
+  microcopy: '',
+  priceFrom: '',
+  processingTime: '',
+  warranty: '',
+  requirements: '',
+  cta: '',
 }
 
 const emptyCredentialForm = {
@@ -403,6 +409,12 @@ function AdminServicesView({
         parentId: detail.parentId ? String(detail.parentId) : '',
         slug: detail.slug || '',
         sortOrder: String(detail.sortOrder ?? 0),
+        microcopy: detail.microcopy || '',
+        priceFrom: detail.priceFrom || '',
+        processingTime: detail.processingTime || '',
+        warranty: detail.warranty || '',
+        requirements: detail.requirements || '',
+        cta: detail.cta || '',
       })
     } catch {
       setCategoryForm({
@@ -411,6 +423,12 @@ function AdminServicesView({
         parentId: category.parentId ? String(category.parentId) : '',
         slug: category.slug || '',
         sortOrder: String(category.sortOrder ?? 0),
+        microcopy: category.microcopy || '',
+        priceFrom: category.priceFrom || '',
+        processingTime: category.processingTime || '',
+        warranty: category.warranty || '',
+        requirements: category.requirements || '',
+        cta: category.cta || '',
       })
     }
   }
@@ -432,6 +450,12 @@ function AdminServicesView({
         parentId: categoryForm.parentId ? Number(categoryForm.parentId) : undefined,
         slug: categoryForm.slug.trim(),
         sortOrder: Number(categoryForm.sortOrder) || 0,
+        microcopy: categoryForm.microcopy || undefined,
+        priceFrom: categoryForm.priceFrom || undefined,
+        processingTime: categoryForm.processingTime || undefined,
+        warranty: categoryForm.warranty || undefined,
+        requirements: categoryForm.requirements || undefined,
+        cta: categoryForm.cta || undefined,
       }
       const saved = selectedCategoryId
         ? await adminApi.updateServiceCategory(selectedCategoryId, payload, token)

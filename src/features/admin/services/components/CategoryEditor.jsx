@@ -136,6 +136,64 @@ function CategoryEditor({
             </label>
           </div>
         </section>
+
+        <section className="service-editor-section">
+          <div className="service-section-title">
+            <h4>Thông tin phụ (Dành cho trang chủ)</h4>
+            <span>Chi tiết về giá, thời gian, bảo hành và CTA</span>
+          </div>
+          <div className="admin-form-grid service-form-grid">
+            <label className="wide">
+              <span>Mô tả ngắn bổ sung (Microcopy)</span>
+              <input
+                value={categoryForm.microcopy || ''}
+                onChange={(event) => onCategoryFormChange('microcopy', event.target.value)}
+                placeholder="Ví dụ: Phù hợp editor, TikToker và shop cần chỉnh video nhanh..."
+              />
+            </label>
+            <label>
+              <span>Giá từ</span>
+              <input
+                value={categoryForm.priceFrom || ''}
+                onChange={(event) => onCategoryFormChange('priceFrom', event.target.value)}
+                placeholder="Ví dụ: Từ 89.000đ"
+              />
+            </label>
+            <label>
+              <span>Thời gian xử lý</span>
+              <input
+                value={categoryForm.processingTime || ''}
+                onChange={(event) => onCategoryFormChange('processingTime', event.target.value)}
+                placeholder="Ví dụ: 5-30 phút"
+              />
+            </label>
+            <label>
+              <span>Bảo hành</span>
+              <input
+                value={categoryForm.warranty || ''}
+                onChange={(event) => onCategoryFormChange('warranty', event.target.value)}
+                placeholder="Ví dụ: Hỗ trợ 7 ngày"
+              />
+            </label>
+            <label>
+              <span>Nhãn nút bấm (CTA)</span>
+              <input
+                value={categoryForm.cta || ''}
+                onChange={(event) => onCategoryFormChange('cta', event.target.value)}
+                placeholder="Ví dụ: Xem gói"
+              />
+            </label>
+            <label className="wide">
+              <span>Yêu cầu cần chuẩn bị (Mỗi yêu cầu một dòng)</span>
+              <textarea
+                value={categoryForm.requirements || ''}
+                onChange={(event) => onCategoryFormChange('requirements', event.target.value)}
+                placeholder="Ví dụ:&#10;Email nhận gói&#10;Thiết bị đăng nhập ổn định"
+                rows="3"
+              />
+            </label>
+          </div>
+        </section>
       </div>
     </form>
   )
