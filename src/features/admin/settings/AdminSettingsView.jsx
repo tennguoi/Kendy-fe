@@ -9,6 +9,7 @@ import GuideTab from './components/GuideTab'
 import HealthTab from './components/HealthTab'
 import JobsTab from './components/JobsTab'
 import NotificationsTab from './components/NotificationsTab'
+import OperationsTab from './components/OperationsTab'
 import SettingsTab from './components/SettingsTab'
 import WebhooksTab from './components/WebhooksTab'
 import { settingsTabs } from './settings.constants'
@@ -73,6 +74,7 @@ function AdminSettingsView({
   const twoFactorRequired = settingsMap.admin_2fa_required === 'true'
   const selectedAdmin = admins.find((admin) => admin.id === selectedAdminId) || admins[0]
   const selectedRole = roles.find((role) => role.id === selectedRoleId)
+  const activeTabMeta = settingsTabs.find((tab) => tab.id === activeTab) || settingsTabs[0]
 
   const setViewError = useCallback((message) => {
     setError(message)
@@ -725,10 +727,11 @@ function AdminSettingsView({
   }
 
   return (
-    <section className="admin-view">
-      <div className="admin-toolbar">
+    <section className="admin-view settings-view">
+      <div className="admin-toolbar settings-toolbar">
         <div>
           <h2>Cài đặt hệ thống</h2>
+          <p>Quản trị vận hành, bảo mật, audit và các cấu hình nền của hệ thống.</p>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadSettings} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
@@ -742,136 +745,170 @@ function AdminSettingsView({
         </p>
       )}
 
-      <div className="admin-tabs">
-        {settingsTabs.map((tab) => (
-          <button type="button" className={activeTab === tab.id ? 'active' : ''} key={tab.id} onClick={() => setActiveTab(tab.id)}>
-            {tab.label}
-          </button>
-        ))}
+      <div className="settings-layout">
+        <aside className="settings-rail" aria-label="Nhóm cài đặt">
+          {settingsTabs.map((tab) => {
+            const Icon = tab.icon
+            return (
+              <button
+                type="button"
+                className={activeTab === tab.id ? 'active' : ''}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {Icon && <Icon size={17} strokeWidth={2} aria-hidden="true" />}
+                <span>{tab.label}</span>
+              </button>
+            )
+          })}
+        </aside>
+
+        <div className="settings-main">
+          <div className="settings-section-head">
+            <div>
+              <span>{activeTabMeta.kicker || 'System'}</span>
+              <h3>{activeTabMeta.title || activeTabMeta.label}</h3>
+            </div>
+            {activeTabMeta.description && <p>{activeTabMeta.description}</p>}
+          </div>
+
+          <div className="settings-content">
+            {activeTab === 'settings' && (
+              <SettingsTab
+                currentUser={currentUser}
+                enableEmailTwoFactor={enableEmailTwoFactor}
+                loadSettingHistory={loadSettingHistory}
+                onBackupSettings={backupSettings}
+                onRestoreSettingsFromText={restoreSettingsFromText}
+                onSendTwoFactorEnableCode={sendTwoFactorEnableCode}
+                onSetRestoreText={setRestoreText}
+                onSetSettingHistoryKey={setSettingHistoryKey}
+                onSetSettingSearch={setSettingSearch}
+                onSetTwoFactorCode={setTwoFactorCode}
+                onToggleTwoFactor={toggleTwoFactor}
+                restoreText={restoreText}
+                settingHistory={settingHistory}
+                settingHistoryKey={settingHistoryKey}
+                settingSearch={settingSearch}
+                settings={settings}
+                submitting={submitting}
+                twoFactorCode={twoFactorCode}
+                twoFactorEmailSent={twoFactorEmailSent}
+                twoFactorRequired={twoFactorRequired}
+              />
+            )}
+
+            {activeTab === 'webhooks' && (
+              <WebhooksTab
+                onRetryFormChange={(patch) => setRetryForm((current) => ({ ...current, ...patch }))}
+                onSaveSepayConfig={saveSepayConfig}
+                onSetSepayConfigText={setSepayConfigText}
+                retryForm={retryForm}
+                retryWebhook={retryWebhook}
+                sepayConfigText={sepayConfigText}
+                sepayLogs={sepayLogs}
+                sepayStatus={sepayStatus}
+                submitting={submitting}
+              />
+            )}
+
+            {activeTab === 'operations' && (
+              <OperationsTab
+                onSaved={(savedSettings) => setSettings((current) => mergeSettings(current, savedSettings))}
+                onSetError={setViewError}
+                onSetNotice={onSetNotice}
+                settingsMap={settingsMap}
+                submitting={submitting}
+                token={token}
+              />
+            )}
+
+            {activeTab === 'notifications' && (
+              <NotificationsTab
+                notifications={notifications}
+                notificationSetting={notificationSetting}
+                onMarkAllNotificationsRead={markAllNotificationsRead}
+                onMarkNotificationRead={markNotificationRead}
+                onSetNotificationSetting={setNotificationSetting}
+                onUpdateNotificationSetting={updateNotificationSetting}
+                submitting={submitting}
+              />
+            )}
+
+            {activeTab === 'admins' && (
+              <AdminAccessTab
+                adminEditor={adminEditor}
+                adminSessions={adminSessions}
+                admins={admins}
+                onDeleteRole={deleteRole}
+                onRevokeAdminSession={revokeAdminSession}
+                onRunAdminTwoFactor={runAdminTwoFactor}
+                onSaveAdminAccess={saveAdminAccess}
+                onSaveRole={saveRole}
+                onSelectAdmin={setSelectedAdminId}
+                onSelectRoleForEdit={selectRoleForEdit}
+                onSetAdminEditor={setAdminEditor}
+                onSetAdminStatus={setAdminStatus}
+                onSetRoleDraft={setRoleDraft}
+                onTogglePermission={togglePermission}
+                permissions={permissions}
+                roleDraft={roleDraft}
+                roles={roles}
+                selectedAdmin={selectedAdmin}
+                selectedRole={selectedRole}
+                selectedRoleId={selectedRoleId}
+                submitting={submitting}
+                totpSetup={totpSetup}
+              />
+            )}
+
+            {activeTab === 'audit' && (
+              <AuditTab
+                auditExportFormat={auditExportFormat}
+                auditFilter={auditFilter}
+                auditLogs={auditLogs}
+                loadAdminActions={loadAdminActions}
+                loadAuditDetail={loadAuditDetail}
+                loadAuditList={loadAuditList}
+                loadAuditLogs={loadAuditLogs}
+                onExportAudit={exportAudit}
+                onSetAuditExportFormat={setAuditExportFormat}
+                onSetAuditFilter={setAuditFilter}
+                selectedAudit={selectedAudit}
+                submitting={submitting}
+              />
+            )}
+
+            {activeTab === 'files' && (
+              <FilesTab
+                fileIdInput={fileIdInput}
+                fileToUpload={fileToUpload}
+                onDeleteAdminFile={deleteAdminFile}
+                onDownloadAdminFile={downloadAdminFile}
+                onSetFileIdInput={setFileIdInput}
+                onSetFileToUpload={setFileToUpload}
+                onUploadAdminFile={uploadAdminFile}
+                submitting={submitting}
+                uploadedFiles={uploadedFiles}
+              />
+            )}
+
+            {activeTab === 'jobs' && (
+              <JobsTab
+                jobs={jobs}
+                loadJobLogs={loadJobLogs}
+                onRefreshJobStatus={refreshJobStatus}
+                onRunJobAction={runJobAction}
+                submitting={submitting}
+              />
+            )}
+
+            {activeTab === 'health' && <HealthTab health={health} />}
+
+            {activeTab === 'guide' && <GuideTab />}
+          </div>
+        </div>
       </div>
-
-      {activeTab === 'settings' && (
-        <SettingsTab
-          currentUser={currentUser}
-          enableEmailTwoFactor={enableEmailTwoFactor}
-          loadSettingHistory={loadSettingHistory}
-          onBackupSettings={backupSettings}
-          onRestoreSettingsFromText={restoreSettingsFromText}
-          onSendTwoFactorEnableCode={sendTwoFactorEnableCode}
-          onSetRestoreText={setRestoreText}
-          onSetSettingHistoryKey={setSettingHistoryKey}
-          onSetSettingSearch={setSettingSearch}
-          onSetTwoFactorCode={setTwoFactorCode}
-          onToggleTwoFactor={toggleTwoFactor}
-          restoreText={restoreText}
-          settingHistory={settingHistory}
-          settingHistoryKey={settingHistoryKey}
-          settingSearch={settingSearch}
-          settings={settings}
-          submitting={submitting}
-          twoFactorCode={twoFactorCode}
-          twoFactorEmailSent={twoFactorEmailSent}
-          twoFactorRequired={twoFactorRequired}
-        />
-      )}
-
-      {activeTab === 'webhooks' && (
-        <WebhooksTab
-          onRetryFormChange={(patch) => setRetryForm((current) => ({ ...current, ...patch }))}
-          onSaveSepayConfig={saveSepayConfig}
-          onSetSepayConfigText={setSepayConfigText}
-          retryForm={retryForm}
-          retryWebhook={retryWebhook}
-          sepayConfigText={sepayConfigText}
-          sepayLogs={sepayLogs}
-          sepayStatus={sepayStatus}
-          submitting={submitting}
-        />
-      )}
-
-      {activeTab === 'notifications' && (
-        <NotificationsTab
-          notifications={notifications}
-          notificationSetting={notificationSetting}
-          onMarkAllNotificationsRead={markAllNotificationsRead}
-          onMarkNotificationRead={markNotificationRead}
-          onSetNotificationSetting={setNotificationSetting}
-          onUpdateNotificationSetting={updateNotificationSetting}
-          submitting={submitting}
-        />
-      )}
-
-      {activeTab === 'admins' && (
-        <AdminAccessTab
-          adminEditor={adminEditor}
-          adminSessions={adminSessions}
-          admins={admins}
-          onDeleteRole={deleteRole}
-          onRevokeAdminSession={revokeAdminSession}
-          onRunAdminTwoFactor={runAdminTwoFactor}
-          onSaveAdminAccess={saveAdminAccess}
-          onSaveRole={saveRole}
-          onSelectAdmin={setSelectedAdminId}
-          onSelectRoleForEdit={selectRoleForEdit}
-          onSetAdminEditor={setAdminEditor}
-          onSetAdminStatus={setAdminStatus}
-          onSetRoleDraft={setRoleDraft}
-          onTogglePermission={togglePermission}
-          permissions={permissions}
-          roleDraft={roleDraft}
-          roles={roles}
-          selectedAdmin={selectedAdmin}
-          selectedRole={selectedRole}
-          selectedRoleId={selectedRoleId}
-          submitting={submitting}
-          totpSetup={totpSetup}
-        />
-      )}
-
-      {activeTab === 'audit' && (
-        <AuditTab
-          auditExportFormat={auditExportFormat}
-          auditFilter={auditFilter}
-          auditLogs={auditLogs}
-          loadAdminActions={loadAdminActions}
-          loadAuditDetail={loadAuditDetail}
-          loadAuditList={loadAuditList}
-          loadAuditLogs={loadAuditLogs}
-          onExportAudit={exportAudit}
-          onSetAuditExportFormat={setAuditExportFormat}
-          onSetAuditFilter={setAuditFilter}
-          selectedAudit={selectedAudit}
-          submitting={submitting}
-        />
-      )}
-
-      {activeTab === 'files' && (
-        <FilesTab
-          fileIdInput={fileIdInput}
-          fileToUpload={fileToUpload}
-          onDeleteAdminFile={deleteAdminFile}
-          onDownloadAdminFile={downloadAdminFile}
-          onSetFileIdInput={setFileIdInput}
-          onSetFileToUpload={setFileToUpload}
-          onUploadAdminFile={uploadAdminFile}
-          submitting={submitting}
-          uploadedFiles={uploadedFiles}
-        />
-      )}
-
-      {activeTab === 'jobs' && (
-        <JobsTab
-          jobs={jobs}
-          loadJobLogs={loadJobLogs}
-          onRefreshJobStatus={refreshJobStatus}
-          onRunJobAction={runJobAction}
-          submitting={submitting}
-        />
-      )}
-
-      {activeTab === 'health' && <HealthTab health={health} />}
-
-      {activeTab === 'guide' && <GuideTab />}
     </section>
   )
 }

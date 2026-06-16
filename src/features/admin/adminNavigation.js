@@ -2,6 +2,7 @@ import {
   BadgeDollarSign,
   ClipboardList,
   Grid3X3,
+  Newspaper,
   LayoutDashboard,
   MessageSquare,
   Percent,
@@ -21,5 +22,6 @@ export const adminNavItems = [
   { id: 'admin-pricing', label: 'Bảng giá', path: '/admin/pricing', icon: BadgeDollarSign },
   { id: 'admin-coupons', label: 'Coupon', path: '/admin/coupons', icon: Percent },
   { id: 'admin-warranty', label: 'Bảo hành', path: '/admin/warranty', icon: ShieldCheck },
+  { id: 'admin-content', label: 'Nội dung', path: '/admin/content', icon: Newspaper },
   { id: 'admin-settings', label: 'Cài đặt', path: '/admin/settings', icon: Settings },
 ]

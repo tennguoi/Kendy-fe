@@ -53,7 +53,7 @@ function SettingsView({
   const [twoFactorEmailSent, setTwoFactorEmailSent] = useState(false)
 
   // Mobile optimization tab state
-  const [activeSettingsTab, setActiveSettingsTab] = useState('general') // 'general' | 'security' | 'apikeys' | 'notifications'
+  const [activeSettingsTab, setActiveSettingsTab] = useState('general') // 'general' | 'security' | 'apikeys' | 'privacy'
 
   const setViewError = useCallback((message) => {
     setError(message)
@@ -358,6 +358,49 @@ function SettingsView({
     }
   }
 
+  const exportPersonalData = async () => {
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const data = await userApi.exportPersonalData(token)
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `kendy-personal-data-${currentUser?.id || 'me'}.json`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      onSetNotice('Đã xuất dữ liệu cá nhân.')
+    } catch (err) {
+      setViewError(err.message || 'Không xuất được dữ liệu cá nhân.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const deleteAccount = async () => {
+    const confirmed = window.confirm('Xoá tài khoản sẽ ẩn danh thông tin cá nhân, thu hồi session/API key và bạn sẽ cần đăng nhập lại. Tiếp tục?')
+    if (!confirmed) {
+      return
+    }
+    setSubmitting(true)
+    setViewError('')
+    try {
+      await userApi.deleteAccount(token)
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('token')
+      sessionStorage.clear()
+      onSetNotice('Tài khoản đã được xoá/ẩn danh.')
+      window.location.assign('/')
+    } catch (err) {
+      setViewError(err.message || 'Không xoá được tài khoản.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <section className="admin-view">
       <div className="admin-toolbar">
@@ -414,6 +457,9 @@ function SettingsView({
         </button>
         <button type="button" className={activeSettingsTab === 'apikeys' ? 'active' : ''} onClick={() => setActiveSettingsTab('apikeys')}>
           API Keys
+        </button>
+        <button type="button" className={activeSettingsTab === 'privacy' ? 'active' : ''} onClick={() => setActiveSettingsTab('privacy')}>
+          Dữ liệu cá nhân
         </button>
 
       </div>
@@ -580,7 +626,7 @@ function SettingsView({
             <div className="admin-mini-list">
               {sessionList.map((session) => (
                 <article key={session.id}>
-                  <strong>Session #{session.id}</strong>
+                  <strong>Lần đăng nhập #{session.id}</strong>
                   <span>Tạo {formatAdminDate(session.createdAt)} · Dùng gần nhất {formatAdminDate(session.lastUsedAt)} · Hết hạn {formatAdminDate(session.expiresAt)}</span>
                   <button type="button" className="admin-danger-button slim" disabled={submitting || session.revokedAt} onClick={() => revokeSession(session.id)}>
                     Thu hồi
@@ -628,6 +674,36 @@ function SettingsView({
               </article>
             ))}
             {apiKeyList.length === 0 && <AdminEmptyState message="Chưa có API key." />}
+          </div>
+        </div>
+      )}
+
+      {activeSettingsTab === 'privacy' && (
+        <div className="admin-grid two-columns">
+          <div className="admin-panel">
+            <div className="admin-panel-head">
+              <h3>Xuất dữ liệu cá nhân</h3>
+            </div>
+            <p className="admin-empty-state">
+              File JSON gồm hồ sơ, đơn hàng, nạp tiền, giao dịch ví, ticket và lịch sử phiên đăng nhập.
+            </p>
+            <button type="button" className="admin-primary-button" disabled={submitting} onClick={exportPersonalData}>
+              Xuất dữ liệu
+            </button>
+          </div>
+
+          <div className="admin-panel">
+            <div className="admin-panel-head">
+              <h3>Xoá tài khoản</h3>
+              <AdminStatusBadge status="GDPR" />
+            </div>
+            <p className="admin-empty-state">
+              Hệ thống sẽ ẩn danh email, tên, số điện thoại, OAuth, 2FA; đồng thời thu hồi session và API key. Dữ liệu đơn/ví được giữ để đối soát tài chính.
+            </p>
+            <button type="button" className="admin-danger-button" disabled={submitting} onClick={deleteAccount}>
+              <Trash2 size={16} strokeWidth={2} aria-hidden="true" />
+              <span>Xoá tài khoản</span>
+            </button>
           </div>
         </div>
       )}

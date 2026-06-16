@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import AdminCouponsView from './coupons/AdminCouponsView'
+import AdminContentView from './content/AdminContentView'
 import AdminFinanceView from './finance/AdminFinanceView'
 import AdminOrdersView from './orders/AdminOrdersView'
 import AdminOverviewView from './overview/AdminOverviewView'
@@ -76,6 +77,7 @@ function AdminRoutes({
     { path: '/admin/pricing', element: <AdminPricingView {...sharedProps} /> },
     { path: '/admin/coupons', element: <AdminCouponsView {...sharedProps} /> },
     { path: '/admin/warranty', element: <AdminWarrantyView {...sharedProps} /> },
+    { path: '/admin/content', element: <AdminContentView {...sharedProps} /> },
     {
       path: '/admin/settings',
       element: (

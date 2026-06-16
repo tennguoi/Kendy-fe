@@ -15,4 +15,10 @@ export const userAccountApi = {
 
   getSecurity: (token) =>
     axiosClient.get('/api/me/security', { token }),
+
+  exportPersonalData: (token) =>
+    axiosClient.get('/api/me/export', { token }),
+
+  deleteAccount: (token) =>
+    axiosClient.delete('/api/me', { token }),
 };
