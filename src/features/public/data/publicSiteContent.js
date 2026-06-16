@@ -18,7 +18,9 @@ import {
 
 export const navItems = [
   { label: 'Trang chủ', href: '/' },
-  { label: 'Dịch vụ', href: '/services' },
+  { label: 'Danh mục', href: '/catalog' },
+  { label: 'Dịch vụ', href: '/#services' },
+  { label: 'Bảng giá', href: '/#pricing' },
   { label: 'Hướng dẫn', href: '/#workflow' },
   { label: 'Chính sách', href: '/#policies' },
   { label: 'FAQ', href: '/#faq' },

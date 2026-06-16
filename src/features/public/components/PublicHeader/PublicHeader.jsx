@@ -1,5 +1,6 @@
 import { ArrowRight, LogIn, Menu, Moon, Sun, X } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTheme } from '../../../../contexts/ThemeContext'
 import './PublicHeader.css'
 
@@ -15,20 +16,26 @@ function PublicHeader({ logo, navItems, onLoginClick }) {
 
   return (
     <header className="public-site-header">
-      <a className="public-brand" href="#top" aria-label="Kendy Digital">
+      <Link className="public-brand" to="/" aria-label="Kendy Digital">
         <img src={logo} alt="" />
         <span>
           <strong>Kendy Digital</strong>
           <small>Tài khoản, nâng cấp & quảng cáo</small>
         </span>
-      </a>
+      </Link>
 
       <nav className="public-nav" aria-label="Điều hướng chính">
-        {navItems.map((item) => (
-          <a href={item.href} key={item.href}>
-            {item.label}
-          </a>
-        ))}
+        {navItems.map((item) =>
+          item.href.startsWith('/') ? (
+            <Link to={item.href} key={item.href}>
+              {item.label}
+            </Link>
+          ) : (
+            <a href={item.href} key={item.href}>
+              {item.label}
+            </a>
+          )
+        )}
       </nav>
 
       <div className="public-header-actions">
@@ -45,10 +52,10 @@ function PublicHeader({ logo, navItems, onLoginClick }) {
           <LogIn size={17} strokeWidth={2} aria-hidden="true" />
           <span>Đăng nhập</span>
         </button>
-        <a className="public-btn primary" href="#services">
+        <Link className="public-btn primary" to="/catalog">
           <span>Xem dịch vụ</span>
           <ArrowRight size={17} strokeWidth={2} aria-hidden="true" />
-        </a>
+        </Link>
         <button
           type="button"
           className="mobile-menu-button"
@@ -62,11 +69,17 @@ function PublicHeader({ logo, navItems, onLoginClick }) {
 
       {isMenuOpen && (
         <div className="mobile-nav-drawer">
-          {navItems.map((item) => (
-            <a href={item.href} key={item.href} onClick={closeMenu}>
-              {item.label}
-            </a>
-          ))}
+          {navItems.map((item) =>
+            item.href.startsWith('/') ? (
+              <Link to={item.href} key={item.href} onClick={closeMenu}>
+                {item.label}
+              </Link>
+            ) : (
+              <a href={item.href} key={item.href} onClick={closeMenu}>
+                {item.label}
+              </a>
+            )
+          )}
           <button type="button" onClick={openAuth}>
             Đăng nhập / đăng ký
           </button>

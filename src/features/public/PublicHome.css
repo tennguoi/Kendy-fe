@@ -2,7 +2,8 @@
   min-height: 100svh;
   overflow-x: clip;
   color: var(--kd-text);
-  background: linear-gradient(180deg, #ffffff 0%, #f5f8fc 34%, #eef7fb 100%);
+  background: linear-gradient(180deg, var(--kd-card) 0%, var(--kd-bg) 34%, var(--kd-bg) 100%);
+  scroll-padding-top: 80px;
 }
 
 html.dark .public-home {
