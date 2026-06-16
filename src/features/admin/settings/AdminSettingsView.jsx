@@ -756,8 +756,11 @@ function AdminSettingsView({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
               >
-                {Icon && <Icon size={17} strokeWidth={2} aria-hidden="true" />}
-                <span>{tab.label}</span>
+                {Icon && <Icon size={18} className="menu-icon" strokeWidth={2.5} aria-hidden="true" />}
+                <div className="menu-text">
+                  <strong>{tab.label}</strong>
+                  <span>{tab.description}</span>
+                </div>
               </button>
             )
           })}

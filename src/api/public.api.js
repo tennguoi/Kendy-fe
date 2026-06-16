@@ -9,4 +9,7 @@ export const publicApi = {
 
   getCategories: () =>
     axiosClient.get('/api/service-categories'),
+
+  getServiceBySlug: (slug) =>
+    axiosClient.get(`/api/services/${slug}`),
 };

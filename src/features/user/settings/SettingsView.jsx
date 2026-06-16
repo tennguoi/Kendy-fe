@@ -1,4 +1,24 @@
-import { KeyRound, RefreshCw, Save, Shield, Trash2 } from 'lucide-react'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Code2,
+  Copy,
+  Download,
+  FileText,
+  HelpCircle,
+  KeyRound,
+  Lock,
+  LogOut,
+  Plus,
+  RefreshCw,
+  Save,
+  Shield,
+  ShieldCheck,
+  Smartphone,
+  Trash2,
+  User,
+  XCircle,
+} from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { userApi } from '../../../api/user.api'
 import { AdminEmptyState, AdminStatusBadge } from '../../admin/AdminShared'
@@ -62,7 +82,6 @@ function SettingsView({
 
   const sessionList = normalizeList(sessions)
   const apiKeyList = normalizeList(apiKeys)
-  const notificationList = normalizeList(notifications)
 
   const loadSettings = useCallback(async () => {
     if (!token) {
@@ -326,38 +345,6 @@ function SettingsView({
     }
   }
 
-  const markNotificationRead = async (notificationId) => {
-    setSubmitting(true)
-    setViewError('')
-    try {
-      const saved = await userApi.markNotificationRead(notificationId, token)
-      setNotifications((items) => normalizeList(items).map((item) => (item.id === saved.id ? saved : item)))
-      onSetNotice('Đã đánh dấu thông báo đã đọc.')
-    } catch (err) {
-      setViewError(err.message || 'Không cập nhật được thông báo.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const markAllNotificationsRead = async () => {
-    const unreadIds = notificationList.filter((item) => !item.readAt).map((item) => item.id)
-    if (unreadIds.length === 0) {
-      return
-    }
-
-    setSubmitting(true)
-    setViewError('')
-    try {
-      setNotifications(normalizeList(await userApi.bulkReadNotifications({ ids: unreadIds }, token)))
-      onSetNotice(`Đã đọc ${unreadIds.length} thông báo.`)
-    } catch (err) {
-      setViewError(err.message || 'Không cập nhật được thông báo.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
   const exportPersonalData = async () => {
     setSubmitting(true)
     setViewError('')
@@ -401,314 +388,625 @@ function SettingsView({
     }
   }
 
+  const handleCopyToken = () => {
+    if (createdApiToken) {
+      navigator.clipboard.writeText(createdApiToken)
+      onSetNotice('Đã copy API token vào clipboard.')
+    }
+  }
+
   return (
-    <section className="admin-view">
-      <div className="admin-toolbar">
+    <section className="admin-view" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="admin-toolbar" style={{ borderBottom: '1px solid var(--kd-border)', paddingBottom: '16px', marginBottom: '8px' }}>
         <div>
-          <h2>Hồ sơ của tôi</h2>
+          <h2>Thiết lập tài khoản</h2>
+          <p style={{ margin: '4px 0 0', color: 'var(--kd-muted)', fontSize: '14px' }}>
+            Quản lý thông tin hồ sơ cá nhân, cấu hình bảo mật 2 lớp và API keys của bạn.
+          </p>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadSettings} disabled={loading}>
-          <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
+          <RefreshCw size={16} strokeWidth={2.5} className={loading ? 'spin' : ''} aria-hidden="true" />
           <span>Tải lại</span>
         </button>
       </div>
 
-      {(error || loading) && <p className={error ? 'admin-message error' : 'admin-message'}>{error || 'Đang tải tài khoản...'}</p>}
+      {error && <p className="admin-message error">{error}</p>}
 
-      <div className="profile-hero-panel">
-        {avatarUrl ? (
-          <img className="profile-hero-avatar" src={avatarUrl} alt="" />
-        ) : (
-          <div className="profile-hero-avatar fallback">{profileInitial}</div>
-        )}
-        <div className="profile-hero-copy">
-          <span className="eyebrow">Account</span>
-          <h2>{currentUser?.name || currentUser?.email || 'Người dùng'}</h2>
-          <p>{currentUser?.email || 'Chưa có email'}{oauthProvider ? ` · Đăng nhập bằng ${oauthProvider}` : ''}</p>
-        </div>
-      </div>
-
-      <div className="admin-metrics">
-        <article className="admin-metric">
-          <span>Người dùng</span>
-          <strong>{currentUser?.name || 'Chưa đặt tên'}</strong>
-        </article>
-        <article className="admin-metric">
-          <span>Email</span>
-          <strong>{currentUser?.email || 'Chưa có'}</strong>
-        </article>
-        <article className="admin-metric">
-          <span>Số dư ví</span>
-          <strong>{formatAdminMoney(dashboard?.balance ?? currentUser?.balance)}</strong>
-        </article>
-        <article className="admin-metric">
-          <span>Bảo mật</span>
-          <strong>{security?.twoFactorEnabled ? '2FA bật' : '2FA tắt'}</strong>
-        </article>
-      </div>
-
-      {/* Settings section tabs for mobile / layout clean up */}
-      <div className="admin-tabs" style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '6px', borderBottom: '1px solid var(--kd-border)', paddingBottom: '12px' }}>
-        <button type="button" className={activeSettingsTab === 'general' ? 'active' : ''} onClick={() => setActiveSettingsTab('general')}>
-          Hồ sơ cá nhân
-        </button>
-        <button type="button" className={activeSettingsTab === 'security' ? 'active' : ''} onClick={() => setActiveSettingsTab('security')}>
-          Bảo mật & Phiên
-        </button>
-        <button type="button" className={activeSettingsTab === 'apikeys' ? 'active' : ''} onClick={() => setActiveSettingsTab('apikeys')}>
-          API Keys
-        </button>
-        <button type="button" className={activeSettingsTab === 'privacy' ? 'active' : ''} onClick={() => setActiveSettingsTab('privacy')}>
-          Dữ liệu cá nhân
-        </button>
-
-      </div>
-
-      {activeSettingsTab === 'general' && (
-        <div className="admin-grid two-columns">
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Hồ sơ của tôi</h3>
-              <AdminStatusBadge status={currentUser?.status || 'UNKNOWN'} />
-            </div>
-            <dl className="admin-detail-list">
-              <div><dt>User ID</dt><dd>#{currentUser?.id || '-'}</dd></div>
-              <div><dt>Public ID</dt><dd>{currentUser?.publicId || '-'}</dd></div>
-              <div><dt>Email</dt><dd>{currentUser?.email || '-'}</dd></div>
-              <div><dt>Role</dt><dd>{currentUser?.role || '-'}</dd></div>
-              <div><dt>Xác minh email</dt><dd>{currentUser?.emailVerifiedAt ? formatAdminDate(currentUser.emailVerifiedAt) : 'Chưa xác minh'}</dd></div>
-              <div><dt>OAuth</dt><dd>{currentUser?.oauthProvider || 'Không liên kết'}</dd></div>
-            </dl>
-            <form className="admin-form compact" onSubmit={updateProfile}>
-              <label>
-                <span>Tên hiển thị</span>
-                <input value={profileForm.name} onChange={(event) => setProfileForm((current) => ({ ...current, name: event.target.value }))} required />
-              </label>
-              <label>
-                <span>Email</span>
-                <input value={profileForm.email} onChange={(event) => setProfileForm((current) => ({ ...current, email: event.target.value }))} type="email" required />
-              </label>
-              <label>
-                <span>Ảnh đại diện</span>
-                <input value={profileForm.avatarUrl} onChange={(event) => setProfileForm((current) => ({ ...current, avatarUrl: event.target.value }))} placeholder="https://..." />
-              </label>
-              <label>
-                <span>Số điện thoại</span>
-                <input value={profileForm.phone} onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))} />
-              </label>
-              <button type="submit" disabled={submitting}>
-                <Save size={17} strokeWidth={2} aria-hidden="true" />
-                <span>Lưu hồ sơ</span>
-              </button>
-            </form>
+      <div className="settings-layout-container">
+        {/* Facebook style Sidebar */}
+        <aside className="settings-sidebar-nav" aria-label="Menu cài đặt">
+          <div className="settings-sidebar-header">
+            <h3>Danh mục</h3>
           </div>
-
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Tổng quan sử dụng</h3>
-              <span>{dashboard?.orderCount ?? 0} đơn</span>
-            </div>
-            <div className="admin-report-grid compact-report">
-              <div><span>Đơn xử lý</span><strong>{dashboard?.processingOrders ?? 0}</strong></div>
-              <div><span>Đơn hoàn tất</span><strong>{dashboard?.completedOrders ?? 0}</strong></div>
-              <div><span>Nạp hoàn tất</span><strong>{dashboard?.completedDeposits ?? 0}</strong></div>
-              <div><span>Ticket</span><strong>{dashboard?.ticketCount ?? 0}</strong></div>
-            </div>
-            <div className="admin-report-grid compact-report" style={{ marginTop: '10px' }}>
-              <div><span>Đã nạp</span><strong>{formatAdminMoney(dashboard?.completedDepositAmount)}</strong></div>
-              <div><span>Đã mua</span><strong>{formatAdminMoney(dashboard?.purchaseAmount)}</strong></div>
-              <div><span>Refund</span><strong>{formatAdminMoney(dashboard?.refundAmount)}</strong></div>
-              <div><span>GD ví</span><strong>{dashboard?.walletTransactionCount ?? 0}</strong></div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeSettingsTab === 'security' && (
-        <div style={{ display: 'grid', gap: '18px' }}>
-          <div className="admin-grid two-columns">
-            <div className="admin-panel">
-              <div className="admin-panel-head">
-                <h3>Đổi mật khẩu</h3>
-                <Shield size={18} strokeWidth={2} aria-hidden="true" />
+          <nav className="settings-sidebar-menu">
+            <button
+              type="button"
+              className={`settings-menu-item ${activeSettingsTab === 'general' ? 'active' : ''}`}
+              onClick={() => setActiveSettingsTab('general')}
+            >
+              <User size={18} className="menu-icon" />
+              <div className="menu-text">
+                <strong>Hồ sơ cá nhân</strong>
+                <span>Hồ sơ & số dư tài khoản</span>
               </div>
-              <form className="admin-form compact" onSubmit={changePassword}>
-                <label>
-                  <span>Mật khẩu hiện tại</span>
-                  <input value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))} type="password" required />
-                </label>
-                <label>
-                  <span>Mật khẩu mới</span>
-                  <input value={passwordForm.newPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))} minLength="8" type="password" required />
-                </label>
-                <label>
-                  <span>Xác nhận mật khẩu mới</span>
-                  <input value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))} minLength="8" type="password" required />
-                </label>
-                <button type="submit" disabled={submitting}>Đổi mật khẩu</button>
-              </form>
-            </div>
-
-            <div className="admin-panel">
-              <div className="admin-panel-head">
-                <h3>Bảo mật</h3>
-                <AdminStatusBadge status={security?.twoFactorEnabled ? 'ACTIVE' : 'DISABLED'} />
+            </button>
+            <button
+              type="button"
+              className={`settings-menu-item ${activeSettingsTab === 'security' ? 'active' : ''}`}
+              onClick={() => setActiveSettingsTab('security')}
+            >
+              <ShieldCheck size={18} className="menu-icon" />
+              <div className="menu-text">
+                <strong>Bảo mật & Phiên</strong>
+                <span>Mật khẩu, 2FA & Thiết bị</span>
               </div>
-              <dl className="admin-detail-list">
-                <div><dt>Email</dt><dd>{security?.emailVerified ? 'Đã xác minh' : 'Chưa xác minh'}</dd></div>
-                <div><dt>Đổi mật khẩu</dt><dd>{formatAdminDate(security?.passwordChangedAt)}</dd></div>
-                <div><dt>Session active</dt><dd>{security?.activeSessions ?? 0}</dd></div>
-                <div><dt>API key active</dt><dd>{security?.activeApiKeys ?? 0}</dd></div>
-              </dl>
-              {!security?.twoFactorEnabled && (
-                <form className="admin-form compact" onSubmit={enableEmailTwoFactor}>
-                  <div className="admin-action-row">
-                    <button type="button" className="admin-icon-button" disabled={submitting} onClick={sendEmailTwoFactorCode}>
-                      Gửi mã 2FA email
-                    </button>
-                    <button type="button" className="admin-icon-button" disabled={submitting} onClick={setupTotp}>
-                      Setup TOTP
-                    </button>
-                  </div>
-                  {twoFactorEmailSent && (
-                    <label>
-                      <span>Mã email</span>
-                      <input value={twoFactorForm.code} onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.replace(/\D/g, '').slice(0, 6) }))} inputMode="numeric" />
-                    </label>
+            </button>
+            <button
+              type="button"
+              className={`settings-menu-item ${activeSettingsTab === 'apikeys' ? 'active' : ''}`}
+              onClick={() => setActiveSettingsTab('apikeys')}
+            >
+              <Code2 size={18} className="menu-icon" />
+              <div className="menu-text">
+                <strong>Developer API Keys</strong>
+                <span>Kết nối API & Scopes</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              className={`settings-menu-item ${activeSettingsTab === 'privacy' ? 'active' : ''}`}
+              onClick={() => setActiveSettingsTab('privacy')}
+            >
+              <FileText size={18} className="menu-icon" />
+              <div className="menu-text">
+                <strong>Quyền riêng tư</strong>
+                <span>Xuất dữ liệu & Xóa tài khoản</span>
+              </div>
+            </button>
+          </nav>
+        </aside>
+
+        {/* Content Pane */}
+        <main className="settings-main-content">
+          {activeSettingsTab === 'general' && (
+            <>
+              {/* Premium Profile Card */}
+              <div className="settings-profile-card">
+                <div className="settings-profile-avatar-wrap">
+                  {avatarUrl ? (
+                    <img className="settings-profile-avatar" src={avatarUrl} alt="" />
+                  ) : (
+                    <div className="settings-profile-avatar fallback">{profileInitial}</div>
                   )}
-                  {twoFactorEmailSent && <button type="submit" disabled={submitting || twoFactorForm.code.length < 6}>Bật 2FA email</button>}
-                </form>
-              )}
-              {totpSetup && (
-                <div className="admin-code-block">
-                  <strong>TOTP secret</strong>
-                  <pre>{totpSetup.secret}</pre>
-                  {totpSetup.qrCodeBase64 && <img alt="TOTP QR" src={`data:image/png;base64,${totpSetup.qrCodeBase64}`} />}
-                  <pre>{(totpSetup.backupCodes || []).join('\n')}</pre>
                 </div>
-              )}
-              {totpSetup && (
-                <form className="admin-form compact" onSubmit={enableTotp}>
-                  <label>
-                    <span>Mã TOTP</span>
-                    <input value={totpCode} onChange={(event) => setTotpCode(event.target.value.trim())} />
-                  </label>
-                  <button type="submit" disabled={submitting || !totpCode}>Bật TOTP</button>
-                </form>
-              )}
-              {security?.twoFactorEnabled && (
-                <form className="admin-form compact" onSubmit={(event) => event.preventDefault()}>
-                  <label>
-                    <span>Mật khẩu hiện tại</span>
-                    <input value={twoFactorForm.password} onChange={(event) => setTwoFactorForm((current) => ({ ...current, password: event.target.value }))} type="password" />
-                  </label>
-                  <label>
-                    <span>Mã 2FA hoặc backup code</span>
-                    <input value={twoFactorForm.code} onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.trim() }))} />
-                  </label>
-                  <div className="admin-action-row">
-                    <button type="button" className="admin-danger-button" disabled={submitting} onClick={() => runTwoFactorProtectedAction('disable')}>Tắt 2FA</button>
-                    <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runTwoFactorProtectedAction('reset')}>Reset TOTP</button>
-                    <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => runTwoFactorProtectedAction('backup')}>Tạo backup codes</button>
+                <div className="settings-profile-info">
+                  <span className="eyebrow" style={{ fontSize: '11px', letterSpacing: '1px' }}>Thành viên</span>
+                  <h4>{currentUser?.name || currentUser?.email || 'Người dùng'}</h4>
+                  <p>
+                    <span>{currentUser?.email}</span>
+                    {oauthProvider && (
+                      <span style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '4px', fontSize: '11px' }}>
+                        Đăng nhập bằng {oauthProvider}
+                      </span>
+                    )}
+                  </p>
+                  <div className="settings-profile-stats">
+                    <div className="settings-stat-pill">
+                      <span>Số dư ví:</span>
+                      <strong style={{ color: 'var(--kd-blue)' }}>{formatAdminMoney(dashboard?.balance ?? currentUser?.balance)}</strong>
+                    </div>
+                    <div className="settings-stat-pill">
+                      <span>Đơn hàng:</span>
+                      <strong>{dashboard?.orderCount ?? 0} đã tạo</strong>
+                    </div>
+                    <div className="settings-stat-pill">
+                      <span>Trạng thái 2FA:</span>
+                      <strong style={{ color: security?.twoFactorEnabled ? 'var(--kd-success)' : 'var(--kd-warning)' }}>
+                        {security?.twoFactorEnabled ? 'Đang Bật' : 'Đang Tắt'}
+                      </strong>
+                    </div>
                   </div>
-                </form>
-              )}
-            </div>
-          </div>
+                </div>
+              </div>
 
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Phiên đăng nhập</h3>
-              <button type="button" className="admin-danger-button slim" disabled={submitting || sessionList.length === 0} onClick={revokeAllSessions}>
-                Thu hồi tất cả
-              </button>
-            </div>
-            <div className="admin-mini-list">
-              {sessionList.map((session) => (
-                <article key={session.id}>
-                  <strong>Lần đăng nhập #{session.id}</strong>
-                  <span>Tạo {formatAdminDate(session.createdAt)} · Dùng gần nhất {formatAdminDate(session.lastUsedAt)} · Hết hạn {formatAdminDate(session.expiresAt)}</span>
-                  <button type="button" className="admin-danger-button slim" disabled={submitting || session.revokedAt} onClick={() => revokeSession(session.id)}>
-                    Thu hồi
+              <div className="settings-form-grid">
+                {/* Profile Edit Card */}
+                <div className="settings-card">
+                  <div className="settings-card-header">
+                    <div>
+                      <h3><User size={16} /> Cập nhật hồ sơ</h3>
+                      <div className="settings-card-header-desc">Thay đổi thông tin liên lạc hiển thị trên hóa đơn.</div>
+                    </div>
+                    <AdminStatusBadge status={currentUser?.status || 'ACTIVE'} />
+                  </div>
+                  <div className="settings-card-body">
+                    <form className="settings-form-grid" onSubmit={updateProfile}>
+                      <div className="settings-input-group">
+                        <label>Tên hiển thị</label>
+                        <input
+                          value={profileForm.name}
+                          onChange={(event) => setProfileForm((current) => ({ ...current, name: event.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div className="settings-input-group">
+                        <label>Địa chỉ Email</label>
+                        <input
+                          value={profileForm.email}
+                          onChange={(event) => setProfileForm((current) => ({ ...current, email: event.target.value }))}
+                          type="email"
+                          required
+                        />
+                      </div>
+                      <div className="settings-input-group full-width">
+                        <label>Ảnh đại diện (Avatar URL)</label>
+                        <input
+                          value={profileForm.avatarUrl}
+                          onChange={(event) => setProfileForm((current) => ({ ...current, avatarUrl: event.target.value }))}
+                          placeholder="https://example.com/avatar.png"
+                        />
+                      </div>
+                      <div className="settings-input-group full-width">
+                        <label>Số điện thoại</label>
+                        <input
+                          value={profileForm.phone}
+                          onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))}
+                          placeholder="Nhập số điện thoại"
+                        />
+                      </div>
+                      <div className="full-width" style={{ marginTop: '8px' }}>
+                        <button type="submit" className="settings-btn-save" disabled={submitting}>
+                          <Save size={16} />
+                          <span>Lưu thông tin</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+                {/* Account Usage Card */}
+                <div className="settings-card">
+                  <div className="settings-card-header">
+                    <div>
+                      <h3>Thống kê tài khoản</h3>
+                      <div className="settings-card-header-desc">Tổng quan quá trình sử dụng và nạp ví.</div>
+                    </div>
+                  </div>
+                  <div className="settings-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className="admin-report-grid compact-report" style={{ border: 'none', background: 'transparent', padding: 0 }}>
+                      <div><span>Đơn xử lý</span><strong>{dashboard?.processingOrders ?? 0}</strong></div>
+                      <div><span>Đơn hoàn tất</span><strong>{dashboard?.completedOrders ?? 0}</strong></div>
+                      <div><span>Nạp hoàn tất</span><strong>{dashboard?.completedDeposits ?? 0}</strong></div>
+                      <div><span>Ticket hỗ trợ</span><strong>{dashboard?.ticketCount ?? 0}</strong></div>
+                    </div>
+                    <div style={{ height: '1px', background: 'var(--kd-border)' }}></div>
+                    <div className="admin-report-grid compact-report" style={{ border: 'none', background: 'transparent', padding: 0 }}>
+                      <div><span>Tổng nạp</span><strong>{formatAdminMoney(dashboard?.completedDepositAmount)}</strong></div>
+                      <div><span>Đã chi tiêu</span><strong>{formatAdminMoney(dashboard?.purchaseAmount)}</strong></div>
+                      <div><span>Hoàn trả ví</span><strong>{formatAdminMoney(dashboard?.refundAmount)}</strong></div>
+                      <div><span>Giao dịch ví</span><strong>{dashboard?.walletTransactionCount ?? 0}</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeSettingsTab === 'security' && (
+            <div style={{ display: 'grid', gap: '24px' }}>
+              <div className="settings-form-grid">
+                {/* Password Change Card */}
+                <div className="settings-card">
+                  <div className="settings-card-header">
+                    <div>
+                      <h3><Lock size={16} /> Đổi mật khẩu</h3>
+                      <div className="settings-card-header-desc">Mật khẩu nên chứa tối thiểu 8 ký tự kèm chữ hoa, chữ số.</div>
+                    </div>
+                  </div>
+                  <div className="settings-card-body">
+                    <form className="settings-form-grid" onSubmit={changePassword}>
+                      <div className="settings-input-group full-width">
+                        <label>Mật khẩu hiện tại</label>
+                        <input
+                          value={passwordForm.currentPassword}
+                          onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))}
+                          type="password"
+                          required
+                        />
+                      </div>
+                      <div className="settings-input-group full-width">
+                        <label>Mật khẩu mới</label>
+                        <input
+                          value={passwordForm.newPassword}
+                          onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
+                          minLength="8"
+                          type="password"
+                          required
+                        />
+                      </div>
+                      <div className="settings-input-group full-width">
+                        <label>Xác nhận mật khẩu mới</label>
+                        <input
+                          value={passwordForm.confirmPassword}
+                          onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
+                          minLength="8"
+                          type="password"
+                          required
+                        />
+                      </div>
+                      <div className="full-width" style={{ marginTop: '8px' }}>
+                        <button type="submit" className="settings-btn-save" disabled={submitting}>
+                          Đổi mật khẩu
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+                {/* 2FA Card */}
+                <div className="settings-card">
+                  <div className="settings-card-header">
+                    <div>
+                      <h3><Shield size={16} /> Xác thực 2 lớp (2FA)</h3>
+                      <div className="settings-card-header-desc">Xác nhận danh tính của bạn qua mã OTP để bảo vệ tài sản.</div>
+                    </div>
+                  </div>
+                  <div className="settings-card-body">
+                    {/* Status Banner */}
+                    <div className={`twofa-status-banner ${security?.twoFactorEnabled ? 'active' : 'disabled'}`}>
+                      {security?.twoFactorEnabled ? (
+                        <>
+                          <CheckCircle2 size={24} />
+                          <div className="twofa-status-desc">
+                            <strong>Bảo mật 2FA đang BẬT</strong>
+                            <span>Tài khoản của bạn đã được bảo vệ tối đa.</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle size={24} />
+                          <div className="twofa-status-desc">
+                            <strong>Bảo mật 2FA đang TẮT</strong>
+                            <span>Kích hoạt 2FA để tránh rủi ro mất tài khoản hoặc tiền trong ví.</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {!security?.twoFactorEnabled ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div className="twofa-options-grid">
+                          <div className="twofa-setup-box">
+                            <h4>2FA qua Email</h4>
+                            <p>Nhận mã xác nhận dùng 1 lần (OTP) gửi trực tiếp tới email đăng ký của bạn.</p>
+                            <button type="button" disabled={submitting} onClick={sendEmailTwoFactorCode}>
+                              Thiết lập Email OTP
+                            </button>
+                          </div>
+                          <div className="twofa-setup-box">
+                            <h4>Authenticator App (TOTP)</h4>
+                            <p>Sử dụng ứng dụng như Google Authenticator để quét QR Code và lấy mã tự động.</p>
+                            <button type="button" disabled={submitting} onClick={setupTotp}>
+                              Thiết lập ứng dụng 2FA
+                            </button>
+                          </div>
+                        </div>
+
+                        {twoFactorEmailSent && (
+                          <form className="admin-form compact" onSubmit={enableEmailTwoFactor} style={{ borderTop: '1px solid var(--kd-border)', paddingTop: '16px', marginTop: '8px' }}>
+                            <div className="settings-input-group">
+                              <label>Mã xác minh Email (6 chữ số)</label>
+                              <input
+                                value={twoFactorForm.code}
+                                onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                                inputMode="numeric"
+                                placeholder="Nhập mã OTP nhận được từ email"
+                              />
+                            </div>
+                            <button type="submit" className="settings-btn-save" disabled={submitting || twoFactorForm.code.length < 6} style={{ marginTop: '8px' }}>
+                              Xác nhận Bật 2FA Email
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    ) : (
+                      <form className="settings-form-grid" onSubmit={(event) => event.preventDefault()}>
+                        <div className="settings-input-group full-width">
+                          <label>Nhập mật khẩu xác thực hành động</label>
+                          <input
+                            value={twoFactorForm.password}
+                            onChange={(event) => setTwoFactorForm((current) => ({ ...current, password: event.target.value }))}
+                            type="password"
+                            placeholder="Nhập mật khẩu hiện tại của bạn"
+                          />
+                        </div>
+                        <div className="settings-input-group full-width">
+                          <label>Nhập mã 2FA / Backup Code (nếu tắt)</label>
+                          <input
+                            value={twoFactorForm.code}
+                            onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.trim() }))}
+                            placeholder="Mã xác thực 6 số"
+                          />
+                        </div>
+                        <div className="full-width" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
+                          <button type="button" className="admin-danger-button slim" style={{ borderRadius: '10px', minHeight: '38px' }} disabled={submitting} onClick={() => runTwoFactorProtectedAction('disable')}>
+                            Tắt bảo mật 2FA
+                          </button>
+                          <button type="button" className="admin-icon-button" style={{ borderRadius: '10px', minHeight: '38px', padding: '0 12px' }} disabled={submitting} onClick={() => runTwoFactorProtectedAction('reset')}>
+                            Reset TOTP App
+                          </button>
+                          <button type="button" className="admin-icon-button" style={{ borderRadius: '10px', minHeight: '38px', padding: '0 12px' }} disabled={submitting} onClick={() => runTwoFactorProtectedAction('backup')}>
+                            Tạo mã dự phòng mới
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {totpSetup && (
+                      <div className="totp-qr-container">
+                        <strong>Quét mã QR bằng Google/Microsoft Authenticator:</strong>
+                        {totpSetup.qrCodeBase64 && (
+                          <img alt="TOTP QR" src={`data:image/png;base64,${totpSetup.qrCodeBase64}`} style={{ width: '180px', height: '180px' }} />
+                        )}
+                        <div className="totp-secret-block">
+                          <strong>Hoặc nhập Secret Key thủ công:</strong>
+                          <code>{totpSetup.secret}</code>
+                        </div>
+                        {totpSetup.backupCodes && totpSetup.backupCodes.length > 0 && (
+                          <div style={{ width: '100%', borderTop: '1px solid var(--kd-border)', paddingTop: '12px', marginTop: '8px' }}>
+                            <strong style={{ fontSize: '12px', color: 'var(--kd-warning)', display: 'block', marginBottom: '6px' }}>
+                              Lưu trữ các mã dự phòng sau (dùng khi mất điện thoại):
+                            </strong>
+                            <pre style={{ margin: 0, padding: '10px', background: 'var(--kd-bg)', borderRadius: '8px', fontSize: '13px', textAlign: 'center', fontWeight: 'bold' }}>
+                              {totpSetup.backupCodes.join('   ')}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {totpSetup && (
+                      <form className="admin-form compact" onSubmit={enableTotp} style={{ marginTop: '14px' }}>
+                        <div className="settings-input-group">
+                          <label>Nhập mã xác thực 6 số trên App</label>
+                          <input
+                            value={totpCode}
+                            onChange={(event) => setTotpCode(event.target.value.trim())}
+                            placeholder="Mã hiển thị trên ứng dụng Authenticator"
+                          />
+                        </div>
+                        <button type="submit" className="settings-btn-save" disabled={submitting || !totpCode} style={{ marginTop: '8px' }}>
+                          Kích hoạt ứng dụng TOTP
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sessions Management Card */}
+              <div className="settings-card">
+                <div className="settings-card-header">
+                  <div>
+                    <h3><Smartphone size={16} /> Các phiên đăng nhập đang hoạt động</h3>
+                    <div className="settings-card-header-desc">Danh sách các trình duyệt và thiết bị đã đăng nhập gần đây.</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-danger-button slim"
+                    disabled={submitting || sessionList.length === 0}
+                    onClick={revokeAllSessions}
+                    style={{ borderRadius: '10px', minHeight: '34px', fontSize: '12px' }}
+                  >
+                    Đăng xuất tất cả thiết bị khác
                   </button>
-                </article>
-              ))}
-              {sessionList.length === 0 && <AdminEmptyState message="Không có session đang hiển thị." />}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeSettingsTab === 'apikeys' && (
-        <div className="admin-panel">
-          <div className="admin-panel-head">
-            <h3>API keys</h3>
-            <KeyRound size={18} strokeWidth={2} aria-hidden="true" />
-          </div>
-          <form className="admin-form compact" onSubmit={createApiKey} style={{ marginBottom: '20px' }}>
-            <label>
-              <span>Tên API key</span>
-              <input value={apiKeyForm.name} onChange={(event) => setApiKeyForm((current) => ({ ...current, name: event.target.value }))} />
-            </label>
-            <label>
-              <span>Scopes</span>
-              <input value={apiKeyForm.scopes} onChange={(event) => setApiKeyForm((current) => ({ ...current, scopes: event.target.value }))} />
-            </label>
-            <button type="submit" disabled={submitting} className="admin-primary-button" style={{ height: '38px' }}>Tạo API key</button>
-          </form>
-          {createdApiToken && (
-            <div className="admin-code-block" style={{ marginBottom: '20px' }}>
-              <strong>Token mới (Hãy copy ngay vì nó sẽ ẩn đi khi tải lại trang)</strong>
-              <pre>{createdApiToken}</pre>
+                </div>
+                <div className="settings-card-body" style={{ padding: '20px' }}>
+                  <div className="session-list">
+                    {sessionList.map((session) => (
+                      <div className="session-item" key={session.id}>
+                        <div className="session-info">
+                          <Smartphone size={22} style={{ color: 'var(--kd-muted)' }} />
+                          <div className="session-details">
+                            <strong>
+                              Phiên đăng nhập #{session.id}
+                              {session.isCurrent && <span className="session-badge">Thiết bị hiện tại</span>}
+                            </strong>
+                            <span>
+                              Tạo ngày: {formatAdminDate(session.createdAt)} · Dùng cuối: {formatAdminDate(session.lastUsedAt)}
+                            </span>
+                          </div>
+                        </div>
+                        {!session.isCurrent && (
+                          <button
+                            type="button"
+                            className="admin-danger-button slim"
+                            disabled={submitting || session.revokedAt}
+                            onClick={() => revokeSession(session.id)}
+                            style={{ borderRadius: '8px', minHeight: '30px', fontSize: '11px', padding: '0 10px' }}
+                          >
+                            Thu hồi
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {sessionList.length === 0 && <AdminEmptyState message="Không tìm thấy lịch sử phiên hoạt động." />}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
-          <div className="admin-mini-list">
-            {apiKeyList.map((apiKey) => (
-              <article key={apiKey.id}>
-                <strong>{apiKey.name}</strong>
-                <span>{apiKey.keyPrefix} · {(apiKey.scopes || []).join(', ') || 'Không scope'} · {apiKey.revokedAt ? `Revoked ${formatAdminDate(apiKey.revokedAt)}` : 'Đang hoạt động'}</span>
-                <button type="button" className="admin-danger-button slim" disabled={submitting || apiKey.revokedAt} onClick={() => revokeApiKey(apiKey.id)}>
-                  <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
-                  <span>Thu hồi</span>
-                </button>
-              </article>
-            ))}
-            {apiKeyList.length === 0 && <AdminEmptyState message="Chưa có API key." />}
-          </div>
-        </div>
-      )}
 
-      {activeSettingsTab === 'privacy' && (
-        <div className="admin-grid two-columns">
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Xuất dữ liệu cá nhân</h3>
+          {activeSettingsTab === 'apikeys' && (
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <div>
+                  <h3><KeyRound size={16} /> API Keys</h3>
+                  <div className="settings-card-header-desc">Tạo khóa API dùng để xác thực hệ thống bên ngoài với tài khoản của bạn.</div>
+                </div>
+              </div>
+              <div className="settings-card-body">
+                <form className="settings-form-grid" onSubmit={createApiKey} style={{ borderBottom: '1px solid var(--kd-border)', paddingBottom: '24px', marginBottom: '24px' }}>
+                  <div className="settings-input-group">
+                    <label>Tên định danh API Key</label>
+                    <input
+                      value={apiKeyForm.name}
+                      onChange={(event) => setApiKeyForm((current) => ({ ...current, name: event.target.value }))}
+                      placeholder="Ví dụ: Tool Auto Deposit"
+                      required
+                    />
+                  </div>
+                  <div className="settings-input-group">
+                    <label>Scopes (Phân quyền API - phân tách bằng dấu phẩy)</label>
+                    <input
+                      value={apiKeyForm.scopes}
+                      onChange={(event) => setApiKeyForm((current) => ({ ...current, scopes: event.target.value }))}
+                      placeholder="orders:read,wallet:read"
+                    />
+                  </div>
+                  <div className="full-width" style={{ marginTop: '8px' }}>
+                    <button type="submit" className="settings-btn-save" disabled={submitting}>
+                      <Plus size={16} />
+                      <span>Tạo khóa API mới</span>
+                    </button>
+                  </div>
+                </form>
+
+                {createdApiToken && (
+                  <div className="totp-qr-container" style={{ borderLeft: '4px solid var(--kd-blue)', background: 'var(--kd-bg)', margin: '0 0 24px', alignItems: 'stretch' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <strong style={{ color: 'var(--kd-danger)', fontSize: '13px' }}>
+                        API Token mới tạo (Lưu ý: Hãy sao chép ngay, khóa này chỉ hiển thị duy nhất 1 lần):
+                      </strong>
+                      <button
+                        type="button"
+                        onClick={handleCopyToken}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', border: 'none', background: 'transparent', color: 'var(--kd-blue)', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                      >
+                        <Copy size={14} /> Copy Token
+                      </button>
+                    </div>
+                    <pre style={{ margin: 0, padding: '12px', background: '#0f172a', color: '#10b981', borderRadius: '8px', fontSize: '13px', overflowX: 'auto', fontFamily: 'monospace', wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>
+                      {createdApiToken}
+                    </pre>
+                  </div>
+                )}
+
+                <div className="apikey-list">
+                  <h4 style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--kd-text)' }}>
+                    Danh sách API Keys của bạn
+                  </h4>
+                  {apiKeyList.map((apiKey) => (
+                    <div className="apikey-item" key={apiKey.id}>
+                      <div className="apikey-item-info">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <strong>{apiKey.name}</strong>
+                          <span className="key-prefix">ID: #{apiKey.id}</span>
+                          <span style={{ fontSize: '12px', color: apiKey.revokedAt ? 'var(--kd-danger)' : 'var(--kd-success)', fontWeight: 'bold' }}>
+                            {apiKey.revokedAt ? '• Đã hủy' : '• Hoạt động'}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '13px', color: 'var(--kd-muted)', marginTop: '2px' }}>
+                          Tiền tố: <code>{apiKey.keyPrefix}</code>
+                        </span>
+                        {apiKey.scopes && apiKey.scopes.length > 0 && (
+                          <div className="apikey-scope-badges">
+                            {apiKey.scopes.map((scope) => (
+                              <span className="scope-badge" key={scope}>
+                                {scope}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {apiKey.revokedAt && (
+                          <span style={{ fontSize: '11px', color: 'var(--kd-muted)', marginTop: '4px' }}>
+                            Thời gian thu hồi: {formatAdminDate(apiKey.revokedAt)}
+                          </span>
+                        )}
+                      </div>
+                      {!apiKey.revokedAt && (
+                        <button
+                          type="button"
+                          className="admin-danger-button slim"
+                          disabled={submitting}
+                          onClick={() => revokeApiKey(apiKey.id)}
+                          style={{ borderRadius: '8px', minHeight: '32px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Trash2 size={13} />
+                          <span>Thu hồi</span>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {apiKeyList.length === 0 && <AdminEmptyState message="Tài khoản của bạn chưa có API key nào." />}
+                </div>
+              </div>
             </div>
-            <p className="admin-empty-state">
-              File JSON gồm hồ sơ, đơn hàng, nạp tiền, giao dịch ví, ticket và lịch sử phiên đăng nhập.
-            </p>
-            <button type="button" className="admin-primary-button" disabled={submitting} onClick={exportPersonalData}>
-              Xuất dữ liệu
-            </button>
-          </div>
+          )}
 
-          <div className="admin-panel">
-            <div className="admin-panel-head">
-              <h3>Xoá tài khoản</h3>
-              <AdminStatusBadge status="GDPR" />
+          {activeSettingsTab === 'privacy' && (
+            <div className="settings-form-grid">
+              {/* Export Data Card */}
+              <div className="settings-card">
+                <div className="settings-card-header">
+                  <div>
+                    <h3><Download size={16} /> Xuất dữ liệu cá nhân</h3>
+                    <div className="settings-card-header-desc">Tải về toàn bộ thông tin tài khoản được lưu trên hệ thống.</div>
+                  </div>
+                </div>
+                <div className="settings-card-body" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+                  <div>
+                    <div className="privacy-banner">
+                      Bản sao lưu dữ liệu dưới định dạng JSON bao gồm: Thông tin tài khoản, danh sách đơn hàng đã mua,
+                      lịch sử các yêu cầu nạp tiền, giao dịch ví, tickets hỗ trợ và thông số các phiên đăng nhập.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="settings-btn-save"
+                    disabled={submitting}
+                    onClick={exportPersonalData}
+                    style={{ width: 'max-content', marginTop: '12px' }}
+                  >
+                    <Download size={16} />
+                    <span>Tạo bản sao lưu JSON</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Account Deletion Card */}
+              <div className="settings-card">
+                <div className="settings-card-header">
+                  <div>
+                    <h3><Trash2 size={16} /> Yêu cầu xoá tài khoản</h3>
+                    <div className="settings-card-header-desc">Xóa hoặc vô hiệu hóa tài khoản và ẩn danh thông tin cá nhân.</div>
+                  </div>
+                  <AdminStatusBadge status="GDPR" />
+                </div>
+                <div className="settings-card-body" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+                  <div>
+                    <div className="privacy-banner" style={{ background: '#fef2f2', borderColor: '#fecaca', color: '#b91c1c' }}>
+                      <strong>Cảnh báo quan trọng:</strong> Hành động này sẽ ẩn danh toàn bộ email, tên hiển thị, số điện thoại,
+                      ngắt các liên kết OAuth và thu hồi mọi API Keys/Sessions. Dữ liệu tài chính (lịch sử giao dịch ví, đơn hàng)
+                      sẽ được giữ lại ở trạng thái vô danh để phục vụ đối soát tài chính của hệ thống.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-danger-button"
+                    disabled={submitting}
+                    onClick={deleteAccount}
+                    style={{ width: 'max-content', marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Trash2 size={15} />
+                    <span>Yêu cầu xoá vĩnh viễn</span>
+                  </button>
+                </div>
+              </div>
             </div>
-            <p className="admin-empty-state">
-              Hệ thống sẽ ẩn danh email, tên, số điện thoại, OAuth, 2FA; đồng thời thu hồi session và API key. Dữ liệu đơn/ví được giữ để đối soát tài chính.
-            </p>
-            <button type="button" className="admin-danger-button" disabled={submitting} onClick={deleteAccount}>
-              <Trash2 size={16} strokeWidth={2} aria-hidden="true" />
-              <span>Xoá tài khoản</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-
+          )}
+        </main>
+      </div>
     </section>
   )
 }

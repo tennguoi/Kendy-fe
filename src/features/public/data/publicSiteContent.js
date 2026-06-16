@@ -17,13 +17,12 @@ import {
 } from 'lucide-react'
 
 export const navItems = [
-  { label: 'Trang chủ', href: '#top' },
-  { label: 'Dịch vụ', href: '#services' },
-  { label: 'Bảng giá', href: '#pricing' },
-  { label: 'Hướng dẫn', href: '#workflow' },
-  { label: 'Chính sách', href: '#policies' },
-  { label: 'FAQ', href: '#faq' },
-  { label: 'Liên hệ', href: '#contact' },
+  { label: 'Trang chủ', href: '/' },
+  { label: 'Dịch vụ', href: '/services' },
+  { label: 'Hướng dẫn', href: '/#workflow' },
+  { label: 'Chính sách', href: '/#policies' },
+  { label: 'FAQ', href: '/#faq' },
+  { label: 'Liên hệ', href: '/#contact' },
 ]
 
 export const trustStats = [

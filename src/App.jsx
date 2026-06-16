@@ -8,6 +8,8 @@ import AuthScreen from './features/auth/AuthScreen'
 import DashboardShell from './components/layout/DashboardShell'
 import UserRoutes from './features/user/UserRoutes'
 import PublicHome from './features/public/PublicHome'
+import PublicCatalog from './features/public/PublicCatalog'
+import PublicServiceDetail from './features/public/PublicServiceDetail'
 import Loading from './components/Loading/Loading'
 import SupportWidget from './features/user/support/components/SupportWidget'
 import PaymentChoiceModal from './features/user/services/components/PaymentChoiceModal'
@@ -918,6 +920,18 @@ function App() {
           onSuccess={handleAuthSuccess}
         />
       )
+    }
+
+    const path = normalizePathname(location.pathname)
+    const serviceDetailMatch = path.match(/^\/service\/([^/]+)$/)
+
+    if (path === '/services' || path === '/catalog') {
+      return <PublicCatalog notice={apiNotice} onLoginClick={handleOpenAuth} />
+    }
+
+    if (serviceDetailMatch) {
+      const slug = serviceDetailMatch[1]
+      return <PublicServiceDetail slug={slug} notice={apiNotice} onLoginClick={handleOpenAuth} />
     }
 
     return <PublicHome notice={apiNotice} onLoginClick={handleOpenAuth} />

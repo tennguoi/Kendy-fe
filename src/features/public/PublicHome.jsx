@@ -1,21 +1,20 @@
 import { useMemo, useState, useEffect } from 'react'
-import { Clapperboard, Megaphone, PackageCheck, ShieldCheck, Users } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Clapperboard, Megaphone, PackageCheck, ShieldCheck, Users, Eye, ShoppingCart, Sparkles, ArrowRight } from 'lucide-react'
 import heroImg from '../../assets/hero.png'
 import { publicApi } from '../../api/public.api'
 import AutoDepositSection from './components/AutoDepositSection/AutoDepositSection'
 import ConsultSection from './components/ConsultSection/ConsultSection'
-import FeaturedServices from './components/FeaturedServices/FeaturedServices'
 import FaqSection from './components/FaqSection/FaqSection'
 import FinalCta from './components/FinalCta/FinalCta'
 import HeroSection from './components/HeroSection/HeroSection'
 import PublicFooter from './components/PublicFooter/PublicFooter'
 import PublicHeader from './components/PublicHeader/PublicHeader'
-import ServiceCategories from './components/ServiceCategories/ServiceCategories'
-import ServiceTableSection from './components/ServiceTableSection/ServiceTableSection'
 import TestimonialsSection from './components/TestimonialsSection/TestimonialsSection'
 import TrustStrip from './components/TrustStrip/TrustStrip'
 import WhyChooseSection from './components/WhyChooseSection/WhyChooseSection'
 import WorkflowSection from './components/WorkflowSection/WorkflowSection'
+import './components/ServiceCatalog/ServiceCatalog.css'
 import { faqGroups } from './data/faqs.public'
 import { footerGroups, policyHighlights } from './data/policies.public'
 import {
@@ -72,60 +71,8 @@ function buildServiceCategories(apiCategories) {
   })
 }
 
-function buildFeaturedServices(apiServices) {
-  const services = Array.isArray(apiServices) ? apiServices : []
-  const featured = services.filter((s) => s.featured).slice(0, 4)
-  if (featured.length === 0) {
-    return services.slice(0, 4)
-  }
-  return featured
-}
-
-function mapApiServiceToFeaturedRow(service) {
-  //const slug = pickCategorySlug(service.categoryName || service.type)
-  return {
-    name: service.name,
-    description: service.shortDescription || service.description || '',
-    category: service.categoryName || service.type || 'Dịch vụ',
-    price: service.priceText || `Từ ${Number(service.price).toLocaleString('vi-VN')}đ`,
-    processingTime: service.processingTime || 'Theo quy trình',
-    warranty: service.warrantyInfo || 'Theo điều kiện',
-    badge: service.featured ? 'Nổi bật' : 'Mới',
-    status: service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng',
-    mode: 'Mua ngay',
-    cta: 'Mua ngay',
-    conditions: ['Đăng nhập để mua', 'Hỗ trợ sau mua'],
-  }
-}
-
-function mapApiServiceToTableRow(service) {
-  const slug = pickCategorySlug(service.categoryName || service.type)
-  return {
-    name: service.name,
-    category: slug,
-    categoryLabel: service.categoryName || service.type || 'Dịch vụ',
-    price: service.priceText || `Từ ${Number(service.price).toLocaleString('vi-VN')}đ`,
-    processingTime: service.processingTime || 'Theo quy trình',
-    warranty: service.warrantyInfo || 'Theo điều kiện',
-    status: service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng',
-    cta: 'Mua ngay',
-    icon: categoryIcons[slug] || ShieldCheck,
-  }
-}
-
-function buildFilters(apiCategories) {
-  const cats = Array.isArray(apiCategories) ? apiCategories : []
-  if (cats.length === 0) return [{ id: 'all', label: 'Tất cả' }]
-  return [
-    { id: 'all', label: 'Tất cả' },
-    ...cats.map((cat) => ({
-      id: pickCategorySlug(cat.name),
-      label: cat.name,
-    })),
-  ]
-}
-
 function PublicHome({ notice, onLoginClick }) {
+  const navigate = useNavigate()
   const [apiServices, setApiServices] = useState([])
   const [apiCategories, setApiCategories] = useState([])
 
@@ -145,30 +92,49 @@ function PublicHome({ notice, onLoginClick }) {
     })
   }, [])
 
-  const hasApiData = apiServices.length > 0
+  const featuredServices = useMemo(() => {
+    const source = apiServices.length > 0 ? apiServices : staticFeaturedServices
+    let list = source.filter((s) => s.featured || s.badge === 'Nổi bật')
+    if (list.length === 0) {
+      list = source.slice(0, 4)
+    }
 
-  const mergedCategories = useMemo(() => {
-    const apiCats = buildServiceCategories(apiCategories)
-    if (apiCats.length > 0) return apiCats
-    return staticCategories
-  }, [apiCategories])
+    return list.map((s) => {
+      let categorySlug = 'default'
+      const nameLower = (s.categoryName || s.type || s.category || '').toLowerCase()
+      if (nameLower.includes('capcut')) categorySlug = 'capcut'
+      else if (nameLower.includes('facebook')) categorySlug = 'facebook'
+      else if (nameLower.includes('nâng cấp') || nameLower.includes('upgrade')) categorySlug = 'upgrade'
+      else if (nameLower.includes('quảng cáo') || nameLower.includes('ads') || nameLower.includes('advertising')) categorySlug = 'ads'
 
-  const mergedFeaturedServices = useMemo(() => {
-    if (!hasApiData) return staticFeaturedServices
-    const featured = buildFeaturedServices(apiServices)
-    return featured.map(mapApiServiceToFeaturedRow)
-  }, [apiServices, hasApiData])
+      let formattedPrice = s.price
+      if (typeof s.price === 'number') {
+        formattedPrice = `${Number(s.price).toLocaleString('vi-VN')}đ`
+      } else if (s.price && !s.price.includes('đ') && !isNaN(Number(s.price))) {
+        formattedPrice = `${Number(s.price).toLocaleString('vi-VN')}đ`
+      } else if (!s.price) {
+        formattedPrice = s.priceText || 'Báo giá'
+      }
 
-  const mergedFilters = useMemo(() => {
-    const filters = buildFilters(apiCategories)
-    if (filters.length > 1) return filters
-    return [{ id: 'all', label: 'Tất cả' }, { id: 'capcut', label: 'CapCut' }, { id: 'facebook', label: 'Facebook' }, { id: 'upgrade', label: 'Nâng cấp' }, { id: 'ads', label: 'Quảng cáo' }]
-  }, [apiCategories])
+      const computedSlug = s.slug || (s.name || '').toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
 
-  const mergedTableRows = useMemo(() => {
-    if (!hasApiData) return staticTableRows
-    return apiServices.map(mapApiServiceToTableRow)
-  }, [apiServices, hasApiData])
+      return {
+        ...s,
+        category: s.category || categorySlug,
+        categoryLabel: s.categoryLabel || s.categoryName || s.type || s.category || 'Dịch vụ',
+        price: formattedPrice,
+        slug: computedSlug,
+        status: s.status || (s.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng'),
+        badge: s.badge || (s.featured ? 'Nổi bật' : ''),
+      }
+    })
+  }, [apiServices])
 
   const handleConsultSubmit = (event) => {
     event.preventDefault()
@@ -189,15 +155,77 @@ function PublicHome({ notice, onLoginClick }) {
           />
         </ScrollReveal>
         <ScrollReveal delay={200}><TrustStrip items={trustStats} /></ScrollReveal>
-        <ScrollReveal delay={100}><ServiceCategories categories={mergedCategories} /></ScrollReveal>
-        <ScrollReveal delay={100}><FeaturedServices services={mergedFeaturedServices} onPurchaseClick={onLoginClick} /></ScrollReveal>
+        
+        {/* Featured Products Section */}
         <ScrollReveal delay={100}>
-          <ServiceTableSection
-            filters={mergedFilters}
-            rows={mergedTableRows}
-            onActionClick={onLoginClick}
-          />
+          <section className="featured-products-home" id="services">
+            <div className="home-section-header">
+              <span className="eyebrow">Sản phẩm bán chạy</span>
+              <h2 className="home-section-title">Sản Phẩm Nổi Bật</h2>
+              <p className="home-section-desc">
+                Các gói tài khoản và dịch vụ tối ưu được nhiều khách hàng lựa chọn sử dụng nhất
+              </p>
+            </div>
+
+            <div className="featured-grid-home">
+              {featuredServices.map((service, index) => {
+                const isOutOfStock = service.status === 'Hết hàng' || service.stockStatus === 'OUT_OF_STOCK'
+                const isFeatured = service.featured || service.badge === 'Nổi bật'
+
+                return (
+                  <div className={`service-card ${isFeatured ? 'featured' : ''}`} key={service.id || index}>
+                    {isFeatured && (
+                      <div className="service-card-badge">
+                        <Sparkles size={12} /> {service.badge || 'Nổi bật'}
+                      </div>
+                    )}
+                    
+                    <div className="service-card-content">
+                      <span className="service-card-category">{service.categoryLabel}</span>
+                      <h4 className="service-card-title">{service.name}</h4>
+                      
+                      <div className="service-card-footer">
+                        <div className="service-card-price-container">
+                          <span className="price-label">Giá trọn gói</span>
+                          <span className="price-val">{service.price}</span>
+                        </div>
+                        
+                        <div className="service-card-actions">
+                          <button
+                            type="button"
+                            className="btn-action btn-detail"
+                            onClick={() => navigate(`/service/${service.slug}`)}
+                            title="Xem chi tiết dịch vụ"
+                          >
+                            <Eye size={16} />
+                            <span>Chi tiết</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-action btn-buy"
+                            disabled={isOutOfStock}
+                            onClick={() => onLoginClick(service)}
+                          >
+                            <ShoppingCart size={16} />
+                            <span>{isOutOfStock ? 'Hết hàng' : 'Mua ngay'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="view-all-container">
+              <a href="/services" className="public-btn primary">
+                <span>Xem tất cả dịch vụ</span>
+                <ArrowRight size={17} strokeWidth={2} aria-hidden="true" />
+              </a>
+            </div>
+          </section>
         </ScrollReveal>
+
         <ScrollReveal delay={100}><WorkflowSection steps={workflowSteps} /></ScrollReveal>
         <ScrollReveal delay={100}><AutoDepositSection flow={depositFlow} /></ScrollReveal>
         <ScrollReveal delay={100}><WhyChooseSection items={whyChooseUs} policies={policyHighlights} /></ScrollReveal>
