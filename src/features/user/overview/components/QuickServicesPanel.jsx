@@ -1,6 +1,7 @@
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { money } from '../../../../utils/currency'
 import { getServiceTypeLabel } from '../../services/services.constants'
+import { isServiceOnSale, isServiceOutOfStock } from '../../services/services.utils'
 
 function QuickServicesPanel({
   onOpenServices,
@@ -16,26 +17,32 @@ function QuickServicesPanel({
         <button type="button" onClick={onOpenServices}>Mở catalog</button>
       </div>
       <div className="quick-service-list">
-        {services.map((service) => (
-          <article className="quick-service-card" key={service.id}>
-            <div>
-              <span>{service.categoryName || getServiceTypeLabel(service.type) || 'Dịch vụ'}</span>
-              <h3>{service.name}</h3>
-            </div>
-            <p>{service.shortDescription || service.description || 'Dịch vụ đang sẵn sàng xử lý theo quy trình Kendy Digital.'}</p>
-            <div className="quick-service-meta">
-              <strong>{service.priceText || money.format(service.price)}</strong>
-              <StatusBadge status={service.stockStatus || service.status} />
-            </div>
-            <button
-              type="button"
-              disabled={service.status !== 'ACTIVE' || service.stockStatus === 'OUT_OF_STOCK'}
-              onClick={() => onPurchase(service)}
-            >
-              {service.type === 'ACCOUNT_STOCK' ? 'Nhận ngay' : service.type === 'MANUAL' ? 'Đặt dịch vụ' : 'Mua ngay'}
-            </button>
-          </article>
-        ))}
+        {services.map((service) => {
+          const onSale = isServiceOnSale(service)
+          const outOfStock = isServiceOutOfStock(service)
+          return (
+            <article className={`quick-service-card${outOfStock ? ' out-of-stock' : ''}`} key={service.id}>
+              {onSale && <span className="badge-sale">Khuyến mãi</span>}
+              {outOfStock && <span className="badge-out-of-stock">Hết hàng</span>}
+              <div>
+                <span>{service.categoryName || getServiceTypeLabel(service.type) || 'Dịch vụ'}</span>
+                <h3>{service.name}</h3>
+              </div>
+              <p>{service.shortDescription || service.description || 'Dịch vụ đang sẵn sàng xử lý theo quy trình Kendy Digital.'}</p>
+              <div className="quick-service-meta">
+                <strong>{service.priceText || money.format(service.price)}</strong>
+                <StatusBadge status={service.stockStatus || service.status} />
+              </div>
+              <button
+                type="button"
+                disabled={service.status !== 'ACTIVE' || outOfStock}
+                onClick={() => onPurchase(service)}
+              >
+                {outOfStock ? 'Hết hàng' : service.type === 'ACCOUNT_STOCK' ? 'Nhận ngay' : service.type === 'MANUAL' ? 'Đặt dịch vụ' : 'Mua ngay'}
+              </button>
+            </article>
+          )
+        })}
         {services.length === 0 && <p className="admin-empty-state">Chưa có dịch vụ để gợi ý.</p>}
       </div>
     </section>

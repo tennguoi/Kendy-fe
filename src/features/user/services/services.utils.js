@@ -16,3 +16,13 @@ export function mergeServiceLists(primary, fallback) {
   })
   return Array.from(byId.values())
 }
+
+export function isServiceOnSale(service) {
+  if (!service?.pricingBadge) return false
+  const badge = service.pricingBadge.toLowerCase()
+  return badge.includes('khuyến mãi') || badge.includes('giảm') || badge.includes('sale') || badge.includes('discount')
+}
+
+export function isServiceOutOfStock(service) {
+  return service?.stockStatus === 'OUT_OF_STOCK'
+}

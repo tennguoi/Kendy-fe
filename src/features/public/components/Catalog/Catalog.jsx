@@ -38,6 +38,8 @@ function buildFilters(apiCategories) {
 function mapServiceToCard(service) {
   const slug = pickCategorySlug(service.categoryName || service.type)
   const categorySlug = service.categorySlug || (service.categoryName ? service.categoryName.toLowerCase().replace(/[^a-z0-9-]/g, '-') : slug)
+  const badgeLower = (service.pricingBadge || '').toLowerCase()
+  const isOnSale = badgeLower.includes('khuyến mãi') || badgeLower.includes('giảm') || badgeLower.includes('sale') || badgeLower.includes('discount')
   return {
     id: service.id,
     slug: service.slug || service.id,
@@ -55,6 +57,10 @@ function mapServiceToCard(service) {
     processingTime: service.processingTime || 'Theo quy trình',
     warranty: service.warrantyPolicy || 'Theo điều kiện',
     status: service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng',
+    stockStatus: service.stockStatus,
+    pricingBadge: service.pricingBadge,
+    _onSale: isOnSale,
+    _outOfStock: service.stockStatus === 'OUT_OF_STOCK',
     icon: categoryIcons[slug] || ShieldCheck,
   }
 }
@@ -295,10 +301,12 @@ function Catalog() {
               const Icon = service.icon || ShieldCheck
               return (
                 <article
-                  className="catalog-card"
+                  className={`catalog-card${service._outOfStock ? ' out-of-stock' : ''}`}
                   key={service.name + (service.id || '')}
                   onClick={() => handleViewDetail(service)}
                 >
+                  {service._onSale && <span className="catalog-card-sale-badge">Khuyến mãi</span>}
+                  {service._outOfStock && <span className="catalog-card-oos-badge">Hết hàng</span>}
                   <div className="catalog-card-head">
                     <span className="catalog-card-icon">
                       {service.iconUrl ? (
@@ -317,7 +325,7 @@ function Catalog() {
                   <p>{service.description}</p>
                   <div className="catalog-card-meta">
                     <div className="catalog-card-price">{service.price}</div>
-                    <div className="catalog-card-status">{service.status}</div>
+                    <div className={`catalog-card-status${service._outOfStock ? ' out' : ''}`}>{service.status}</div>
                   </div>
                   <div className="catalog-card-footer">
                     <span className="catalog-card-info">

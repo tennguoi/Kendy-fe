@@ -2,6 +2,7 @@ import { Clock3, Star } from 'lucide-react'
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { money } from '../../../../utils/currency'
 import { getServiceTypeLabel } from '../services.constants'
+import { isServiceOnSale, isServiceOutOfStock } from '../services.utils'
 
 function ServiceCatalogCard({
   isFavorite,
@@ -9,7 +10,9 @@ function ServiceCatalogCard({
   onToggleFavorite,
   service,
 }) {
-  const isDisabled = service.status !== 'ACTIVE' || service.stockStatus === 'OUT_OF_STOCK'
+  const isDisabled = service.status !== 'ACTIVE' || isServiceOutOfStock(service)
+  const onSale = isServiceOnSale(service)
+  const outOfStock = isServiceOutOfStock(service)
   const actionLabel = service.type === 'ACCOUNT_STOCK'
     ? 'Mua và nhận ngay'
     : service.type === 'MANUAL'
@@ -17,7 +20,9 @@ function ServiceCatalogCard({
       : 'Mua dịch vụ'
 
   return (
-    <article className="service-card">
+    <article className={`service-card${outOfStock ? ' out-of-stock' : ''}`}>
+      {onSale && <span className="badge-sale">Khuyến mãi</span>}
+      {outOfStock && <span className="badge-out-of-stock">Hết hàng</span>}
       <div className="service-head">
         <span>{service.categoryName || getServiceTypeLabel(service.type) || 'Dịch vụ'}</span>
         <StatusBadge status={service.status} />
@@ -33,7 +38,9 @@ function ServiceCatalogCard({
       </div>
       <div className="service-meta">
         <strong>{service.priceText || money.format(service.price)}</strong>
-        <span>{service.pricingBadge || service.type || 'Chuẩn'}</span>
+        <span className={`badge-pricing${onSale ? ' sale' : ''}`}>
+          {service.pricingBadge || service.type || 'Chuẩn'}
+        </span>
       </div>
       <div className="service-actions">
         <button type="button" disabled={isDisabled} onClick={() => onPurchase(service)}>

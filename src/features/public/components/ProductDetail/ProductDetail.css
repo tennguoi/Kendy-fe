@@ -227,6 +227,34 @@
   border-radius: 6px;
 }
 
+.price-discount-badge.sale-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #dc2626, #ea580c);
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+/* Banner hết hàng */
+.product-oos-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 12px;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.product-oos-banner svg {
+  flex-shrink: 0;
+}
+
 .product-purchase-action {
   margin-top: auto;
 }

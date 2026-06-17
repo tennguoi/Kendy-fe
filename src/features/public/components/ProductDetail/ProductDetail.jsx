@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ShoppingCart,
   AlertTriangle,
+  BadgePercent,
 } from 'lucide-react'
 import { publicApi } from '../../../../api/public.api'
 import {
@@ -79,6 +80,10 @@ function ProductDetail({ onLoginClick }) {
   const price = service.priceText || `Từ ${Number(service.price).toLocaleString('vi-VN')}đ`
   const categoryName = service.categoryName || service.type || 'Dịch vụ'
   const stockStatus = service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : service.stockStatus === 'CONSULTING_ONLY' ? 'Tư vấn' : 'Còn hàng'
+  const isOutOfStock = service.stockStatus === 'OUT_OF_STOCK'
+
+  const badgeLower = (service.pricingBadge || '').toLowerCase()
+  const isOnSale = badgeLower.includes('khuyến mãi') || badgeLower.includes('giảm') || badgeLower.includes('sale') || badgeLower.includes('discount')
 
   return (
     <div className="product-detail-page">
@@ -89,6 +94,14 @@ function ProductDetail({ onLoginClick }) {
           <ArrowLeft size={18} strokeWidth={2} />
           <span>Quay lại danh mục</span>
         </button>
+
+        {/* Banner hết hàng */}
+        {isOutOfStock && (
+          <div className="product-oos-banner">
+            <AlertTriangle size={18} />
+            <span>Dịch vụ này hiện đang hết hàng. Vui lòng quay lại sau hoặc liên hệ hỗ trợ.</span>
+          </div>
+        )}
 
         {/* PHẦN TRÊN: Thông tin mua hàng (2 cột) */}
         <div className="product-main-card">
@@ -112,7 +125,7 @@ function ProductDetail({ onLoginClick }) {
             <div className="product-meta-rows">
               <div className="meta-item-row">
                 <span className="meta-label">Tình trạng:</span>
-                <span className={`meta-value stock-status ${service.stockStatus === 'OUT_OF_STOCK' ? 'out' : 'in'}`}>
+                <span className={`meta-value stock-status ${isOutOfStock ? 'out' : 'in'}`}>
                   {stockStatus}
                 </span>
               </div>
@@ -129,13 +142,18 @@ function ProductDetail({ onLoginClick }) {
             <div className="product-price-section">
               <div className="price-main-row">
                 <span className="price-actual">{price}</span>
-                {service.price > 0 && (
+                {!isOnSale && service.price > 0 && (
                   <>
                     <span className="price-original">
                       {Math.round(service.price * 1.25).toLocaleString('vi-VN')}đ
                     </span>
                     <span className="price-discount-badge">-20%</span>
                   </>
+                )}
+                {isOnSale && (
+                  <span className="price-discount-badge sale-badge">
+                    <BadgePercent size={12} /> {service.pricingBadge}
+                  </span>
                 )}
               </div>
             </div>
@@ -144,11 +162,11 @@ function ProductDetail({ onLoginClick }) {
               <button
                 type="button"
                 className="btn-buy-now-detail"
-                disabled={service.stockStatus === 'OUT_OF_STOCK'}
+                disabled={isOutOfStock}
                 onClick={onLoginClick}
               >
                 <ShoppingCart size={20} />
-                <span>Mua ngay</span>
+                <span>{isOutOfStock ? 'Hết hàng' : 'Mua ngay'}</span>
               </button>
             </div>
           </div>
