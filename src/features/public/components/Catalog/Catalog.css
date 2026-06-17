@@ -42,6 +42,10 @@
 .catalog-toolbar {
   width: min(1180px, calc(100% - 48px));
   margin: 32px auto 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
 }
 
 .catalog-search {
@@ -298,7 +302,116 @@ html.dark .catalog-card:hover {
   .catalog-grid {
     width: calc(100% - 36px);
   }
+  .catalog-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
   .catalog-grid {
     grid-template-columns: 1fr;
   }
+  .catalog-sort {
+    width: 100%;
+  }
+  .sort-select {
+    flex: 1;
+  }
 }
+
+/* Sắp xếp dropdown */
+.catalog-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sort-label {
+  font-size: 14px;
+  color: var(--kd-muted);
+  font-weight: 600;
+}
+
+.sort-select {
+  padding: 10px 16px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  background: var(--kd-card);
+  color: var(--kd-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 180ms ease;
+}
+
+.sort-select:focus {
+  border-color: var(--kd-blue);
+}
+
+/* Phân trang CSS */
+.catalog-pagination {
+  width: min(1180px, calc(100% - 48px));
+  margin: 32px auto 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-btn {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  background: var(--kd-card);
+  color: var(--kd-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 180ms ease;
+  padding: 0 16px;
+}
+
+.pagination-btn.num {
+  width: 40px;
+  padding: 0;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--kd-blue);
+  color: var(--kd-blue);
+}
+
+.pagination-btn.active {
+  background-color: var(--kd-blue);
+  color: #ffffff;
+  border-color: var(--kd-blue);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 680px) {
+  .catalog-pagination {
+    gap: 8px;
+    width: calc(100% - 36px);
+  }
+  .pagination-btn.arrow {
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}
+

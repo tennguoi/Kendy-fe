@@ -26,7 +26,7 @@ function PublicFooter({ logo, footerGroups }) {
 
       <div className="footer-bottom">
         <span>Liên hệ: Zalo/Facebook hỗ trợ sau khi đăng nhập</span>
-        <span>Kendy Digital © 2026</span>
+        <span>Kendy Digital © {new Date().getFullYear()}</span>
       </div>
     </footer>
   )

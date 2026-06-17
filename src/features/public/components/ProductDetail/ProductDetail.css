@@ -35,9 +35,9 @@
 }
 
 .product-detail-container {
-  width: min(820px, calc(100% - 48px));
+  width: min(1000px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 32px 0 60px;
+  padding: 32px 0 80px;
 }
 
 .product-detail-back-btn {
@@ -53,158 +53,427 @@
   color: var(--kd-blue);
   cursor: pointer;
   transition: opacity 180ms ease;
+  margin-bottom: 20px;
 }
 
 .product-detail-back-btn:hover {
   opacity: 0.75;
 }
 
-.product-detail-header {
-  margin: 16px 0 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--kd-border);
+/* PHẦN TRÊN: Giao diện chính (2 cột) */
+.product-main-card {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 40px;
+  background-color: var(--kd-card);
+  border: 1px solid var(--kd-border);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--kd-soft-shadow);
+  margin-bottom: 32px;
 }
 
-.product-detail-category {
-  display: inline-block;
-  margin-bottom: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--kd-blue);
-  text-transform: uppercase;
-  letter-spacing: 0;
+.product-image-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.product-detail-header h1 {
-  margin: 0 0 16px;
-  font-size: 32px;
-  line-height: 1.2;
-  color: var(--kd-text);
+.product-main-img {
+  width: 100%;
+  aspect-ratio: 16/10;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--kd-border);
+  background-color: var(--kd-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
 }
 
-.product-detail-price-row {
+.product-main-img:hover {
+  transform: scale(1.01);
+}
+
+.product-image-fallback {
+  width: 100%;
+  aspect-ratio: 16/10;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+  border: 1px dashed var(--kd-border);
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
 }
 
-.product-detail-price {
-  font-size: 26px;
-  font-weight: 900;
-  color: var(--kd-text);
-}
-
-.product-detail-stock {
-  font-size: 13px;
+.product-image-fallback span {
+  font-size: 16px;
   font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 100px;
-  background: rgba(34, 197, 94, 0.12);
+  color: var(--kd-blue);
+}
+
+.image-zoom-hint {
+  font-size: 12px;
+  color: var(--kd-muted);
+  text-align: center;
+}
+
+/* Cột thông tin bên phải */
+.product-info-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-category-tag {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--kd-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.product-title-main {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--kd-text);
+  line-height: 1.3;
+  margin: 0 0 20px;
+}
+
+.product-meta-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 0;
+  border-top: 1px dashed var(--kd-border);
+  border-bottom: 1px dashed var(--kd-border);
+  margin-bottom: 24px;
+}
+
+.meta-item-row {
+  display: flex;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.meta-label {
+  color: var(--kd-muted);
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.meta-value {
+  color: var(--kd-text);
+  font-weight: 600;
+}
+
+.meta-value.code {
+  font-family: monospace;
+}
+
+.meta-value.stock-status {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.meta-value.stock-status.in {
+  background-color: rgba(22, 163, 74, 0.1);
   color: #16a34a;
 }
 
-.product-detail-sections {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+.meta-value.stock-status.out {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
 }
 
-.product-detail-section {
-  padding: 24px;
-  border: 1px solid var(--kd-border);
-  border-radius: 16px;
-  background: var(--kd-card);
+/* Giá tiền */
+.product-price-section {
+  background-color: var(--kd-bg);
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-bottom: 24px;
 }
 
-.product-detail-section-head {
+.price-main-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.price-actual {
+  font-size: 28px;
+  font-weight: 900;
   color: var(--kd-blue);
 }
 
-.product-detail-section-head h2 {
-  margin: 0;
-  font-size: 18px;
+.price-original {
+  font-size: 16px;
+  color: var(--kd-muted);
+  text-decoration: line-through;
+  font-weight: 550;
+}
+
+.price-discount-badge {
+  background-color: #dc2626;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.product-purchase-action {
+  margin-top: auto;
+}
+
+.btn-buy-now-detail {
+  width: 100%;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.15);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-buy-now-detail:hover:not(:disabled) {
+  opacity: 0.95;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
+}
+
+.btn-buy-now-detail:disabled {
+  background: var(--kd-border);
+  color: var(--kd-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* PHẦN DƯỚI: Lưu ý box */
+.product-notice-box {
+  background-color: rgba(217, 119, 6, 0.04);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  border-left: 4px solid var(--kd-warning);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 36px;
+}
+
+.notice-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--kd-warning);
+  font-weight: 750;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.notice-content {
+  font-size: 13.5px;
+  line-height: 1.6;
   color: var(--kd-text);
 }
 
-.product-detail-section-body {
-  color: var(--kd-muted);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.product-detail-text {
+.notice-text {
   white-space: pre-wrap;
 }
 
-.product-detail-list {
+.notice-list {
   margin: 0;
-  padding: 0;
+  padding-left: 20px;
+}
+
+.notice-list li {
+  margin-bottom: 4px;
+}
+
+/* LAYOUT CHI TIẾT 2 CỘT (Divine Shop Style) */
+.product-detail-layout-row {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  padding: 32px 0;
+}
+
+.product-detail-layout-row.border-top {
+  border-top: 1px solid var(--kd-border);
+}
+
+.layout-left-title h3 {
+  font-size: 16px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--kd-muted);
+  margin: 0;
+}
+
+.layout-right-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.content-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.content-subsection h4 {
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--kd-text);
+  margin: 0;
+  border-left: 3px solid var(--kd-blue);
+  padding-left: 10px;
+}
+
+.formatted-desc-text {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--kd-muted);
+  white-space: pre-wrap;
+}
+
+.processing-steps-list {
   list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.processing-steps-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--kd-muted);
+}
+
+.step-num {
+  font-weight: 800;
+  color: var(--kd-blue);
+}
+
+.benefits-bullet-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.product-detail-list li {
+.benefits-bullet-list li {
   position: relative;
   padding-left: 20px;
+  font-size: 14px;
+  color: var(--kd-muted);
+  line-height: 1.5;
 }
 
-.product-detail-list li::before {
-  content: '';
+.benefits-bullet-list li::before {
+  content: "✓";
   position: absolute;
   left: 0;
-  top: 9px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--kd-blue);
-  opacity: 0.5;
-}
-
-.product-detail-actions {
-  margin-top: 36px;
-  display: flex;
-  justify-content: center;
-}
-
-.product-detail-buy-btn {
-  min-height: 50px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 0 36px;
-  border: 0;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
-  color: #ffffff;
-  font: inherit;
-  font-size: 16px;
+  color: var(--kd-success);
   font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 14px 30px rgba(20, 124, 255, 0.22);
-  transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
-.product-detail-buy-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 36px rgba(20, 124, 255, 0.28);
+/* Warranty Section styles */
+.warranty-duration-text {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--kd-text);
+  background-color: var(--kd-card);
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--kd-border);
+  width: fit-content;
 }
 
-@media (max-width: 680px) {
+.non-warranty-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.non-warranty-list li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 14px;
+  color: var(--kd-muted);
+  line-height: 1.5;
+}
+
+.non-warranty-list li::before {
+  content: "✕";
+  position: absolute;
+  left: 0;
+  color: #dc2626;
+  font-weight: 800;
+}
+
+/* Dark Mode adjustment for warning box */
+html.dark .product-notice-box {
+  background-color: rgba(217, 119, 6, 0.02);
+  border-color: rgba(217, 119, 6, 0.15);
+}
+
+/* RESPONSIVE LAYOUT */
+@media (max-width: 920px) {
+  .product-main-card {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px;
+  }
+  
+  .product-detail-layout-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 24px 0;
+  }
+
+  .layout-left-title h3 {
+    border-bottom: 1px solid var(--kd-border);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 600px) {
   .product-detail-container {
-    width: calc(100% - 36px);
-    padding-top: 20px;
+    width: calc(100% - 32px);
   }
-  .product-detail-header h1 {
-    font-size: 26px;
-  }
-  .product-detail-price {
+  
+  .product-title-main {
     font-size: 22px;
   }
+
+  .price-actual {
+    font-size: 24px;
+  }
 }
+

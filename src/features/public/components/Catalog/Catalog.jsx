@@ -48,6 +48,10 @@ function mapServiceToCard(service) {
     categorySlug: categorySlug,
     categoryLabel: service.categoryName || service.type || 'Dịch vụ',
     price: service.priceText || `Từ ${Number(service.price).toLocaleString('vi-VN')}đ`,
+    priceVal: service.price,
+    featured: service.featured,
+    sortOrder: service.sortOrder,
+    iconUrl: service.iconUrl,
     processingTime: service.processingTime || 'Theo quy trình',
     warranty: service.warrantyPolicy || 'Theo điều kiện',
     status: service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng',
@@ -62,7 +66,10 @@ function Catalog() {
   const [apiCategories, setApiCategories] = useState([])
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '')
   const [activeFilter, setActiveFilter] = useState(searchParams.get('category') || 'all')
+  const [activeSort, setActiveSort] = useState(searchParams.get('sort') || 'popular')
+  const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(true)
+  const itemsPerPage = 8
 
   useEffect(() => {
     Promise.allSettled([
@@ -98,17 +105,57 @@ function Catalog() {
     return apiServices.map(mapServiceToCard)
   }, [apiServices, hasApiData])
 
-  const visibleServices = useMemo(() => {
+  // Lọc theo search và category
+  const filteredServices = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase()
     return allServices
       .filter((s) => activeFilter === 'all' || s.category === activeFilter || String(s.categoryId) === activeFilter || s.categorySlug === activeFilter)
       .filter((s) => !keyword || s.name.toLowerCase().includes(keyword) || s.categoryLabel.toLowerCase().includes(keyword))
   }, [allServices, activeFilter, searchTerm])
 
-  const displayServices = hasApiData ? visibleServices : staticRows
+  // Sắp xếp
+  const sortedServices = useMemo(() => {
+    const list = [...filteredServices]
+    if (activeSort === 'name-asc') {
+      return list.sort((a, b) => a.name.localeCompare(b.name, 'vi'))
+    }
+    if (activeSort === 'name-desc') {
+      return list.sort((a, b) => b.name.localeCompare(a.name, 'vi'))
+    }
+    if (activeSort === 'price-asc') {
+      return list.sort((a, b) => {
+        const priceA = typeof a.priceVal === 'number' ? a.priceVal : parseFloat(String(a.priceVal || a.price).replace(/[^0-9]/g, '')) || 0
+        const priceB = typeof b.priceVal === 'number' ? b.priceVal : parseFloat(String(b.priceVal || b.price).replace(/[^0-9]/g, '')) || 0
+        return priceA - priceB
+      })
+    }
+    if (activeSort === 'price-desc') {
+      return list.sort((a, b) => {
+        const priceA = typeof a.priceVal === 'number' ? a.priceVal : parseFloat(String(a.priceVal || a.price).replace(/[^0-9]/g, '')) || 0
+        const priceB = typeof b.priceVal === 'number' ? b.priceVal : parseFloat(String(b.priceVal || b.price).replace(/[^0-9]/g, '')) || 0
+        return priceB - priceA
+      })
+    }
+    // 'popular' hoặc mặc định: dịch vụ featured lên trước, sau đó theo sortOrder
+    return list.sort((a, b) => {
+      if (a.featured && !b.featured) return -1
+      if (!a.featured && b.featured) return 1
+      return (a.sortOrder || 0) - (b.sortOrder || 0)
+    })
+  }, [filteredServices, activeSort])
+
+  const displayServices = hasApiData ? sortedServices : staticRows
+
+  // Phân trang
+  const totalPages = Math.ceil(displayServices.length / itemsPerPage)
+  const paginatedServices = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return displayServices.slice(startIndex, startIndex + itemsPerPage)
+  }, [displayServices, currentPage, itemsPerPage])
 
   const handleFilterChange = (id) => {
     setActiveFilter(id)
+    setCurrentPage(1)
     const params = new URLSearchParams(searchParams)
     if (id === 'all') {
       params.delete('category')
@@ -120,18 +167,64 @@ function Catalog() {
     } else {
       params.delete('q')
     }
+    if (activeSort && activeSort !== 'popular') {
+      params.set('sort', activeSort)
+    } else {
+      params.delete('sort')
+    }
     setSearchParams(params)
   }
 
   const handleSearch = (value) => {
     setSearchTerm(value)
+    setCurrentPage(1)
     const params = new URLSearchParams(searchParams)
     if (value.trim()) {
       params.set('q', value.trim())
     } else {
       params.delete('q')
     }
+    if (activeFilter !== 'all') {
+      params.set('category', activeFilter)
+    } else {
+      params.delete('category')
+    }
+    if (activeSort && activeSort !== 'popular') {
+      params.set('sort', activeSort)
+    } else {
+      params.delete('sort')
+    }
     setSearchParams(params)
+  }
+
+  const handleSortChange = (sortType) => {
+    setActiveSort(sortType)
+    setCurrentPage(1)
+    const params = new URLSearchParams(searchParams)
+    if (sortType === 'popular') {
+      params.delete('sort')
+    } else {
+      params.set('sort', sortType)
+    }
+    if (activeFilter !== 'all') {
+      params.set('category', activeFilter)
+    } else {
+      params.delete('category')
+    }
+    if (searchTerm.trim()) {
+      params.set('q', searchTerm.trim())
+    } else {
+      params.delete('q')
+    }
+    setSearchParams(params)
+  }
+
+  const handlePageChange = (pageNum) => {
+    setCurrentPage(pageNum)
+    const toolbar = document.querySelector('.catalog-toolbar')
+    if (toolbar) {
+      toolbar.scrollIntoView({ behavior: 'smooth' })
+    }
   }
 
   const handleViewDetail = (service) => {
@@ -159,6 +252,16 @@ function Catalog() {
             placeholder="Tìm kiếm dịch vụ..."
           />
         </div>
+        <div className="catalog-sort">
+          <span className="sort-label">Sắp xếp:</span>
+          <select value={activeSort} onChange={(e) => handleSortChange(e.target.value)} className="sort-select">
+            <option value="popular">Bán chạy & Nổi bật</option>
+            <option value="name-asc">Tên dịch vụ (A - Z)</option>
+            <option value="name-desc">Tên dịch vụ (Z - A)</option>
+            <option value="price-asc">Giá (Thấp - Cao)</option>
+            <option value="price-desc">Giá (Cao - Thấp)</option>
+          </select>
+        </div>
       </div>
 
       <div className="catalog-filters">
@@ -179,56 +282,105 @@ function Catalog() {
           <div className="catalog-spinner" />
           <p>Đang tải danh sách dịch vụ...</p>
         </div>
-      ) : displayServices.length === 0 ? (
+      ) : paginatedServices.length === 0 ? (
         <div className="catalog-empty">
           <ShoppingCart size={48} strokeWidth={1.5} />
           <h3>Không tìm thấy dịch vụ</h3>
           <p>Thử tìm kiếm với từ khóa khác hoặc chọn nhóm dịch vụ khác</p>
         </div>
       ) : (
-        <div className="catalog-grid">
-          {displayServices.map((service) => {
-            const Icon = service.icon || ShieldCheck
-            return (
-              <article
-                className="catalog-card"
-                key={service.name + (service.id || '')}
-                onClick={() => handleViewDetail(service)}
-              >
-                <div className="catalog-card-head">
-                  <span className="catalog-card-icon">
-                    <Icon size={22} strokeWidth={2} aria-hidden="true" />
-                  </span>
-                  <span className="catalog-card-category">{service.categoryLabel}</span>
-                </div>
-                <h3>{service.name}</h3>
-                <p>{service.description}</p>
-                <div className="catalog-card-meta">
-                  <div className="catalog-card-price">{service.price}</div>
-                  <div className="catalog-card-status">{service.status}</div>
-                </div>
-                <div className="catalog-card-footer">
-                  <span className="catalog-card-info">
-                    <strong>Xử lý:</strong> {service.processingTime}
-                  </span>
-                  <span className="catalog-card-info">
-                    <strong>Bảo hành:</strong> {service.warranty}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  className="catalog-card-cta"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleViewDetail(service)
-                  }}
+        <>
+          <div className="catalog-grid">
+            {paginatedServices.map((service) => {
+              const Icon = service.icon || ShieldCheck
+              return (
+                <article
+                  className="catalog-card"
+                  key={service.name + (service.id || '')}
+                  onClick={() => handleViewDetail(service)}
                 >
-                  Xem chi tiết
-                </button>
-              </article>
-            )
-          })}
-        </div>
+                  <div className="catalog-card-head">
+                    <span className="catalog-card-icon">
+                      {service.iconUrl ? (
+                        <img 
+                          src={service.iconUrl} 
+                          alt="" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} 
+                        />
+                      ) : (
+                        <Icon size={22} strokeWidth={2} aria-hidden="true" />
+                      )}
+                    </span>
+                    <span className="catalog-card-category">{service.categoryLabel}</span>
+                  </div>
+                  <h3>{service.name}</h3>
+                  <p>{service.description}</p>
+                  <div className="catalog-card-meta">
+                    <div className="catalog-card-price">{service.price}</div>
+                    <div className="catalog-card-status">{service.status}</div>
+                  </div>
+                  <div className="catalog-card-footer">
+                    <span className="catalog-card-info">
+                      <strong>Xử lý:</strong> {service.processingTime}
+                    </span>
+                    <span className="catalog-card-info">
+                      <strong>Bảo hành:</strong> {service.warranty}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="catalog-card-cta"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleViewDetail(service)
+                    }}
+                  >
+                    Xem chi tiết
+                  </button>
+                </article>
+              )
+            })}
+          </div>
+
+          {/* Phân trang */}
+          {totalPages > 1 && (
+            <div className="catalog-pagination">
+              <button
+                type="button"
+                className="pagination-btn arrow"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Trang trước
+              </button>
+              
+              <div className="pagination-pages">
+                {Array.from({ length: totalPages }, (_, idx) => {
+                  const pageNum = idx + 1
+                  return (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      className={`pagination-btn num ${currentPage === pageNum ? 'active' : ''}`}
+                      onClick={() => handlePageChange(pageNum)}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <button
+                type="button"
+                className="pagination-btn arrow"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Trang sau
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

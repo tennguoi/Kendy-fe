@@ -1,88 +1,140 @@
 .workflow-section {
-  padding-bottom: 18px;
+  padding-bottom: 30px;
 }
 
 .workflow-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 20px;
   align-items: stretch;
 }
 
+/* Hủy bỏ rule chiếm cột cũ */
 .workflow-list > .workflow-step:last-child:nth-child(odd) {
-  grid-column: 1 / -1;
+  grid-column: auto;
 }
 
 .workflow-step {
+  position: relative;
   min-width: 0;
-  min-height: 210px;
-  display: grid;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  padding: 22px;
+  padding: 24px 20px;
   border: 1px solid var(--kd-border);
   border-radius: 20px;
   background: var(--kd-card);
   box-shadow: var(--kd-soft-shadow);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.workflow-step:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--kd-shadow);
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+/* Vẽ đường đứt nét nối giữa các bước trên Desktop */
+@media (min-width: 921px) {
+  .workflow-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 40px; /* Canh giữa icon theo chiều dọc */
+    left: calc(100% + 4px);
+    width: 12px;
+    height: 2px;
+    border-top: 2px dashed var(--kd-border-strong);
+    opacity: 0.5;
+    z-index: 1;
+  }
 }
 
 .workflow-step svg {
   color: var(--kd-blue);
+  background: rgba(37, 99, 235, 0.08);
+  padding: 8px;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1);
+  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  box-sizing: border-box;
 }
 
 .step-index {
+  position: absolute;
+  top: 16px;
+  right: 20px;
   color: var(--kd-blue);
-  font-size: 26px;
-  font-weight: 950;
-  line-height: 1;
+  font-size: 18px;
+  font-weight: 850;
+  opacity: 0.2;
 }
 
 .workflow-step h3 {
   margin: 0;
   color: var(--kd-text);
-  font-size: 19px;
-  line-height: 1.25;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.35;
 }
 
 .workflow-step p {
   margin: 0;
   color: var(--kd-muted);
-  line-height: 1.64;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .workflow-cta {
-  margin-top: 22px;
+  margin-top: 32px;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
 }
 
 .workflow-cta .public-btn {
-  padding: 10px 22px;
+  padding: 12px 28px;
   border-radius: 999px;
-  box-shadow: 0 20px 40px rgba(20, 124, 255, 0.12);
+  box-shadow: 0 10px 20px rgba(20, 124, 255, 0.15);
   font-size: 15px;
+  font-weight: 700;
 }
 
-@media (max-width: 680px) {
+/* Dành cho Mobile & Tablet: Trình bày dạng timeline dọc */
+@media (max-width: 920px) {
   .workflow-list {
     grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .workflow-list > .workflow-step:last-child:nth-child(odd) {
-    grid-column: auto;
+    gap: 16px;
   }
 
   .workflow-step {
-    min-height: 0;
-    padding: 16px;
-    border-radius: 16px;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    min-height: auto;
+  }
+
+  .step-index {
+    position: static;
+    opacity: 1;
+    font-size: 20px;
+    font-weight: 900;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  .workflow-step p {
+    margin-top: 4px;
   }
 }
 
 @media (max-width: 520px) {
+  .workflow-step {
+    padding: 14px 16px;
+  }
   .workflow-step h3 {
-    font-size: 17px;
+    font-size: 15px;
   }
 }
+

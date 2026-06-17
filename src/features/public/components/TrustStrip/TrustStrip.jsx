@@ -8,8 +8,10 @@ function TrustStrip({ items }) {
 
         return (
           <article className="trust-strip-item" key={item.label}>
-            <Icon size={22} strokeWidth={2} aria-hidden="true" />
-            <div>
+            <div className="trust-icon-box">
+              <Icon size={22} strokeWidth={2} aria-hidden="true" />
+            </div>
+            <div className="trust-content-box">
               <strong>{item.label}</strong>
               <span>{item.detail}</span>
             </div>

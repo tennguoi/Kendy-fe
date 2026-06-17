@@ -1,17 +1,41 @@
 import { ArrowRight, LogIn, Menu, Moon, Sun, X } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useTheme } from '../../../../contexts/ThemeContext'
 import './PublicHeader.css'
 
 function PublicHeader({ logo, navItems, onLoginClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
+  const location = useLocation()
 
   const closeMenu = () => setIsMenuOpen(false)
   const openAuth = () => {
     closeMenu()
     onLoginClick()
+  }
+
+  const handleNavClick = (event, href) => {
+    const normalizedPathname = location.pathname === '/' ? '/' : location.pathname
+
+    if (href === '/' || href === '/#') {
+      if (normalizedPathname === '/' || normalizedPathname === '') {
+        event.preventDefault()
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      return
+    }
+
+    if (href.includes('#')) {
+      const [path, hash] = href.split('#')
+      if (normalizedPathname === path || (path === '/' && (normalizedPathname === '/' || normalizedPathname === ''))) {
+        event.preventDefault()
+        const element = document.getElementById(hash)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
+      }
+    }
   }
 
   return (
@@ -27,11 +51,11 @@ function PublicHeader({ logo, navItems, onLoginClick }) {
       <nav className="public-nav" aria-label="Điều hướng chính">
         {navItems.map((item) =>
           item.href.startsWith('/') ? (
-            <Link to={item.href} key={item.href}>
+            <Link to={item.href} key={item.href} onClick={(e) => handleNavClick(e, item.href)}>
               {item.label}
             </Link>
           ) : (
-            <a href={item.href} key={item.href}>
+            <a href={item.href} key={item.href} onClick={(e) => handleNavClick(e, item.href)}>
               {item.label}
             </a>
           )
@@ -71,11 +95,11 @@ function PublicHeader({ logo, navItems, onLoginClick }) {
         <div className="mobile-nav-drawer">
           {navItems.map((item) =>
             item.href.startsWith('/') ? (
-              <Link to={item.href} key={item.href} onClick={closeMenu}>
+              <Link to={item.href} key={item.href} onClick={(e) => { closeMenu(); handleNavClick(e, item.href); }}>
                 {item.label}
               </Link>
             ) : (
-              <a href={item.href} key={item.href} onClick={closeMenu}>
+              <a href={item.href} key={item.href} onClick={(e) => { closeMenu(); handleNavClick(e, item.href); }}>
                 {item.label}
               </a>
             )

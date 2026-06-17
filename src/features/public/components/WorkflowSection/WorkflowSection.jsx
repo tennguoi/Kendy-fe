@@ -23,11 +23,6 @@ function WorkflowSection({ steps }) {
         })}
       </div>
 
-      <div className="workflow-cta">
-        <a className="public-btn primary" href="#services">
-          Xem dịch vụ phù hợp
-        </a>
-      </div>
     </section>
   )
 }

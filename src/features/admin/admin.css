@@ -1446,7 +1446,9 @@ button.admin-data-row:nth-child(even).selected,
 }
 
 /* Eyebrow label upgrade */
-.eyebrow {
+.admin-view .eyebrow,
+.admin-panel .eyebrow,
+.admin-drawer .eyebrow {
   display: inline-block;
   margin-bottom: 4px;
   padding: 2px 10px;

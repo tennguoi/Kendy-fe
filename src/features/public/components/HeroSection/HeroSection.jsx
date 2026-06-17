@@ -42,7 +42,7 @@ function HeroSection({ logo, notice, onLoginClick, serviceSignals }) {
 
         <div className="hero-service-card" aria-label="Mô phỏng dịch vụ nổi bật">
           <div className="mockup-topbar">
-            <span>Mockup giao dịch</span>
+
             <strong>Ví, đơn hàng và dịch vụ</strong>
           </div>
 

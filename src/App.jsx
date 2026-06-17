@@ -199,6 +199,28 @@ function App() {
   }, [accessToken, authInit, currentUser, isAdmin, isAdminPath, navigate])
 
   useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '')
+      let attempts = 0
+      const scrollToElement = () => {
+        const element = document.getElementById(id)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
+        if (attempts < 5) {
+          attempts++
+          const timer = setTimeout(scrollToElement, 150)
+          return timer
+        }
+      }
+      const activeTimer = scrollToElement()
+      return () => clearTimeout(activeTimer)
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [location.pathname, location.hash])
+
+  useEffect(() => {
     if (!accessToken || !authInit || isAdmin || isAdminPath) {
       return
     }

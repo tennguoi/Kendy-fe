@@ -195,6 +195,10 @@ function ServiceEditor({
                 <span>Thứ tự sắp xếp</span>
                 <input value={serviceForm.sortOrder} onChange={(event) => onUpdateServiceForm('sortOrder', event.target.value)} inputMode="numeric" />
               </label>
+              <label className="wide">
+                <span>Ảnh minh họa (Icon/Image URL)</span>
+                <input value={serviceForm.iconUrl} onChange={(event) => onUpdateServiceForm('iconUrl', event.target.value)} placeholder="Đường dẫn ảnh sản phẩm (ví dụ: https://example.com/image.png hoặc /assets/...)" />
+              </label>
             </div>
             <div className="admin-check-row">
               <label style={{ cursor: 'pointer' }}>
@@ -289,10 +293,6 @@ function ServiceEditor({
               <label className="wide">
                 <span>Meta Description (SEO)</span>
                 <input value={serviceForm.metaDescription} onChange={(event) => onUpdateServiceForm('metaDescription', event.target.value)} />
-              </label>
-              <label className="wide">
-                <span>Icon URL</span>
-                <input value={serviceForm.iconUrl} onChange={(event) => onUpdateServiceForm('iconUrl', event.target.value)} />
               </label>
               <div className="wide admin-check-row">
                 <label style={{ cursor: 'pointer' }}>

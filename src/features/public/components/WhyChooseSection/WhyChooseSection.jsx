@@ -20,9 +20,13 @@ function WhyChooseSection({ items, policies }) {
 
           return (
             <article className="why-card" key={item.title}>
-              <Icon size={22} strokeWidth={2} aria-hidden="true" />
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
+              <div className="why-icon-box">
+                <Icon size={22} strokeWidth={2} aria-hidden="true" />
+              </div>
+              <div className="why-content-box">
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </div>
             </article>
           )
         })}
