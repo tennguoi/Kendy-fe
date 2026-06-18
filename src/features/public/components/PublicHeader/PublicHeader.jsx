@@ -1,6 +1,7 @@
 import { ArrowRight, LogIn, Menu, Moon, Sun, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import Button from '../../../../components/Button/Button'
 import { useTheme } from '../../../../contexts/ThemeContext'
 import './PublicHeader.css'
 
@@ -77,14 +78,14 @@ function PublicHeader({
         >
           {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
         </button>
-        <button type="button" className="public-btn ghost" onClick={openAuth}>
+        <Button variant="ghost" onClick={openAuth}>
           <LogIn size={17} strokeWidth={2} aria-hidden="true" />
           <span>Đăng nhập</span>
-        </button>
-        <Link className="public-btn primary" to="/catalog">
+        </Button>
+        <Button variant="primary" to="/catalog">
           <span>Xem dịch vụ</span>
           <ArrowRight size={17} strokeWidth={2} aria-hidden="true" />
-        </Link>
+        </Button>
         <button
           type="button"
           className="mobile-menu-button"

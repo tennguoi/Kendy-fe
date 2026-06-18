@@ -18,8 +18,6 @@ const emptyServiceForm = {
   description: '',
   featured: false,
   iconUrl: '',
-  inputSchema: '',
-  inputSchemaEnabled: false,
   metaDescription: '',
   metaTitle: '',
   name: '',
@@ -105,8 +103,6 @@ function serviceToForm(service) {
     description: service.description || '',
     featured: Boolean(service.featured),
     iconUrl: service.iconUrl || '',
-    inputSchema: service.inputSchema || '',
-    inputSchemaEnabled: Boolean(service.inputSchema),
     metaDescription: service.metaDescription || '',
     metaTitle: service.metaTitle || '',
     name: service.name || '',
@@ -137,7 +133,6 @@ function buildServicePayload(form, isEditing) {
     description: form.description || undefined,
     featured: form.featured,
     iconUrl: form.iconUrl || undefined,
-    inputSchema: form.inputSchemaEnabled ? form.inputSchema || undefined : '',
     metaDescription: form.metaDescription || undefined,
     metaTitle: form.metaTitle || undefined,
     name: form.name.trim(),
@@ -347,9 +342,14 @@ function AdminServicesView({
     setCredentialFilters((current) => ({ ...current, [field]: value }))
   }
 
-  const startCreateService = () => {
+  const startCreateService = (serviceType = 'MANUAL') => {
     setSelectedServiceId(null)
-    setServiceForm(emptyServiceForm)
+    setServiceForm({
+      ...emptyServiceForm,
+      ctaType: serviceType === 'ACCOUNT_STOCK' ? 'BUY_NOW' : emptyServiceForm.ctaType,
+      stockStatus: serviceType === 'ACCOUNT_STOCK' ? 'AVAILABLE' : emptyServiceForm.stockStatus,
+      type: serviceType,
+    })
     setServiceOrders([])
     setSelectedServiceCategories([])
     setServiceCredentials([])
@@ -782,11 +782,20 @@ function AdminServicesView({
                 <button
                   type="button"
                   onClick={() => {
-                    startCreateService()
+                    startCreateService('MANUAL')
                     setShowCreateDropdown(false)
                   }}
                 >
-                  Sản phẩm mới
+                  Dịch vụ thường
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    startCreateService('ACCOUNT_STOCK')
+                    setShowCreateDropdown(false)
+                  }}
+                >
+                  Sản phẩm giao tài khoản
                 </button>
                 <button
                   type="button"

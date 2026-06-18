@@ -38,8 +38,6 @@ function buildFilters(apiCategories) {
 function mapServiceToCard(service) {
   const slug = pickCategorySlug(service.categoryName || service.type)
   const categorySlug = service.categorySlug || (service.categoryName ? service.categoryName.toLowerCase().replace(/[^a-z0-9-]/g, '-') : slug)
-  const badgeLower = (service.pricingBadge || '').toLowerCase()
-  const isOnSale = badgeLower.includes('khuyến mãi') || badgeLower.includes('giảm') || badgeLower.includes('sale') || badgeLower.includes('discount')
   return {
     id: service.id,
     slug: service.slug || service.id,
@@ -59,7 +57,6 @@ function mapServiceToCard(service) {
     status: service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng',
     stockStatus: service.stockStatus,
     pricingBadge: service.pricingBadge,
-    _onSale: isOnSale,
     _outOfStock: service.stockStatus === 'OUT_OF_STOCK',
     icon: categoryIcons[slug] || ShieldCheck,
   }
@@ -305,7 +302,6 @@ function Catalog() {
                   key={service.name + (service.id || '')}
                   onClick={() => handleViewDetail(service)}
                 >
-                  {service._onSale && <span className="catalog-card-sale-badge">Khuyến mãi</span>}
                   {service._outOfStock && <span className="catalog-card-oos-badge">Hết hàng</span>}
                   <div className="catalog-card-head">
                     <span className="catalog-card-icon">

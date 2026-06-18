@@ -193,7 +193,6 @@ function GuideTab() {
 
             <h5>5. Thông tin bổ sung</h5>
             <ul>
-              <li><strong>inputSchema</strong> &ndash; Cấu trúc JSON khai báo user cần nhập những trường gì khi mua (ví dụ: link profile, số điện thoại). Hệ thống tự động validate dữ liệu nhập vào theo schema này.</li>
               <li><strong>requirements</strong> &ndash; Yêu cầu từ user (ví dụ: "Tài khoản phải công khai", "Cần có tối thiểu 100 bài đăng").</li>
               <li><strong>benefits</strong> &ndash; Mô tả lợi ích user nhận được khi mua dịch vụ.</li>
               <li><strong>usageNotes</strong> &ndash; Hướng dẫn sử dụng dịch vụ sau khi mua.</li>
@@ -216,7 +215,7 @@ function GuideTab() {
 
             <h4>Quản lý Dịch vụ (Admin)</h4>
             <ul>
-              <li><strong>Thêm dịch vụ</strong> &ndash; Điền đầy đủ thông tin, thiết lập status = ACTIVE và ctaType = BUY_NOW để user có thể mua. Kiểm tra kỹ inputSchema trước khi lưu.</li>
+              <li><strong>Thêm dịch vụ</strong> &ndash; Điền đầy đủ thông tin, thiết lập status = ACTIVE và ctaType = BUY_NOW để user có thể mua.</li>
               <li><strong>Sửa dịch vụ</strong> &ndash; Thay đổi bất kỳ thông tin nào. Lưu ý: thay đổi giá chỉ ảnh hưởng đến đơn hàng mới.</li>
               <li><strong>Chuyển trạng thái</strong> &ndash; Dùng ACTIVE ↔ INACTIVE để bật/tắt bán. Dùng MAINTENANCE khi cần bảo trì.</li>
               <li><strong>Xóa dịch vụ</strong> &ndash; Chỉ nên xóa nếu dịch vụ chưa có đơn hàng nào. Nếu đã có đơn, hãy chuyển sang INACTIVE thay vì xóa.</li>
@@ -258,7 +257,7 @@ function GuideTab() {
               <li><strong>Người mua</strong> &ndash; User đã đặt hàng (liên kết đến bảng users).</li>
               <li><strong>Dịch vụ</strong> &ndash; Dịch vụ được mua (liên kết đến bảng services).</li>
               <li><strong>Số tiền</strong> &ndash; Giá trị thanh toán, lấy từ ServiceItem.price tại thời điểm mua.</li>
-              <li><strong>Dữ liệu đầu vào</strong> &ndash; Thông tin user nhập theo inputSchema của dịch vụ (dạng JSON).</li>
+              <li><strong>Dữ liệu đầu vào</strong> &ndash; Thông tin khách cung cấp khi đặt mua dịch vụ.</li>
               <li><strong>Trạng thái</strong> &ndash; Trạng thái xử lý hiện tại.</li>
               <li><strong>Giao dịch ví</strong> &ndash; Liên kết đến WalletTransaction (ghi nợ từ ví).</li>
               <li><strong>Thời gian</strong> &ndash; Ngày tạo, ngày cập nhật, ngày hoàn thành.</li>
@@ -276,7 +275,7 @@ function GuideTab() {
             <h4>Luồng tạo đơn hàng</h4>
             <ol>
               <li><strong>User chọn dịch vụ</strong> &ndash; User xem danh sách, chọn dịch vụ có ctaType = BUY_NOW và status = ACTIVE.</li>
-              <li><strong>User điền thông tin</strong> &ndash; Nhập dữ liệu theo inputSchema của dịch vụ.</li>
+              <li><strong>User điền thông tin</strong> &ndash; Cung cấp thông tin cần thiết theo hướng dẫn của dịch vụ.</li>
               <li><strong>User chọn thanh toán</strong> &ndash; Có 2 phương thức:
                 <ul>
                   <li><strong>Ví điện tử (Wallet)</strong> &ndash; Thanh toán ngay bằng số dư.</li>
@@ -502,7 +501,6 @@ function GuideTab() {
               <li>Tạo dịch vụ mới với đầy đủ thông tin:
                 <ul>
                   <li>Tên, mô tả, giá bán, giá vốn.</li>
-                  <li>inputSchema: xác định rõ user cần nhập trường gì.</li>
                   <li>processingTime: thời gian xử lý dự kiến.</li>
                   <li>warrantyPolicy: chính sách bảo hành.</li>
                 </ul>
@@ -727,7 +725,6 @@ function GuideTab() {
             <h4>6. User báo lỗi khi mua dịch vụ</h4>
             <ul>
               <li>Kiểm tra dịch vụ có status = ACTIVE và ctaType = BUY_NOW không.</li>
-              <li>Kiểm tra inputSchema có đúng định dạng không.</li>
               <li>Kiểm tra số dư user có đủ không.</li>
               <li>Yêu cầu user chụp màn hình lỗi để xác định nguyên nhân.</li>
               <li>Tạo ticket để theo dõi nếu cần xử lý phức tạp.</li>

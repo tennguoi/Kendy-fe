@@ -36,10 +36,6 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
 
-      // Detect sale/promotion from pricingBadge
-      const badgeLower = (s.pricingBadge || '').toLowerCase()
-      const isOnSale = badgeLower.includes('khuyến mãi') || badgeLower.includes('giảm') || badgeLower.includes('sale') || badgeLower.includes('discount')
-
       return {
         ...s,
         category: s.category || categorySlug,
@@ -50,7 +46,6 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
         warranty: s.warranty || s.warrantyInfo || s.warrantyPolicy || 'Theo điều kiện',
         status: s.status || (s.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng'),
         badge: s.badge || (s.featured ? 'Nổi bật' : ''),
-        _onSale: isOnSale,
       }
     })
   }, [services])
@@ -89,17 +84,13 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
           {displayServices.map((service, index) => {
             const isOutOfStock = service.status === 'Hết hàng' || service.stockStatus === 'OUT_OF_STOCK'
             const isFeatured = service.featured || service.badge === 'Nổi bật'
-            const isOnSale = service._onSale
-            
+
             return (
               <div className={`service-card ${isFeatured ? 'featured' : ''}${isOutOfStock ? ' out-of-stock' : ''}`} key={service.id || index}>
                 {isFeatured && (
                   <div className="service-card-badge">
                     <Sparkles size={12} /> {service.badge || 'Nổi bật'}
                   </div>
-                )}
-                {isOnSale && (
-                  <div className="service-card-sale-badge">Khuyến mãi</div>
                 )}
                 {isOutOfStock && (
                   <div className="service-card-oos-badge">Hết hàng</div>

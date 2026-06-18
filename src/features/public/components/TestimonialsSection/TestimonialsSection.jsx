@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   HelpCircle,
 } from 'lucide-react'
+import Button from '../../../../components/Button/Button'
 import './TestimonialsSection.css'
 
 function TestimonialsSection() {
@@ -67,9 +68,9 @@ function TestimonialsSection() {
                 value={customOrderCode}
                 onChange={(e) => setCustomOrderCode(e.target.value)}
               />
-              <button type="submit" className="public-btn dark slim">
+              <Button type="submit" variant="dark" className="slim">
                 <span>Tra cứu thử</span>
-              </button>
+              </Button>
             </div>
           </form>
           <p className="search-tip">
@@ -329,9 +330,9 @@ function TestimonialsSection() {
 
                     <div className="chat-input-simulation">
                       <input type="text" placeholder="Nhập tin nhắn phản hồi admin (Mô phỏng)..." disabled />
-                      <button type="button" className="public-btn dark slim" disabled>
+                      <Button type="button" variant="dark" className="slim" disabled>
                         <span>Gửi</span>
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>

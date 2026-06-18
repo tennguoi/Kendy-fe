@@ -3,6 +3,7 @@ import { RefreshCw, Save, TicketPercent } from 'lucide-react'
 import { adminApi } from '../../../api/admin.api'
 import { money } from '../../../utils/currency'
 import { AdminEmptyState, AdminStatusBadge } from '../AdminShared'
+import Modal from '../../../components/Modal/Modal'
 
 const blankForm = {
   adminNote: '',
@@ -83,6 +84,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
   const [form, setForm] = useState(blankForm)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const activeCoupons = useMemo(() => coupons.filter((item) => item.status === 'ACTIVE').length, [coupons])
 
@@ -116,11 +118,13 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
   const startCreate = () => {
     setSelected(null)
     setForm(blankForm)
+    setIsModalOpen(true)
   }
 
   const startEdit = (coupon) => {
     setSelected(coupon)
     setForm(formFromCoupon(coupon))
+    setIsModalOpen(true)
   }
 
   const saveCoupon = async (event) => {
@@ -140,6 +144,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
           : [saved, ...list]
       })
       onSetNotice?.(`Đã lưu coupon ${saved.code}.`)
+      setIsModalOpen(false)
     } catch (err) {
       onSetError?.(err.message || 'Không lưu được coupon.')
     } finally {
@@ -159,6 +164,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
         setForm(formFromCoupon(saved))
       }
       onSetNotice?.(`Đã cập nhật trạng thái ${saved.code}.`)
+      setIsModalOpen(false)
     } catch (err) {
       onSetError?.(err.message || 'Không cập nhật được trạng thái coupon.')
     } finally {
@@ -181,7 +187,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
         </button>
       </div>
 
-      <div className="admin-grid pricing-layout">
+      <div className="admin-grid">
         <section className="admin-panel">
           <div className="admin-panel-head">
             <div>
@@ -234,20 +240,28 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
           </div>
           {!loading && coupons.length === 0 && <AdminEmptyState message="Chưa có mã giảm giá." hint="Tạo mã đầu tiên để chạy ưu đãi." />}
         </section>
+      </div>
 
-        <form className="admin-form pricing-editor" onSubmit={saveCoupon}>
-          <div className="admin-panel-head">
-            <div>
-              <h3>{selected ? `Sửa ${selected.code}` : 'Tạo coupon'}</h3>
-              <span>Mã sẽ được chuẩn hóa uppercase khi lưu.</span>
-            </div>
-          </div>
-          <div className="admin-form-grid">
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={selected ? `Sửa mã giảm giá: ${selected.code}` : 'Tạo mã giảm giá mới'}
+        maxWidth="800px"
+      >
+        <form className="admin-form" onSubmit={saveCoupon} style={{ padding: '6px 0 0' }}>
+          <div className="admin-form-grid two-columns">
             <label>
               <span>Mã</span>
               <input value={form.code} onChange={(event) => updateForm('code', event.target.value)} required maxLength={64} />
             </label>
             <label>
+              <span>Trạng thái</span>
+              <select value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
+                <option value="ACTIVE">Đang chạy</option>
+                <option value="DISABLED">Đã tắt</option>
+              </select>
+            </label>
+            <label className="wide">
               <span>Tên</span>
               <input value={form.name} onChange={(event) => updateForm('name', event.target.value)} required maxLength={255} />
             </label>
@@ -278,20 +292,13 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
               <span>Mỗi user</span>
               <input type="number" min="1" value={form.perUserLimit} onChange={(event) => updateForm('perUserLimit', event.target.value)} />
             </label>
-            <label>
+            <label className="wide">
               <span>Dịch vụ áp dụng</span>
               <select value={form.serviceId} onChange={(event) => updateForm('serviceId', event.target.value)}>
                 <option value="">Toàn bộ dịch vụ</option>
                 {services.map((service) => (
                   <option key={service.id} value={service.id}>{service.name}</option>
                 ))}
-              </select>
-            </label>
-            <label>
-              <span>Trạng thái</span>
-              <select value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
-                <option value="ACTIVE">Đang chạy</option>
-                <option value="DISABLED">Đã tắt</option>
               </select>
             </label>
             <label>
@@ -307,18 +314,46 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
               <textarea rows={3} value={form.adminNote} onChange={(event) => updateForm('adminNote', event.target.value)} />
             </label>
           </div>
-          <div className="admin-action-row">
-            <button type="submit" disabled={saving}>
-              <Save size={16} /> Lưu coupon
-            </button>
+          <div
+            className="admin-action-row"
+            style={{
+              marginTop: '16px',
+              paddingTop: '16px',
+              borderTop: '1px solid var(--kd-border)',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '10px'
+            }}
+          >
             {selected && (
-              <button type="button" disabled={saving} onClick={() => toggleStatus(selected)}>
+              <button
+                type="button"
+                className="admin-danger-button"
+                disabled={saving}
+                onClick={() => toggleStatus(selected)}
+                style={{ marginRight: 'auto' }}
+              >
                 {selected.status === 'ACTIVE' ? 'Tắt mã' : 'Bật mã'}
               </button>
             )}
+            <button
+              type="button"
+              className="admin-icon-button"
+              onClick={() => setIsModalOpen(false)}
+              style={{
+                color: 'var(--kd-text)',
+                background: 'var(--kd-bg)',
+                borderColor: 'var(--kd-border)'
+              }}
+            >
+              Hủy
+            </button>
+            <button type="submit" disabled={saving} className="admin-primary-button">
+              <Save size={16} /> Lưu coupon
+            </button>
           </div>
         </form>
-      </div>
+      </Modal>
     </div>
   )
 }

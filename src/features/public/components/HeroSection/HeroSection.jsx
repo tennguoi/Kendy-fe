@@ -1,4 +1,5 @@
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import Button from '../../../../components/Button/Button'
 import './HeroSection.css'
 
 function HeroSection({ logo, notice, onLoginClick, serviceSignals, dynamicContent }) {
@@ -27,13 +28,13 @@ function HeroSection({ logo, notice, onLoginClick, serviceSignals, dynamicConten
           <p className="public-hero-copy">{description}</p>
 
           <div className="public-hero-actions">
-            <a className="public-btn primary hero-main" href="#services">
+            <Button variant="primary" className="hero-main" href="#services">
               <span>{primaryCta}</span>
               <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
-            </a>
-            <a className="public-btn glass" href="#contact">
+            </Button>
+            <Button variant="glass" href="#contact">
               {secondaryCta}
-            </a>
+            </Button>
           </div>
 
           <div className="public-trust-strip" aria-label="Điểm nổi bật">

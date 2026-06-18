@@ -1,7 +1,7 @@
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { money } from '../../../../utils/currency'
 import { getServiceTypeLabel } from '../../services/services.constants'
-import { isServiceOnSale, isServiceOutOfStock } from '../../services/services.utils'
+import { isServiceOutOfStock } from '../../services/services.utils'
 
 function QuickServicesPanel({
   onOpenServices,
@@ -18,11 +18,9 @@ function QuickServicesPanel({
       </div>
       <div className="quick-service-list">
         {services.map((service) => {
-          const onSale = isServiceOnSale(service)
           const outOfStock = isServiceOutOfStock(service)
           return (
             <article className={`quick-service-card${outOfStock ? ' out-of-stock' : ''}`} key={service.id}>
-              {onSale && <span className="badge-sale">Khuyến mãi</span>}
               {outOfStock && <span className="badge-out-of-stock">Hết hàng</span>}
               <div>
                 <span>{service.categoryName || getServiceTypeLabel(service.type) || 'Dịch vụ'}</span>

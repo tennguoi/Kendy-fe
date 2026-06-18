@@ -7,6 +7,20 @@ import OrderFilterBar from './components/OrderFilterBar'
 import OrderListPanel from './components/OrderListPanel'
 import Loading from '../../../components/Loading/Loading'
 
+function toDateTimeInput(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const localTime = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+  return localTime.toISOString().slice(0, 16)
+}
+
+function toInstant(value) {
+  if (!value) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}
+
 function formFromOrder(order) {
   return {
     adminNote: order?.adminNote || '',
@@ -14,7 +28,7 @@ function formFromOrder(order) {
     manualChecklist: order?.manualChecklist || '',
     minutes: '60',
     orderCode: order?.orderCode || '',
-    processingDeadlineAt: order?.processingDeadlineAt || '',
+    processingDeadlineAt: toDateTimeInput(order?.processingDeadlineAt),
     reason: '',
     resultData: order?.resultData || '',
     userNote: order?.userNote || '',
@@ -41,7 +55,7 @@ function AdminOrdersView({
   const orderForm = selectedOrder && draft?.orderCode === selectedOrder.orderCode
     ? draft
     : formFromOrder(selectedOrder)
-  const activeOrder = selectedOrder && ['PENDING', 'PROCESSING'].includes(selectedOrder.status)
+  const activeOrder = selectedOrder && ['PENDING_PAYMENT', 'PROCESSING'].includes(selectedOrder.status)
   const refundableOrder = selectedOrder && !['CANCELLED', 'REFUNDED'].includes(selectedOrder.status)
 
   const setViewError = useCallback((message) => {
@@ -232,7 +246,7 @@ function AdminOrdersView({
     try {
       const saved = await adminApi.updateManualWorkflow(orderCode, {
         assignedAdminId: draft?.assignedAdminId ? Number(draft.assignedAdminId) : null,
-        processingDeadlineAt: draft?.processingDeadlineAt || null,
+        processingDeadlineAt: toInstant(draft?.processingDeadlineAt),
         manualChecklist: draft?.manualChecklist?.trim() || null,
         adminNote: draft?.adminNote?.trim() || null,
       }, token)

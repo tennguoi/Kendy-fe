@@ -1,4 +1,5 @@
 import { Send } from 'lucide-react'
+import Button from '../../../../components/Button/Button'
 import './ConsultSection.css'
 
 function ConsultSection({ onSubmit, dynamicContent }) {
@@ -43,10 +44,10 @@ function ConsultSection({ onSubmit, dynamicContent }) {
           <span>Mục tiêu cần tư vấn</span>
           <textarea name="goal" placeholder="Tin nhắn, đơn hàng, traffic, branding hoặc vấn đề đang gặp..." rows="4" />
         </label>
-        <button type="submit" className="public-btn primary">
+        <Button type="submit" variant="primary">
           <span>Gửi yêu cầu tư vấn</span>
           <Send size={17} strokeWidth={2} aria-hidden="true" />
-        </button>
+        </Button>
       </form>
     </section>
   )

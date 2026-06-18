@@ -20,6 +20,7 @@ import PublicFooter from './components/PublicFooter/PublicFooter'
 import { navItems } from './data/publicSiteContent'
 import { footerGroups } from './data/policies.public'
 import Loading from '../../components/Loading/Loading'
+import Button from '../../components/Button/Button'
 import './PublicServiceDetail.css'
 
 function renderBulletPoints(text) {
@@ -111,9 +112,9 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
             <h2>Dịch Vụ Không Tồn Tại</h2>
             <p>{error || 'Thông tin gói dịch vụ này không khả dụng hoặc đã bị ẩn.'}</p>
             <div className="error-actions">
-              <button onClick={() => navigate('/services')} className="btn-back">
+              <Button onClick={() => navigate('/services')} variant="" className="btn-back">
                 <ArrowLeft size={16} /> Quay lại danh sách
-              </button>
+              </Button>
             </div>
           </div>
         </main>
@@ -247,15 +248,15 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
                   </div>
                 )}
 
-                <button
-                  type="button"
+                <Button
+                  variant="primary"
                   onClick={() => onLoginClick(service)}
                   disabled={isOutOfStock}
                   className="btn-checkout-cta"
                 >
                   <ShoppingCart size={18} />
                   <span>{isOutOfStock ? 'Tạm hết hàng' : 'MUA NGAY'}</span>
-                </button>
+                </Button>
 
                 <div className="checkout-guarantee-list">
                   <div className="guarantee-item">✓ Giao hàng tự động hoặc nhanh chóng</div>
@@ -285,13 +286,13 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
                       <h4 className="related-card-title">{item.name}</h4>
                       <div className="related-card-footer">
                         <div className="related-card-price">{itemPrice}</div>
-                        <button
-                          type="button"
+                        <Button
+                          variant=""
                           className="btn-related-action"
                           onClick={() => navigate(`/service/${item.slug}`)}
                         >
                           Chi tiết
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )

@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   ShoppingCart,
   AlertTriangle,
-  BadgePercent,
 } from 'lucide-react'
 import { publicApi } from '../../../../api/public.api'
 import {
@@ -82,9 +81,6 @@ function ProductDetail({ onLoginClick }) {
   const stockStatus = service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : service.stockStatus === 'CONSULTING_ONLY' ? 'Tư vấn' : 'Còn hàng'
   const isOutOfStock = service.stockStatus === 'OUT_OF_STOCK'
 
-  const badgeLower = (service.pricingBadge || '').toLowerCase()
-  const isOnSale = badgeLower.includes('khuyến mãi') || badgeLower.includes('giảm') || badgeLower.includes('sale') || badgeLower.includes('discount')
-
   return (
     <div className="product-detail-page">
       <div className="product-detail-container">
@@ -142,19 +138,6 @@ function ProductDetail({ onLoginClick }) {
             <div className="product-price-section">
               <div className="price-main-row">
                 <span className="price-actual">{price}</span>
-                {!isOnSale && service.price > 0 && (
-                  <>
-                    <span className="price-original">
-                      {Math.round(service.price * 1.25).toLocaleString('vi-VN')}đ
-                    </span>
-                    <span className="price-discount-badge">-20%</span>
-                  </>
-                )}
-                {isOnSale && (
-                  <span className="price-discount-badge sale-badge">
-                    <BadgePercent size={12} /> {service.pricingBadge}
-                  </span>
-                )}
               </div>
             </div>
 

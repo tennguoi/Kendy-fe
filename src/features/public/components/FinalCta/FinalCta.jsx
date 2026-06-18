@@ -1,4 +1,5 @@
 import { ArrowRight, LogIn } from 'lucide-react'
+import Button from '../../../../components/Button/Button'
 import './FinalCta.css'
 
 function FinalCta({ onLoginClick, dynamicContent }) {
@@ -16,14 +17,14 @@ function FinalCta({ onLoginClick, dynamicContent }) {
         <p>{description}</p>
       </div>
       <div className="final-actions">
-        <button type="button" className="public-btn primary" onClick={onLoginClick}>
+        <Button variant="primary" onClick={onLoginClick}>
           <LogIn size={18} strokeWidth={2} aria-hidden="true" />
           <span>{primaryCta}</span>
-        </button>
-        <a className="public-btn glass" href="#pricing">
+        </Button>
+        <Button variant="glass" href="#pricing">
           <span>{secondaryCta}</span>
           <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
-        </a>
+        </Button>
       </div>
     </section>
   )

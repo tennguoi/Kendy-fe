@@ -365,3 +365,130 @@ html.dark .admin-service-editor .admin-close-button:hover {
     margin-right: 0;
   }
 }
+.service-editor-mode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  background: var(--kd-bg);
+}
+
+.service-editor-mode.account-stock {
+  border-color: color-mix(in srgb, var(--kd-blue) 45%, var(--kd-border));
+  background: color-mix(in srgb, var(--kd-blue) 8%, var(--kd-card));
+}
+
+.service-editor-mode > div {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.service-editor-mode > div > svg {
+  flex: 0 0 auto;
+  color: var(--kd-blue);
+}
+
+.service-editor-mode span,
+.service-editor-mode strong,
+.service-editor-mode small {
+  min-width: 0;
+  display: block;
+}
+
+.service-editor-mode small {
+  margin-top: 4px;
+  color: var(--kd-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.service-editor-mode select {
+  width: min(300px, 42%);
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--kd-border);
+  border-radius: 9px;
+  background: var(--kd-card);
+}
+
+.service-account-stock-guide {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--kd-blue) 34%, var(--kd-border));
+  border-radius: 12px;
+  color: var(--kd-text);
+  background: color-mix(in srgb, var(--kd-blue) 7%, var(--kd-card));
+}
+
+.service-account-stock-guide > svg {
+  color: var(--kd-blue);
+}
+
+.service-account-stock-guide strong,
+.service-account-stock-guide p {
+  display: block;
+  margin: 0;
+}
+
+.service-account-stock-guide p {
+  margin-top: 4px;
+  color: var(--kd-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.service-account-stock-pending {
+  color: var(--kd-warning);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.service-credential-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  color: var(--kd-muted);
+  background: var(--kd-bg);
+  font-size: 12px;
+}
+
+.service-credential-flow strong {
+  color: var(--kd-text);
+}
+
+@media (max-width: 720px) {
+  .service-editor-mode {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .service-editor-mode select {
+    width: 100%;
+  }
+
+  .service-account-stock-guide {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .service-account-stock-guide > button,
+  .service-account-stock-pending {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}

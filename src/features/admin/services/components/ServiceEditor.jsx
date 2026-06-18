@@ -2,7 +2,7 @@ import { Download, Eye, FileUp, KeyRound, Pencil, RefreshCw, Save, ShieldOff, Tr
 import { useState } from 'react'
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
-import { getCtaTypeLabel, getCredentialStatusLabel, getServiceStatusLabel, getServiceTypeLabel, getStockStatusLabel, getOrderStatusLabel, ctaTypes, facebookSchema, serviceStatuses, serviceTypes, stockStatuses } from '../services.constants'
+import { getCtaTypeLabel, getCredentialStatusLabel, getServiceStatusLabel, getServiceTypeLabel, getStockStatusLabel, getOrderStatusLabel, ctaTypes, serviceStatuses, serviceTypes, stockStatuses } from '../services.constants'
 
 function ServiceEditor({
   categories = [],
@@ -37,9 +37,10 @@ function ServiceEditor({
 
   const availableCredentials = serviceCredentials.filter((credential) => credential.status === 'AVAILABLE').length
   const deliveredCredentials = serviceCredentials.filter((credential) => credential.status === 'DELIVERED').length
+  const isAccountStock = serviceForm.type === 'ACCOUNT_STOCK'
 
   const handleTabChange = (tab) => {
-    if (tab === 'credentials' && (!selectedServiceId || serviceForm.type !== 'ACCOUNT_STOCK')) return
+    if (tab === 'credentials' && (!selectedServiceId || !isAccountStock)) return
     setActiveTab(tab)
   }
 
@@ -85,7 +86,11 @@ function ServiceEditor({
         }}
       >
         <div style={{ flex: '1 1 auto', minWidth: 0 }}>
-          <h3 style={{ whiteSpace: 'nowrap', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>{selectedServiceId ? 'Chi tiết sản phẩm' : 'Tạo sản phẩm mới'}</h3>
+          <h3 style={{ whiteSpace: 'nowrap', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>
+            {selectedServiceId
+              ? (isAccountStock ? 'Sản phẩm giao tài khoản' : 'Chi tiết dịch vụ')
+              : (isAccountStock ? 'Tạo sản phẩm giao tài khoản' : 'Tạo dịch vụ mới')}
+          </h3>
           <span style={{ fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', maxWidth: '280px', whiteSpace: 'nowrap' }}>
             {serviceForm.name || 'Điền thông tin dịch vụ để mở bán'}
           </span>
@@ -125,21 +130,59 @@ function ServiceEditor({
         </div>
       </div>
 
+      <div className={`service-editor-mode ${isAccountStock ? 'account-stock' : 'manual-service'}`}>
+        <div>
+          <KeyRound size={20} aria-hidden="true" />
+          <span>
+            <strong>{isAccountStock ? 'Giao tài khoản tự động' : 'Dịch vụ xử lý thông thường'}</strong>
+            <small>
+              {isAccountStock
+                ? 'Tài khoản trong kho sẽ được backend giữ chỗ và gắn vào đúng đơn hàng sau thanh toán.'
+                : 'Không sử dụng kho tài khoản. Admin xử lý và trả kết quả qua đơn hàng.'}
+            </small>
+          </span>
+        </div>
+        <select
+          value={serviceForm.type}
+          onChange={(event) => {
+            const nextType = event.target.value
+            if (activeTab === 'credentials' && nextType !== 'ACCOUNT_STOCK') {
+              setActiveTab('basic')
+            }
+            onUpdateServiceForm('type', nextType)
+          }}
+          aria-label="Chọn cách cung cấp dịch vụ"
+        >
+          {serviceTypes.map((type) => <option value={type} key={type}>{getServiceTypeLabel(type)}</option>)}
+        </select>
+      </div>
+
       <div className="admin-tabs" style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '6px', borderBottom: '1px solid var(--kd-border)', paddingBottom: '12px' }}>
         <button type="button" className={activeTab === 'basic' ? 'active' : ''} onClick={() => handleTabChange('basic')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>Cơ bản</button>
         <button type="button" className={activeTab === 'pricing' ? 'active' : ''} onClick={() => handleTabChange('pricing')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>Giá & Cam kết</button>
         <button type="button" className={activeTab === 'content' ? 'active' : ''} onClick={() => handleTabChange('content')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>Nội dung</button>
-        <button type="button" className={activeTab === 'seo' ? 'active' : ''} onClick={() => handleTabChange('seo')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>SEO & Schema</button>
+        <button type="button" className={activeTab === 'seo' ? 'active' : ''} onClick={() => handleTabChange('seo')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>SEO</button>
         {selectedServiceId && (
           <button type="button" className={activeTab === 'orders' ? 'active' : ''} onClick={() => handleTabChange('orders')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>
             Đơn hàng ({serviceOrders.length})
           </button>
         )}
-        {selectedServiceId && serviceForm.type === 'ACCOUNT_STOCK' && (
-          <button type="button" className={activeTab === 'credentials' ? 'active' : ''} onClick={() => handleTabChange('credentials')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>
-            Kho tài khoản ({availableCredentials}/{serviceCredentials.length})
-          </button>
-        )}
+        <button
+          type="button"
+          className={activeTab === 'credentials' ? 'active' : ''}
+          disabled={!selectedServiceId || !isAccountStock}
+          onClick={() => handleTabChange('credentials')}
+          title={
+            !isAccountStock
+              ? 'Chọn loại Kho tài khoản để sử dụng chức năng này'
+              : !selectedServiceId
+                ? 'Lưu sản phẩm trước khi nhập tài khoản'
+                : 'Quản lý tài khoản cấp cho khách'
+          }
+          style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}
+        >
+          Tài khoản cấp khách {selectedServiceId && isAccountStock ? `(${availableCredentials}/${serviceCredentials.length})` : ''}
+        </button>
       </div>
 
       <div className="service-editor-sections">
@@ -165,12 +208,6 @@ function ServiceEditor({
                   {categories.map((category) => (
                     <option value={category.id} key={category.id}>{category.name}</option>
                   ))}
-                </select>
-              </label>
-              <label>
-                <span>Loại xử lý</span>
-                <select value={serviceForm.type} onChange={(event) => onUpdateServiceForm('type', event.target.value)}>
-                  {serviceTypes.map((type) => <option value={type} key={type}>{getServiceTypeLabel(type)}</option>)}
                 </select>
               </label>
               <label>
@@ -210,6 +247,25 @@ function ServiceEditor({
                 <span>Hiển thị công khai</span>
               </label>
             </div>
+            {isAccountStock && (
+              <div className="service-account-stock-guide">
+                <KeyRound size={20} aria-hidden="true" />
+                <div>
+                  <strong>Dịch vụ giao tài khoản tự động</strong>
+                  <p>
+                    Mỗi tài khoản nhập tại đây thuộc riêng dịch vụ này. Khi khách thanh toán,
+                    backend sẽ giữ một tài khoản AVAILABLE rồi gắn trực tiếp vào đơn hàng.
+                  </p>
+                </div>
+                {selectedServiceId ? (
+                  <button type="button" className="admin-icon-button" onClick={() => setActiveTab('credentials')}>
+                    Mở danh sách tài khoản
+                  </button>
+                ) : (
+                  <span className="service-account-stock-pending">Lưu dịch vụ trước để nhập tài khoản</span>
+                )}
+              </div>
+            )}
           </section>
         )}
 
@@ -282,8 +338,8 @@ function ServiceEditor({
         {activeTab === 'seo' && (
           <section className="service-editor-section">
             <div className="service-section-title">
-              <h4>Schema và SEO</h4>
-              <span>Cấu hình form đầu vào và thông tin tìm kiếm</span>
+              <h4>Thông tin SEO</h4>
+              <span>Tiêu đề và mô tả hiển thị trên công cụ tìm kiếm</span>
             </div>
             <div className="admin-form-grid service-form-grid">
               <label className="wide">
@@ -294,20 +350,6 @@ function ServiceEditor({
                 <span>Meta Description (SEO)</span>
                 <input value={serviceForm.metaDescription} onChange={(event) => onUpdateServiceForm('metaDescription', event.target.value)} />
               </label>
-              <div className="wide admin-check-row">
-                <label style={{ cursor: 'pointer' }}>
-                  <input checked={serviceForm.inputSchemaEnabled} onChange={(event) => onUpdateServiceForm('inputSchemaEnabled', event.target.checked)} type="checkbox" />
-                  <span>Bật form đầu vào khi mua hàng</span>
-                </label>
-              </div>
-              <label className="wide">
-                <span>Input schema (Cấu hình Form mua hàng - JSON)</span>
-                <textarea disabled={!serviceForm.inputSchemaEnabled} value={serviceForm.inputSchema} onChange={(event) => onUpdateServiceForm('inputSchema', event.target.value)} rows="6" placeholder={serviceForm.inputSchemaEnabled ? '{"type":"object","required":["facebookUrl"],"properties":{...}}' : 'Đang tắt form đầu vào. Backend sẽ không validate inputData.'} style={{ fontFamily: 'monospace' }} />
-              </label>
-              <div className="wide admin-action-row" style={{ display: 'flex', gap: '8px' }}>
-                <button type="button" className="admin-icon-button" style={{ height: '32px', minHeight: '32px', fontSize: '13px' }} onClick={() => { onUpdateServiceForm('inputSchemaEnabled', true); onUpdateServiceForm('inputSchema', facebookSchema) }}>Bật mẫu Facebook</button>
-                <button type="button" className="admin-icon-button" style={{ height: '32px', minHeight: '32px', fontSize: '13px' }} onClick={() => { onUpdateServiceForm('inputSchemaEnabled', false); onUpdateServiceForm('inputSchema', '') }}>Tắt schema</button>
-              </div>
             </div>
           </section>
         )}
@@ -336,11 +378,18 @@ function ServiceEditor({
           </div>
         )}
 
-        {activeTab === 'credentials' && selectedServiceId && serviceForm.type === 'ACCOUNT_STOCK' && (
+        {activeTab === 'credentials' && selectedServiceId && isAccountStock && (
           <section className="service-editor-section">
             <div className="service-section-title">
-              <h4>Kho tài khoản</h4>
-              <span>{availableCredentials} sẵn sàng giao, {deliveredCredentials} đã giao</span>
+              <h4>Tài khoản cấp cho khách hàng</h4>
+              <span>{availableCredentials} sẵn sàng cấp, {deliveredCredentials} đã liên kết đơn hàng</span>
+            </div>
+            <div className="service-credential-flow">
+              <strong>Liên kết tự động:</strong>
+              <span>Tài khoản AVAILABLE</span>
+              <span>→ Checkout giữ chỗ</span>
+              <span>→ Đơn hàng</span>
+              <span>→ DELIVERED</span>
             </div>
 
             {/* Filter bar */}
@@ -422,19 +471,19 @@ function ServiceEditor({
             {/* Create/Edit credential form */}
             <div className="admin-form-grid service-form-grid" style={{ borderBottom: '1px solid var(--kd-border)', paddingBottom: '12px', marginBottom: '12px' }}>
               <label>
-                <span>Tài khoản / Email đăng nhập</span>
-                <input value={credentialForm.loginIdentifier} onChange={(event) => onUpdateCredentialForm('loginIdentifier', event.target.value)} placeholder="user@example.com" />
+                <span>Tài khoản khách sẽ nhận *</span>
+                <input value={credentialForm.loginIdentifier} onChange={(event) => onUpdateCredentialForm('loginIdentifier', event.target.value)} placeholder="Email, username hoặc số điện thoại đăng nhập" required />
               </label>
               <label>
-                <span>Mật khẩu</span>
-                <input value={credentialForm.passwordSecret} onChange={(event) => onUpdateCredentialForm('passwordSecret', event.target.value)} placeholder="Mật khẩu giao cho khách" />
+                <span>Mật khẩu khách sẽ nhận *</span>
+                <input value={credentialForm.passwordSecret} onChange={(event) => onUpdateCredentialForm('passwordSecret', event.target.value)} placeholder={editingCredentialId ? 'Để trống nếu không đổi mật khẩu' : 'Mật khẩu đăng nhập'} required={!editingCredentialId} />
               </label>
               <label>
-                <span>Recovery / Email khôi phục</span>
+                <span>Email / thông tin khôi phục</span>
                 <input value={credentialForm.recoveryInfo} onChange={(event) => onUpdateCredentialForm('recoveryInfo', event.target.value)} placeholder="Thông tin khôi phục nếu có" />
               </label>
               <label>
-                <span>2FA secret</span>
+                <span>Mã hoặc secret 2FA</span>
                 <input value={credentialForm.twoFactorSecret} onChange={(event) => onUpdateCredentialForm('twoFactorSecret', event.target.value)} placeholder="Mã 2FA hoặc secret" />
               </label>
               <label>
@@ -446,18 +495,18 @@ function ServiceEditor({
                 <input type="datetime-local" value={credentialForm.warrantyUntil} onChange={(event) => onUpdateCredentialForm('warrantyUntil', event.target.value)} />
               </label>
               <label className="wide">
-                <span>Ghi chú giao cho khách</span>
+                <span>Hướng dẫn hiển thị cho khách</span>
                 <textarea value={credentialForm.usageNote} onChange={(event) => onUpdateCredentialForm('usageNote', event.target.value)} rows="2" placeholder="Ví dụ: không đổi mật khẩu trong 24h đầu, đăng nhập đúng khu vực..." />
               </label>
               <label className="wide">
-                <span>Ghi chú nội bộ</span>
+                <span>Ghi chú nội bộ — khách không nhìn thấy</span>
                 <textarea value={credentialForm.internalNote} onChange={(event) => onUpdateCredentialForm('internalNote', event.target.value)} rows="2" placeholder="Nguồn hàng, chi phí, lưu ý bảo hành..." />
               </label>
             </div>
             <div className="admin-action-row" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
               <button type="button" className="admin-primary-button" disabled={submitting} onClick={onCreateCredential} style={{ height: '34px', minHeight: '34px', fontSize: '13px' }}>
                 <KeyRound size={16} />
-                <span>{editingCredentialId ? 'Cập nhật kho' : 'Nhập kho'}</span>
+                <span>{editingCredentialId ? 'Cập nhật tài khoản' : 'Thêm tài khoản sẵn sàng cấp'}</span>
               </button>
               {editingCredentialId && (
                 <button type="button" className="admin-icon-button" onClick={() => onStartEditCredential(null)} style={{ height: '34px', minHeight: '34px', fontSize: '13px' }}>
@@ -469,11 +518,11 @@ function ServiceEditor({
             {/* Bulk import */}
             <div style={{ marginTop: '16px', borderTop: '1px solid var(--kd-border)', paddingTop: '12px' }}>
               <div className="admin-panel-head compact-head" style={{ marginTop: 0 }}>
-                <h3>Import CSV hàng loạt</h3>
+                <h3>Thêm nhiều tài khoản bằng CSV</h3>
                 <FileUp size={18} strokeWidth={2} aria-hidden="true" />
               </div>
               <p style={{ fontSize: '12px', color: 'var(--kd-muted)', margin: '0 0 8px' }}>
-                Dán nội dung CSV (login, password, recovery, twoFactor, usageNote, internalNote). Dòng đầu có thể là header.
+                Mỗi dòng: login, password, recovery, twoFactor, hướng dẫn khách, ghi chú nội bộ.
               </p>
               <textarea
                 value={bulkCsv}

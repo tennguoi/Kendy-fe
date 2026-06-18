@@ -30,9 +30,12 @@ export const ctaTypeLabels = {
 }
 
 export const orderStatusLabels = {
-  PENDING: 'Chờ xử lý',
+  PENDING_PAYMENT: 'Chờ thanh toán',
+  PAID: 'Đã thanh toán',
   PROCESSING: 'Đang thực hiện',
+  DELIVERED: 'Đã bàn giao',
   COMPLETED: 'Hoàn thành',
+  WARRANTY: 'Đang bảo hành',
   CANCELLED: 'Đã hủy',
   FAILED: 'Thất bại',
   REFUNDED: 'Đã hoàn tiền'
@@ -47,15 +50,6 @@ export const credentialStatusLabels = {
   DISABLED: 'Đã khóa',
   EXPIRED: 'Hết hạn'
 }
-
-export const facebookSchema = JSON.stringify({
-  properties: {
-    facebookUrl: { label: 'Link Facebook', type: 'string' },
-    note: { label: 'Ghi chú xử lý', type: 'string' },
-  },
-  required: ['facebookUrl'],
-  type: 'object',
-}, null, 2)
 
 export const getServiceTypeLabel = (type) => serviceTypeLabels[type] || type
 export const getServiceStatusLabel = (status) => serviceStatusLabels[status] || status

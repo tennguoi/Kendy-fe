@@ -35,8 +35,12 @@ function PaymentChoiceModal({
   }
 
   const price = Number(service.price) || 0
-  const discountAmount = Number(couponQuote?.discountAmount || 0)
-  const payableAmount = Number(couponQuote?.payableAmount || price)
+  const hasValidCoupon = couponQuote?.valid === true
+  const discountAmount = hasValidCoupon ? Number(couponQuote.discountAmount) || 0 : 0
+  const quotedPayableAmount = Number(couponQuote?.payableAmount)
+  const payableAmount = hasValidCoupon && Number.isFinite(quotedPayableAmount)
+    ? quotedPayableAmount
+    : price
   const canUseWallet = balance >= payableAmount
   const missingAmount = Math.max(0, payableAmount - balance)
   const isAccountStock = service.type === 'ACCOUNT_STOCK'
