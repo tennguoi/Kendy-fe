@@ -5,8 +5,8 @@ export const adminTicketsApi = {
   getTickets: (token) =>
     axiosClient.get('/api/admin/tickets?limit=100', { token }),
 
-  searchTickets: (params, token) =>
-    axiosClient.get(`/api/admin/tickets/search${queryString({ limit: 50, ...params })}`, { token }),
+  searchTickets: (params = {}, token) =>
+    axiosClient.get(`/api/admin/tickets/search${queryString({ limit: 50, page: 0, ...params })}`, { token }),
 
   getUnassignedTickets: (token) =>
     axiosClient.get('/api/admin/tickets/unassigned?limit=50', { token }),

@@ -1,6 +1,8 @@
 import { RefreshCw, ShieldCheck } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { userApi } from '../../../api/user.api'
+import { normalizePaged } from '../../../utils/pagination'
+import Pagination from '../../../components/Pagination/Pagination'
 
 const WARRANTY_STATUS_LABELS = {
   OPEN: 'Mở',
@@ -41,26 +43,34 @@ function normalizeWarrantyList(value) {
 }
 
 function WarrantyView({ onSetNotice, token }) {
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [requests, setRequests] = useState([])
   const [statusFilter, setStatusFilter] = useState('')
 
-  const loadRequests = useCallback(async () => {
+  const loadRequests = useCallback(async (page) => {
     if (!token) {
       return
     }
+    const targetPage = page ?? currentPage
     setLoading(true)
     setError('')
     try {
-      const data = await userApi.getWarranties(token, { limit: 100 })
-      setRequests(normalizeWarrantyList(data))
+      const data = await userApi.getWarranties(token, { page: targetPage, limit: 20 })
+      const { items, totalPages: pages } = normalizePaged(data, 20)
+      setRequests(items)
+      setTotalPages(pages)
+      setCurrentPage(targetPage)
     } catch (err) {
       setError(err.message || 'Không tải được danh sách bảo hành.')
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [currentPage, token])
+
+  useEffect(() => { setCurrentPage(0) }, [statusFilter])
 
   useEffect(() => {
     loadRequests()
@@ -142,6 +152,14 @@ function WarrantyView({ onSetNotice, token }) {
           </article>
         ))}
       </div>
+
+      {filteredRequests.length > 0 && (
+        <Pagination
+          currentPage={currentPage + 1}
+          totalPages={totalPages}
+          onPageChange={(page) => loadRequests(page - 1)}
+        />
+      )}
 
       {!loading && filteredRequests.length === 0 && (
         <div className="warranty-empty">

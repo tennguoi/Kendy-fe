@@ -33,10 +33,6 @@ function BankDetailPanel({
           <span>Công cụ</span>
         </button>
       </div>
-      <div className="admin-code-block">
-        <strong>Raw payload</strong>
-        <pre>{selectedBank.rawPayload || 'Không có raw payload'}</pre>
-      </div>
     </aside>
   )
 }

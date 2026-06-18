@@ -5,7 +5,7 @@ import './Button.css'
 function Button({
   children,
   className = '',
-  variant = 'primary', // 'primary' | 'ghost' | 'glass' | 'dark' | ''
+  variant = 'primary', // 'primary' | 'ghost' | 'glass' | 'dark' | 'outline' | ''
   to,
   href,
   type = 'button',

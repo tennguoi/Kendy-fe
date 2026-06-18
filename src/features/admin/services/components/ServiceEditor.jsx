@@ -1,8 +1,10 @@
 import { Download, Eye, FileUp, KeyRound, Pencil, RefreshCw, Save, ShieldOff, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { getCtaTypeLabel, getCredentialStatusLabel, getServiceStatusLabel, getServiceTypeLabel, getStockStatusLabel, getOrderStatusLabel, ctaTypes, serviceStatuses, serviceTypes, stockStatuses } from '../services.constants'
+import SearchField from '../../../../components/SearchField/SearchField'
 
 function ServiceEditor({
   categories = [],
@@ -31,6 +33,8 @@ function ServiceEditor({
   onClose,
 }) {
   const [activeTab, setActiveTab] = useState('basic')
+  const navigate = useNavigate()
+  const [selectedCredentialId, setSelectedCredentialId] = useState('')
   const [bulkCsv, setBulkCsv] = useState('')
   const [bulkSubmitting, setBulkSubmitting] = useState(false)
   const [bulkResult, setBulkResult] = useState(null)
@@ -381,6 +385,37 @@ function ServiceEditor({
         {activeTab === 'credentials' && selectedServiceId && isAccountStock && (
           <section className="service-editor-section">
             <div className="service-section-title">
+              <h4>Tài khoản của dịch vụ</h4>
+              <span>{availableCredentials} tài khoản sẵn sàng, {deliveredCredentials} đã cấp</span>
+            </div>
+            <div className="service-credential-selector">
+              <SearchField
+                value={credentialFilters.query}
+                onChange={(event) => onUpdateCredentialFilter('query', event.target.value)}
+                placeholder="Tìm tài khoản trong dịch vụ..."
+              />
+              <select value={selectedCredentialId} onChange={(event) => setSelectedCredentialId(event.target.value)}>
+                <option value="">Chọn tài khoản</option>
+                {filteredCredentials.map((credential) => (
+                  <option key={credential.id} value={credential.id}>
+                    {credential.loginIdentifier} — {getCredentialStatusLabel(credential.status)}
+                  </option>
+                ))}
+              </select>
+              <button type="button" className="admin-icon-button" onClick={() => navigate('/admin/account-inventory')}>
+                <KeyRound size={16} /> Mở Kho tài khoản
+              </button>
+            </div>
+            <p className="service-credential-selector-note">
+              Việc nhập, import, sửa và khóa tài khoản được thực hiện tại Kho tài khoản. Khi khách mua,
+              hệ thống tự lấy một tài khoản đang ở trạng thái Sẵn sàng.
+            </p>
+          </section>
+        )}
+
+        {activeTab === '__legacy_credentials' && selectedServiceId && isAccountStock && (
+          <section className="service-editor-section">
+            <div className="service-section-title">
               <h4>Tài khoản cấp cho khách hàng</h4>
               <span>{availableCredentials} sẵn sàng cấp, {deliveredCredentials} đã liên kết đơn hàng</span>
             </div>
@@ -408,11 +443,12 @@ function ServiceEditor({
                 <option value="DISABLED">Đã khóa</option>
                 <option value="EXPIRED">Hết hạn</option>
               </select>
-              <input
+              <SearchField
+                size="compact"
                 value={credentialFilters.query}
                 onChange={(event) => onUpdateCredentialFilter('query', event.target.value)}
                 placeholder="Tìm kiếm tài khoản..."
-                style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--kd-border)', fontSize: '12px', flex: 1, minWidth: '120px', background: 'var(--kd-card-bg)' }}
+                style={{ flex: 1, minWidth: '120px' }}
               />
               <label style={{ display: 'grid', gap: '3px', fontSize: '11px', color: 'var(--kd-muted)' }}>
                 Nhập từ

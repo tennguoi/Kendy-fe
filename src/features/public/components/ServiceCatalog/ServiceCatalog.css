@@ -303,46 +303,10 @@
 }
 
 .btn-action {
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border-radius: 10px;
+  height: 38px !important;
+  min-height: 38px !important;
+  border-radius: 10px !important;
   font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  font-family: inherit;
-}
-
-.btn-detail {
-  background-color: transparent;
-  color: var(--kd-text);
-  border: 1px solid var(--kd-border);
-}
-
-.btn-detail:hover {
-  background-color: var(--kd-bg);
-  border-color: var(--kd-border-strong);
-}
-
-.btn-buy {
-  background: linear-gradient(135deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
-  color: #ffffff;
-}
-
-.btn-buy:hover:not(:disabled) {
-  opacity: 0.95;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
-}
-
-.btn-buy:disabled {
-  background: var(--kd-border);
-  color: var(--kd-muted);
-  cursor: not-allowed;
 }
 
 /* ==========================================================================
@@ -791,35 +755,6 @@ html.dark .pub-checkout-card {
   margin-top: 40px;
 }
 
-.btn-view-all-catalog {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 48px;
-  padding: 0 32px;
-  border-radius: 12px;
-  background-color: transparent;
-  color: var(--kd-blue);
-  border: 2px solid var(--kd-blue);
-  font-size: 15px;
-  font-weight: 750;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family: inherit;
-}
-
-.btn-view-all-catalog:hover {
-  background-color: var(--kd-blue);
-  color: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
-}
-
-.btn-view-all-catalog:active {
-  transform: translateY(0);
-}
-
 @media (max-width: 1024px) {
   .home-catalog-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -841,8 +776,8 @@ html.dark .pub-checkout-card {
     margin-top: 8px;
   }
   .btn-view-all-catalog {
-    height: 42px;
-    padding: 0 20px;
+    height: 42px !important;
+    padding: 0 20px !important;
     font-size: 13.5px;
     width: fit-content;
   }

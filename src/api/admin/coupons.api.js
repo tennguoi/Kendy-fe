@@ -2,8 +2,8 @@ import axiosClient from '../../lib/api';
 import { queryString } from '../queryString';
 
 export const adminCouponsApi = {
-  getCoupons: (params, token) =>
-    axiosClient.get(`/api/admin/coupons${queryString({ limit: 200, ...params })}`, { token }),
+  getCoupons: (params = {}, token) =>
+    axiosClient.get(`/api/admin/coupons${queryString({ limit: 50, page: 0, ...params })}`, { token }),
 
   createCoupon: (data, token) =>
     axiosClient.post('/api/admin/coupons', data, { token }),

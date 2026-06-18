@@ -1,15 +1,20 @@
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { supportStatuses, getSupportCategoryLabel, getSupportPriorityLabel, supportStatusLabels } from '../support.constants'
 import { formatSupportDate } from '../supportFormat'
+import Pagination from '../../../../components/Pagination/Pagination'
+import SearchField from '../../../../components/SearchField/SearchField'
 
 function TicketListPanel({
+  currentPage,
   onLoadTicket,
+  onPageChange,
   onSearchChange,
   onStatusChange,
   query,
   selectedCode,
   statusFilter,
   tickets = [],
+  totalPages,
 }) {
   return (
     <>
@@ -18,7 +23,7 @@ function TicketListPanel({
         <span>{tickets.length} ticket</span>
       </div>
       <div className="admin-filters single-filter">
-        <input value={query} onChange={(event) => onSearchChange(event.target.value)} placeholder="Tìm ticket, chủ đề, mã đơn" type="search" />
+        <SearchField value={query} onChange={(event) => onSearchChange(event.target.value)} placeholder="Tìm ticket, chủ đề, mã đơn" />
         <select value={statusFilter} onChange={(event) => onStatusChange(event.target.value)}>
           {supportStatuses.map((status) => <option value={status} key={status || 'all'}>{supportStatusLabels[status] || status || 'Tất cả trạng thái'}</option>)}
         </select>
@@ -43,6 +48,11 @@ function TicketListPanel({
         ))}
         {tickets.length === 0 && <p className="admin-empty-state">Chưa có ticket hỗ trợ.</p>}
       </div>
+      <Pagination
+        currentPage={currentPage || 1}
+        totalPages={totalPages || 1}
+        onPageChange={onPageChange}
+      />
     </>
   )
 }

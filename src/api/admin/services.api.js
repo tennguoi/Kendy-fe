@@ -20,8 +20,8 @@ export const adminServicesApi = {
   getServices: (token) =>
     axiosClient.get('/api/admin/services/search?limit=200&sort=sort_order', { token }),
 
-  searchServices: (params, token) =>
-    axiosClient.get(`/api/admin/services/search${queryString({ limit: 100, sort: 'sort_order', ...params })}`, { token }),
+  searchServices: (params = {}, token) =>
+    axiosClient.get(`/api/admin/services/search${queryString({ limit: 100, sort: 'sort_order', page: 0, ...params })}`, { token }),
 
   getServiceCategoryLinks: (id, token) =>
     axiosClient.get(`/api/admin/services/${id}/categories`, { token }),
@@ -68,9 +68,12 @@ export const adminServicesApi = {
   getCredentialsAlerts: (token, params = {}) =>
     axiosClient.get(`/api/admin/credentials/alerts${queryString(params)}`, { token }),
 
+  getAssignedCredentials: (params = {}, token) =>
+    axiosClient.get(`/api/admin/assigned-credentials${queryString({ limit: 50, page: 0, ...params })}`, { token }),
+
   getPricing: (token) =>
     axiosClient.get('/api/admin/pricing?limit=200&sort=sort_order', { token }),
 
-  searchPricing: (params, token) =>
-    axiosClient.get(`/api/admin/pricing/search${queryString({ limit: 100, sort: 'sort_order', ...params })}`, { token }),
+  searchPricing: (params = {}, token) =>
+    axiosClient.get(`/api/admin/pricing/search${queryString({ limit: 100, sort: 'sort_order', page: 0, ...params })}`, { token }),
 };

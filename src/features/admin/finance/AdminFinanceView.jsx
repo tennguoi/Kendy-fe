@@ -1,7 +1,9 @@
 import { Ban, CreditCard, DollarSign, Download, RefreshCw, RotateCcw, Save, ShieldAlert, Wallet } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import { normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
+import Pagination from '../../../components/Pagination/Pagination'
 import { formatAdminMoney } from '../adminFormat'
 import BankDetailPanel from './components/BankDetailPanel'
 import BankPanel from './components/BankPanel'
@@ -11,6 +13,7 @@ import FinanceTools from './components/FinanceTools'
 import WalletPanel from './components/WalletPanel'
 import Loading from '../../../components/Loading/Loading'
 import Modal from '../../../components/Modal/Modal'
+import SearchField from '../../../components/SearchField/SearchField'
 
 const financeTabs = [
   { id: 'bank', label: 'Bank transactions' },
@@ -44,12 +47,16 @@ function AdminFinanceView({
   const [activeTab, setActiveTab] = useState('bank')
   const [bankActionForm, setBankActionForm] = useState({ depositCode: '', reason: '', userId: '' })
   const [bankBulkForm, setBankBulkForm] = useState({ depositCode: '', ids: '', reason: '', userId: '' })
+  const [bankCurrentPage, setBankCurrentPage] = useState(0)
+  const [bankTotalPages, setBankTotalPages] = useState(0)
   const [bankStatus, setBankStatus] = useState('')
   const [bankTransactions, setBankTransactions] = useState([])
   const [bankDrawerOpen, setBankDrawerOpen] = useState(false)
   const [balanceIssues, setBalanceIssues] = useState([])
   const [dashboard, setDashboard] = useState(null)
   const [depositActionForm, setDepositActionForm] = useState({ minutes: '60', reason: '' })
+  const [depositCurrentPage, setDepositCurrentPage] = useState(0)
+  const [depositTotalPages, setDepositTotalPages] = useState(0)
   const [depositDrawerOpen, setDepositDrawerOpen] = useState(false)
   const [depositStatus, setDepositStatus] = useState('')
   const [deposits, setDeposits] = useState([])
@@ -63,6 +70,8 @@ function AdminFinanceView({
   const [toolsOpen, setToolsOpen] = useState(false)
   const [activeToolTab, setActiveToolTab] = useState('bank')
   const [exportFormat, setExportFormat] = useState('xlsx')
+  const [walletCurrentPage, setWalletCurrentPage] = useState(0)
+  const [walletTotalPages, setWalletTotalPages] = useState(0)
   const [walletTransactions, setWalletTransactions] = useState([])
   const [walletType, setWalletType] = useState('')
 
@@ -81,7 +90,7 @@ function AdminFinanceView({
     onSetError(message)
   }, [onSetError])
 
-  const loadFinance = useCallback(async () => {
+  const loadFinance = useCallback(async (page) => {
     if (!token) {
       return
     }
@@ -97,26 +106,44 @@ function AdminFinanceView({
       setRevenue(revenueData)
 
       if (activeTab === 'bank') {
-        const data = await adminApi.searchBankTransactions({ query: query.trim(), status: bankStatus }, token)
-        setBankTransactions(data)
-        setSelectedBankId((current) => (current && data.some((item) => item.id === current) ? current : data[0]?.id || null))
+        const targetPage = page ?? bankCurrentPage
+        const data = await adminApi.searchBankTransactions({ query: query.trim(), status: bankStatus, page: targetPage }, token)
+        const { items, totalPages: pages } = normalizePaged(data, 50)
+        setBankTransactions(items)
+        setBankTotalPages(pages)
+        setBankCurrentPage(targetPage)
+        setSelectedBankId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
       } else if (activeTab === 'deposits') {
-        const data = await adminApi.searchDeposits({ query: query.trim(), status: depositStatus }, token)
-        setDeposits(data)
-        setSelectedDepositCode((current) => (current && data.some((item) => item.depositCode === current) ? current : data[0]?.depositCode || null))
+        const targetPage = page ?? depositCurrentPage
+        const data = await adminApi.searchDeposits({ query: query.trim(), status: depositStatus, page: targetPage }, token)
+        const { items, totalPages: pages } = normalizePaged(data, 50)
+        setDeposits(items)
+        setDepositTotalPages(pages)
+        setDepositCurrentPage(targetPage)
+        setSelectedDepositCode((current) => (current && items.some((item) => item.depositCode === current) ? current : items[0]?.depositCode || null))
       } else {
-        const data = await adminApi.searchWalletTransactions({ query: query.trim(), type: walletType }, token)
-        setWalletTransactions(data)
+        const targetPage = page ?? walletCurrentPage
+        const data = await adminApi.searchWalletTransactions({ query: query.trim(), type: walletType, page: targetPage }, token)
+        const { items, totalPages: pages } = normalizePaged(data, 50)
+        setWalletTransactions(items)
+        setWalletTotalPages(pages)
+        setWalletCurrentPage(targetPage)
       }
     } catch (err) {
       setViewError(err.message || 'Không tải được dữ liệu tài chính.')
     } finally {
       setLoading(false)
     }
-  }, [activeTab, bankStatus, depositStatus, query, setViewError, token, walletType])
+  }, [activeTab, bankCurrentPage, bankStatus, depositCurrentPage, depositStatus, query, setViewError, token, walletCurrentPage, walletType])
 
   useEffect(() => {
-    const timer = window.setTimeout(loadFinance, 250)
+    setBankCurrentPage(0)
+    setDepositCurrentPage(0)
+    setWalletCurrentPage(0)
+  }, [activeTab, query, bankStatus, depositStatus, walletType])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => loadFinance(), 250)
     return () => window.clearTimeout(timer)
   }, [loadFinance])
 
@@ -472,44 +499,65 @@ function AdminFinanceView({
         </div>
 
         <div className="admin-filters single-filter">
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm nội dung, mã giao dịch, user id" type="search" />
+          <SearchField value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm nội dung, mã giao dịch, user id" />
         </div>
 
         {activeTab === 'bank' && (
-          <BankPanel
-            bankStatus={bankStatus}
-            bankStatuses={bankStatuses}
-            bankTransactions={bankTransactions}
-            selectedBank={selectedBank}
-            setBankStatus={setBankStatus}
-            setSelectedBankId={selectBank}
-          />
+          <>
+            <BankPanel
+              bankStatus={bankStatus}
+              bankStatuses={bankStatuses}
+              bankTransactions={bankTransactions}
+              selectedBank={selectedBank}
+              setBankStatus={setBankStatus}
+              setSelectedBankId={selectBank}
+            />
+            <Pagination
+              currentPage={bankCurrentPage + 1}
+              totalPages={bankTotalPages}
+              onPageChange={(page) => loadFinance(page - 1)}
+            />
+          </>
         )}
 
         {activeTab === 'deposits' && (
-          <DepositPanel
-            depositStatus={depositStatus}
-            depositStatuses={depositStatuses}
-            deposits={deposits}
-            selectedDeposit={selectedDeposit}
-            setDepositStatus={setDepositStatus}
-            setSelectedDepositCode={selectDeposit}
-          />
+          <>
+            <DepositPanel
+              depositStatus={depositStatus}
+              depositStatuses={depositStatuses}
+              deposits={deposits}
+              selectedDeposit={selectedDeposit}
+              setDepositStatus={setDepositStatus}
+              setSelectedDepositCode={selectDeposit}
+            />
+            <Pagination
+              currentPage={depositCurrentPage + 1}
+              totalPages={depositTotalPages}
+              onPageChange={(page) => loadFinance(page - 1)}
+            />
+          </>
         )}
 
         {activeTab === 'wallet' && (
-          <WalletPanel
-            balanceIssues={balanceIssues}
-            loadBalanceIntegrityReport={loadBalanceIntegrityReport}
-            runBalanceCheck={runBalanceCheck}
-            runReconciliation={runReconciliation}
-            submitting={submitting}
-            walletTransactions={walletTransactions}
-            walletType={walletType}
-            walletTypes={walletTypes}
-            setWalletType={setWalletType}
-            onOpenTools={() => openFinanceTools('wallet')}
-          />
+          <>
+            <WalletPanel
+              balanceIssues={balanceIssues}
+              loadBalanceIntegrityReport={loadBalanceIntegrityReport}
+              runBalanceCheck={runBalanceCheck}
+              runReconciliation={runReconciliation}
+              submitting={submitting}
+              walletTransactions={walletTransactions}
+              walletType={walletType}
+              walletTypes={walletTypes}
+              setWalletType={setWalletType}
+              onOpenTools={() => openFinanceTools('wallet')}
+            />
+            <Pagination
+              currentPage={walletCurrentPage + 1}
+              totalPages={walletTotalPages}
+              onPageChange={(page) => loadFinance(page - 1)}
+            />
+          </>
         )}
       </div>
 

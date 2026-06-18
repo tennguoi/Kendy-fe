@@ -1,0 +1,128 @@
+.assigned-accounts-view .admin-toolbar p {
+  margin: 6px 0 0;
+  color: var(--kd-muted);
+}
+
+.assigned-eyebrow {
+  color: var(--kd-blue);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+
+
+.assigned-filters {
+  grid-template-columns: minmax(300px, 1fr) 190px 160px 160px;
+  align-items: center;
+  gap: 10px;
+}
+
+.assigned-filters > input,
+.assigned-filters > select {
+  min-height: 42px;
+}
+
+.assigned-table-wrap {
+  overflow-x: auto;
+}
+
+.assigned-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1080px;
+}
+
+.assigned-table th {
+  padding: 13px 14px;
+  text-align: left;
+  color: var(--kd-muted);
+  background: var(--kd-soft);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.assigned-table td {
+  padding: 15px 14px;
+  border-bottom: 1px solid var(--kd-border);
+  color: var(--kd-text);
+  vertical-align: top;
+}
+
+.assigned-table td strong,
+.assigned-table td small {
+  display: block;
+}
+
+.assigned-table td small {
+  margin-top: 4px;
+  color: var(--kd-muted);
+}
+
+.assigned-status {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #166534;
+  background: #dcfce7;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.assigned-status.replaced,
+.assigned-status.refunded {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.assigned-status.expired,
+.assigned-status.disabled {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.assigned-reveal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+  padding: 7px 10px;
+  color: var(--kd-blue);
+  background: #eff6ff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.assigned-secret {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  max-width: 190px;
+  overflow-wrap: anywhere;
+  color: var(--kd-text);
+  font-family: monospace;
+}
+
+@media (max-width: 1100px) {
+  .assigned-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .assigned-search {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .assigned-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .assigned-search {
+    grid-column: auto;
+  }
+}

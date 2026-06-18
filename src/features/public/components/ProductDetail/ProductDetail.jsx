@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -10,6 +10,7 @@ import {
   featuredServices as staticFeatured,
   serviceTableRows as staticRows,
 } from '../../data/services.public'
+import Button from '../../../../components/Button/Button'
 import './ProductDetail.css'
 
 function ProductDetail({ onLoginClick }) {
@@ -67,10 +68,10 @@ function ProductDetail({ onLoginClick }) {
         <div className="product-detail-error">
           <AlertTriangle size={48} strokeWidth={1.5} />
           <h3>{error || 'Không tìm thấy dịch vụ'}</h3>
-          <button type="button" className="product-detail-back-btn" onClick={() => navigate('/catalog')}>
+          <Button variant="ghost" className="product-detail-back-btn" onClick={() => navigate('/catalog')}>
             <ArrowLeft size={18} strokeWidth={2} />
-            Quay lại danh mục
-          </button>
+            <span>Quay lại danh mục</span>
+          </Button>
         </div>
       </div>
     )
@@ -86,10 +87,10 @@ function ProductDetail({ onLoginClick }) {
       <div className="product-detail-container">
         
         {/* Nút quay lại */}
-        <button type="button" className="product-detail-back-btn" onClick={() => navigate('/catalog')}>
+        <Button variant="ghost" className="product-detail-back-btn" onClick={() => navigate('/catalog')}>
           <ArrowLeft size={18} strokeWidth={2} />
           <span>Quay lại danh mục</span>
-        </button>
+        </Button>
 
         {/* Banner hết hàng */}
         {isOutOfStock && (
@@ -142,20 +143,20 @@ function ProductDetail({ onLoginClick }) {
             </div>
 
             <div className="product-purchase-action">
-              <button
-                type="button"
+              <Button
+                variant="primary"
                 className="btn-buy-now-detail"
                 disabled={isOutOfStock}
                 onClick={onLoginClick}
               >
                 <ShoppingCart size={20} />
                 <span>{isOutOfStock ? 'Hết hàng' : 'Mua ngay'}</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* PHẦN DƯỚI: Lưu ý & Chi tiết (Layout Divine Shop) */}
+        {/* PHẦN DƯỚI: Lưu ý & Chi tiết (Layout Layout Divine Shop) */}
         
         {/* Khung Lưu ý */}
         {(service.usageNotes || service.requirements) && (

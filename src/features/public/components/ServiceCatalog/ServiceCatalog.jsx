@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, Eye, Sparkles, ArrowRight } from 'lucide-react'
+import Button from '../../../../components/Button/Button'
 import './ServiceCatalog.css'
 
 function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
@@ -68,14 +69,14 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
             </p>
           </div>
           <div className="catalog-header-action" style={{ flexShrink: 0 }}>
-            <button 
-              type="button" 
+            <Button 
+              variant="outline" 
               className="btn-view-all-catalog"
               onClick={() => navigate('/catalog')}
             >
               <span>Xem tất cả dịch vụ</span>
               <ArrowRight size={16} />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -107,24 +108,24 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
                     </div>
                     
                     <div className="service-card-actions">
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
                         className="btn-action btn-detail"
                         onClick={() => navigate(`/product/${service.slug}`)}
                         title="Xem chi tiết dịch vụ"
                       >
                         <Eye size={16} />
                         <span>Chi tiết</span>
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
+                        variant="primary"
                         className="btn-action btn-buy"
                         disabled={isOutOfStock}
                         onClick={() => onPurchaseClick(service)}
                       >
                         <ShoppingCart size={16} />
                         <span>{isOutOfStock ? 'Hết hàng' : 'Mua ngay'}</span>
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>

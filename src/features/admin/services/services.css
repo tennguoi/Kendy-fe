@@ -454,6 +454,37 @@ html.dark .admin-service-editor .admin-close-button:hover {
   text-align: right;
 }
 
+.service-credential-selector {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(240px, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.service-credential-selector select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  padding: 0 12px;
+  color: var(--kd-text);
+  background: var(--kd-card);
+  font: inherit;
+}
+
+.service-credential-selector-note {
+  margin: 10px 0 0;
+  color: var(--kd-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 850px) {
+  .service-credential-selector {
+    grid-template-columns: 1fr;
+  }
+}
+
 .service-credential-flow {
   display: flex;
   flex-wrap: wrap;

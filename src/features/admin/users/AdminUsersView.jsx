@@ -1,25 +1,13 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import { normalizeList, normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
 import UserDetailPanel from './components/UserDetailPanel'
 import UserListPanel from './components/UserListPanel'
 import UsersFilterBar from './components/UsersFilterBar'
+import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
-
-function normalizeList(value) {
-  if (Array.isArray(value)) {
-    return value
-  }
-
-  if (!value || typeof value !== 'object') {
-    return []
-  }
-
-  const keys = ['content', 'items', 'data', 'records', 'results']
-  const list = keys.map((key) => value[key]).find(Array.isArray)
-  return list || []
-}
 
 function AdminUsersView({
   onSetError,
@@ -29,6 +17,8 @@ function AdminUsersView({
   const [activeDetailTab, setActiveDetailTab] = useState('orders')
   const [adjustForm, setAdjustForm] = useState({ amount: '', confirmationPassword: '', direction: 'CREDIT', reason: '' })
   const [bulkStatusForm, setBulkStatusForm] = useState({ ids: '', reason: '' })
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [detail, setDetail] = useState(null)
   const [detailData, setDetailData] = useState({ audit: [], orders: [], sessions: [], tickets: [], wallet: [] })
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -49,24 +39,27 @@ function AdminUsersView({
     onSetError(message)
   }, [onSetError])
 
-  const loadUsers = useCallback(async () => {
+  const loadUsers = useCallback(async (page) => {
     if (!token) {
       setLoading(true)
       setHasLoadedUsers(false)
       return
     }
 
+    const targetPage = page ?? currentPage
     setLoading(true)
     setHasLoadedUsers(false)
     setViewError('')
     try {
-      const data = await adminApi.searchUsers({ query: query.trim(), status: statusFilter }, token)
-      const normalizedUsers = normalizeList(data)
-      setUsers(normalizedUsers)
+      const data = await adminApi.searchUsers({ query: query.trim(), status: statusFilter, page: targetPage }, token)
+      const { items, totalPages: pages } = normalizePaged(data, 50)
+      setUsers(items)
+      setTotalPages(pages)
+      setCurrentPage(targetPage)
       setSelectedId((current) => (
-        current && normalizedUsers.some((user) => user.id === current)
+        current && items.some((user) => user.id === current)
           ? current
-          : normalizedUsers[0]?.id || null
+          : items[0]?.id || null
       ))
     } catch (err) {
       setViewError(err.message || 'Không tải được danh sách user.')
@@ -74,7 +67,7 @@ function AdminUsersView({
       setHasLoadedUsers(true)
       setLoading(false)
     }
-  }, [query, setViewError, statusFilter, token])
+  }, [currentPage, query, setViewError, statusFilter, token])
 
   const loadUserDetail = useCallback(async (userId) => {
     if (!token || !userId) {
@@ -108,7 +101,11 @@ function AdminUsersView({
   }, [setViewError, token])
 
   useEffect(() => {
-    const timer = window.setTimeout(loadUsers, 250)
+    setCurrentPage(0)
+  }, [query, statusFilter])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => loadUsers(), 250)
     return () => window.clearTimeout(timer)
   }, [loadUsers])
 
@@ -292,6 +289,12 @@ function AdminUsersView({
         selectedUser={selectedUser}
         submitting={submitting}
         users={users}
+      />
+
+      <Pagination
+        currentPage={currentPage + 1}
+        totalPages={totalPages}
+        onPageChange={(page) => loadUsers(page - 1)}
       />
 
       <AdminDrawer

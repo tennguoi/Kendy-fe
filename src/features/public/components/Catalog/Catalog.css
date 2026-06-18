@@ -5,9 +5,14 @@
 }
 
 .catalog-hero {
-  background: linear-gradient(135deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
-  padding: 80px 24px 60px;
+  background: linear-gradient(180deg, var(--kd-card) 0%, var(--kd-bg) 100%);
+  border-bottom: 1px solid var(--kd-border);
+  padding: 100px 24px 70px;
   text-align: center;
+}
+
+html.dark .catalog-hero {
+  background: linear-gradient(180deg, #0f172a 0%, #172033 100%);
 }
 
 .catalog-hero-content {
@@ -16,7 +21,7 @@
 }
 
 .catalog-hero-content .eyebrow {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--kd-blue);
   font-size: 12px;
   font-weight: 950;
   letter-spacing: 0;
@@ -27,14 +32,15 @@
 
 .catalog-hero-content h1 {
   margin: 0 0 12px;
-  color: #ffffff;
-  font-size: 36px;
+  color: var(--kd-text);
+  font-size: 40px;
+  font-weight: 850;
   line-height: 1.15;
 }
 
 .catalog-hero-content p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--kd-muted);
   font-size: 16px;
   line-height: 1.6;
 }
@@ -54,13 +60,16 @@
   gap: 10px;
   padding: 10px 16px;
   border: 1px solid var(--kd-border);
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--kd-card);
-  transition: border-color 180ms ease;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+  width: 100%;
+  max-width: 400px;
 }
 
 .catalog-search:focus-within {
   border-color: var(--kd-blue);
+  box-shadow: 0 0 0 3px rgba(20, 124, 255, 0.15);
 }
 
 .catalog-search input {
@@ -86,27 +95,7 @@
 }
 
 .filter-btn {
-  padding: 8px 18px;
-  border: 1px solid var(--kd-border);
-  border-radius: 100px;
-  background: var(--kd-card);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--kd-muted);
-  cursor: pointer;
-  transition: all 180ms ease;
-}
-
-.filter-btn:hover {
-  border-color: var(--kd-blue);
-  color: var(--kd-blue);
-}
-
-.filter-btn.active {
-  border-color: var(--kd-blue);
-  background: var(--kd-blue);
-  color: #ffffff;
+  border-radius: 100px !important;
 }
 
 .catalog-loading {
@@ -317,28 +306,8 @@ html.dark .catalog-card:hover {
 }
 
 .catalog-card-cta {
-  width: 100%;
-  min-height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--kd-blue);
-  color: #ffffff;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: background 180ms ease, transform 180ms ease;
   margin-top: auto;
-}
-
-.catalog-card-cta:hover {
-  background: #0b5ed7;
-  transform: translateY(-1px);
+  width: 100%;
 }
 
 @media (max-width: 680px) {
@@ -401,68 +370,4 @@ html.dark .catalog-card:hover {
   border-color: var(--kd-blue);
 }
 
-/* Phân trang CSS */
-.catalog-pagination {
-  width: min(1180px, calc(100% - 48px));
-  margin: 32px auto 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-}
-
-.pagination-pages {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.pagination-btn {
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--kd-border);
-  border-radius: 10px;
-  background: var(--kd-card);
-  color: var(--kd-text);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 180ms ease;
-  padding: 0 16px;
-}
-
-.pagination-btn.num {
-  width: 40px;
-  padding: 0;
-}
-
-.pagination-btn:hover:not(:disabled) {
-  border-color: var(--kd-blue);
-  color: var(--kd-blue);
-}
-
-.pagination-btn.active {
-  background-color: var(--kd-blue);
-  color: #ffffff;
-  border-color: var(--kd-blue);
-}
-
-.pagination-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-@media (max-width: 680px) {
-  .catalog-pagination {
-    gap: 8px;
-    width: calc(100% - 36px);
-  }
-  .pagination-btn.arrow {
-    padding: 0 10px;
-    font-size: 12px;
-  }
-}
 

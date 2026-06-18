@@ -541,10 +541,10 @@ function AdminSettingsView({
     setSelectedRoleId(roleId || null)
     setRoleDraft(role
       ? {
-          description: role.description || '',
-          name: role.name || '',
-          permissionIds: permissions.filter((permission) => role.permissions?.includes(permission.code)).map((permission) => permission.id),
-        }
+        description: role.description || '',
+        name: role.name || '',
+        permissionIds: permissions.filter((permission) => role.permissions?.includes(permission.code)).map((permission) => permission.id),
+      }
       : { description: '', name: '', permissionIds: [] })
   }
 

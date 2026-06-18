@@ -2,10 +2,12 @@ import { RefreshCw, Plus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { adminApi } from '../../../api/admin.api'
+import { normalizePaged } from '../../../utils/pagination'
 import { parseMoneyInput } from '../../../utils/moneyInput'
 import CategoryEditor from './components/CategoryEditor'
 import ServiceEditor from './components/ServiceEditor'
 import ServiceListPanel from './components/ServiceListPanel'
+import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
 import Modal from '../../../components/Modal/Modal'
 
@@ -232,6 +234,8 @@ function AdminServicesView({
   const [credentialForm, setCredentialForm] = useState(emptyCredentialForm)
   const [credentialFilters, setCredentialFilters] = useState(emptyCredentialFilters)
   const [editingCredentialId, setEditingCredentialId] = useState(null)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [serviceForm, setServiceForm] = useState(emptyServiceForm)
   const [serviceOrders, setServiceOrders] = useState([])
   const [services, setServices] = useState([])
@@ -264,23 +268,27 @@ function AdminServicesView({
     }
   }, [setViewError, token])
 
-  const loadServices = useCallback(async () => {
+  const loadServices = useCallback(async (page) => {
     if (!token) {
       return
     }
 
+    const targetPage = page ?? currentPage
     setLoading(true)
     setViewError('')
     try {
-      const data = await adminApi.searchServices({ query: query.trim(), status: statusFilter }, token)
-      setServices(data)
-      setSelectedServiceId((current) => (current && data.some((item) => item.id === current) ? current : data[0]?.id || null))
+      const data = await adminApi.searchServices({ query: query.trim(), status: statusFilter, page: targetPage }, token)
+      const { items, totalPages: pages } = normalizePaged(data, 100)
+      setServices(items)
+      setTotalPages(pages)
+      setCurrentPage(targetPage)
+      setSelectedServiceId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
     } catch (err) {
       setViewError(err.message || 'Không tải được dịch vụ.')
     } finally {
       setLoading(false)
     }
-  }, [query, setViewError, statusFilter, token])
+  }, [currentPage, query, setViewError, statusFilter, token])
 
   const reloadAll = useCallback(async () => {
     await Promise.all([loadCategories(), loadServices()])
@@ -292,7 +300,11 @@ function AdminServicesView({
   }, [loadCategories])
 
   useEffect(() => {
-    const timer = window.setTimeout(loadServices, 250)
+    setCurrentPage(0)
+  }, [query, statusFilter])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => loadServices(), 250)
     return () => window.clearTimeout(timer)
   }, [loadServices])
 
@@ -860,6 +872,11 @@ function AdminServicesView({
           onUpdateServiceQuick={handleUpdateServiceQuick}
           onDeleteServiceQuick={handleDeleteServiceQuick}
           onDeleteCategoryQuick={handleDeleteCategoryQuick}
+        />
+        <Pagination
+          currentPage={currentPage + 1}
+          totalPages={totalPages}
+          onPageChange={(page) => loadServices(page - 1)}
         />
       </div>
 

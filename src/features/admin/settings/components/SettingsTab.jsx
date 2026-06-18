@@ -1,5 +1,6 @@
 import { AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
+import SearchField from '../../../../components/SearchField/SearchField'
 
 function SettingsTab({
   currentUser,
@@ -78,7 +79,7 @@ function SettingsTab({
           <span>{settings.length} key</span>
         </div>
         <div className="admin-filters single-filter">
-          <input value={settingSearch} onChange={(event) => onSetSettingSearch(event.target.value)} placeholder="Tìm setting key" type="search" />
+          <SearchField value={settingSearch} onChange={(event) => onSetSettingSearch(event.target.value)} placeholder="Tìm setting key" />
         </div>
         <div className="admin-mini-list">
           {settings.map((setting) => (

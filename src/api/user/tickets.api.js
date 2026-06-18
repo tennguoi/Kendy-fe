@@ -5,8 +5,8 @@ export const userTicketsApi = {
   getTickets: (params, token) =>
     axiosClient.get(`/api/tickets${queryString({ size: 20, ...params })}`, { token }),
 
-  searchTickets: (params, token) =>
-    axiosClient.get(`/api/tickets/search${queryString({ size: 50, ...params })}`, { token }),
+  searchTickets: (params = {}, token) =>
+    axiosClient.get(`/api/tickets/search${queryString({ size: 50, page: 0, ...params })}`, { token }),
 
   getTicket: (ticketCode, token) =>
     axiosClient.get(`/api/tickets/${ticketCode}`, { token }),

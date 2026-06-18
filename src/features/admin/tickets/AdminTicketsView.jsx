@@ -1,10 +1,12 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import { normalizeList, normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
 import TicketDetailPanel from './components/TicketDetailPanel'
 import TicketFilterBar from './components/TicketFilterBar'
 import TicketListPanel from './components/TicketListPanel'
+import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
 
 function AdminTicketsView({
@@ -15,6 +17,8 @@ function AdminTicketsView({
   const [admins, setAdmins] = useState([])
   const [attachments, setAttachments] = useState([])
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [editor, setEditor] = useState({ assignedAdminId: '', category: '', priority: 'NORMAL', status: 'OPEN' })
   const [error, setError] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -43,11 +47,12 @@ function AdminTicketsView({
     setTickets((items) => items.map((item) => (item.ticketCode === saved.ticketCode ? saved : item)))
   }
 
-  const loadTickets = useCallback(async () => {
+  const loadTickets = useCallback(async (page) => {
     if (!token) {
       return
     }
 
+    const targetPage = page ?? currentPage
     setLoading(true)
     setViewError('')
     try {
@@ -57,6 +62,7 @@ function AdminTicketsView({
           ? adminApi.getAssignedToMeTickets(token)
           : adminApi.searchTickets({
               category: categoryFilter,
+              page: targetPage,
               priority: priorityFilter,
               query: query.trim(),
               status: statusFilter,
@@ -66,16 +72,19 @@ function AdminTicketsView({
         adminApi.getAdmins(token),
         adminApi.getTicketResolutionTime(token),
       ])
-      setTickets(ticketData)
+      const { items, totalPages: pages } = normalizePaged(ticketData, 50)
+      setTickets(items)
+      setTotalPages(pages)
+      setCurrentPage(targetPage)
       setAdmins(adminData)
       setResolution(resolutionData)
-      setSelectedCode((current) => (current && ticketData.some((ticket) => ticket.ticketCode === current) ? current : ticketData[0]?.ticketCode || null))
+      setSelectedCode((current) => (current && items.some((ticket) => ticket.ticketCode === current) ? current : items[0]?.ticketCode || null))
     } catch (err) {
       setViewError(err.message || 'Không tải được danh sách ticket.')
     } finally {
       setLoading(false)
     }
-  }, [categoryFilter, priorityFilter, query, setViewError, statusFilter, ticketQueue, token])
+  }, [categoryFilter, currentPage, priorityFilter, query, setViewError, statusFilter, ticketQueue, token])
 
   const loadAttachments = useCallback(async (ticketCode) => {
     if (!token || !ticketCode) {
@@ -91,7 +100,11 @@ function AdminTicketsView({
   }, [token])
 
   useEffect(() => {
-    const timer = window.setTimeout(loadTickets, 250)
+    setCurrentPage(0)
+  }, [categoryFilter, priorityFilter, query, statusFilter, ticketQueue])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => loadTickets(), 250)
     return () => window.clearTimeout(timer)
   }, [loadTickets])
 
@@ -269,6 +282,12 @@ function AdminTicketsView({
         onSelectTicket={selectTicket}
         selectedTicket={selectedTicket}
         tickets={tickets}
+      />
+
+      <Pagination
+        currentPage={currentPage + 1}
+        totalPages={totalPages}
+        onPageChange={(page) => loadTickets(page - 1)}
       />
 
       <AdminDrawer

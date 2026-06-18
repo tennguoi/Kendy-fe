@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { RefreshCw, Save, TicketPercent } from 'lucide-react'
+import { Plus, RefreshCw, Save, TicketPercent } from 'lucide-react'
 import { adminApi } from '../../../api/admin.api'
+import { normalizePaged } from '../../../utils/pagination'
 import { money } from '../../../utils/currency'
 import { AdminEmptyState, AdminStatusBadge } from '../AdminShared'
 import Modal from '../../../components/Modal/Modal'
+import Pagination from '../../../components/Pagination/Pagination'
 
 const blankForm = {
   adminNote: '',
@@ -78,6 +80,8 @@ function payloadFromForm(form) {
 
 function AdminCouponsView({ onSetError, onSetNotice, token }) {
   const [coupons, setCoupons] = useState([])
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [services, setServices] = useState([])
   const [status, setStatus] = useState('')
   const [selected, setSelected] = useState(null)
@@ -88,15 +92,19 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
 
   const activeCoupons = useMemo(() => coupons.filter((item) => item.status === 'ACTIVE').length, [coupons])
 
-  const loadData = async () => {
+  const loadData = async (page) => {
     if (!token) return
+    const targetPage = page ?? currentPage
     setLoading(true)
     try {
       const [couponData, serviceData] = await Promise.all([
-        adminApi.getCoupons({ status: status || undefined }, token),
+        adminApi.getCoupons({ status: status || undefined, page: targetPage }, token),
         adminApi.getServices(token),
       ])
-      setCoupons(Array.isArray(couponData) ? couponData : [])
+      const { items, totalPages: pages } = normalizePaged(couponData, 50)
+      setCoupons(items)
+      setTotalPages(pages)
+      setCurrentPage(targetPage)
       setServices(Array.isArray(serviceData) ? serviceData : [])
       onSetError?.('')
     } catch (err) {
@@ -107,7 +115,12 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
   }
 
   useEffect(() => {
-    loadData()
+    setCurrentPage(0)
+  }, [status])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => loadData(), 0)
+    return () => window.clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, status])
 
@@ -182,9 +195,14 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
             <span className="admin-quick-stat highlight"><strong>{activeCoupons}</strong> đang chạy</span>
           </div>
         </div>
-        <button className={`admin-icon-button ${loading ? 'loading' : ''}`} type="button" onClick={loadData}>
-          <RefreshCw size={16} /> Tải lại
-        </button>
+        <div className="admin-toolbar-actions coupon-toolbar-actions">
+          <button className={`admin-icon-button ${loading ? 'loading' : ''}`} type="button" onClick={loadData}>
+            <RefreshCw size={18} /> Tải lại
+          </button>
+          <button type="button" className="admin-primary-button" onClick={startCreate}>
+            <Plus size={18} /> Tạo mới
+          </button>
+        </div>
       </div>
 
       <div className="admin-grid">
@@ -194,7 +212,6 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
               <h3><TicketPercent size={18} /> Danh sách coupon</h3>
               <span>Quản lý mã giảm giá theo thời gian, lượt dùng và dịch vụ áp dụng.</span>
             </div>
-            <button type="button" onClick={startCreate}>Tạo mã</button>
           </div>
           <div className="admin-filters single-filter">
             <select value={status} onChange={(event) => setStatus(event.target.value)}>
@@ -238,6 +255,11 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
               </button>
             ))}
           </div>
+          <Pagination
+            currentPage={currentPage + 1}
+            totalPages={totalPages}
+            onPageChange={(page) => loadData(page - 1)}
+          />
           {!loading && coupons.length === 0 && <AdminEmptyState message="Chưa có mã giảm giá." hint="Tạo mã đầu tiên để chạy ưu đãi." />}
         </section>
       </div>
@@ -248,7 +270,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
         title={selected ? `Sửa mã giảm giá: ${selected.code}` : 'Tạo mã giảm giá mới'}
         maxWidth="800px"
       >
-        <form className="admin-form" onSubmit={saveCoupon} style={{ padding: '6px 0 0' }}>
+        <form className="admin-form coupon-editor-form" onSubmit={saveCoupon}>
           <div className="admin-form-grid two-columns">
             <label>
               <span>Mã</span>
@@ -314,37 +336,21 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
               <textarea rows={3} value={form.adminNote} onChange={(event) => updateForm('adminNote', event.target.value)} />
             </label>
           </div>
-          <div
-            className="admin-action-row"
-            style={{
-              marginTop: '16px',
-              paddingTop: '16px',
-              borderTop: '1px solid var(--kd-border)',
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '10px'
-            }}
-          >
+          <div className="admin-action-row coupon-editor-actions">
             {selected && (
               <button
                 type="button"
-                className="admin-danger-button"
                 disabled={saving}
                 onClick={() => toggleStatus(selected)}
-                style={{ marginRight: 'auto' }}
+                className="admin-danger-button coupon-toggle-button"
               >
                 {selected.status === 'ACTIVE' ? 'Tắt mã' : 'Bật mã'}
               </button>
             )}
             <button
               type="button"
-              className="admin-icon-button"
               onClick={() => setIsModalOpen(false)}
-              style={{
-                color: 'var(--kd-text)',
-                background: 'var(--kd-bg)',
-                borderColor: 'var(--kd-border)'
-              }}
+              className="admin-icon-button coupon-cancel-button"
             >
               Hủy
             </button>

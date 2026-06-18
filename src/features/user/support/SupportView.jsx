@@ -4,6 +4,7 @@ import TicketListPanel from './components/TicketListPanel'
 
 function SupportView({
   attachments = [],
+  currentPage,
   file,
   loading,
   message,
@@ -12,6 +13,7 @@ function SupportView({
   onDeleteAttachment,
   onFileChange,
   onLoadTicket,
+  onPageChange,
   onRefresh,
   onReopenTicket,
   onSearchChange,
@@ -26,6 +28,7 @@ function SupportView({
   submitting,
   ticketForm,
   tickets = [],
+  totalPages,
 }) {
   const selectedCode = selectedTicket?.ticketCode || ''
 
@@ -42,13 +45,16 @@ function SupportView({
 
       <article className="ticket-list">
         <TicketListPanel
+          currentPage={currentPage}
           onLoadTicket={onLoadTicket}
+          onPageChange={onPageChange}
           onSearchChange={onSearchChange}
           onStatusChange={onStatusChange}
           query={query}
           selectedCode={selectedCode}
           statusFilter={statusFilter}
           tickets={tickets}
+          totalPages={totalPages}
         />
         <TicketDetailPanel
           attachments={attachments}

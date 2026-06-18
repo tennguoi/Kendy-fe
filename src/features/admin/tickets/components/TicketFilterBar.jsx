@@ -1,4 +1,5 @@
 import { ticketCategories, ticketPriorities, ticketStatuses, ticketCategoryLabels, ticketPriorityLabels, ticketStatusLabels } from '../tickets.constants'
+import SearchField from '../../../../components/SearchField/SearchField'
 
 function TicketFilterBar({
   categoryFilter,
@@ -19,7 +20,7 @@ function TicketFilterBar({
         <option value="unassigned">Chưa assign</option>
         <option value="mine">Assigned to me</option>
       </select>
-      <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm ticket, user, chủ đề" type="search" />
+      <SearchField value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm ticket, user, chủ đề" />
       <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>
         {ticketStatuses.map((status) => (
           <option value={status} key={status || 'all'}>{ticketStatusLabels[status] || status || 'Tất cả trạng thái'}</option>

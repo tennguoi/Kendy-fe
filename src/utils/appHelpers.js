@@ -7,22 +7,6 @@ export const initialOAuthCallback = readOAuthCallback()
 export const adminRoutePaths = [...adminNavItems.map((item) => item.path), '/admin/settings', '/admin/profile']
 export const MIN_DEPOSIT_AMOUNT = 1000
 
-export function initialOAuthNotice(callback = initialOAuthCallback) {
-  if (callback?.oauthTwoFactorChallenge) {
-    return 'Mã xác thực đã được gửi tới email của bạn.'
-  }
-
-  if (callback?.token) {
-    return 'Đăng nhập bằng tài khoản liên kết thành công.'
-  }
-
-  if (callback?.error) {
-    return `Đăng nhập bằng tài khoản liên kết thất bại: ${callback.error}`
-  }
-
-  return ''
-}
-
 export async function fetchUserBootstrap(token) {
   const me = await userApi.getMe(token)
   const results = await Promise.allSettled([

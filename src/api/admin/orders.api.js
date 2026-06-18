@@ -5,8 +5,8 @@ export const adminOrdersApi = {
   getOrders: (token) =>
     axiosClient.get('/api/admin/orders?size=100', { token }),
 
-  searchOrders: (params, token) =>
-    axiosClient.get(`/api/admin/orders/search${queryString({ size: 50, ...params })}`, { token }),
+  searchOrders: (params = {}, token) =>
+    axiosClient.get(`/api/admin/orders/search${queryString({ size: 50, page: 0, ...params })}`, { token }),
 
   getOrder: (orderCode, token) =>
     axiosClient.get(`/api/admin/orders/${orderCode}`, { token }),

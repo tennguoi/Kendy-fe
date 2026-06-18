@@ -1,7 +1,9 @@
 import { RefreshCw, Search } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import { normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
+import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
 import { formatAdminDate } from '../adminFormat'
 
@@ -39,6 +41,8 @@ const EMPTY_FORM = { status: 'OPEN', replacementCredentialId: '', adminNote: '' 
 
 function AdminWarrantyView({ onSetError, onSetNotice, token }) {
   const [allRequests, setAllRequests] = useState([])
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(false)
   const [statusFilter, setStatusFilter] = useState('')
   const [selectedRequest, setSelectedRequest] = useState(null)
@@ -52,20 +56,26 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
     onSetError(message)
   }, [onSetError])
 
-  const loadRequests = useCallback(async () => {
+  const loadRequests = useCallback(async (page) => {
     if (!token) return
+    const targetPage = page ?? currentPage
     setLoading(true)
     setViewError('')
     try {
       const params = statusFilter ? { status: statusFilter } : {}
-      const data = await adminApi.getWarranties(token, params)
-      setAllRequests(data)
+      const data = await adminApi.getWarranties(token, { ...params, page: targetPage })
+      const { items, totalPages: pages } = normalizePaged(data, 50)
+      setAllRequests(items)
+      setTotalPages(pages)
+      setCurrentPage(targetPage)
     } catch (err) {
       setViewError(err.message || 'Không tải được danh sách bảo hành.')
     } finally {
       setLoading(false)
     }
-  }, [setViewError, statusFilter, token])
+  }, [currentPage, setViewError, statusFilter, token])
+
+  useEffect(() => { setCurrentPage(0) }, [statusFilter])
 
   useEffect(() => { loadRequests() }, [loadRequests])
 
@@ -180,6 +190,12 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
           <p className="admin-empty-state">Chưa có yêu cầu bảo hành nào.</p>
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage + 1}
+        totalPages={totalPages}
+        onPageChange={(page) => loadRequests(page - 1)}
+      />
 
       <AdminDrawer
         isOpen={drawerOpen && Boolean(selectedRequest)}

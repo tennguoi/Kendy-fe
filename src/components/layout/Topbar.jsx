@@ -1,4 +1,5 @@
-import { Bell, Menu, Search, User, Sun, Moon } from 'lucide-react'
+import { Bell, Menu, User, Sun, Moon } from 'lucide-react'
+import SearchField from '../SearchField/SearchField'
 import { useState } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { money } from '../../utils/currency'
@@ -23,7 +24,6 @@ function Topbar({
   notificationCount = 0,
   notifications = [],
   notificationsLoading = false,
-  onLogout,
   onMarkNotificationRead,
   onOpenNotifications,
   onViewChange,
@@ -69,16 +69,13 @@ function Topbar({
           <h1>{title}</h1>
         </div>
       </div>
-      <label className="search">
-        <Search size={17} strokeWidth={2} aria-hidden="true" />
-        <input
-          type="search"
-          placeholder="Đơn, dịch vụ, giao dịch"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleSearchKeyDown}
-        />
-      </label>
+      <SearchField
+        className="search"
+        placeholder="Đơn, dịch vụ, giao dịch"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        onKeyDown={handleSearchKeyDown}
+      />
       <div className="top-actions">
         {showBalance && (
           <button type="button" className="balance-button">

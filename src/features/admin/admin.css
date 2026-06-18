@@ -500,6 +500,55 @@ button.admin-data-row.selected {
   font-weight: 700;
 }
 
+.coupon-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coupon-editor-form {
+  padding-top: 6px;
+}
+
+.coupon-editor-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--kd-border);
+}
+
+.coupon-toggle-button {
+  margin-right: auto;
+}
+
+.coupon-cancel-button {
+  color: var(--kd-text);
+  background: var(--kd-bg);
+  border-color: var(--kd-border);
+}
+
+@media (max-width: 640px) {
+  .coupon-toolbar-actions {
+    width: 100%;
+  }
+
+  .coupon-toolbar-actions > button {
+    flex: 1;
+  }
+
+  .coupon-editor-actions {
+    flex-wrap: wrap;
+  }
+
+  .coupon-toggle-button {
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
 /* Website content settings */
 .content-settings-view .admin-toolbar p {
   margin: 5px 0 0;

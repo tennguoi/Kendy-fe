@@ -28,7 +28,8 @@ import {
   hasPersistentSession,
   persistAccessToken,
 } from './utils/session'
-import { adminRoutePaths, depositStatusNotice, fetchUserBootstrap, initialOAuthCallback, initialOAuthNotice, MIN_DEPOSIT_AMOUNT, normalizeList, normalizePathname, purchaseErrorMessage, resolveAdminActiveView, resolveServiceId, resolveUserActiveView } from './utils/appHelpers'
+import { normalizePaged } from './utils/pagination'
+import { adminRoutePaths, depositStatusNotice, fetchUserBootstrap, initialOAuthCallback, MIN_DEPOSIT_AMOUNT, normalizeList, normalizePathname, purchaseErrorMessage, resolveAdminActiveView, resolveServiceId, resolveUserActiveView } from './utils/appHelpers'
 import { useAdminOverview } from './features/admin/hooks/useAdminOverview'
 import { useDashboardMetrics } from './features/user/overview/hooks/useDashboardMetrics'
 import { useNotifications } from './features/notifications/hooks/useNotifications'
@@ -66,6 +67,8 @@ function App() {
   const [supportFile, setSupportFile] = useState(null)
   const [supportLoading, setSupportLoading] = useState(false)
   const [supportMessage, setSupportMessage] = useState('')
+  const [supportPage, setSupportPage] = useState(0)
+  const [supportTotalPages, setSupportTotalPages] = useState(0)
   const [supportQuery, setSupportQuery] = useState('')
   const [supportSelectedCode, setSupportSelectedCode] = useState(null)
   const [supportStatus, setSupportStatus] = useState('')
@@ -80,7 +83,7 @@ function App() {
     subject: '',
   })
   const [activeDeposit, setActiveDeposit] = useState(null)
-  const [apiNotice, setApiNotice] = useState(() => initialOAuthNotice())
+  const [apiNotice, setApiNotice] = useState('')
   const { copied, copyText } = useClipboard()
   const { addToast } = useToast()
 
@@ -381,7 +384,7 @@ function App() {
     navigate(nextItem?.path || '/')
   }, [navigate])
 
-  const handleAdminRouteError = useCallback(() => {}, [])
+  const handleAdminRouteError = useCallback(() => { }, [])
 
   const handleUserSettingsError = useCallback((message) => {
     if (message) {
@@ -752,32 +755,41 @@ function App() {
     }
   }
 
-  const loadTickets = useCallback(async () => {
+  const loadTickets = useCallback(async (page) => {
     if (!accessToken || !authInit || isAdmin || userActiveView !== 'support') {
       return
     }
 
+    const targetPage = page ?? supportPage
     setSupportLoading(true)
     try {
-      const data = normalizeList(await userApi.searchTickets({
+      const response = await userApi.searchTickets({
         query: supportQuery.trim(),
         status: supportStatus,
-      }, accessToken))
-      setApiTickets(data)
+        page: targetPage,
+      }, accessToken)
+      const { items, totalPages } = normalizePaged(response, 50)
+      setApiTickets(items)
+      setSupportTotalPages(totalPages)
+      setSupportPage(targetPage)
       setSupportSelectedCode((current) => (
-        current && data.some((ticket) => ticket.ticketCode === current)
+        current && items.some((ticket) => ticket.ticketCode === current)
           ? current
-          : data[0]?.ticketCode || null
+          : items[0]?.ticketCode || null
       ))
     } catch (err) {
       notify(err.message || 'Không tải được ticket hỗ trợ.', 'error')
     } finally {
       setSupportLoading(false)
     }
-  }, [accessToken, authInit, isAdmin, notify, supportQuery, supportStatus, userActiveView])
+  }, [accessToken, authInit, isAdmin, notify, supportQuery, supportPage, supportStatus, userActiveView])
 
   useEffect(() => {
-    const timer = window.setTimeout(loadTickets, 250)
+    setSupportPage(0)
+  }, [supportQuery, supportStatus])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => loadTickets(), 250)
     return () => window.clearTimeout(timer)
   }, [loadTickets])
 

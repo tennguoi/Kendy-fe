@@ -5,8 +5,8 @@ export const adminFinanceApi = {
   getDeposits: (token) =>
     axiosClient.get('/api/admin/deposit-requests?size=100', { token }),
 
-  searchDeposits: (params, token) =>
-    axiosClient.get(`/api/admin/deposit-requests/search${queryString({ size: 50, ...params })}`, { token }),
+  searchDeposits: (params = {}, token) =>
+    axiosClient.get(`/api/admin/deposit-requests/search${queryString({ size: 50, page: 0, ...params })}`, { token }),
 
   getDeposit: (depositCode, token) =>
     axiosClient.get(`/api/admin/deposit-requests/${depositCode}`, { token }),
@@ -29,8 +29,8 @@ export const adminFinanceApi = {
   getBankTransactions: (token) =>
     axiosClient.get('/api/admin/bank-transactions?size=100', { token }),
 
-  searchBankTransactions: (params, token) =>
-    axiosClient.get(`/api/admin/bank-transactions/search${queryString({ size: 50, ...params })}`, { token }),
+  searchBankTransactions: (params = {}, token) =>
+    axiosClient.get(`/api/admin/bank-transactions/search${queryString({ size: 50, page: 0, ...params })}`, { token }),
 
   getBankTransaction: (id, token) =>
     axiosClient.get(`/api/admin/bank-transactions/${id}`, { token }),
@@ -62,8 +62,8 @@ export const adminFinanceApi = {
   getWalletTransactions: (token) =>
     axiosClient.get('/api/admin/wallet-transactions?size=100', { token }),
 
-  searchWalletTransactions: (params, token) =>
-    axiosClient.get(`/api/admin/wallet-transactions/search${queryString({ size: 50, ...params })}`, { token }),
+  searchWalletTransactions: (params = {}, token) =>
+    axiosClient.get(`/api/admin/wallet-transactions/search${queryString({ size: 50, page: 0, ...params })}`, { token }),
 
   getWalletTransactionDetail: (id, token) =>
     axiosClient.get(`/api/admin/wallet-transactions/${id}/details`, { token }),

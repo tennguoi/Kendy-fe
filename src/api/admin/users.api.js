@@ -5,8 +5,8 @@ export const adminUsersApi = {
   getUsers: (token) =>
     axiosClient.get('/api/admin/users?size=100', { token }),
 
-  searchUsers: (params, token) =>
-    axiosClient.get(`/api/admin/users/search${queryString({ size: 50, ...params })}`, { token }),
+  searchUsers: (params = {}, token) =>
+    axiosClient.get(`/api/admin/users/search${queryString({ size: 50, page: 0, ...params })}`, { token }),
 
   getUserDetail: (userId, token) =>
     axiosClient.get(`/api/admin/users/${userId}`, { token }),

@@ -1,7 +1,8 @@
+import { useEffect, useMemo, useState } from 'react'
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { money } from '../../../../utils/currency'
 import { formatDepositDate } from '../depositFormat'
-import { useState } from 'react'
+import Pagination from '../../../../components/Pagination/Pagination'
 
 const statusOptions = [
   { value: '', label: 'Tất cả' },
@@ -20,6 +21,8 @@ function DepositHistoryTable({
   const [filterStatus, setFilterStatus] = useState('')
   const [filterFromDate, setFilterFromDate] = useState('')
   const [filterToDate, setFilterToDate] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   const clearFilters = () => {
     setFilterStatus('')
@@ -27,6 +30,14 @@ function DepositHistoryTable({
     setFilterToDate('')
     onFiltersChange?.({})
   }
+
+  const totalPages = Math.max(1, Math.ceil(deposits.length / itemsPerPage))
+  const paginatedDeposits = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    return deposits.slice(start, start + itemsPerPage)
+  }, [deposits, currentPage])
+
+  useEffect(() => { setCurrentPage(1) }, [deposits.length])
 
   return (
     <section className="table-panel">
@@ -55,7 +66,7 @@ function DepositHistoryTable({
           <span>Hết hạn</span>
           <span>Hoàn tất</span>
         </div>
-        {deposits.map((deposit) => (
+        {paginatedDeposits.map((deposit) => (
           <button className="deposit-row" key={deposit.depositCode} type="button" onClick={() => onRefreshDeposit?.(deposit.depositCode)}>
             <strong>{deposit.depositCode}</strong>
             <span>{money.format(deposit.amount)}</span>
@@ -66,6 +77,11 @@ function DepositHistoryTable({
         ))}
         {deposits.length === 0 && <p className="admin-empty-state">Chưa có yêu cầu nạp tiền.</p>}
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </section>
   )
 }

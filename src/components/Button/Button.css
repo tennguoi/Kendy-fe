@@ -61,3 +61,20 @@
   outline: 3px solid rgba(24, 196, 199, 0.34);
   outline-offset: 3px;
 }
+
+.public-btn.outline {
+  background: transparent;
+  color: var(--kd-blue);
+  border: 2px solid var(--kd-blue);
+}
+
+.public-btn.outline:hover {
+  background-color: var(--kd-blue);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+}
+
+.public-btn.outline:active {
+  transform: translateY(0);
+}

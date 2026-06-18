@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import CatalogControls from './components/CatalogControls'
 import CatalogToolbar from './components/CatalogToolbar'
 import ServiceCatalogCard from './components/ServiceCatalogCard'
+import Pagination from '../../../components/Pagination/Pagination'
 import { mergeServiceLists, normalizeServiceText, uniqueServiceOptions } from './services.utils'
 
 function ServicesView({
@@ -12,9 +13,11 @@ function ServicesView({
   services = [],
 }) {
   const [activeTab, setActiveTab] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const itemsPerPage = 12
 
   const favoriteIds = useMemo(() => new Set(favoriteServices.map((service) => service.id)), [favoriteServices])
   const sourceServices = useMemo(() => {
@@ -48,6 +51,16 @@ function ServicesView({
     })
   }, [query, sourceServices, statusFilter, typeFilter])
 
+  const totalPages = Math.max(1, Math.ceil(visibleServices.length / itemsPerPage))
+  const paginatedServices = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    return visibleServices.slice(start, start + itemsPerPage)
+  }, [visibleServices, currentPage])
+
+  // Reset to page 1 when filters change
+  const filterKey = `${activeTab}-${query}-${statusFilter}-${typeFilter}`
+  useMemo(() => { setCurrentPage(1) }, [filterKey])
+
   return (
     <section className="services-catalog">
       <CatalogToolbar count={visibleServices.length} />
@@ -65,7 +78,7 @@ function ServicesView({
       />
 
       <div className="service-grid">
-        {visibleServices.map((service) => {
+        {paginatedServices.map((service) => {
           const isFavorite = favoriteIds.has(service.id)
 
           return (
@@ -82,6 +95,11 @@ function ServicesView({
           <p className="admin-empty-state">Không có dịch vụ phù hợp bộ lọc hiện tại.</p>
         )}
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
       {services.length === 0 && (
         <p className="admin-empty-state">Chưa có dịch vụ đang mở bán.</p>
       )}

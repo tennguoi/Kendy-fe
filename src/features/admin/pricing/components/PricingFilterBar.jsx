@@ -1,4 +1,5 @@
 import { pricingSortOptions } from '../pricing.constants'
+import SearchField from '../../../../components/SearchField/SearchField'
 
 function PricingFilterBar({
   categories = [],
@@ -13,7 +14,7 @@ function PricingFilterBar({
 }) {
   return (
     <div className="admin-filters pricing-filters">
-      <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm gói dịch vụ" type="search" />
+      <SearchField value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm gói dịch vụ" />
       <select value={categorySlug} onChange={(event) => onCategorySlugChange(event.target.value)}>
         <option value="">Tất cả nhóm</option>
         {categories.map((category) => (

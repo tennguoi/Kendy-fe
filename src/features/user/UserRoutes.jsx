@@ -66,10 +66,12 @@ function UserRoutes({
   supportFile,
   supportLoading,
   supportMessage,
+  supportPage,
   supportQuery,
   supportSelectedTicket,
   supportStatus,
   supportSubmitting,
+  supportTotalPages,
   ticketForm,
   token,
 }) {
@@ -151,6 +153,7 @@ function UserRoutes({
           onDeleteAttachment={onDeleteAttachment}
           onFileChange={onFileChange}
           onLoadTicket={onLoadTicket}
+          onPageChange={(page) => onRefreshTickets(page - 1)}
           onRefresh={onRefreshTickets}
           onReopenTicket={onReopenTicket}
           onSearchChange={onSearchChange}
@@ -165,6 +168,8 @@ function UserRoutes({
           submitting={supportSubmitting}
           ticketForm={ticketForm}
           tickets={apiTickets}
+          totalPages={supportTotalPages}
+          currentPage={supportPage + 1}
         />
       ),
     },

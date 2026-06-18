@@ -41,23 +41,7 @@
 }
 
 .product-detail-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--kd-blue);
-  cursor: pointer;
-  transition: opacity 180ms ease;
   margin-bottom: 20px;
-}
-
-.product-detail-back-btn:hover {
-  opacity: 0.75;
 }
 
 /* PHẦN TRÊN: Giao diện chính (2 cột) */
@@ -261,34 +245,6 @@
 
 .btn-buy-now-detail {
   width: 100%;
-  height: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--kd-blue) 0%, var(--kd-cyan) 100%);
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 800;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.15);
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.btn-buy-now-detail:hover:not(:disabled) {
-  opacity: 0.95;
-  transform: translateY(-2px);
-  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
-}
-
-.btn-buy-now-detail:disabled {
-  background: var(--kd-border);
-  color: var(--kd-muted);
-  box-shadow: none;
-  cursor: not-allowed;
 }
 
 /* PHẦN DƯỚI: Lưu ý box */

@@ -1,5 +1,5 @@
-import { Search } from 'lucide-react'
 import { catalogTabs, getServiceStatusLabel, getServiceTypeLabel } from '../services.constants'
+import SearchField from '../../../../components/SearchField/SearchField'
 
 function CatalogControls({
   activeTab,
@@ -27,10 +27,7 @@ function CatalogControls({
           </button>
         ))}
       </div>
-      <label className="catalog-search">
-        <Search size={17} strokeWidth={2} aria-hidden="true" />
-        <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm tên, nhóm hoặc mô tả" type="search" />
-      </label>
+      <SearchField className="catalog-search" value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm tên, nhóm hoặc mô tả" />
       <select value={typeFilter} onChange={(event) => onTypeFilterChange(event.target.value)}>
         <option value="">Tất cả loại</option>
         {serviceTypes.map((type) => <option value={type} key={type}>{getServiceTypeLabel(type)}</option>)}

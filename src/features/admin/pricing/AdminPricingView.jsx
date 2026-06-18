@@ -1,10 +1,12 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import { normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
 import PricingEditor from './components/PricingEditor'
 import PricingFilterBar from './components/PricingFilterBar'
 import PricingListPanel from './components/PricingListPanel'
+import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
 
 function pricingToForm(item) {
@@ -30,6 +32,8 @@ function AdminPricingView({
 }) {
   const [categories, setCategories] = useState([])
   const [categorySlug, setCategorySlug] = useState('')
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [error, setError] = useState('')
   const [featuredOnly, setFeaturedOnly] = useState(false)
   const [query, setQuery] = useState('')
@@ -49,11 +53,12 @@ function AdminPricingView({
     onSetError(message)
   }, [onSetError])
 
-  const loadPricing = useCallback(async () => {
+  const loadPricing = useCallback(async (page) => {
     if (!token) {
       return
     }
 
+    const targetPage = page ?? currentPage
     setLoading(true)
     setViewError('')
     try {
@@ -62,22 +67,30 @@ function AdminPricingView({
         adminApi.searchPricing({
           categorySlug,
           featured: featuredOnly ? true : undefined,
+          page: targetPage,
           query: query.trim(),
           sort,
         }, token),
       ])
+      const { items, totalPages: pages } = normalizePaged(pricingData, 100)
       setCategories(categoryData)
-      setPricingItems(pricingData)
-      setSelectedId((current) => (current && pricingData.some((item) => item.id === current) ? current : pricingData[0]?.id || null))
+      setPricingItems(items)
+      setTotalPages(pages)
+      setCurrentPage(targetPage)
+      setSelectedId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
     } catch (err) {
       setViewError(err.message || 'Không tải được bảng giá.')
     } finally {
       setLoading(false)
     }
-  }, [categorySlug, featuredOnly, query, setViewError, sort, token])
+  }, [categorySlug, currentPage, featuredOnly, query, setViewError, sort, token])
 
   useEffect(() => {
-    const timer = window.setTimeout(loadPricing, 250)
+    setCurrentPage(0)
+  }, [categorySlug, featuredOnly, query, sort])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => loadPricing(), 250)
     return () => window.clearTimeout(timer)
   }, [loadPricing])
 
@@ -166,6 +179,12 @@ function AdminPricingView({
         onSelectItem={selectItem}
         pricingItems={pricingItems}
         selectedItem={selectedItem}
+      />
+
+      <Pagination
+        currentPage={currentPage + 1}
+        totalPages={totalPages}
+        onPageChange={(page) => loadPricing(page - 1)}
       />
 
       <AdminDrawer

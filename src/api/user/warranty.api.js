@@ -6,5 +6,5 @@ export const userWarrantyApi = {
     axiosClient.post(`/api/orders/${orderCode}/warranty`, data, { token }),
 
   getWarranties: (token, params = {}) =>
-    axiosClient.get(`/api/warranty-requests${queryString(params)}`, { token }),
+    axiosClient.get(`/api/warranty-requests${queryString({ page: 0, limit: 20, ...params })}`, { token }),
 };

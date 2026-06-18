@@ -1,8 +1,9 @@
-import { FolderTree, Lock, MoreHorizontal, Plus, Search, Trash2, Eye, EyeOff, Check, X, RefreshCw } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 import { useState } from 'react'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminMoney } from '../../adminFormat'
 import { getServiceStatusLabel, serviceStatuses } from '../services.constants'
+import SearchField from '../../../../components/SearchField/SearchField'
 
 function ServiceListPanel({
   activeTab = 'services',
@@ -113,15 +114,11 @@ function ServiceListPanel({
       </div>
 
       <div className="admin-filters" style={{ marginTop: '14px' }}>
-        <label className="admin-search-field">
-          <Search size={17} strokeWidth={2} aria-hidden="true" />
-          <input
-            value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder={activeTab === 'services' ? 'Tìm tên sản phẩm, slug, nhóm...' : 'Tìm tên danh mục, slug...'}
-            type="search"
-          />
-        </label>
+        <SearchField
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder={activeTab === 'services' ? 'Tìm tên sản phẩm, slug, nhóm...' : 'Tìm tên danh mục, slug...'}
+        />
 
         {activeTab === 'services' && (
           <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>

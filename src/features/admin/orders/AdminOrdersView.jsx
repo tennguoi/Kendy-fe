@@ -1,10 +1,12 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
+import { normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
 import OrderDetailPanel from './components/OrderDetailPanel'
 import OrderFilterBar from './components/OrderFilterBar'
 import OrderListPanel from './components/OrderListPanel'
+import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
 
 function toDateTimeInput(value) {
@@ -42,6 +44,8 @@ function AdminOrdersView({
 }) {
   const [draft, setDraft] = useState(null)
   const [bulkRefundCodes, setBulkRefundCodes] = useState('')
+  const [currentPage, setCurrentPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [error, setError] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -63,26 +67,34 @@ function AdminOrdersView({
     onSetError(message)
   }, [onSetError])
 
-  const loadOrders = useCallback(async () => {
+  const loadOrders = useCallback(async (page) => {
     if (!token) {
       return
     }
 
+    const targetPage = page ?? currentPage
     setLoading(true)
     setViewError('')
     try {
-      const data = await adminApi.searchOrders({ query: query.trim(), status: statusFilter }, token)
-      setOrders(data)
-      setSelectedId((current) => (current && data.some((item) => item.id === current) ? current : data[0]?.id || null))
+      const data = await adminApi.searchOrders({ query: query.trim(), status: statusFilter, page: targetPage }, token)
+      const { items, totalPages: pages } = normalizePaged(data, 50)
+      setOrders(items)
+      setTotalPages(pages)
+      setCurrentPage(targetPage)
+      setSelectedId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
     } catch (err) {
       setViewError(err.message || 'Không tải được danh sách đơn hàng.')
     } finally {
       setLoading(false)
     }
-  }, [query, setViewError, statusFilter, token])
+  }, [currentPage, query, setViewError, statusFilter, token])
 
   useEffect(() => {
-    const timer = window.setTimeout(loadOrders, 250)
+    setCurrentPage(0)
+  }, [query, statusFilter])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => loadOrders(), 250)
     return () => window.clearTimeout(timer)
   }, [loadOrders])
 
@@ -321,6 +333,12 @@ function AdminOrdersView({
         onSelectOrder={selectOrder}
         orders={orders}
         selectedOrder={selectedOrder}
+      />
+
+      <Pagination
+        currentPage={currentPage + 1}
+        totalPages={totalPages}
+        onPageChange={(page) => loadOrders(page - 1)}
       />
 
       <AdminDrawer

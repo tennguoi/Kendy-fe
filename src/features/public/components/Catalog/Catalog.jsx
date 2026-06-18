@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Clapperboard, Megaphone, PackageCheck, Search, ShieldCheck, ShoppingCart, Users } from 'lucide-react'
 import { publicApi } from '../../../../api/public.api'
 import { serviceTableRows as staticRows } from '../../data/services.public'
+import Button from '../../../../components/Button/Button'
+import Pagination from '../../../../components/Pagination/Pagination'
 import './Catalog.css'
 
 const categoryIcons = {
@@ -269,14 +271,14 @@ function Catalog() {
 
       <div className="catalog-filters">
         {filters.map((f) => (
-          <button
+          <Button
             key={f.id}
-            type="button"
-            className={activeFilter === f.id ? 'filter-btn active' : 'filter-btn'}
+            variant={activeFilter === f.id ? 'primary' : 'ghost'}
+            className="filter-btn"
             onClick={() => handleFilterChange(f.id)}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -331,8 +333,8 @@ function Catalog() {
                       <strong>Bảo hành:</strong> {service.warranty}
                     </span>
                   </div>
-                  <button
-                    type="button"
+                  <Button
+                    variant="primary"
                     className="catalog-card-cta"
                     onClick={(e) => {
                       e.stopPropagation()
@@ -340,50 +342,17 @@ function Catalog() {
                     }}
                   >
                     Xem chi tiết
-                  </button>
+                  </Button>
                 </article>
               )
             })}
           </div>
 
-          {/* Phân trang */}
-          {totalPages > 1 && (
-            <div className="catalog-pagination">
-              <button
-                type="button"
-                className="pagination-btn arrow"
-                disabled={currentPage === 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Trang trước
-              </button>
-              
-              <div className="pagination-pages">
-                {Array.from({ length: totalPages }, (_, idx) => {
-                  const pageNum = idx + 1
-                  return (
-                    <button
-                      key={pageNum}
-                      type="button"
-                      className={`pagination-btn num ${currentPage === pageNum ? 'active' : ''}`}
-                      onClick={() => handlePageChange(pageNum)}
-                    >
-                      {pageNum}
-                    </button>
-                  )
-                })}
-              </div>
-
-              <button
-                type="button"
-                className="pagination-btn arrow"
-                disabled={currentPage === totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Trang sau
-              </button>
-            </div>
-          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
     </div>
