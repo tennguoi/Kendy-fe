@@ -1,4 +1,4 @@
-import { Lock, MoreHorizontal, Save, Unlock, UserRoundCog } from 'lucide-react'
+import { Lock, MoreHorizontal, Unlock, UserRoundCog } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import Modal from '../../../../components/Modal/Modal'
@@ -58,8 +58,11 @@ function UserListPanel({
   const [toolsUser, setToolsUser] = useState(null)
 
   useEffect(() => {
-    setOpenToolbarId(null)
-    setToolsUser(null)
+    const timer = window.setTimeout(() => {
+      setOpenToolbarId(null)
+      setToolsUser(null)
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [location.pathname])
 
   const handleSelectUser = (userId) => {
@@ -157,38 +160,11 @@ function UserListPanel({
       )}
 
       <Modal
-        headerActions={(
-          <div className="user-modal-actions">
-            {activeToolTab === 'bulk' && (
-              <>
-                <button type="button" className="admin-icon-button user-modal-action" disabled={submitting} onClick={() => onRunBulkUserStatus('ACTIVE')}>
-                  <Unlock size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Mở</span>
-                </button>
-                <button type="button" className="admin-danger-button user-modal-action" disabled={submitting} onClick={() => onRunBulkUserStatus('LOCKED')}>
-                  <Lock size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Khóa</span>
-                </button>
-              </>
-            )}
-            {activeToolTab === 'role' && (
-              <button type="submit" form="user-role-form" className="admin-primary-button user-modal-action" disabled={submitting}>
-                <Save size={16} strokeWidth={2} aria-hidden="true" />
-                <span>Lưu</span>
-              </button>
-            )}
-            {activeToolTab === 'wallet' && (
-              <button type="submit" form="user-wallet-form" className="admin-primary-button user-modal-action" disabled={submitting}>
-                <Save size={16} strokeWidth={2} aria-hidden="true" />
-                <span>Lưu</span>
-              </button>
-            )}
-          </div>
-        )}
         isOpen={Boolean(toolsUser)}
         maxWidth="720px"
         onClose={() => setToolsUser(null)}
-        title="Công cụ quản trị user"
+        showHeader={false}
+        variant="editor"
       >
         {toolsUser && (
           <UserAdminTools
@@ -202,6 +178,7 @@ function UserListPanel({
             onRunBulkUserStatus={onRunBulkUserStatus}
             onActiveToolTabChange={setActiveToolTab}
             onUpdateRole={onUpdateRole}
+            onClose={() => setToolsUser(null)}
             roleForm={roleForm}
             selectedUser={toolsUser}
             submitting={submitting}

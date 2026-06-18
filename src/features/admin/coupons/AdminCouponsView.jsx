@@ -269,6 +269,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
         onClose={() => setIsModalOpen(false)}
         title={selected ? `Sửa mã giảm giá: ${selected.code}` : 'Tạo mã giảm giá mới'}
         maxWidth="800px"
+        variant="editor"
       >
         <form className="admin-form coupon-editor-form" onSubmit={saveCoupon}>
           <div className="admin-form-grid two-columns">

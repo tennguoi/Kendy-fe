@@ -880,7 +880,7 @@ function AdminServicesView({
         />
       </div>
 
-      <Modal isOpen={activeEditor === 'service'} onClose={handleCloseEditor} showHeader={false} maxWidth="1000px" className="service-editor-modal">
+      <Modal isOpen={activeEditor === 'service'} onClose={handleCloseEditor} showHeader={false} maxWidth="1000px" className="service-editor-modal" variant="editor">
         <ServiceEditor
           key={selectedServiceId || 'new'}
           categories={categories}

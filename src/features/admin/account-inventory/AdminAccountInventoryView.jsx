@@ -7,6 +7,7 @@ import Loading from '../../../components/Loading/Loading'
 import { AdminEmptyState } from '../AdminShared'
 import Pagination from '../../../components/Pagination/Pagination'
 import { formatAdminDate } from '../adminFormat'
+import Modal from '../../../components/Modal/Modal'
 
 const emptyForm = {
   expiresAt: '', internalNote: '', loginIdentifier: '', passwordSecret: '',
@@ -213,34 +214,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       </section>
 
       {!services.length ? <AdminEmptyState message="Chưa có dịch vụ giao tài khoản." hint="Tạo một Sản phẩm giao tài khoản trong mục Dịch vụ trước." /> : (
-        <div className={`inventory-layout ${createMode ? 'with-editor' : 'list-only'}`}>
-          {createMode && <section className="admin-panel inventory-form-panel">
-            <div className="admin-panel-head">
-              <div>
-                <h3>{createMode === 'import' ? 'Import tài khoản' : editingId ? 'Sửa tài khoản' : 'Nhập tài khoản mới'}</h3>
-                <span>Tài khoản sẽ thuộc dịch vụ đang chọn.</span>
-              </div>
-              <button type="button" onClick={resetForm}><X size={16} /> Đóng</button>
-            </div>
-            {createMode === 'single' && <form className="admin-form inventory-form" onSubmit={saveCredential}>
-              <label><span>Tài khoản đăng nhập *</span><input value={form.loginIdentifier} onChange={(e) => updateForm('loginIdentifier', e.target.value)} required /></label>
-              <label><span>Mật khẩu *</span><input value={form.passwordSecret} onChange={(e) => updateForm('passwordSecret', e.target.value)} placeholder={editingId ? 'Để trống nếu không đổi' : ''} required={!editingId} /></label>
-              <label><span>Thông tin khôi phục</span><input value={form.recoveryInfo} onChange={(e) => updateForm('recoveryInfo', e.target.value)} /></label>
-              <label><span>Mã/secret 2FA</span><input value={form.twoFactorSecret} onChange={(e) => updateForm('twoFactorSecret', e.target.value)} /></label>
-              <label><span>Hạn tài khoản</span><input type="datetime-local" value={form.expiresAt} onChange={(e) => updateForm('expiresAt', e.target.value)} /></label>
-              <label><span>Bảo hành đến</span><input type="datetime-local" value={form.warrantyUntil} onChange={(e) => updateForm('warrantyUntil', e.target.value)} /></label>
-              <label><span>Hướng dẫn cho khách</span><textarea rows="2" value={form.usageNote} onChange={(e) => updateForm('usageNote', e.target.value)} /></label>
-              <label><span>Ghi chú nội bộ</span><textarea rows="2" value={form.internalNote} onChange={(e) => updateForm('internalNote', e.target.value)} /></label>
-              <button type="submit" disabled={submitting || !serviceId}><Plus size={16} /> {editingId ? 'Cập nhật' : 'Nhập vào kho'}</button>
-            </form>}
-            {createMode === 'import' && <div className="inventory-import standalone">
-              <h3><FileUp size={17} /> Import CSV</h3>
-              <p>Mỗi dòng: login,password,recovery,twoFactor,hướng dẫn,ghi chú.</p>
-              <textarea rows="5" value={csv} onChange={(e) => setCsv(e.target.value)} placeholder="email@test.com,password123,,,Hướng dẫn,Ghi chú" />
-              <button type="button" className="admin-icon-button" disabled={submitting || !csv.trim() || !serviceId} onClick={importCsv}><FileUp size={16} /> Import</button>
-            </div>}
-          </section>}
-
+        <div className="inventory-layout list-only">
           <section className="admin-panel inventory-list-panel">
             <div className="admin-panel-head"><div><h3>Danh sách tài khoản</h3><span>{credentials.length} kết quả</span></div><PackageOpen size={20} /></div>
             {loading ? <Loading /> : credentials.length === 0 ? <AdminEmptyState message="Kho chưa có tài khoản phù hợp." /> : (
@@ -266,6 +240,35 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
           </section>
         </div>
       )}
+
+      <Modal isOpen={Boolean(createMode)} onClose={resetForm} showHeader={false} maxWidth="600px">
+        <section className="admin-panel inventory-form-panel" style={{ border: 'none', background: 'transparent', padding: 0, boxShadow: 'none' }}>
+          <div className="admin-panel-head">
+            <div>
+              <h3>{createMode === 'import' ? 'Import tài khoản' : editingId ? 'Sửa tài khoản' : 'Nhập tài khoản mới'}</h3>
+              <span>Tài khoản sẽ thuộc dịch vụ đang chọn.</span>
+            </div>
+            <button type="button" onClick={resetForm}><X size={16} /> Đóng</button>
+          </div>
+          {createMode === 'single' && <form className="admin-form inventory-form" onSubmit={saveCredential}>
+            <label><span>Tài khoản đăng nhập *</span><input value={form.loginIdentifier} onChange={(e) => updateForm('loginIdentifier', e.target.value)} required /></label>
+            <label><span>Mật khẩu *</span><input value={form.passwordSecret} onChange={(e) => updateForm('passwordSecret', e.target.value)} placeholder={editingId ? 'Để trống nếu không đổi' : ''} required={!editingId} /></label>
+            <label><span>Thông tin khôi phục</span><input value={form.recoveryInfo} onChange={(e) => updateForm('recoveryInfo', e.target.value)} /></label>
+            <label><span>Mã/secret 2FA</span><input value={form.twoFactorSecret} onChange={(e) => updateForm('twoFactorSecret', e.target.value)} /></label>
+            <label><span>Hạn tài khoản</span><input type="datetime-local" value={form.expiresAt} onChange={(e) => updateForm('expiresAt', e.target.value)} /></label>
+            <label><span>Bảo hành đến</span><input type="datetime-local" value={form.warrantyUntil} onChange={(e) => updateForm('warrantyUntil', e.target.value)} /></label>
+            <label className="wide"><span>Hướng dẫn cho khách</span><textarea rows="2" value={form.usageNote} onChange={(e) => updateForm('usageNote', e.target.value)} /></label>
+            <label className="wide"><span>Ghi chú nội bộ</span><textarea rows="2" value={form.internalNote} onChange={(e) => updateForm('internalNote', e.target.value)} /></label>
+            <button type="submit" disabled={submitting || !serviceId}><Plus size={16} /> {editingId ? 'Cập nhật' : 'Nhập vào kho'}</button>
+          </form>}
+          {createMode === 'import' && <div className="inventory-import standalone">
+            <h3><FileUp size={17} /> Import CSV</h3>
+            <p>Mỗi dòng: login,password,recovery,twoFactor,hướng dẫn,ghi chú.</p>
+            <textarea rows="5" value={csv} onChange={(e) => setCsv(e.target.value)} placeholder="email@test.com,password123,,,Hướng dẫn,Ghi chú" />
+            <button type="button" className="admin-icon-button" disabled={submitting || !csv.trim() || !serviceId} onClick={importCsv}><FileUp size={16} /> Import</button>
+          </div>}
+        </section>
+      </Modal>
     </div>
   )
 }

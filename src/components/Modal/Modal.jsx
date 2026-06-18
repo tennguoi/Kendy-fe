@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import './modal.css'
 
@@ -11,6 +12,7 @@ function Modal({
   maxWidth = '1000px',
   showHeader = true,
   className = '',
+  variant = 'default',
 }) {
   // Lock body scroll when modal is active
   useEffect(() => {
@@ -39,10 +41,10 @@ function Modal({
 
   if (!isOpen) return null
 
-  return (
-    <div className="kd-modal-overlay" onClick={onClose}>
+  return createPortal((
+    <div className={`kd-modal-overlay kd-modal-overlay-${variant}`} onClick={onClose}>
       <div 
-        className={`kd-modal-dialog ${className}`.trim()} 
+        className={`kd-modal-dialog kd-modal-dialog-${variant} ${className}`.trim()}
         style={{ maxWidth }} 
         onClick={(e) => e.stopPropagation()}
         role="dialog"
@@ -65,7 +67,7 @@ function Modal({
         </div>
       </div>
     </div>
-  )
+  ), document.body)
 }
 
 export default Modal
