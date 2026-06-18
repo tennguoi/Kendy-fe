@@ -35,7 +35,7 @@
 
 .footer-links {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 18px;
 }
 
@@ -52,6 +52,11 @@
   color: var(--kd-muted);
   font-size: 14px;
   text-decoration: none;
+}
+
+.footer-links span {
+  color: var(--kd-muted);
+  font-size: 14px;
 }
 
 .footer-links a:hover {

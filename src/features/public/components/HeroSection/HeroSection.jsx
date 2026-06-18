@@ -1,7 +1,14 @@
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import './HeroSection.css'
 
-function HeroSection({ logo, notice, onLoginClick, serviceSignals }) {
+function HeroSection({ logo, notice, onLoginClick, serviceSignals, dynamicContent }) {
+  const kicker = dynamicContent?.kicker || 'Mua tài khoản, nâng cấp gói và đăng ký dịch vụ Facebook'
+  const title = dynamicContent?.title || 'Mua tài khoản CapCut, Facebook và dịch vụ quảng cáo nhanh chóng, minh bạch'
+  const description = dynamicContent?.description || 'Kendy Digital giúp bạn mua tài khoản, nâng cấp gói, nạp tiền tự động, theo dõi đơn hàng và nhận hỗ trợ sau mua trên một hệ thống có ví tiền, mã đơn và ticket rõ ràng.'
+  const primaryCta = dynamicContent?.primaryCta || 'Xem dịch vụ'
+  const secondaryCta = dynamicContent?.secondaryCta || 'Liên hệ tư vấn'
+  const trustItems = dynamicContent?.trustItems || ['Facebook Ads', 'CapCut Pro', 'Nâng cấp tài khoản', 'Bảo hành rõ điều kiện']
+
   return (
     <section className="public-hero" id="top">
       <div className="public-pixel-layer" aria-hidden="true" />
@@ -13,36 +20,31 @@ function HeroSection({ logo, notice, onLoginClick, serviceSignals }) {
 
           <span className="public-kicker">
             <CheckCircle2 size={18} strokeWidth={2} aria-hidden="true" />
-            Mua tài khoản, nâng cấp gói và đăng ký dịch vụ Facebook
+            {kicker}
           </span>
 
-          <h1>Mua tài khoản CapCut, Facebook và dịch vụ quảng cáo nhanh chóng, minh bạch</h1>
-          <p className="public-hero-copy">
-            Kendy Digital giúp bạn mua tài khoản, nâng cấp gói, nạp tiền tự động, theo dõi đơn hàng và nhận hỗ trợ sau
-            mua trên một hệ thống có ví tiền, mã đơn và ticket rõ ràng.
-          </p>
+          <h1>{title}</h1>
+          <p className="public-hero-copy">{description}</p>
 
           <div className="public-hero-actions">
             <a className="public-btn primary hero-main" href="#services">
-              <span>Xem dịch vụ</span>
+              <span>{primaryCta}</span>
               <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
             </a>
             <a className="public-btn glass" href="#contact">
-              Liên hệ tư vấn
+              {secondaryCta}
             </a>
           </div>
 
           <div className="public-trust-strip" aria-label="Điểm nổi bật">
-            <span>Facebook Ads</span>
-            <span>CapCut Pro</span>
-            <span>Nâng cấp tài khoản</span>
-            <span>Bảo hành rõ điều kiện</span>
+            {trustItems.map((item, idx) => (
+              <span key={idx}>{item}</span>
+            ))}
           </div>
         </div>
 
         <div className="hero-service-card" aria-label="Mô phỏng dịch vụ nổi bật">
           <div className="mockup-topbar">
-
             <strong>Ví, đơn hàng và dịch vụ</strong>
           </div>
 

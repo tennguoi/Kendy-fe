@@ -1,20 +1,22 @@
 import { AlertCircle, Copy, QrCode } from 'lucide-react'
 import './AutoDepositSection.css'
 
-function AutoDepositSection({ flow }) {
+function AutoDepositSection({ flow, dynamicContent }) {
+  const eyebrow = dynamicContent?.eyebrow || 'Nạp tiền tự động'
+  const title = dynamicContent?.title || 'Tạo mã nạp, chuyển khoản đúng nội dung, số dư ví được cộng để mua dịch vụ'
+  const description = dynamicContent?.description || 'Đây là điểm khác biệt giữa Kendy và cách bán thủ công: khách có ví, lịch sử nạp, lịch sử mua và mã đơn để kiểm tra lại khi cần hỗ trợ.'
+  const warning = dynamicContent?.warning || 'Điều quan trọng là chuyển khoản đúng nội dung. Nếu sai, bạn có thể tạo ticket để kiểm tra thủ công.'
+
   return (
     <section className="public-section auto-deposit-section" id="deposit">
       <div className="deposit-copy">
-        <span className="eyebrow">Nạp tiền tự động</span>
-        <h2>Tạo mã nạp, chuyển khoản đúng nội dung, số dư ví được cộng để mua dịch vụ</h2>
-        <p>
-          Đây là điểm khác biệt giữa Kendy và cách bán thủ công: khách có ví, lịch sử nạp, lịch sử mua và mã đơn để
-          kiểm tra lại khi cần hỗ trợ.
-        </p>
+        <span className="eyebrow">{eyebrow}</span>
+        <h2>{title}</h2>
+        <p>{description}</p>
 
         <div className="deposit-warning">
           <AlertCircle size={19} strokeWidth={2} aria-hidden="true" />
-          <span>Điều quan trọng là chuyển khoản đúng nội dung. Nếu sai, bạn có thể tạo ticket để kiểm tra thủ công.</span>
+          <span>{warning}</span>
         </div>
       </div>
 

@@ -1,13 +1,33 @@
 import './PublicFooter.css'
 
-function PublicFooter({ logo, footerGroups }) {
+function PublicFooter({
+  brand = {
+    name: 'Kendy Digital',
+    tagline: 'Tài khoản, nâng cấp & quảng cáo',
+    description: '',
+    email: '',
+    phone: '',
+    address: '',
+    copyright: 'Kendy Digital',
+    socials: [],
+  },
+  logo,
+  footerGroups,
+}) {
+  const contacts = [
+    brand.email && { label: brand.email, url: `mailto:${brand.email}` },
+    brand.phone && { label: brand.phone, url: `tel:${brand.phone.replace(/\s+/g, '')}` },
+    brand.address && { label: brand.address, url: null },
+  ].filter(Boolean)
+  const socials = (brand.socials || []).filter((item) => item.label && item.url)
+
   return (
     <footer className="public-footer">
       <div className="footer-brand">
-        <img src={logo} alt="" />
+        <img src={logo} alt={`Logo ${brand.name}`} />
         <div>
-          <strong>Kendy Digital</strong>
-          <p>Mua tài khoản Facebook, nâng cấp CapCut Pro, đăng ký dịch vụ quảng cáo và nhận hỗ trợ sau mua.</p>
+          <strong>{brand.name}</strong>
+          <p>{brand.description}</p>
         </div>
       </div>
 
@@ -22,11 +42,28 @@ function PublicFooter({ logo, footerGroups }) {
             ))}
           </div>
         ))}
+        {(contacts.length > 0 || socials.length > 0) && (
+          <div>
+            <strong>Liên hệ</strong>
+            {contacts.map((item) =>
+              item.url ? (
+                <a href={item.url} key={item.label}>{item.label}</a>
+              ) : (
+                <span key={item.label}>{item.label}</span>
+              ),
+            )}
+            {socials.map((item) => (
+              <a href={item.url} key={item.id} rel="noreferrer" target="_blank">
+                {item.label}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="footer-bottom">
-        <span>Liên hệ: Zalo/Facebook hỗ trợ sau khi đăng nhập</span>
-        <span>Kendy Digital © {new Date().getFullYear()}</span>
+        <span>{brand.tagline}</span>
+        <span>{brand.copyright || brand.name} © {new Date().getFullYear()}</span>
       </div>
     </footer>
   )

@@ -1,11 +1,14 @@
 import './WorkflowSection.css'
 
-function WorkflowSection({ steps }) {
+function WorkflowSection({ steps, dynamicContent }) {
+  const eyebrow = dynamicContent?.eyebrow || 'Hướng dẫn'
+  const title = dynamicContent?.title || 'Quy trình mua dịch vụ đơn giản, không phải nhắn hỏi từng bước'
+
   return (
     <section className="public-section workflow-section" id="workflow">
       <div className="section-heading">
-        <span className="eyebrow">Hướng dẫn</span>
-        <h2>Quy trình mua dịch vụ đơn giản, không phải nhắn hỏi từng bước</h2>
+        <span className="eyebrow">{eyebrow}</span>
+        <h2>{title}</h2>
       </div>
 
       <div className="workflow-list">

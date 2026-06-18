@@ -4,7 +4,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { useTheme } from '../../../../contexts/ThemeContext'
 import './PublicHeader.css'
 
-function PublicHeader({ logo, navItems, onLoginClick }) {
+function PublicHeader({
+  brand = { name: 'Kendy Digital', tagline: 'Tài khoản, nâng cấp & quảng cáo' },
+  logo,
+  navItems,
+  onLoginClick,
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
@@ -40,11 +45,11 @@ function PublicHeader({ logo, navItems, onLoginClick }) {
 
   return (
     <header className="public-site-header">
-      <Link className="public-brand" to="/" aria-label="Kendy Digital">
-        <img src={logo} alt="" />
+      <Link className="public-brand" to="/" aria-label={brand.name}>
+        <img src={logo} alt={`Logo ${brand.name}`} />
         <span>
-          <strong>Kendy Digital</strong>
-          <small>Tài khoản, nâng cấp & quảng cáo</small>
+          <strong>{brand.name}</strong>
+          <small>{brand.tagline}</small>
         </span>
       </Link>
 

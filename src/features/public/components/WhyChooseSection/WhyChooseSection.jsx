@@ -1,17 +1,18 @@
 import './WhyChooseSection.css'
 
-function WhyChooseSection({ items, policies }) {
+function WhyChooseSection({ items, policies, dynamicContent }) {
+  const eyebrow = dynamicContent?.eyebrow || 'Tại sao chọn chúng tôi'
+  const title = dynamicContent?.title || 'Mua tài khoản và dịch vụ Facebook cần rõ điều kiện ngay từ đầu'
+  const description = dynamicContent?.description || 'Khách không chỉ cần giá. Khách cần biết tài khoản dùng cho việc gì, bảo hành ra sao, đơn đang xử lý tới đâu và nếu lỗi thì liên hệ ở đâu.'
+
   return (
     <section className="public-section why-section" id="policies">
       <div className="section-heading split">
         <div>
-          <span className="eyebrow">Tại sao chọn chúng tôi</span>
-          <h2>Mua tài khoản và dịch vụ Facebook cần rõ điều kiện ngay từ đầu</h2>
+          <span className="eyebrow">{eyebrow}</span>
+          <h2>{title}</h2>
         </div>
-        <p>
-          Khách không chỉ cần giá. Khách cần biết tài khoản dùng cho việc gì, bảo hành ra sao, đơn đang xử lý tới đâu
-          và nếu lỗi thì liên hệ ở đâu.
-        </p>
+        <p>{description}</p>
       </div>
 
       <div className="why-grid">

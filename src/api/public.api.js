@@ -12,4 +12,13 @@ export const publicApi = {
 
   getServiceBySlug: (slug) =>
     axiosClient.get(`/api/services/${slug}`),
+
+  getContentByType: (type) =>
+    axiosClient.get(`/api/content?type=${type}`),
+
+  getContentBySlug: (type, slug) =>
+    axiosClient.get(`/api/content/${type}/${slug}`),
+
+  getAllSiteSections: () =>
+    axiosClient.get('/api/content?type=SITE_SECTION'),
 };

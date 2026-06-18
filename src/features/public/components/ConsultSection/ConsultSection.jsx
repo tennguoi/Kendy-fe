@@ -1,16 +1,18 @@
 import { Send } from 'lucide-react'
 import './ConsultSection.css'
 
-function ConsultSection({ onSubmit }) {
+function ConsultSection({ onSubmit, dynamicContent }) {
+  const eyebrow = dynamicContent?.eyebrow || 'Tư vấn quảng cáo'
+  const title = dynamicContent?.title || 'Cần chạy quảng cáo Facebook? Gửi brief ngắn để được tư vấn loại dịch vụ phù hợp'
+  const description = dynamicContent?.description || 'Dịch vụ quảng cáo cần hiểu sản phẩm, ngân sách và mục tiêu trước khi báo giá. Form này giúp đội tư vấn nắm nhanh bối cảnh thay vì hỏi lại từng thông tin.'
+  const budgetOptions = dynamicContent?.budgetOptions || ['Dưới 5 triệu/tháng', '5-20 triệu/tháng', 'Trên 20 triệu/tháng']
+
   return (
     <section className="public-section consult-section" id="contact">
       <div className="consult-copy">
-        <span className="eyebrow">Tư vấn quảng cáo</span>
-        <h2>Cần chạy quảng cáo Facebook? Gửi brief ngắn để được tư vấn loại dịch vụ phù hợp</h2>
-        <p>
-          Dịch vụ quảng cáo cần hiểu sản phẩm, ngân sách và mục tiêu trước khi báo giá. Form này giúp đội tư vấn nắm
-          nhanh bối cảnh thay vì hỏi lại từng thông tin.
-        </p>
+        <span className="eyebrow">{eyebrow}</span>
+        <h2>{title}</h2>
+        <p>{description}</p>
       </div>
 
       <form className="consult-form" onSubmit={onSubmit}>
@@ -32,9 +34,9 @@ function ConsultSection({ onSubmit }) {
             <option value="" disabled>
               Chọn mức ngân sách
             </option>
-            <option>Dưới 5 triệu/tháng</option>
-            <option>5-20 triệu/tháng</option>
-            <option>Trên 20 triệu/tháng</option>
+            {budgetOptions.map((opt, idx) => (
+              <option key={idx}>{opt}</option>
+            ))}
           </select>
         </label>
         <label className="wide">

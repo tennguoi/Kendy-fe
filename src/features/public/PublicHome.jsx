@@ -1,13 +1,14 @@
-import { useMemo, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Clapperboard, Megaphone, PackageCheck, ShieldCheck, Users, Eye, ShoppingCart, Sparkles, ArrowRight } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Clapperboard, Megaphone, PackageCheck, ShieldCheck, Users } from 'lucide-react'
 import heroImg from '../../assets/hero.png'
 import { publicApi } from '../../api/public.api'
+import ScrollReveal from '../../components/ScrollReveal/ScrollReveal'
 import AutoDepositSection from './components/AutoDepositSection/AutoDepositSection'
 import ConsultSection from './components/ConsultSection/ConsultSection'
 import FaqSection from './components/FaqSection/FaqSection'
 import FinalCta from './components/FinalCta/FinalCta'
 import HeroSection from './components/HeroSection/HeroSection'
+import PromoBanner from './components/PromoBanner/PromoBanner'
 import PublicFooter from './components/PublicFooter/PublicFooter'
 import PublicHeader from './components/PublicHeader/PublicHeader'
 import ServiceCatalog from './components/ServiceCatalog/ServiceCatalog'
@@ -15,8 +16,6 @@ import TestimonialsSection from './components/TestimonialsSection/TestimonialsSe
 import TrustStrip from './components/TrustStrip/TrustStrip'
 import WhyChooseSection from './components/WhyChooseSection/WhyChooseSection'
 import WorkflowSection from './components/WorkflowSection/WorkflowSection'
-import './components/ServiceCatalog/ServiceCatalog.css'
-import { faqGroups } from './data/faqs.public'
 import { footerGroups, policyHighlights } from './data/policies.public'
 import {
   depositFlow,
@@ -31,7 +30,8 @@ import {
   featuredServices as staticFeaturedServices,
   serviceCategories as staticCategories,
 } from './data/services.public'
-import ScrollReveal from '../../components/ScrollReveal/ScrollReveal'
+import { usePublicSiteSettings } from './hooks/usePublicSiteSettings'
+import './components/ServiceCatalog/ServiceCatalog.css'
 import './PublicHome.css'
 
 const categoryIcons = {
@@ -53,31 +53,26 @@ function pickCategorySlug(categoryName) {
 }
 
 function buildServiceCategories(apiCategories) {
-  const cats = Array.isArray(apiCategories) ? apiCategories : []
-  return cats.map((cat) => {
-    const slug = pickCategorySlug(cat.name)
+  return (Array.isArray(apiCategories) ? apiCategories : []).map((category) => {
+    const slug = pickCategorySlug(category.name)
     return {
       id: slug,
-      title: cat.name,
-      description: cat.description || '',
-      microcopy: cat.microcopy || '',
+      title: category.name,
+      description: category.description || '',
+      microcopy: category.microcopy || '',
       icon: categoryIcons[slug] || ShieldCheck,
-      priceFrom: cat.priceFrom || 'Theo gói',
-      processingTime: cat.processingTime || 'Theo dịch vụ',
-      warranty: cat.warranty || 'Theo điều kiện',
-      requirements: cat.requirements ? cat.requirements.split('\n').map(r => r.trim()).filter(Boolean) : [],
-      cta: cat.cta || 'Xem chi tiết',
+      priceFrom: category.priceFrom || 'Theo gói',
+      processingTime: category.processingTime || 'Theo dịch vụ',
+      warranty: category.warranty || 'Theo điều kiện',
+      requirements: category.requirements
+        ? category.requirements.split('\n').map((item) => item.trim()).filter(Boolean)
+        : [],
+      cta: category.cta || 'Xem chi tiết',
     }
   })
 }
 
-function buildFeaturedServices(apiServices) {
-  const services = Array.isArray(apiServices) ? apiServices : []
-  return services.slice(0, 4)
-}
-
 function mapApiServiceToFeaturedRow(service) {
-  //const slug = pickCategorySlug(service.categoryName || service.type)
   return {
     name: service.name,
     description: service.shortDescription || service.description || '',
@@ -92,10 +87,12 @@ function mapApiServiceToFeaturedRow(service) {
     conditions: ['Đăng nhập để mua', 'Hỗ trợ sau mua'],
   }
 }
+
 function PublicHome({ notice, onLoginClick }) {
-  const navigate = useNavigate()
   const [apiServices, setApiServices] = useState([])
   const [apiCategories, setApiCategories] = useState([])
+  const { settings } = usePublicSiteSettings()
+  const logo = settings.brand.logoUrl || heroImg
 
   useEffect(() => {
     Promise.allSettled([
@@ -103,29 +100,26 @@ function PublicHome({ notice, onLoginClick }) {
       publicApi.getCategories(),
     ]).then((results) => {
       if (results[0].status === 'fulfilled') {
-        const data = results[0].value
-        setApiServices(Array.isArray(data) ? data : [])
+        setApiServices(Array.isArray(results[0].value) ? results[0].value : [])
       }
       if (results[1].status === 'fulfilled') {
-        const data = results[1].value
-        setApiCategories(Array.isArray(data) ? data : [])
+        setApiCategories(Array.isArray(results[1].value) ? results[1].value : [])
       }
     })
   }, [])
 
-  const hasApiData = apiServices.length > 0
-
   const mergedCategories = useMemo(() => {
-    const apiCats = buildServiceCategories(apiCategories)
-    if (apiCats.length > 0) return apiCats
-    return staticCategories
+    const categories = buildServiceCategories(apiCategories)
+    return categories.length > 0 ? categories : staticCategories
   }, [apiCategories])
 
-  const mergedFeaturedServices = useMemo(() => {
-    if (!hasApiData) return staticFeaturedServices
-    const featured = buildFeaturedServices(apiServices)
-    return featured.map(mapApiServiceToFeaturedRow)
-  }, [apiServices, hasApiData])
+  const mergedFeaturedServices = useMemo(
+    () => apiServices.length > 0
+      ? apiServices.slice(0, 4).map(mapApiServiceToFeaturedRow)
+      : staticFeaturedServices,
+    [apiServices],
+  )
+
   const handleConsultSubmit = (event) => {
     event.preventDefault()
     onLoginClick()
@@ -133,12 +127,18 @@ function PublicHome({ notice, onLoginClick }) {
 
   return (
     <div className="public-home">
-      <PublicHeader logo={heroImg} navItems={navItems} onLoginClick={onLoginClick} />
+      <PublicHeader
+        brand={settings.brand}
+        logo={logo}
+        navItems={navItems}
+        onLoginClick={onLoginClick}
+      />
+      <PromoBanner config={settings.banner} />
 
       <main>
         <ScrollReveal delay={100}>
           <HeroSection
-            logo={heroImg}
+            logo={logo}
             notice={notice}
             onLoginClick={onLoginClick}
             serviceSignals={serviceSignals}
@@ -154,14 +154,22 @@ function PublicHome({ notice, onLoginClick }) {
         </ScrollReveal>
         <ScrollReveal delay={100}><WorkflowSection steps={workflowSteps} /></ScrollReveal>
         <ScrollReveal delay={100}><AutoDepositSection flow={depositFlow} /></ScrollReveal>
-        <ScrollReveal delay={100}><WhyChooseSection items={whyChooseUs} policies={policyHighlights} /></ScrollReveal>
+        <ScrollReveal delay={100}>
+          <WhyChooseSection items={whyChooseUs} policies={policyHighlights} />
+        </ScrollReveal>
         <ScrollReveal delay={100}><TestimonialsSection items={proofItems} /></ScrollReveal>
-        <ScrollReveal delay={100}><FaqSection groups={faqGroups} /></ScrollReveal>
+        <ScrollReveal delay={100}>
+          <FaqSection
+            eyebrow={settings.faq.eyebrow}
+            items={settings.faq.items}
+            title={settings.faq.title}
+          />
+        </ScrollReveal>
         <ScrollReveal delay={100}><ConsultSection onSubmit={handleConsultSubmit} /></ScrollReveal>
         <ScrollReveal delay={100}><FinalCta onLoginClick={onLoginClick} /></ScrollReveal>
       </main>
 
-      <PublicFooter footerGroups={footerGroups} logo={heroImg} />
+      <PublicFooter brand={settings.brand} footerGroups={footerGroups} logo={logo} />
     </div>
   )
 }
