@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { userApi } from '../../../api/user.api'
 import { normalizePaged } from '../../../utils/pagination'
 import Pagination from '../../../components/Pagination/Pagination'
+import { formatDate } from '../../../utils/date'
 
 const WARRANTY_STATUS_LABELS = {
   OPEN: 'Mở',
@@ -13,19 +14,6 @@ const WARRANTY_STATUS_LABELS = {
   RESOLVED: 'Đã xử lý',
 }
 
-function formatDate(value) {
-  if (!value) {
-    return '-'
-  }
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return '-'
-  }
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date)
-}
 
 function statusClass(status) {
   return `warranty-status warranty-status-${String(status || '').toLowerCase().replaceAll('_', '-')}`

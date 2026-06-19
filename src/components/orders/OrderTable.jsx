@@ -3,17 +3,8 @@ import { printOrderInvoice } from '../../utils/invoicePrint'
 import StatusBadge from '../status/StatusBadge'
 import UserOrderDetailModal from './UserOrderDetailModal'
 import { useState } from 'react'
+import { formatDate } from '../../utils/date'
 
-function formatDate(value) {
-  if (!value) {
-    return '-'
-  }
-
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(new Date(value))
-}
 
 function rowsToCsv(rows) {
   const header = 'Mã đơn,Dịch vụ,Số tiền,Trạng thái,Ngày tạo'

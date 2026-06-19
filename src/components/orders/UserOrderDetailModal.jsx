@@ -4,14 +4,7 @@ import { money } from '../../utils/currency'
 import { printOrderInvoice } from '../../utils/invoicePrint'
 import { userApi } from '../../api/user.api'
 import StatusBadge from '../status/StatusBadge'
-
-function formatDate(value) {
-  if (!value) return '-'
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
-}
+import { formatDate } from '../../utils/date'
 
 function safeBlock(value) {
   if (!value) return 'Không có'

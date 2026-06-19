@@ -1,4 +1,5 @@
 import { money } from './currency'
+import { formatDate } from './date'
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -7,14 +8,6 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
-}
-
-function formatDate(value) {
-  if (!value) return '-'
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
 }
 
 function safeJsonBlock(value) {

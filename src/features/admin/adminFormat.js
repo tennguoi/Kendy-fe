@@ -1,4 +1,5 @@
 import { money } from '../../utils/currency'
+import { formatDate } from '../../utils/date'
 
 export function formatAdminMoney(value) {
   return money.format(Number(value || 0))
@@ -8,12 +9,10 @@ export function formatAdminDate(value) {
   if (!value) {
     return 'Chưa có'
   }
-
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(new Date(value))
+  const formatted = formatDate(value)
+  return formatted === '-' ? 'Chưa có' : formatted
 }
+
 
 export function includesKeyword(item, keyword, fields) {
   const normalized = keyword.trim().toLowerCase()

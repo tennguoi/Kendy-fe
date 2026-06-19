@@ -29,6 +29,8 @@ import {
   XCircle,
 } from 'lucide-react'
 import { formatAdminMoney } from '../adminFormat'
+import { formatDate } from '../../../utils/date'
+
 
 /* ================================================
  * AdminOverviewView.jsx
@@ -80,12 +82,6 @@ function countStatus(rows, statuses) {
   return safeArray(rows).filter((row) => allowed.has(normalizeStatus(row.status || row.state || row.matchStatus || row.paymentStatus))).length
 }
 
-function formatDateTime(value) {
-  if (!value) return '-'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '-'
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(date)
-}
 
 function compactDate(value) {
   if (!value) return '-'
@@ -240,7 +236,7 @@ function ActivityFeed({ logs = [] }) {
             <strong>{log.action || log.event || log.description || 'Hoạt động hệ thống'}</strong>
             <small>
               {log.actorName || log.adminEmail || log.username || log.entityType || 'System'}
-              {log.ipAddress ? ` (${log.ipAddress})` : ''} · {formatDateTime(log.createdAt || log.timestamp)}
+              {log.ipAddress ? ` (${log.ipAddress})` : ''} · {formatDate(log.createdAt || log.timestamp)}
             </small>
           </div>
         </article>
