@@ -55,20 +55,17 @@ function DepositBankPanel({
                     boxShadow: '0 0 40px rgba(0,0,0,0.6)',
                   }}
                 />
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: 16,
-                    right: 24,
-                    color: '#fff',
-                    fontSize: 32,
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    lineHeight: 1,
+                <button
+                  type="button"
+                  className="qr-zoom-close"
+                  aria-label="Đóng QR phóng to"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setZoomQR(false)
                   }}
                 >
                   ✕
-                </span>
+                </button>
               </div>
             )}
           </>
