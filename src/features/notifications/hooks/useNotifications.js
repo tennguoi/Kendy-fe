@@ -9,6 +9,7 @@ export function useNotifications({
   currentUser,
   navigate,
   notify,
+  onRealtimeNotification,
 }) {
   const [notifications, setNotifications] = useState([])
   const [notificationsLoading, setNotificationsLoading] = useState(false)
@@ -92,6 +93,7 @@ export function useNotifications({
             'info',
             payload.notification.title || 'Thông báo mới',
           )
+          onRealtimeNotification?.(payload.notification)
         }
       }
     })
@@ -99,7 +101,7 @@ export function useNotifications({
     return () => {
       disconnect()
     }
-  }, [accessToken, authInit, currentUser, notify])
+  }, [accessToken, authInit, currentUser, notify, onRealtimeNotification])
 
   return {
     handleMarkNotificationRead,

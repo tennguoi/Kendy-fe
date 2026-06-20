@@ -18,12 +18,18 @@ function WebhooksTab({
       <div className="admin-panel">
         <div className="admin-panel-head">
           <h3>Webhook status</h3>
-          <AdminStatusBadge status={sepayStatus?.requireApiKey ? 'PROTECTED' : 'OPEN'} />
+          <AdminStatusBadge
+            status={sepayStatus?.requireApiKey && sepayStatus?.apiKeyConfigured ? 'PROTECTED' : 'MISCONFIGURED'}
+          />
         </div>
         <dl className="admin-detail-list">
           <div><dt>API key</dt><dd>{sepayStatus?.requireApiKey ? 'Bắt buộc' : 'Không bắt buộc'}</dd></div>
+          <div><dt>Key runtime</dt><dd>{sepayStatus?.apiKeyConfigured ? 'Đã cấu hình' : 'Chưa cấu hình'}</dd></div>
           <div><dt>Header</dt><dd>{sepayStatus?.apiKeyHeader || 'Chưa cấu hình'}</dd></div>
           <div><dt>HMAC</dt><dd>{sepayStatus?.requireHmac ? 'Bật' : 'Tắt'}</dd></div>
+          {sepayStatus?.requireHmac && (
+            <div><dt>HMAC secret</dt><dd>{sepayStatus?.hmacConfigured ? 'Đã cấu hình' : 'Chưa cấu hình'}</dd></div>
+          )}
           <div><dt>Signature</dt><dd>{sepayStatus?.signatureHeader || 'Chưa cấu hình'}</dd></div>
         </dl>
         <label className="admin-form">

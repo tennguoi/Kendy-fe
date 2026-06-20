@@ -112,6 +112,42 @@ function App() {
     })
   }, [addToast])
 
+  const handleRealtimeNotification = useCallback(async (notification) => {
+    const type = String(notification?.type || '').toUpperCase()
+    if (!accessToken || !['DEPOSIT', 'ORDER', 'WALLET'].includes(type)) {
+      return
+    }
+
+    try {
+      const requests = [
+        userApi.getWallet(accessToken),
+        userApi.getDeposits({ size: 20 }, accessToken),
+        userApi.searchOrders({ size: 50 }, accessToken),
+        userApi.getWalletTransactions({ size: 20 }, accessToken),
+      ]
+      if (activeCheckout?.checkoutCode) {
+        requests.push(userApi.getCheckoutStatus(activeCheckout.checkoutCode, accessToken))
+      }
+
+      const [walletData, depositData, orderData, transactionData, checkoutData] = await Promise.all(requests)
+      const deposits = normalizeList(depositData)
+      setWallet(walletData)
+      setApiDeposits(deposits)
+      setApiOrders(normalizeList(orderData))
+      setApiWalletTransactions(normalizeList(transactionData))
+      setActiveDeposit((current) => (
+        current
+          ? deposits.find((deposit) => deposit.depositCode === current.depositCode) || current
+          : deposits.find((deposit) => deposit.status === 'PENDING') || deposits[0] || null
+      ))
+      if (checkoutData) {
+        setActiveCheckout(checkoutData)
+      }
+    } catch {
+      // Polling/manual refresh remains available if a realtime refresh temporarily fails.
+    }
+  }, [accessToken, activeCheckout?.checkoutCode])
+
   const { adminOverview, resetAdminOverview } = useAdminOverview(accessToken, isAdmin)
   const {
     handleMarkNotificationRead,
@@ -127,6 +163,7 @@ function App() {
     currentUser,
     navigate,
     notify,
+    onRealtimeNotification: handleRealtimeNotification,
   })
 
   const metrics = useDashboardMetrics({

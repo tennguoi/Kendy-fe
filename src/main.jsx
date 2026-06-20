@@ -5,6 +5,12 @@ import './index.css'
 import App from './App.jsx'
 import { ToastProvider } from './components/Toast'
 import { ThemeProvider } from './contexts/ThemeContext'
+import axiosClient from './lib/api'
+import { initializeServerTime } from './utils/serverTime'
+
+initializeServerTime(axiosClient).catch(() => {
+  // Backend remains authoritative; the next API response will retry synchronization.
+})
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

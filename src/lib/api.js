@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getMonotonicTimestamp, syncServerTime } from '../utils/serverTime';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -43,6 +44,10 @@ function htmlErrorMessage(payload) {
 // Interceptor cho request (gắn token)
 axiosClient.interceptors.request.use(
   (config) => {
+    config.meta = {
+      ...config.meta,
+      requestStartedAt: config.meta?.requestStartedAt ?? getMonotonicTimestamp(),
+    };
     // Nếu các API service truyền token vào config.token hoặc có token lưu ở localStorage
     // Tạm thời mình sẽ để các service tự gắn token qua hàm nếu cần thiết, hoặc lấy từ localStorage sau.
     if (config.token) {
@@ -56,10 +61,16 @@ axiosClient.interceptors.request.use(
 // Interceptor cho response (chuẩn hóa lỗi)
 axiosClient.interceptors.response.use(
   (response) => {
+    if (!response.config?.meta?.skipTimeSync) {
+      syncServerTime(response.headers?.['x-server-time'], response.config?.meta?.requestStartedAt);
+    }
     // Axios tự parse JSON nên ta chỉ trả về data
     return response.status === 204 ? null : response.data;
   },
   (error) => {
+    if (error.response && !error.config?.meta?.skipTimeSync) {
+      syncServerTime(error.response.headers?.['x-server-time'], error.config?.meta?.requestStartedAt);
+    }
     // Chuẩn hóa lỗi cho giống response cũ
     let message;
     if (error.response) {

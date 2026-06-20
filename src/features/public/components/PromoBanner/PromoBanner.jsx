@@ -1,6 +1,7 @@
 import { ArrowRight, Clock3 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { serverNow } from '../../../../utils/serverTime'
 import './PromoBanner.css'
 
 function getRemainingTime(endsAt, now) {
@@ -18,11 +19,11 @@ function getRemainingTime(endsAt, now) {
 }
 
 function PromoBanner({ config }) {
-  const [now, setNow] = useState(() => Date.now())
+  const [now, setNow] = useState(() => serverNow())
 
   useEffect(() => {
     if (!config?.enabled || !config.countdownEnabled || !config.endsAt) return undefined
-    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    const timer = window.setInterval(() => setNow(serverNow()), 1000)
     return () => window.clearInterval(timer)
   }, [config?.countdownEnabled, config?.enabled, config?.endsAt])
 
