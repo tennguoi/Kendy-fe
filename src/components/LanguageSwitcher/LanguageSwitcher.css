@@ -1,0 +1,43 @@
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--kd-surface, #f1f5f9);
+  border: 1px solid var(--kd-border, #e2e8f0);
+  border-radius: 10px;
+  padding: 2px;
+  margin-right: 4px;
+}
+
+.lang-switcher button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--kd-muted, #64748b);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.lang-switcher button.active {
+  background: var(--kd-blue, #2563eb);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
+}
+
+.lang-switcher button:not(.active):hover {
+  background: var(--kd-hover, rgba(0, 0, 0, 0.04));
+  color: var(--kd-text, #1e293b);
+}
+
+.lang-switcher .lang-flag {
+  font-size: 14px;
+  line-height: 1;
+}

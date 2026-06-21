@@ -16,12 +16,14 @@ import {
   Sun,
   UserRound,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import heroImg from '../../assets/hero.png'
 import { authHighlights } from './authHighlights'
 import { useToast } from '../../components/Toast'
 import { useTheme } from '../../contexts/ThemeContext'
 import { toApiUrl } from '../../lib/api'
 import { authApi } from '../../api/auth.api'
+import LanguageSwitcher from '../../components/LanguageSwitcher/LanguageSwitcher'
 import './AuthScreen.css'
 
 const defaultOAuthProviders = [
@@ -61,6 +63,7 @@ function GithubIcon() {
 }
 
 function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
+  const { t } = useTranslation()
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({
     name: '',
@@ -127,8 +130,8 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
   const startOAuthLogin = (provider) => {
     addToast({
       type: 'info',
-      title: `Đăng nhập bằng ${provider.name}`,
-      message: 'Bạn sẽ được chuyển sang trang xác thực của nhà cung cấp.',
+      title: t('auth.loginWith', { provider: provider.name }),
+      message: t('auth.oauthRedirect'),
     })
     window.location.assign(toApiUrl(provider.authorizationUrl))
   }
@@ -139,7 +142,7 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
     if (twoFactorStep?.type === 'oauth') {
       if (!form.twoFactorCode.trim()) {
-        setError('Vui lòng nhập mã xác thực đã gửi qua email.')
+        setError(t('auth.error.enter2FACode'))
         return
       }
 
@@ -149,12 +152,12 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
           challengeToken: twoFactorStep.challengeToken,
           code: form.twoFactorCode.trim(),
         })
-        addToast({ type: 'success', title: 'Đăng nhập', message: 'Xác thực 2FA thành công.' })
+        addToast({ type: 'success', title: t('auth.toast.loginTitle'), message: t('auth.success.twoFactor') })
         onSuccess(response, form.remember)
       } catch (err) {
-        const msg = err.message || 'Mã xác thực không hợp lệ hoặc đã hết hạn.'
+        const msg = err.message || t('auth.error.twoFactorFailed')
         setError(msg)
-        addToast({ type: 'error', title: 'Xác thực thất bại', message: msg })
+        addToast({ type: 'error', title: t('auth.toast.authFailed'), message: msg })
       } finally {
         setBusy(false)
       }
@@ -163,23 +166,23 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
     if (isVerify) {
       if (!verifyToken) {
-        setError('Vui lòng nhập mã xác thực từ email.')
-        addToast({ type: 'error', title: 'Lỗi', message: 'Vui lòng nhập mã xác thực.' })
+        setError(t('auth.error.enterVerifyCode'))
+        addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterVerifyCode') })
         return
       }
 
       setBusy(true)
       try {
         await authApi.verifyEmail({ token: verifyToken })
-        addToast({ type: 'success', title: 'Xác thực email', message: 'Email đã được xác thực thành công.' })
+        addToast({ type: 'success', title: t('auth.toast.verifyTitle'), message: t('auth.success.verify') })
         setMode('login')
         setVerifyToken('')
         setVerifyEmail('')
         setForm((current) => ({ ...current, email: verifyEmail }))
       } catch (err) {
-        const msg = err.message || 'Mã xác thực không hợp lệ hoặc đã hết hạn.'
+        const msg = err.message || t('auth.error.invalidVerifyCode')
         setError(msg)
-        addToast({ type: 'error', title: 'Lỗi', message: msg })
+        addToast({ type: 'error', title: t('common.error'), message: msg })
       } finally {
         setBusy(false)
       }
@@ -188,8 +191,8 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
     if (isForgot) {
       if (!form.email.trim()) {
-        setError('Vui lòng nhập email của bạn.')
-        addToast({ type: 'error', title: 'Lỗi', message: 'Vui lòng nhập email.' })
+        setError(t('auth.error.enterEmail'))
+        addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterEmail') })
         return
       }
 
@@ -198,11 +201,11 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
         const result = await authApi.forgotPassword({ email: form.email.trim() })
         setResetToken(result.token || result.securityToken)
         setMode('reset')
-        addToast({ type: 'success', title: 'Quên mật khẩu', message: 'Mã xác nhận đã được gửi tới email của bạn.' })
+        addToast({ type: 'success', title: t('auth.toast.forgotTitle'), message: t('auth.success.forgot') })
       } catch (err) {
-        const msg = err.message || 'Không gửi được yêu cầu đặt lại mật khẩu.'
+        const msg = err.message || t('auth.error.forgotFailed')
         setError(msg)
-        addToast({ type: 'error', title: 'Lỗi', message: msg })
+        addToast({ type: 'error', title: t('common.error'), message: msg })
       } finally {
         setBusy(false)
       }
@@ -211,33 +214,33 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
     if (isReset) {
       if (!form.password) {
-        setError('Vui lòng nhập mật khẩu mới.')
-        addToast({ type: 'error', title: 'Lỗi', message: 'Vui lòng nhập mật khẩu mới.' })
+        setError(t('auth.error.enterNewPassword'))
+        addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterNewPassword') })
         return
       }
 
       if (form.password !== form.confirmPassword) {
-        setError('Mật khẩu xác nhận chưa khớp.')
-        addToast({ type: 'error', title: 'Lỗi', message: 'Mật khẩu xác nhận chưa khớp.' })
+        setError(t('auth.error.passwordMismatch'))
+        addToast({ type: 'error', title: t('common.error'), message: t('auth.error.passwordMismatch') })
         return
       }
 
       if (form.password.length < 8) {
-        setError('Mật khẩu phải có ít nhất 8 ký tự.')
-        addToast({ type: 'error', title: 'Lỗi', message: 'Mật khẩu phải có ít nhất 8 ký tự.' })
+        setError(t('auth.error.passwordMinLength'))
+        addToast({ type: 'error', title: t('common.error'), message: t('auth.error.passwordMinLength') })
         return
       }
 
       setBusy(true)
       try {
         await authApi.resetPassword({ token: resetToken, newPassword: form.password })
-        addToast({ type: 'success', title: 'Đặt lại mật khẩu', message: 'Mật khẩu đã được đặt lại thành công.' })
+        addToast({ type: 'success', title: t('auth.toast.resetTitle'), message: t('auth.success.reset') })
         setMode('login')
         setResetToken('')
       } catch (err) {
-        const msg = err.message || 'Không đặt lại được mật khẩu. Token có thể đã hết hạn.'
+        const msg = err.message || t('auth.error.resetFailed')
         setError(msg)
-        addToast({ type: 'error', title: 'Lỗi', message: msg })
+        addToast({ type: 'error', title: t('common.error'), message: msg })
       } finally {
         setBusy(false)
       }
@@ -245,20 +248,20 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
     }
 
     if (!form.email.trim() || !form.password) {
-      setError('Vui lòng nhập email và mật khẩu.')
-      addToast({ type: 'error', title: 'Lỗi', message: 'Vui lòng nhập email và mật khẩu.' })
+      setError(t('auth.error.enterEmailPassword'))
+      addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterEmailPassword') })
       return
     }
 
     if (isRegister && !form.name.trim()) {
-      setError('Vui lòng nhập họ tên để tạo tài khoản.')
-      addToast({ type: 'error', title: 'Lỗi', message: 'Vui lòng nhập họ tên để tạo tài khoản.' })
+      setError(t('auth.error.enterName'))
+      addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterName') })
       return
     }
 
     if (isRegister && form.password !== form.confirmPassword) {
-      setError('Mật khẩu xác nhận chưa khớp.')
-      addToast({ type: 'error', title: 'Lỗi', message: 'Mật khẩu xác nhận chưa khớp.' })
+      setError(t('auth.error.passwordMismatch'))
+      addToast({ type: 'error', title: t('common.error'), message: t('auth.error.passwordMismatch') })
       return
     }
 
@@ -272,7 +275,7 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
           phone: form.phone,
           password: form.password,
         })
-        addToast({ type: 'success', title: 'Tạo tài khoản', message: 'Tạo tài khoản thành công. Vui lòng xác thực email.' })
+        addToast({ type: 'success', title: t('auth.toast.registerTitle'), message: t('auth.success.register') })
         setVerifyEmail(registeredEmail)
         setMode('verify')
         setForm((current) => ({
@@ -290,23 +293,20 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
         twoFactorCode: twoFactorStep?.type === 'password' ? form.twoFactorCode.trim() : undefined,
       })
 
-      addToast({ type: 'success', title: 'Đăng nhập', message: 'Đăng nhập thành công.' })
+      addToast({ type: 'success', title: t('auth.toast.loginTitle'), message: t('auth.success.login') })
       onSuccess(response, form.remember)
     } catch (err) {
       if (!isRegister && String(err.message || '').includes('2FA code required')) {
         setTwoFactorStep({ email: form.email.trim(), type: 'password' })
         updateForm('twoFactorCode', '')
-        const msg = 'Mã xác thực đã được gửi tới email của bạn.'
         setError('')
-        addToast({ type: 'info', title: 'Xác thực 2FA', message: msg })
+        addToast({ type: 'info', title: t('auth.toast.twoFactorTitle'), message: t('auth.toast.twoFactorInfo') })
         return
       }
 
-      const msg = err.message || (isRegister
-        ? 'Không tạo được tài khoản. Vui lòng kiểm tra lại thông tin.'
-        : 'Không đăng nhập được. Kiểm tra email hoặc mật khẩu.')
+      const msg = err.message || (isRegister ? t('auth.error.registerFailed') : t('auth.error.loginFailed'))
       setError(msg)
-      addToast({ type: 'error', title: isRegister ? 'Đăng ký thất bại' : 'Đăng nhập thất bại', message: msg })
+      addToast({ type: 'error', title: isRegister ? t('auth.toast.registerFailed') : t('auth.toast.loginFailed'), message: msg })
     } finally {
       setBusy(false)
     }
@@ -320,20 +320,18 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
           <div className="auth-logo-lockup">
             <img src={heroImg} alt="Kendy Digital" />
             <div>
-              <strong>Kendy Digital</strong>
-              <span>Tài khoản, nâng cấp &amp; quảng cáo Facebook</span>
+              <strong>{t('auth.heroTitle')}</strong>
+              <span>{t('auth.heroSubtitle')}</span>
             </div>
           </div>
 
           <div className="auth-hero-copy">
             <span className="auth-kicker">
               <CheckCircle2 size={18} strokeWidth={2} aria-hidden="true" />
-              Dịch vụ tài khoản và quảng cáo chuyên nghiệp
+              {t('auth.heroKicker')}
             </span>
-            <h1>Kendy Digital</h1>
-            <p>
-              Bán tài khoản CapCut, Facebook, nâng cấp tài khoản &amp; dịch vụ chạy quảng cáo.
-            </p>
+            <h1>{t('auth.heroTitle')}</h1>
+            <p>{t('auth.heroDescription')}</p>
           </div>
 
           <div className="auth-highlight-list">
@@ -341,11 +339,11 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
               const Icon = item.icon
 
               return (
-                <article className="auth-highlight" key={item.title}>
+                <article className="auth-highlight" key={item.titleKey}>
                   <Icon size={22} strokeWidth={2} aria-hidden="true" />
                   <div>
-                    <strong>{item.title}</strong>
-                    <span>{item.text}</span>
+                    <strong>{t(item.titleKey)}</strong>
+                    <span>{t(item.textKey)}</span>
                   </div>
                 </article>
               )
@@ -356,19 +354,20 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
       <main className="auth-form-panel">
         <div className="auth-public-actions">
+          <LanguageSwitcher />
           <button
             type="button"
             className="auth-theme-toggle"
             onClick={toggleTheme}
-            title={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
-            aria-label={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
+            title={theme === 'dark' ? t('auth.switchToLight') : t('auth.switchToDark')}
+            aria-label={theme === 'dark' ? t('auth.switchToLight') : t('auth.switchToDark')}
           >
             {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
           </button>
           {onBack && (
             <button type="button" className="auth-home-link" onClick={onBack}>
               <ArrowLeft size={17} strokeWidth={2} aria-hidden="true" />
-              <span>Trang chủ</span>
+              <span>{t('auth.homePage')}</span>
             </button>
           )}
         </div>
@@ -379,14 +378,14 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
               {isVerify ? <ShieldCheck size={22} strokeWidth={2} /> : isForgot ? <Mail size={22} strokeWidth={2} /> : isReset ? <KeyRound size={22} strokeWidth={2} /> : isRegister ? <UserRound size={22} strokeWidth={2} /> : <LogIn size={22} strokeWidth={2} />}
             </span>
             <div>
-              <span className="eyebrow">{twoFactorStep ? 'Xác thực 2FA' : isVerify ? 'Xác thực email' : isForgot ? 'Quên mật khẩu' : isReset ? 'Đặt lại mật khẩu' : isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</span>
+              <span className="eyebrow">{twoFactorStep ? t('auth.twoFactorEyebrow') : isVerify ? t('auth.verifyEyebrow') : isForgot ? t('auth.forgotEyebrow') : isReset ? t('auth.resetEyebrow') : isRegister ? t('auth.registerEyebrow') : t('auth.loginEyebrow')}</span>
               <h2>
                 {twoFactorStep
-                  ? 'Nhập mã xác thực đã gửi qua email.'
-                  : isVerify ? 'Nhập mã xác thực đã gửi tới email của bạn.'
-                  : isForgot ? 'Nhập email để nhận mã đặt lại mật khẩu.'
-                  : isReset ? 'Nhập mật khẩu mới cho tài khoản của bạn.'
-                  : isRegister ? 'Bắt đầu với Kendy Digital' : 'Chào mừng bạn quay lại Kendy Digital.'}
+                  ? t('auth.twoFactorTitle')
+                  : isVerify ? t('auth.verifyTitle')
+                  : isForgot ? t('auth.forgotTitle')
+                  : isReset ? t('auth.resetTitle')
+                  : isRegister ? t('auth.registerTitle') : t('auth.loginTitle')}
               </h2>
             </div>
           </div>
@@ -394,21 +393,21 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
           <div className="auth-fields">
             {twoFactorStep?.type === 'oauth' && (
               <p className="auth-message">
-                Đăng nhập bằng {twoFactorStep.provider || 'OAuth'} cần mã xác thực gửi tới {twoFactorStep.email || 'email của bạn'}.
+                {t('auth.oauthNeed2FA', { provider: twoFactorStep.provider || 'OAuth', email: twoFactorStep.email || '' })}
               </p>
             )}
 
             {isVerify && (
               <>
-                <p className="auth-message">Mã xác thực đã được gửi tới <strong>{verifyEmail}</strong>.</p>
+                <p className="auth-message">{t('auth.verifyCodeSent')} <strong>{verifyEmail}</strong>.</p>
                 <label className="auth-field">
-                  <span>Mã xác thực</span>
+                  <span>{t('auth.verifyCodeLabel')}</span>
                   <div className="auth-input">
                     <ShieldCheck size={18} strokeWidth={2} aria-hidden="true" />
                     <input
                       value={verifyToken}
                       onChange={(event) => setVerifyToken(event.target.value.trim())}
-                      placeholder="Dán mã từ email"
+                      placeholder={t('auth.verifyPastePlaceholder')}
                     />
                   </div>
                 </label>
@@ -417,29 +416,29 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
                   setError('')
                   try {
                     await authApi.resendVerification({ email: verifyEmail })
-                    addToast({ type: 'success', title: 'Xác thực email', message: 'Đã gửi lại mã xác thực.' })
+                    addToast({ type: 'success', title: t('auth.toast.verifyTitle'), message: t('auth.success.resend') })
                   } catch (err) {
-                    const msg = err.message || 'Không gửi được mã xác thực.'
+                    const msg = err.message || t('auth.error.resendFailed')
                     setError(msg)
-                    addToast({ type: 'error', title: 'Lỗi', message: msg })
+                    addToast({ type: 'error', title: t('common.error'), message: msg })
                   } finally {
                     setBusy(false)
                   }
                 }}>
-                  Gửi lại mã
+                  {t('auth.resendCode')}
                 </button>
               </>
             )}
 
             {isForgot && (
               <label className="auth-field">
-                <span>Email</span>
+                <span>{t('auth.emailLabel')}</span>
                 <div className="auth-input">
                   <Mail size={18} strokeWidth={2} aria-hidden="true" />
                   <input
                     value={form.email}
                     onChange={(event) => updateForm('email', event.target.value)}
-                    placeholder="email@kendy.vn"
+                    placeholder={t('auth.emailPlaceholder')}
                     type="email"
                     autoComplete="email"
                   />
@@ -450,13 +449,13 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
             {isReset && (
               <>
                 <label className="auth-field">
-                  <span>Mật khẩu mới</span>
+                  <span>{t('auth.newPasswordLabel')}</span>
                   <div className="auth-input">
                     <LockKeyhole size={18} strokeWidth={2} aria-hidden="true" />
                     <input
                       value={form.password}
                       onChange={(event) => updateForm('password', event.target.value)}
-                      placeholder="Ít nhất 8 ký tự"
+                      placeholder={t('auth.minCharsPlaceholder')}
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="new-password"
                     />
@@ -464,15 +463,15 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
                       type="button"
                       className="password-toggle"
                       onClick={() => setShowPassword((current) => !current)}
-                      title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                      aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                      title={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                      aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                     >
                       {showPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
                     </button>
                   </div>
                 </label>
                 <label className="auth-field">
-                  <span>Xác nhận mật khẩu mới</span>
+                  <span>{t('auth.confirmNewPasswordLabel')}</span>
                   <div className={
                     'auth-input' +
                     (form.confirmPassword.length > 0
@@ -485,14 +484,14 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
                     <input
                       value={form.confirmPassword}
                       onChange={(event) => updateForm('confirmPassword', event.target.value)}
-                      placeholder="Nhập lại mật khẩu"
+                      placeholder={t('auth.confirmPasswordPlaceholder')}
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="new-password"
                     />
                     {form.confirmPassword.length > 0 && (
                       form.confirmPassword === form.password
-                        ? <CheckCircle2 size={18} strokeWidth={2} className="confirm-icon match" aria-label="Khớp" />
-                        : <span className="confirm-icon mismatch" aria-label="Chưa khớp">✕</span>
+                        ? <CheckCircle2 size={18} strokeWidth={2} className="confirm-icon match" aria-label={t('auth.match')} />
+                        : <span className="confirm-icon mismatch" aria-label={t('auth.mismatch')}>✕</span>
                     )}
                   </div>
                 </label>
@@ -501,13 +500,13 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
             {!twoFactorStep && !isForgot && !isReset && (
               <label className="auth-field">
-                <span>Email</span>
+                <span>{t('auth.emailLabel')}</span>
                 <div className="auth-input">
                   <Mail size={18} strokeWidth={2} aria-hidden="true" />
                   <input
                     value={form.email}
                     onChange={(event) => updateForm('email', event.target.value)}
-                    placeholder="email@kendy.vn"
+                    placeholder={t('auth.emailPlaceholder')}
                     type="email"
                     autoComplete="email"
                   />
@@ -517,13 +516,13 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
             {isRegister && !twoFactorStep && (
               <label className="auth-field">
-                <span>Họ tên</span>
+                <span>{t('auth.nameLabel')}</span>
                 <div className="auth-input">
                   <UserRound size={18} strokeWidth={2} aria-hidden="true" />
                   <input
                     value={form.name}
                     onChange={(event) => updateForm('name', event.target.value)}
-                    placeholder="Nguyễn Văn A"
+                    placeholder={t('auth.namePlaceholder')}
                     autoComplete="name"
                   />
                 </div>
@@ -532,13 +531,13 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
             {isRegister && !twoFactorStep && (
               <label className="auth-field">
-                <span>Số điện thoại</span>
+                <span>{t('auth.phoneLabel')}</span>
                 <div className="auth-input">
                   <Phone size={18} strokeWidth={2} aria-hidden="true" />
                   <input
                     value={form.phone}
                     onChange={(event) => updateForm('phone', event.target.value)}
-                    placeholder="0900000000"
+                    placeholder={t('auth.phonePlaceholder')}
                     inputMode="tel"
                     autoComplete="tel"
                   />
@@ -548,13 +547,13 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
             {!twoFactorStep && !isForgot && !isReset && (
               <label className="auth-field">
-                <span>Mật khẩu</span>
+                <span>{t('auth.passwordLabel')}</span>
                 <div className="auth-input">
                   <LockKeyhole size={18} strokeWidth={2} aria-hidden="true" />
                   <input
                     value={form.password}
                     onChange={(event) => updateForm('password', event.target.value)}
-                    placeholder="Nhập mật khẩu"
+                    placeholder={t('auth.passwordPlaceholder')}
                     type={showPassword ? 'text' : 'password'}
                     autoComplete={isRegister ? 'new-password' : 'current-password'}
                   />
@@ -562,8 +561,8 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
                     type="button"
                     className="password-toggle"
                     onClick={() => setShowPassword((current) => !current)}
-                    title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    title={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                   >
                     {showPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
                   </button>
@@ -573,13 +572,13 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
             {twoFactorStep && (
               <label className="auth-field">
-                <span>Mã xác thực email</span>
+                <span>{t('auth.twoFactorCodeLabel')}</span>
                 <div className="auth-input">
                   <ShieldCheck size={18} strokeWidth={2} aria-hidden="true" />
                   <input
                     value={form.twoFactorCode}
                     onChange={(event) => updateForm('twoFactorCode', event.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="Nhập mã 6 số"
+                    placeholder={t('auth.twoFactorPlaceholder')}
                     inputMode="numeric"
                     autoComplete="one-time-code"
                   />
@@ -589,7 +588,7 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
             {isRegister && !twoFactorStep && (
               <label className="auth-field">
-                <span>Xác nhận mật khẩu</span>
+                <span>{t('auth.confirmPasswordLabel')}</span>
                 <div className={
                   'auth-input' +
                   (form.confirmPassword.length > 0
@@ -602,14 +601,14 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
                   <input
                     value={form.confirmPassword}
                     onChange={(event) => updateForm('confirmPassword', event.target.value)}
-                    placeholder="Nhập lại mật khẩu"
+                    placeholder={t('auth.confirmPasswordPlaceholder')}
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                   />
                   {form.confirmPassword.length > 0 && (
                     form.confirmPassword === form.password
-                      ? <CheckCircle2 size={18} strokeWidth={2} className="confirm-icon match" aria-label="Khớp" />
-                      : <span className="confirm-icon mismatch" aria-label="Chưa khớp">✕</span>
+                      ? <CheckCircle2 size={18} strokeWidth={2} className="confirm-icon match" aria-label={t('auth.match')} />
+                      : <span className="confirm-icon mismatch" aria-label={t('auth.mismatch')}>✕</span>
                   )}
                 </div>
               </label>
@@ -625,11 +624,11 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
                     onChange={(event) => updateForm('remember', event.target.checked)}
                     type="checkbox"
                   />
-                  <span>Ghi nhớ đăng nhập</span>
+                  <span>{t('auth.rememberLogin')}</span>
                 </label>
                 <button type="button" className="text-action" onClick={() => switchMode('forgot')}>
                   <KeyRound size={16} strokeWidth={2} aria-hidden="true" />
-                  Quên mật khẩu?
+                  {t('auth.forgotPasswordLink')}
                 </button>
               </>
             )}
@@ -641,11 +640,11 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
             {busy ? (
               <>
                 <span className="auth-spinner" aria-hidden="true" />
-                <span>Đang xử lý…</span>
+                <span>{t('common.processing')}</span>
               </>
             ) : (
               <>
-                <span>{twoFactorStep ? 'Xác nhận mã' : isVerify ? 'Xác thực' : isForgot ? 'Gửi yêu cầu' : isReset ? 'Đặt lại mật khẩu' : isRegister ? 'Tạo tài khoản' : 'Đăng nhập'}</span>
+                <span>{twoFactorStep ? t('auth.submitConfirmCode') : isVerify ? t('auth.submitVerify') : isForgot ? t('auth.submitForgot') : isReset ? t('auth.submitReset') : isRegister ? t('auth.submitRegister') : t('auth.submitLogin')}</span>
                 {isForgot ? <Send size={18} strokeWidth={2} aria-hidden="true" /> : <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />}
               </>
             )}
@@ -654,7 +653,7 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
           {!twoFactorStep && !isForgot && !isReset && !isVerify && (
             <>
               <div className="auth-divider">
-                <span>Hoặc đăng nhập bằng</span>
+                <span>{t('auth.orLoginWith')}</span>
               </div>
 
               <div className="oauth-actions">
@@ -679,19 +678,19 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
             <p className="auth-switch">
               {isVerify ? (
                 <>
-                  <span>Đã xác thực email?</span>
-                  <button type="button" onClick={() => switchMode('login')}>Đăng nhập</button>
+                  <span>{t('auth.verifiedEmail')}</span>
+                  <button type="button" onClick={() => switchMode('login')}>{t('auth.login')}</button>
                 </>
               ) : isForgot || isReset ? (
                 <>
-                  <span>Nhớ mật khẩu?</span>
-                  <button type="button" onClick={() => switchMode('login')}>Đăng nhập</button>
+                  <span>{t('auth.rememberPassword')}</span>
+                  <button type="button" onClick={() => switchMode('login')}>{t('auth.login')}</button>
                 </>
               ) : (
                 <>
-                  {isRegister ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}
+                  {isRegister ? t('auth.hasAccount') : t('auth.noAccount')}
                   <button type="button" onClick={() => switchMode(isRegister ? 'login' : 'register')}>
-                    {isRegister ? 'Đăng nhập' : 'Đăng ký ngay'}
+                    {isRegister ? t('auth.login') : t('auth.signUpNow')}
                   </button>
                 </>
               )}

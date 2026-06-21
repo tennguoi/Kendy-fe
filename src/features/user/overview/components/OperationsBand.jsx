@@ -1,17 +1,20 @@
 import { LifeBuoy, PlusCircle, ReceiptText, WalletCards } from 'lucide-react'
-
-const actions = [
-  { icon: WalletCards, label: 'Ví tiền', view: 'deposit' },
-  { icon: ReceiptText, label: 'Đơn hàng', view: 'orders' },
-  { icon: PlusCircle, label: 'Nạp tiền', view: 'deposit' },
-  { icon: LifeBuoy, label: 'Ticket', view: 'support' },
-]
+import { useTranslation } from 'react-i18next'
 
 function OperationsBand({ onViewChange }) {
+  const { t } = useTranslation()
+
+  const actions = [
+    { icon: WalletCards, label: t('overview.wallet'), view: 'deposit' },
+    { icon: ReceiptText, label: t('overview.orders'), view: 'orders' },
+    { icon: PlusCircle, label: t('overview.deposit'), view: 'deposit' },
+    { icon: LifeBuoy, label: t('overview.ticket'), view: 'support' },
+  ]
+
   return (
     <section className="operations-band">
       <div>
-        <h2>Thao tác nhanh</h2>
+        <h2>{t('overview.quickActions')}</h2>
       </div>
       <div className="ops-list">
         {actions.map((action) => {

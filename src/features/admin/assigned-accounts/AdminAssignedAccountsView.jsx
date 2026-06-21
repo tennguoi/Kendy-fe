@@ -7,22 +7,7 @@ import { AdminEmptyState } from '../AdminShared'
 import { formatAdminDate } from '../adminFormat'
 import Pagination from '../../../components/Pagination/Pagination'
 import SearchField from '../../../components/SearchField/SearchField'
-
-const statusOptions = [
-  ['', 'Tất cả trạng thái'],
-  ['DELIVERED', 'Đã cấp'],
-  ['REPLACED', 'Đã thay thế'],
-  ['REFUNDED', 'Đã hoàn tiền'],
-  ['EXPIRED', 'Hết hạn'],
-]
-
-const statusLabels = {
-  DELIVERED: 'Đã cấp',
-  REPLACED: 'Đã thay thế',
-  REFUNDED: 'Đã hoàn tiền',
-  EXPIRED: 'Hết hạn',
-  DISABLED: 'Đã vô hiệu hóa',
-}
+import { useTranslation } from 'react-i18next'
 
 function toInstant(value, endOfDay = false) {
   if (!value) return undefined
@@ -31,6 +16,24 @@ function toInstant(value, endOfDay = false) {
 }
 
 function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
+  const { t } = useTranslation()
+
+  const statusOptions = [
+    ['', t('admin.assignedAccounts.filter.allStatus')],
+    ['DELIVERED', t('admin.assignedAccounts.status.DELIVERED')],
+    ['REPLACED', t('admin.assignedAccounts.status.REPLACED')],
+    ['REFUNDED', t('admin.assignedAccounts.status.REFUNDED')],
+    ['EXPIRED', t('admin.assignedAccounts.status.EXPIRED')],
+  ]
+
+  const statusLabels = {
+    DELIVERED: t('admin.assignedAccounts.status.DELIVERED'),
+    REPLACED: t('admin.assignedAccounts.status.REPLACED'),
+    REFUNDED: t('admin.assignedAccounts.status.REFUNDED'),
+    EXPIRED: t('admin.assignedAccounts.status.EXPIRED'),
+    DISABLED: t('admin.assignedAccounts.status.DISABLED'),
+  }
+
   const [accounts, setAccounts] = useState([])
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -63,7 +66,7 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
       setTotalPages(pages)
       setCurrentPage(targetPage)
     } catch (err) {
-      setViewError(err.message || 'Không tải được danh sách tài khoản đã cấp.')
+      setViewError(err.message || t('admin.assignedAccounts.loadError'))
     } finally {
       setLoading(false)
     }
@@ -99,9 +102,9 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
     try {
       const data = await adminApi.revealServiceCredential(account.id, token)
       setRevealed((current) => ({ ...current, [account.id]: data }))
-      onSetNotice(`Đã hiển thị thông tin tài khoản ${account.loginIdentifier}.`)
+      onSetNotice(t('admin.assignedAccounts.revealSuccess', { identifier: account.loginIdentifier }))
     } catch (err) {
-      setViewError(err.message || 'Không thể hiển thị thông tin đăng nhập.')
+      setViewError(err.message || t('admin.assignedAccounts.revealError'))
     } finally {
       setRevealingId(null)
     }
@@ -111,22 +114,22 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
     <div className="admin-view assigned-accounts-view">
       <div className="admin-toolbar">
         <div>
-          <span className="assigned-eyebrow">ACCOUNT DELIVERY</span>
-          <h2>Tài khoản đã cấp</h2>
-          <p>Theo dõi tài khoản đã bàn giao theo khách hàng, đơn hàng và dịch vụ.</p>
+          <span className="assigned-eyebrow">{t('admin.assignedAccounts.eyebrow')}</span>
+          <h2>{t('admin.assignedAccounts.title')}</h2>
+          <p>{t('admin.assignedAccounts.description')}</p>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadAccounts} disabled={loading}>
-          <RefreshCw size={17} className={loading ? 'spin' : ''} /> Tải lại
+          <RefreshCw size={17} className={loading ? 'spin' : ''} /> {t('admin.assignedAccounts.reload')}
         </button>
       </div>
 
       {error && <p className="admin-message error">{error}</p>}
 
       <div className="admin-metrics">
-        <article className="admin-metric"><span>Tổng đã cấp</span><strong>{metrics.total}</strong></article>
-        <article className="admin-metric"><span>Đang sử dụng</span><strong>{metrics.active}</strong></article>
-        <article className="admin-metric"><span>Khách hàng</span><strong>{metrics.customers}</strong></article>
-        <article className="admin-metric"><span>Đã/hết hạn</span><strong>{metrics.expired}</strong></article>
+        <article className="admin-metric"><span>{t('admin.assignedAccounts.metrics.totalDelivered')}</span><strong>{metrics.total}</strong></article>
+        <article className="admin-metric"><span>{t('admin.assignedAccounts.metrics.inUse')}</span><strong>{metrics.active}</strong></article>
+        <article className="admin-metric"><span>{t('admin.assignedAccounts.metrics.customers')}</span><strong>{metrics.customers}</strong></article>
+        <article className="admin-metric"><span>{t('admin.assignedAccounts.metrics.expired')}</span><strong>{metrics.expired}</strong></article>
       </div>
 
       <section className="admin-panel assigned-filters-panel">
@@ -135,38 +138,38 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
             className="assigned-search"
             value={filters.query}
             onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))}
-            placeholder="Tìm khách hàng, email, tài khoản, đơn hàng, dịch vụ..."
+            placeholder={t('admin.assignedAccounts.filter.searchPlaceholder')}
           />
           <select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}>
             {statusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
-          <input type="date" title="Cấp từ ngày" value={filters.deliveredFrom} onChange={(event) => setFilters((current) => ({ ...current, deliveredFrom: event.target.value }))} />
-          <input type="date" title="Cấp đến ngày" value={filters.deliveredTo} onChange={(event) => setFilters((current) => ({ ...current, deliveredTo: event.target.value }))} />
+          <input type="date" title={t('admin.assignedAccounts.filter.fromDate')} value={filters.deliveredFrom} onChange={(event) => setFilters((current) => ({ ...current, deliveredFrom: event.target.value }))} />
+          <input type="date" title={t('admin.assignedAccounts.filter.toDate')} value={filters.deliveredTo} onChange={(event) => setFilters((current) => ({ ...current, deliveredTo: event.target.value }))} />
         </div>
       </section>
 
       <section className="admin-panel assigned-list-panel">
         <div className="admin-panel-head">
           <div>
-            <h3>Danh sách tài khoản</h3>
-            <span>{accounts.length} kết quả</span>
+            <h3>{t('admin.assignedAccounts.table.listTitle')}</h3>
+            <span>{t('admin.assignedAccounts.noResult', { count: accounts.length })}</span>
           </div>
           <PackageOpen size={20} />
         </div>
 
         {loading ? <Loading /> : accounts.length === 0 ? (
-          <AdminEmptyState message="Chưa có tài khoản nào được cấp." hint="Tài khoản sẽ xuất hiện khi đơn hàng sản phẩm giao tài khoản hoàn tất." />
+          <AdminEmptyState message={t('admin.assignedAccounts.empty.message')} hint={t('admin.assignedAccounts.empty.hint')} />
         ) : (
           <div className="assigned-table-wrap">
             <table className="assigned-table">
-              <thead><tr><th>Khách hàng</th><th>Dịch vụ / tài khoản</th><th>Đơn hàng</th><th>Ngày cấp</th><th>Hết hạn</th><th>Trạng thái</th><th>Thông tin</th></tr></thead>
+              <thead><tr><th>{t('admin.assignedAccounts.table.customer')}</th><th>{t('admin.assignedAccounts.table.serviceAccount')}</th><th>{t('admin.assignedAccounts.table.order')}</th><th>{t('admin.assignedAccounts.table.deliveredDate')}</th><th>{t('admin.assignedAccounts.table.expiresDate')}</th><th>{t('admin.assignedAccounts.table.status')}</th><th>{t('admin.assignedAccounts.table.info')}</th></tr></thead>
               <tbody>
                 {accounts.map((account) => {
                   const secret = revealed[account.id]
                   return (
                     <tr key={account.id}>
                       <td>
-                        <strong>{account.deliveredToName || 'Khách hàng'}</strong>
+                        <strong>{account.deliveredToName || t('admin.assignedAccounts.noName')}</strong>
                         <small>{account.deliveredToEmail || '-'}</small>
                         {account.deliveredToPhone && <small>{account.deliveredToPhone}</small>}
                       </td>
@@ -178,7 +181,7 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
                       <td>
                         <button type="button" className="assigned-reveal" onClick={() => toggleReveal(account)} disabled={revealingId === account.id}>
                           {secret ? <EyeOff size={16} /> : <Eye size={16} />}
-                          {secret ? 'Ẩn' : revealingId === account.id ? 'Đang tải' : 'Xem'}
+                          {secret ? t('admin.assignedAccounts.table.hide') : revealingId === account.id ? t('admin.assignedAccounts.table.loading') : t('admin.assignedAccounts.table.view')}
                         </button>
                         {secret && (
                           <div className="assigned-secret">

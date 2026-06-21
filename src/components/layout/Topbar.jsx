@@ -1,21 +1,10 @@
 import { Bell, Menu, User, Sun, Moon } from 'lucide-react'
 import SearchField from '../SearchField/SearchField'
+import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher'
 import { useState } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useTranslation } from 'react-i18next'
 import { money } from '../../utils/currency'
-
-function formatNotificationTime(value) {
-  if (!value) {
-    return ''
-  }
-
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    month: '2-digit',
-  }).format(new Date(value))
-}
 
 function Topbar({
   currentUser,
@@ -29,12 +18,23 @@ function Topbar({
   onViewChange,
   searchTargetView,
   showBalance = true,
-  subtitle = 'Tài khoản & quảng cáo Facebook',
+  subtitle,
   onToggleSidebar,
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
+  const { t, i18n } = useTranslation()
+
+  const formatNotificationTime = (value) => {
+    if (!value) return ''
+    return new Intl.DateTimeFormat(i18n.language === 'vi' ? 'vi-VN' : 'en-US', {
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      month: '2-digit',
+    }).format(new Date(value))
+  }
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
   const avatarUrl = currentUser?.avatarUrl || currentUser?.avatar || currentUser?.picture || currentUser?.imageUrl || currentUser?.photoUrl
   const userInitial = (currentUser?.name || currentUser?.email || 'U').charAt(0).toUpperCase()
@@ -60,18 +60,18 @@ function Topbar({
           type="button"
           className="menu-toggle"
           onClick={onToggleSidebar}
-          aria-label="Mở menu"
+          aria-label={t('topbar.openMenu')}
         >
           <Menu size={22} strokeWidth={2} />
         </button>
         <div>
-          <p>{subtitle}</p>
+          <p>{subtitle || t('topbar.subtitle')}</p>
           <h1>{title}</h1>
         </div>
       </div>
       <SearchField
         className="search"
-        placeholder="Đơn, dịch vụ, giao dịch"
+        placeholder={t('topbar.searchPlaceholder')}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         onKeyDown={handleSearchKeyDown}
@@ -82,11 +82,12 @@ function Topbar({
             {money.format(displayBalance)}
           </button>
         )}
+        <LanguageSwitcher />
         <div className="notification-menu">
           <button
             type="button"
             className="notification-bell"
-            title="Đổi giao diện"
+            title={t('topbar.toggleTheme')}
             onClick={toggleTheme}
             style={{ marginRight: 10 }}
           >
@@ -95,7 +96,7 @@ function Topbar({
           <button
             type="button"
             className="notification-bell"
-            title="Thông báo"
+            title={t('topbar.notifications')}
             aria-expanded={isNotificationsOpen}
             aria-haspopup="dialog"
             onClick={handleToggleNotifications}
@@ -104,13 +105,13 @@ function Topbar({
             {notificationCount > 0 && <span className="notification-badge">{notificationCount > 99 ? '99+' : notificationCount}</span>}
           </button>
           {isNotificationsOpen && (
-            <div className="notification-panel" role="dialog" aria-label="Thông báo">
+            <div className="notification-panel" role="dialog" aria-label={t('topbar.notifications')}>
               <div className="notification-panel-head">
-                <strong>Thông báo</strong>
-                <span>{notificationCount} chưa đọc</span>
+                <strong>{t('topbar.notifications')}</strong>
+                <span>{notificationCount} {t('topbar.unread')}</span>
               </div>
               <div className="notification-list">
-                {notificationsLoading && <p className="notification-empty">Đang tải thông báo...</p>}
+                {notificationsLoading && <p className="notification-empty">{t('topbar.loadingNotifications')}</p>}
                 {!notificationsLoading && notifications.map((notification) => (
                   <button
                     type="button"
@@ -118,13 +119,13 @@ function Topbar({
                     key={notification.id}
                     onClick={() => onMarkNotificationRead?.(notification)}
                   >
-                    <strong>{notification.title || 'Thông báo'}</strong>
-                    <span>{notification.message || 'Bạn có thông báo mới.'}</span>
+                    <strong>{notification.title || t('topbar.defaultNotification')}</strong>
+                    <span>{notification.message || t('topbar.defaultNotificationMessage')}</span>
                     <small>{formatNotificationTime(notification.createdAt)}</small>
                   </button>
                 ))}
                 {!notificationsLoading && notifications.length === 0 && (
-                  <p className="notification-empty">Chưa có thông báo.</p>
+                  <p className="notification-empty">{t('topbar.noNotifications')}</p>
                 )}
               </div>
             </div>
@@ -135,14 +136,14 @@ function Topbar({
             type="button"
             className="topbar-profile-button"
             onClick={() => onViewChange?.(isAdmin ? 'admin-settings' : 'profile')}
-            title="Hồ sơ của tôi"
+            title={t('topbar.myProfile')}
           >
             {avatarUrl ? (
               <img src={avatarUrl} alt="" />
             ) : (
               <span>{userInitial || <User size={16} strokeWidth={2} />}</span>
             )}
-            <strong>{currentUser.name || currentUser.email || 'Hồ sơ'}</strong>
+            <strong>{currentUser.name || currentUser.email || t('topbar.profile')}</strong>
           </button>
         )}
 

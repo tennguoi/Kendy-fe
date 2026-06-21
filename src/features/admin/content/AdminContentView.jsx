@@ -11,6 +11,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import PromoBanner from '../../public/components/PromoBanner/PromoBanner'
 import EmailTextEditor from './EmailTextEditor'
@@ -26,46 +27,7 @@ import {
   SITE_SETTING_SLUGS,
 } from '../../public/data/siteSettings'
 
-const sections = [
-  {
-    id: 'banner',
-    label: 'Banner & countdown',
-    description: 'Thông báo chương trình sale và tự ẩn khi hết hạn.',
-    icon: Clock3,
-  },
-  {
-    id: 'faq',
-    label: 'FAQ',
-    description: 'Quản lý danh sách câu hỏi và câu trả lời.',
-    icon: HelpCircle,
-  },
-  {
-    id: 'brand',
-    label: 'Thương hiệu & liên hệ',
-    description: 'Tên, logo, footer, thông tin liên hệ và social.',
-    icon: Image,
-  },
-  {
-    id: 'theme',
-    label: 'Màu giao diện',
-    description: 'Đổi màu chủ đạo theo mùa hoặc sự kiện.',
-    icon: Palette,
-  },
-  {
-    id: 'email',
-    label: 'Email giao dịch',
-    description: 'Chỉ sửa nội dung chữ, form email luôn được khóa cố định.',
-    icon: Mail,
-  },
-]
 
-const sectionMeta = {
-  banner: { slug: SITE_SETTING_SLUGS.banner, title: 'Banner khuyến mãi' },
-  faq: { slug: SITE_SETTING_SLUGS.faq, title: 'Câu hỏi thường gặp' },
-  brand: { slug: SITE_SETTING_SLUGS.brand, title: 'Thương hiệu và liên hệ' },
-  theme: { slug: SITE_SETTING_SLUGS.theme, title: 'Màu giao diện' },
-  email: { title: 'Email giao dịch' },
-}
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value))
@@ -84,6 +46,46 @@ function toLocalDateTime(value) {
 }
 
 function AdminContentView({ onSetError, onSetNotice, token }) {
+  const { t } = useTranslation()
+  const sections = [
+    {
+      id: 'banner',
+      label: t('admin.content.sections.banner'),
+      description: t('admin.content.sections.bannerDesc'),
+      icon: Clock3,
+    },
+    {
+      id: 'faq',
+      label: t('admin.content.sections.faq'),
+      description: t('admin.content.sections.faqDesc'),
+      icon: HelpCircle,
+    },
+    {
+      id: 'brand',
+      label: t('admin.content.sections.brand'),
+      description: t('admin.content.sections.brandDesc'),
+      icon: Image,
+    },
+    {
+      id: 'theme',
+      label: t('admin.content.sections.theme'),
+      description: t('admin.content.sections.themeDesc'),
+      icon: Palette,
+    },
+    {
+      id: 'email',
+      label: t('admin.content.sections.email'),
+      description: t('admin.content.sections.emailDesc'),
+      icon: Mail,
+    },
+  ]
+  const sectionMeta = {
+    banner: { slug: SITE_SETTING_SLUGS.banner, title: t('admin.content.banner.title') },
+    faq: { slug: SITE_SETTING_SLUGS.faq, title: t('admin.content.faq.title') },
+    brand: { slug: SITE_SETTING_SLUGS.brand, title: t('admin.content.brand.title') },
+    theme: { slug: SITE_SETTING_SLUGS.theme, title: t('admin.content.theme.title') },
+    email: { title: t('admin.content.email.title') },
+  }
   const [activeSection, setActiveSection] = useState('banner')
   const [activeEmailSlug, setActiveEmailSlug] = useState(EMAIL_TEMPLATE_DEFINITIONS[0].slug)
   const [drafts, setDrafts] = useState(() => clone(defaultSiteSettings))
@@ -116,7 +118,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
         ),
       )
     } catch (error) {
-      onSetError(error.message || 'Không tải được cấu hình website.')
+      onSetError(error.message || t('admin.content.loadError'))
     } finally {
       setLoading(false)
     }
@@ -153,7 +155,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
         (item) => !item.question.trim() || !item.answer.trim(),
       )
       if (hasInvalidItem) {
-        onSetError('Mỗi mục FAQ phải có đầy đủ câu hỏi và câu trả lời.')
+        onSetError(t('admin.content.faqValidationError'))
         return
       }
     }
@@ -199,11 +201,11 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
       setRecords((current) => ({ ...current, [slug]: saved }))
       onSetNotice(
         activeSection === 'email'
-          ? `Đã lưu mẫu ${emailDefinition.label.toLowerCase()}.`
-          : `Đã lưu ${meta.title.toLowerCase()}.`,
+          ? t('admin.content.saveSuccessEmail', { name: emailDefinition.label.toLowerCase() })
+          : t('admin.content.saveSuccess', { name: meta.title.toLowerCase() }),
       )
     } catch (error) {
-      onSetError(error.message || `Không lưu được ${meta.title.toLowerCase()}.`)
+      onSetError(error.message || t('admin.content.saveError', { name: meta.title.toLowerCase() }))
     } finally {
       setSubmitting(false)
     }
@@ -255,12 +257,12 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
     <section className="admin-view content-settings-view">
       <div className="admin-toolbar">
         <div>
-          <h2>Nội dung website</h2>
-          <p>Chỉ quản lý những nội dung vận hành cần thay đổi thường xuyên.</p>
+          <h2>{t('admin.content.title')}</h2>
+          <p>{t('admin.content.description')}</p>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadContent} disabled={loading}>
           <RefreshCw size={18} aria-hidden="true" />
-          <span>{loading ? 'Đang tải...' : 'Tải lại'}</span>
+          <span>{loading ? t('admin.content.loading') : t('admin.content.reload')}</span>
         </button>
       </div>
 
@@ -290,7 +292,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
             <div>
               <h3>{sectionMeta[activeSection].title}</h3>
               <span>
-                {records[activeRecordSlug] ? 'Đã lưu trong hệ thống' : 'Chưa có dữ liệu, sẽ tạo mới'}
+                {records[activeRecordSlug] ? t('admin.content.savedRecord') : t('admin.content.newRecord')}
               </span>
             </div>
           </div>
@@ -303,18 +305,18 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                   checked={drafts.banner.enabled}
                   onChange={(event) => updateDraft({ enabled: event.target.checked })}
                 />
-                <span>Hiển thị banner khuyến mãi</span>
+                <span>{t('admin.content.banner.showBanner')}</span>
               </label>
               <div className="admin-form-grid two-columns">
                 <label>
-                  <span>Nhãn nhỏ</span>
+                  <span>{t('admin.content.banner.eyebrow')}</span>
                   <input
                     value={drafts.banner.eyebrow}
                     onChange={(event) => updateDraft({ eyebrow: event.target.value })}
                   />
                 </label>
                 <label>
-                  <span>Tiêu đề chương trình</span>
+                  <span>{t('admin.content.banner.titleField')}</span>
                   <input
                     value={drafts.banner.title}
                     onChange={(event) => updateDraft({ title: event.target.value })}
@@ -323,7 +325,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 </label>
               </div>
               <label>
-                <span>Mô tả</span>
+                <span>{t('admin.content.banner.description')}</span>
                 <textarea
                   value={drafts.banner.description}
                   onChange={(event) => updateDraft({ description: event.target.value })}
@@ -332,24 +334,24 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               </label>
               <div className="admin-form-grid two-columns">
                 <label>
-                  <span>Chữ trên nút</span>
+                  <span>{t('admin.content.banner.ctaLabel')}</span>
                   <input
                     value={drafts.banner.ctaLabel}
                     onChange={(event) => updateDraft({ ctaLabel: event.target.value })}
                   />
                 </label>
                 <label>
-                  <span>Đường dẫn nút</span>
+                  <span>{t('admin.content.banner.ctaUrl')}</span>
                   <input
                     value={drafts.banner.ctaUrl}
                     onChange={(event) => updateDraft({ ctaUrl: event.target.value })}
-                    placeholder="/catalog"
+                    placeholder={t('admin.content.banner.ctaUrlPlaceholder')}
                   />
                 </label>
               </div>
               <div className="admin-form-grid two-columns">
                 <label>
-                  <span>Màu nền</span>
+                  <span>{t('admin.content.banner.bgColor')}</span>
                   <div className="content-color-input">
                     <input
                       type="color"
@@ -368,7 +370,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                   </div>
                 </label>
                 <label>
-                  <span>Màu chữ</span>
+                  <span>{t('admin.content.banner.textColor')}</span>
                   <div className="content-color-input">
                     <input
                       type="color"
@@ -390,11 +392,11 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                   checked={drafts.banner.countdownEnabled}
                   onChange={(event) => updateDraft({ countdownEnabled: event.target.checked })}
                 />
-                <span>Bật đếm ngược và tự ẩn khi hết hạn</span>
+                <span>{t('admin.content.banner.countdown')}</span>
               </label>
               {drafts.banner.countdownEnabled && (
                 <label>
-                  <span>Thời điểm kết thúc</span>
+                  <span>{t('admin.content.banner.endTime')}</span>
                   <input
                     type="datetime-local"
                     value={toLocalDateTime(drafts.banner.endsAt)}
@@ -406,7 +408,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 </label>
               )}
               <div className="content-preview-block">
-                <span>Xem trước</span>
+                <span>{t('admin.content.banner.preview')}</span>
                 <PromoBanner config={{ ...drafts.banner, enabled: true }} />
               </div>
             </div>
@@ -416,14 +418,14 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
             <div className="admin-form compact">
               <div className="admin-form-grid two-columns">
                 <label>
-                  <span>Nhãn nhỏ</span>
+                  <span>{t('admin.content.faq.eyebrow')}</span>
                   <input
                     value={drafts.faq.eyebrow}
                     onChange={(event) => updateDraft({ eyebrow: event.target.value })}
                   />
                 </label>
                 <label>
-                  <span>Tiêu đề khu vực FAQ</span>
+                  <span>{t('admin.content.faq.faqTitle')}</span>
                   <input
                     value={drafts.faq.title}
                     onChange={(event) => updateDraft({ title: event.target.value })}
@@ -436,18 +438,18 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 {drafts.faq.items.map((item, index) => (
                   <article key={item.id} className="content-repeat-item">
                     <div className="content-repeat-head">
-                      <strong>Câu hỏi {index + 1}</strong>
+                      <strong>{t('admin.content.faq.questionItem', { number: index + 1 })}</strong>
                       <button
                         type="button"
                         className="admin-danger-button slim"
                         onClick={() => removeFaqItem(item.id)}
                       >
                         <Trash2 size={14} aria-hidden="true" />
-                        <span>Xóa</span>
+                        <span>{t('admin.content.faq.delete')}</span>
                       </button>
                     </div>
                     <label>
-                      <span>Câu hỏi</span>
+                      <span>{t('admin.content.faq.questionLabel')}</span>
                       <input
                         value={item.question}
                         onChange={(event) => updateFaqItem(item.id, { question: event.target.value })}
@@ -455,7 +457,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                       />
                     </label>
                     <label>
-                      <span>Câu trả lời</span>
+                      <span>{t('admin.content.faq.answerLabel')}</span>
                       <textarea
                         value={item.answer}
                         onChange={(event) => updateFaqItem(item.id, { answer: event.target.value })}
@@ -468,7 +470,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               </div>
               <button type="button" className="admin-icon-button" onClick={addFaqItem}>
                 <Plus size={16} aria-hidden="true" />
-                <span>Thêm câu hỏi</span>
+                <span>{t('admin.content.faq.addQuestion')}</span>
               </button>
             </div>
           )}
@@ -477,7 +479,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
             <div className="admin-form compact">
               <div className="admin-form-grid two-columns">
                 <label>
-                  <span>Tên thương hiệu</span>
+                  <span>{t('admin.content.brand.brandName')}</span>
                   <input
                     value={drafts.brand.name}
                     onChange={(event) => updateDraft({ name: event.target.value })}
@@ -485,7 +487,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                   />
                 </label>
                 <label>
-                  <span>Tagline</span>
+                  <span>{t('admin.content.brand.tagline')}</span>
                   <input
                     value={drafts.brand.tagline}
                     onChange={(event) => updateDraft({ tagline: event.target.value })}
@@ -493,18 +495,18 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 </label>
               </div>
               <label>
-                <span>Logo URL</span>
+                <span>{t('admin.content.brand.logoUrl')}</span>
                 <div className="content-logo-field">
                   <input
                     value={drafts.brand.logoUrl}
                     onChange={(event) => updateDraft({ logoUrl: event.target.value })}
                     placeholder="https://.../logo.png"
                   />
-                  {drafts.brand.logoUrl && <img src={drafts.brand.logoUrl} alt="Xem trước logo" />}
+                  {drafts.brand.logoUrl && <img src={drafts.brand.logoUrl} alt={t('admin.content.brand.logoPreview')} />}
                 </div>
               </label>
               <label>
-                <span>Mô tả footer</span>
+                <span>{t('admin.content.brand.footerDesc')}</span>
                 <textarea
                   value={drafts.brand.description}
                   onChange={(event) => updateDraft({ description: event.target.value })}
@@ -513,7 +515,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               </label>
               <div className="admin-form-grid two-columns">
                 <label>
-                  <span>Email liên hệ</span>
+                  <span>{t('admin.content.brand.contactEmail')}</span>
                   <input
                     type="email"
                     value={drafts.brand.email}
@@ -521,7 +523,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                   />
                 </label>
                 <label>
-                  <span>Số điện thoại / Zalo</span>
+                  <span>{t('admin.content.brand.phone')}</span>
                   <input
                     value={drafts.brand.phone}
                     onChange={(event) => updateDraft({ phone: event.target.value })}
@@ -529,14 +531,14 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 </label>
               </div>
               <label>
-                <span>Địa chỉ</span>
+                <span>{t('admin.content.brand.address')}</span>
                 <input
                   value={drafts.brand.address}
                   onChange={(event) => updateDraft({ address: event.target.value })}
                 />
               </label>
               <label>
-                <span>Tên hiển thị ở copyright</span>
+                <span>{t('admin.content.brand.copyright')}</span>
                 <input
                   value={drafts.brand.copyright}
                   onChange={(event) => updateDraft({ copyright: event.target.value })}
@@ -545,35 +547,35 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
 
               <div className="content-repeat-list">
                 <div className="content-repeat-title">
-                  <strong>Social links</strong>
+                  <strong>{t('admin.content.brand.socialLinks')}</strong>
                   <button type="button" className="admin-icon-button slim" onClick={addSocial}>
                     <Plus size={14} aria-hidden="true" />
-                    <span>Thêm link</span>
+                    <span>{t('admin.content.brand.addLink')}</span>
                   </button>
                 </div>
                 {drafts.brand.socials.map((item) => (
                   <article key={item.id} className="content-social-row">
                     <label>
-                      <span>Tên kênh</span>
+                      <span>{t('admin.content.brand.channelName')}</span>
                       <input
                         value={item.label}
                         onChange={(event) => updateSocial(item.id, { label: event.target.value })}
-                        placeholder="Facebook"
+                        placeholder={t('admin.content.brand.channelNamePlaceholder')}
                       />
                     </label>
                     <label>
-                      <span>Đường dẫn</span>
+                      <span>{t('admin.content.brand.url')}</span>
                       <input
                         value={item.url}
                         onChange={(event) => updateSocial(item.id, { url: event.target.value })}
-                        placeholder="https://..."
+                        placeholder={t('admin.content.brand.urlPlaceholder')}
                       />
                     </label>
                     <button
                       type="button"
                       className="admin-danger-button slim"
                       onClick={() => removeSocial(item.id)}
-                      aria-label={`Xóa ${item.label || 'social link'}`}
+                      aria-label={t('admin.content.brand.deleteAria', { label: item.label || 'social link' })}
                     >
                       <Trash2 size={14} aria-hidden="true" />
                     </button>
@@ -586,12 +588,12 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
           {activeSection === 'theme' && (
             <div className="admin-form compact">
               {[
-                ['primaryColor', 'Màu chủ đạo'],
-                ['primaryHoverColor', 'Màu khi hover'],
-                ['accentColor', 'Màu điểm nhấn'],
-              ].map(([key, label]) => (
+                ['primaryColor', 'admin.content.theme.primary'],
+                ['primaryHoverColor', 'admin.content.theme.hover'],
+                ['accentColor', 'admin.content.theme.accent'],
+              ].map(([key, tKey]) => (
                 <label key={key}>
-                  <span>{label}</span>
+                  <span>{t(tKey)}</span>
                   <div className="content-color-input">
                     <input
                       type="color"
@@ -615,9 +617,9 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                   '--preview-accent': drafts.theme.accentColor,
                 }}
               >
-                <span>Xem trước bảng màu</span>
+                <span>{t('admin.content.theme.preview')}</span>
                 <div>
-                  <button type="button">Nút chính</button>
+                  <button type="button">{t('admin.content.theme.primaryBtn')}</button>
                   <i />
                   <Link2 size={20} aria-hidden="true" />
                 </div>
@@ -638,7 +640,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
           <div className="content-settings-save">
             <button type="submit" disabled={submitting || loading}>
               <Save size={17} aria-hidden="true" />
-              <span>{submitting ? 'Đang lưu...' : 'Lưu thay đổi'}</span>
+              <span>{submitting ? t('admin.content.saving') : t('admin.content.saveChanges')}</span>
             </button>
           </div>
         </form>

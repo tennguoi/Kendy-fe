@@ -1,13 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import './loading.css'
-
-const SUB_LINES = [
-  'Vui lòng chờ trong giây lát',
-  'Máy chủ đang thức dậy...',
-  'Gần xong rồi, promise',
-  'Đừng tắt tab nha bạn ơi',
-  'Đang pha cà phê cho server',
-]
 
 function useTypewriter(lines) {
   const [displayed, setDisplayed] = useState('')
@@ -49,12 +42,15 @@ function useTypewriter(lines) {
 
 function Loading({
   fullScreen = true,
-  message = 'Đang tải',
+  message,
   showProgress = false,
 }) {
+  const { t } = useTranslation()
+  const subLines = t('loading.subLines', { returnObjects: true })
   const [progress, setProgress] = useState(0)
   const [dots, setDots] = useState('')
-  const subText = useTypewriter(SUB_LINES)
+  const subText = useTypewriter(Array.isArray(subLines) ? subLines : [t('loading.initSub')])
+  const displayMessage = message || t('loading.defaultMessage')
 
   useEffect(() => {
     if (!showProgress) return
@@ -87,7 +83,7 @@ function Loading({
 
         <div className="kd-loading-text">
           <p className="loading-message">
-            {message}<span className="loading-dots">{dots}</span>
+            {displayMessage}<span className="loading-dots">{dots}</span>
           </p>
           <p className="loading-submessage">
             {subText}<span className="loading-cursor" aria-hidden="true" />

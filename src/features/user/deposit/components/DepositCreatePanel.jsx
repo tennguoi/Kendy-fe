@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { money } from '../../../../utils/currency'
 import { quickDepositAmounts } from '../deposit.constants'
 
@@ -6,16 +7,18 @@ function DepositCreatePanel({
   onAmountChange,
   onCreateDeposit,
 }) {
+  const { t } = useTranslation()
+
   return (
     <div className="deposit-form">
-      <h2>Nạp tiền qua chuyển khoản</h2>
+      <h2>{t('deposit.title', { defaultValue: 'Nạp tiền qua chuyển khoản' })}</h2>
       <label>
-        Số tiền
+        {t('deposit.amountLabel', { defaultValue: 'Số tiền' })}
         <input
           value={depositAmount}
           inputMode="text"
           onChange={(event) => onAmountChange(event.target.value)}
-          placeholder="250k, 500k, 1tr..."
+          placeholder={t('deposit.amountPlaceholder', { defaultValue: '250k, 500k, 1tr...' })}
         />
       </label>
       <div className="quick-amounts">
@@ -26,7 +29,7 @@ function DepositCreatePanel({
         ))}
       </div>
       <button className="primary-button" type="button" onClick={onCreateDeposit}>
-        Tạo yêu cầu nạp
+        {t('deposit.createDeposit', { defaultValue: 'Tạo yêu cầu nạp' })}
       </button>
     </div>
   )

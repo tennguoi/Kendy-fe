@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { normalizeList, normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
@@ -31,6 +32,7 @@ function AdminUsersView({
   const [statusFilter, setStatusFilter] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [users, setUsers] = useState([])
+  const { t } = useTranslation()
 
   const selectedUser = users.find((user) => user.id === selectedId) || users[0]
 
@@ -62,7 +64,7 @@ function AdminUsersView({
           : items[0]?.id || null
       ))
     } catch (err) {
-      setViewError(err.message || 'Không tải được danh sách user.')
+      setViewError(err.message || t('admin.users.loadError'))
     } finally {
       setHasLoadedUsers(true)
       setLoading(false)
@@ -96,7 +98,7 @@ function AdminUsersView({
       })
       setRoleForm((current) => ({ ...current, role: profile.user.role || 'USER' }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được chi tiết user.')
+      setViewError(err.message || t('admin.users.loadDetailError'))
     }
   }, [setViewError, token])
 
@@ -127,14 +129,14 @@ function AdminUsersView({
     setViewError('')
     try {
       const saved = await adminApi.updateUserStatus(targetUser.id, {
-        reason: status === 'LOCKED' ? 'Khóa từ màn hình quản trị' : 'Mở lại từ màn hình quản trị',
+        reason: status === 'LOCKED' ? t('admin.users.detail.lockReason') : t('admin.users.detail.unlockReason'),
         status,
       }, token)
       patchUser(saved)
       setSelectedId(saved.id)
-      onSetNotice(`Đã cập nhật trạng thái ${saved.email}.`)
+      onSetNotice(t('admin.users.statusUpdateSuccess', { email: saved.email }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được trạng thái user.')
+      setViewError(err.message || t('admin.users.statusUpdateError'))
     } finally {
       setSubmitting(false)
     }
@@ -156,9 +158,9 @@ function AdminUsersView({
       patchUser(saved)
       setRoleForm({ reason: '', role: saved.role })
       await loadUserDetail(saved.id)
-      onSetNotice(`Đã cập nhật role cho ${saved.email}.`)
+      onSetNotice(t('admin.users.roleUpdateSuccess', { email: saved.email }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được role user.')
+      setViewError(err.message || t('admin.users.roleUpdateError'))
     } finally {
       setSubmitting(false)
     }
@@ -182,9 +184,9 @@ function AdminUsersView({
       setAdjustForm({ amount: '', confirmationPassword: '', direction: 'CREDIT', reason: '' })
       await loadUsers()
       await loadUserDetail(selectedUser.id)
-      onSetNotice(`Đã điều chỉnh ví cho ${selectedUser.email}.`)
+      onSetNotice(t('admin.users.walletAdjustSuccess', { email: selectedUser.email }))
     } catch (err) {
-      setViewError(err.message || 'Không điều chỉnh được ví.')
+      setViewError(err.message || t('admin.users.walletAdjustError'))
     } finally {
       setSubmitting(false)
     }
@@ -200,9 +202,9 @@ function AdminUsersView({
     try {
       await adminApi.revokeUserSession(selectedUser.id, sessionId, token)
       await loadUserDetail(selectedUser.id)
-      onSetNotice(`Đã thu hồi session #${sessionId}.`)
+      onSetNotice(t('admin.users.sessionRevokeSuccess', { id: sessionId }))
     } catch (err) {
-      setViewError(err.message || 'Không thu hồi được session.')
+      setViewError(err.message || t('admin.users.sessionRevokeError'))
     } finally {
       setSubmitting(false)
     }
@@ -215,23 +217,23 @@ function AdminUsersView({
       .filter(Boolean)
 
     if (ids.length === 0) {
-      setViewError('Nhập danh sách user ID cần xử lý.')
+      setViewError(t('admin.users.bulkIdsRequired'))
       return
     }
 
     setSubmitting(true)
     setViewError('')
     try {
-      const payload = { ids, reason: bulkStatusForm.reason.trim() || 'Cập nhật bulk từ màn hình quản trị' }
+      const payload = { ids, reason: bulkStatusForm.reason.trim() || t('admin.users.detail.bulkReason') }
       const saved = status === 'LOCKED'
         ? await adminApi.bulkLockUsers(payload, token)
         : await adminApi.bulkUnlockUsers(payload, token)
       saved.forEach(patchUser)
       setBulkStatusForm({ ids: '', reason: '' })
       await loadUsers()
-      onSetNotice(`Đã cập nhật ${saved.length} user.`)
+      onSetNotice(t('admin.users.bulkUpdateSuccess', { count: saved.length }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật bulk user.')
+      setViewError(err.message || t('admin.users.bulkUpdateError'))
     } finally {
       setSubmitting(false)
     }
@@ -249,22 +251,22 @@ function AdminUsersView({
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
           <div>
-            <h2>Quản lý người dùng</h2>
+            <h2>{t('admin.users.title')}</h2>
           </div>
           {users.length > 0 && (
             <div className="admin-quick-stats">
-              <span className="admin-quick-stat"><strong>{users.length}</strong> tài khoản</span>
+              <span className="admin-quick-stat"><strong>{users.length}</strong> {t('admin.users.accounts')}</span>
             </div>
           )}
         </div>
         <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadUsers} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Tải lại</span>
+          <span>{t('admin.users.reload')}</span>
         </button>
       </div>
 
       {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message="Đang tải danh sách người dùng..." subMessage="" />}
+      {!error && loading && <Loading fullScreen={false} message={t('admin.users.loading')} subMessage="" />}
 
       <UsersFilterBar
         onQueryChange={setQuery}
@@ -300,7 +302,7 @@ function AdminUsersView({
       <AdminDrawer
         isOpen={drawerOpen && Boolean(selectedUser)}
         onClose={() => setDrawerOpen(false)}
-        title={selectedUser?.name || selectedUser?.email || 'Chi tiết user'}
+        title={selectedUser?.name || selectedUser?.email || t('admin.users.drawerTitle')}
         width="600px"
       >
         <UserDetailPanel

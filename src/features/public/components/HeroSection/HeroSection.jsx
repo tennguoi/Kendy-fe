@@ -1,14 +1,24 @@
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import Button from '../../../../components/Button/Button'
 import './HeroSection.css'
 
 function HeroSection({ logo, notice, onLoginClick, serviceSignals, dynamicContent }) {
-  const kicker = dynamicContent?.kicker || 'Mua tài khoản, nâng cấp gói và đăng ký dịch vụ Facebook'
-  const title = dynamicContent?.title || 'Mua tài khoản CapCut, Facebook và dịch vụ quảng cáo nhanh chóng, minh bạch'
-  const description = dynamicContent?.description || 'Kendy Digital giúp bạn mua tài khoản, nâng cấp gói, nạp tiền tự động, theo dõi đơn hàng và nhận hỗ trợ sau mua trên một hệ thống có ví tiền, mã đơn và ticket rõ ràng.'
-  const primaryCta = dynamicContent?.primaryCta || 'Xem dịch vụ'
-  const secondaryCta = dynamicContent?.secondaryCta || 'Liên hệ tư vấn'
-  const trustItems = dynamicContent?.trustItems || ['Facebook Ads', 'CapCut Pro', 'Nâng cấp tài khoản', 'Bảo hành rõ điều kiện']
+  const { t } = useTranslation()
+
+  const kicker = dynamicContent?.kicker || t('public.hero.kicker', { defaultValue: 'Mua tài khoản, nâng cấp gói và đăng ký dịch vụ Facebook' })
+  const title = dynamicContent?.title || t('public.hero.title', { defaultValue: 'Mua tài khoản CapCut, Facebook và dịch vụ quảng cáo nhanh chóng, minh bạch' })
+  const description = dynamicContent?.description || t('public.hero.description', { defaultValue: 'Kendy Digital giúp bạn mua tài khoản, nâng cấp gói, nạp tiền tự động, theo dõi đơn hàng và nhận hỗ trợ sau mua trên một hệ thống có ví tiền, mã đơn và ticket rõ ràng.' })
+  const primaryCta = dynamicContent?.primaryCta || t('public.hero.primaryCta', { defaultValue: 'Xem dịch vụ' })
+  const secondaryCta = dynamicContent?.secondaryCta || t('public.hero.secondaryCta', { defaultValue: 'Liên hệ tư vấn' })
+  
+  const defaultTrustItems = [
+    t('public.signals.fbAds', { defaultValue: 'Facebook Ads' }),
+    t('public.signals.upgradeValue', { defaultValue: 'CapCut Pro' }),
+    t('public.policies.service.link3', { defaultValue: 'Nâng cấp tài khoản' }),
+    t('public.signals.clearTermsValue', { defaultValue: 'Bảo hành rõ điều kiện' })
+  ]
+  const trustItems = dynamicContent?.trustItems || t('public.hero.trustItems', { returnObjects: true, defaultValue: defaultTrustItems })
 
   return (
     <section className="public-hero" id="top">
@@ -38,7 +48,7 @@ function HeroSection({ logo, notice, onLoginClick, serviceSignals, dynamicConten
           </div>
 
           <div className="public-trust-strip" aria-label="Điểm nổi bật">
-            {trustItems.map((item, idx) => (
+            {Array.isArray(trustItems) && trustItems.map((item, idx) => (
               <span key={idx}>{item}</span>
             ))}
           </div>
@@ -46,20 +56,20 @@ function HeroSection({ logo, notice, onLoginClick, serviceSignals, dynamicConten
 
         <div className="hero-service-card" aria-label="Mô phỏng dịch vụ nổi bật">
           <div className="mockup-topbar">
-            <strong>Ví, đơn hàng và dịch vụ</strong>
+            <strong>{t('public.hero.mockupTitle', { defaultValue: 'Ví, đơn hàng và dịch vụ' })}</strong>
           </div>
 
           <div className="wallet-preview">
-            <span>Số dư ví</span>
+            <span>{t('public.hero.mockupBalance', { defaultValue: 'Số dư ví' })}</span>
             <strong>1.250.000đ</strong>
-            <small>Giao dịch nạp tiền thành công: +500.000đ</small>
+            <small>{t('public.hero.mockupBalanceDetail', { defaultValue: 'Giao dịch nạp tiền thành công: +500.000đ' })}</small>
           </div>
 
           <div className="hero-service-stack">
-            <span>CapCut Pro</span>
-            <span>Tài khoản Facebook</span>
-            <span>Nâng cấp tài khoản</span>
-            <span>Chạy quảng cáo</span>
+            <span>{t('public.policies.service.link1', { defaultValue: 'CapCut Pro' })}</span>
+            <span>{t('public.policies.service.link2', { defaultValue: 'Tài khoản Facebook' })}</span>
+            <span>{t('public.policies.service.link3', { defaultValue: 'Nâng cấp tài khoản' })}</span>
+            <span>{t('public.policies.service.link4', { defaultValue: 'Chạy quảng cáo' })}</span>
           </div>
 
           <div className="signal-grid">
@@ -69,8 +79,8 @@ function HeroSection({ logo, notice, onLoginClick, serviceSignals, dynamicConten
               return (
                 <article className="signal-card" key={item.label}>
                   <Icon size={18} strokeWidth={2} aria-hidden="true" />
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
+                  <span>{item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}</span>
+                  <strong>{item.valueKey ? t(item.valueKey, { defaultValue: item.value }) : item.value}</strong>
                 </article>
               )
             })}
@@ -78,14 +88,14 @@ function HeroSection({ logo, notice, onLoginClick, serviceSignals, dynamicConten
 
           <div className="order-preview">
             <div>
-              <span>Đơn gần đây</span>
-              <strong>Nâng cấp CapCut Pro 12 tháng</strong>
+              <span>{t('public.hero.mockupRecentOrder', { defaultValue: 'Đơn gần đây' })}</span>
+              <strong>{t('public.hero.mockupService', { defaultValue: 'Nâng cấp CapCut Pro 12 tháng' })}</strong>
             </div>
-            <em>Đang xử lý</em>
+            <em>{t('public.hero.mockupProcessing', { defaultValue: 'Đang xử lý' })}</em>
           </div>
 
           <button type="button" className="hero-login-link" onClick={onLoginClick}>
-            Đã có tài khoản? Đăng nhập để theo dõi đơn
+            {t('public.hero.mockupLoginLink', { defaultValue: 'Đã có tài khoản? Đăng nhập để theo dõi đơn' })}
           </button>
         </div>
       </div>

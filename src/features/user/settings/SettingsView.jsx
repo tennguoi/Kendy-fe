@@ -20,6 +20,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { userApi } from '../../../api/user.api'
 import { AdminEmptyState, AdminStatusBadge } from '../../admin/AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../admin/adminFormat'
@@ -55,6 +56,7 @@ function SettingsView({
   onSetNotice,
   token,
 }) {
+  const { t } = useTranslation()
   const [apiKeyForm, setApiKeyForm] = useState({ name: '', scopes: 'orders:read,wallet:read' })
   const [apiKeys, setApiKeys] = useState([])
   const [createdApiToken, setCreatedApiToken] = useState('')
@@ -107,11 +109,11 @@ function SettingsView({
       setApiKeys(normalizeList(apiKeyData))
       setNotifications(normalizeList(notificationData))
     } catch (err) {
-      setViewError(err.message || 'Không tải được cài đặt tài khoản.')
+      setViewError(err.message || t('settings.loadError', { defaultValue: 'Không tải được cài đặt tài khoản.' }))
     } finally {
       setLoading(false)
     }
-  }, [onCurrentUserChange, setViewError, token])
+  }, [onCurrentUserChange, setViewError, token, t])
 
   useEffect(() => {
     const timer = window.setTimeout(loadSettings, 0)
@@ -121,7 +123,7 @@ function SettingsView({
   const updateProfile = async (event) => {
     event.preventDefault()
     if (!profileForm.name.trim()) {
-      setViewError('Tên hiển thị không được để trống.')
+      setViewError(t('settings.nameRequired', { defaultValue: 'Tên hiển thị không được để trống.' }))
       return
     }
 
@@ -146,9 +148,9 @@ function SettingsView({
       const saved = await userApi.updateProfile(payload, token)
       onCurrentUserChange(saved)
       setProfileForm(profileToForm(saved))
-      onSetNotice('Đã cập nhật thông tin tài khoản.')
+      onSetNotice(t('settings.profileUpdated', { defaultValue: 'Đã cập nhật thông tin tài khoản.' }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được thông tin tài khoản.')
+      setViewError(err.message || t('settings.profileUpdateError', { defaultValue: 'Không cập nhật được thông tin tài khoản.' }))
     } finally {
       setSubmitting(false)
     }
@@ -161,7 +163,7 @@ function SettingsView({
   const changePassword = async (event) => {
     event.preventDefault()
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setViewError('Mật khẩu mới và xác nhận mật khẩu không khớp.')
+      setViewError(t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' }))
       return
     }
 
@@ -175,9 +177,9 @@ function SettingsView({
       onCurrentUserChange(saved)
       setPasswordForm({ confirmPassword: '', currentPassword: '', newPassword: '' })
       await loadSettings()
-      onSetNotice('Đã đổi mật khẩu.')
+      onSetNotice(t('settings.passwordChanged', { defaultValue: 'Đã đổi mật khẩu.' }))
     } catch (err) {
-      setViewError(err.message || 'Không đổi được mật khẩu.')
+      setViewError(err.message || t('settings.passwordChangeError', { defaultValue: 'Không đổi được mật khẩu.' }))
     } finally {
       setSubmitting(false)
     }
@@ -189,9 +191,9 @@ function SettingsView({
     try {
       await userApi.sendTwoFactorEnableEmailCode(token)
       setTwoFactorEmailSent(true)
-      onSetNotice('Đã gửi mã xác thực 2FA qua email.')
+      onSetNotice(t('settings.twoFAEmailSent', { defaultValue: 'Đã gửi mã xác thực 2FA qua email.' }))
     } catch (err) {
-      setViewError(err.message || 'Không gửi được mã xác thực 2FA.')
+      setViewError(err.message || t('settings.twoFAEmailError', { defaultValue: 'Không gửi được mã xác thực 2FA.' }))
     } finally {
       setSubmitting(false)
     }
@@ -207,9 +209,9 @@ function SettingsView({
       setTwoFactorEmailSent(false)
       setTwoFactorForm({ code: '', password: '' })
       await loadSettings()
-      onSetNotice('Đã bật 2FA qua email.')
+      onSetNotice(t('settings.twoFAEmailEnabled', { defaultValue: 'Đã bật 2FA qua email.' }))
     } catch (err) {
-      setViewError(err.message || 'Không bật được 2FA qua email.')
+      setViewError(err.message || t('settings.twoFAEmailEnableError', { defaultValue: 'Không bật được 2FA qua email.' }))
     } finally {
       setSubmitting(false)
     }
@@ -220,9 +222,9 @@ function SettingsView({
     setViewError('')
     try {
       setTotpSetup(await userApi.setupTwoFactor(token))
-      onSetNotice('Đã tạo mã cài đặt TOTP.')
+      onSetNotice(t('settings.totpSetupCreated', { defaultValue: 'Đã tạo mã cài đặt TOTP.' }))
     } catch (err) {
-      setViewError(err.message || 'Không tạo được mã cài đặt TOTP.')
+      setViewError(err.message || t('settings.totpSetupError', { defaultValue: 'Không tạo được mã cài đặt TOTP.' }))
     } finally {
       setSubmitting(false)
     }
@@ -238,9 +240,9 @@ function SettingsView({
       setTotpCode('')
       setTotpSetup(null)
       await loadSettings()
-      onSetNotice('Đã bật 2FA TOTP.')
+      onSetNotice(t('settings.totpEnabled', { defaultValue: 'Đã bật 2FA TOTP.' }))
     } catch (err) {
-      setViewError(err.message || 'Mã TOTP không hợp lệ.')
+      setViewError(err.message || t('settings.totpCodeInvalid', { defaultValue: 'Mã TOTP không hợp lệ.' }))
     } finally {
       setSubmitting(false)
     }
@@ -248,7 +250,7 @@ function SettingsView({
 
   const runTwoFactorProtectedAction = async (action) => {
     if (!twoFactorForm.password.trim()) {
-      setViewError('Nhập mật khẩu hiện tại để xử lý 2FA.')
+      setViewError(t('settings.twoFAPasswordRequired', { defaultValue: 'Nhập mật khẩu hiện tại để xử lý 2FA.' }))
       return
     }
 
@@ -269,9 +271,9 @@ function SettingsView({
       }
       setTwoFactorForm({ code: '', password: '' })
       await loadSettings()
-      onSetNotice('Đã xử lý cài đặt 2FA.')
+      onSetNotice(t('settings.twoFAProcessed', { defaultValue: 'Đã xử lý cài đặt 2FA.' }))
     } catch (err) {
-      setViewError(err.message || 'Không xử lý được cài đặt 2FA.')
+      setViewError(err.message || t('settings.twoFAProcessError', { defaultValue: 'Không xử lý được cài đặt 2FA.' }))
     } finally {
       setSubmitting(false)
     }
@@ -283,9 +285,9 @@ function SettingsView({
     try {
       await userApi.revokeSession(sessionId, token)
       setSessions(normalizeList(await userApi.getSessions(token)))
-      onSetNotice(`Đã thu hồi session #${sessionId}.`)
+      onSetNotice(t('settings.sessionRevoked', { id: sessionId, defaultValue: 'Đã thu hồi session #{{id}}.' }))
     } catch (err) {
-      setViewError(err.message || 'Không thu hồi được session.')
+      setViewError(err.message || t('settings.sessionRevokeError', { defaultValue: 'Không thu hồi được session.' }))
     } finally {
       setSubmitting(false)
     }
@@ -297,9 +299,9 @@ function SettingsView({
     try {
       await userApi.revokeAllSessions(token)
       setSessions([])
-      onSetNotice('Đã thu hồi tất cả session.')
+      onSetNotice(t('settings.allSessionsRevoked', { defaultValue: 'Đã thu hồi tất cả session.' }))
     } catch (err) {
-      setViewError(err.message || 'Không thu hồi được tất cả session.')
+      setViewError(err.message || t('settings.allSessionsRevokeError', { defaultValue: 'Không thu hồi được tất cả session.' }))
     } finally {
       setSubmitting(false)
     }
@@ -308,7 +310,7 @@ function SettingsView({
   const createApiKey = async (event) => {
     event.preventDefault()
     if (!apiKeyForm.name.trim()) {
-      setViewError('Tên API key không được để trống.')
+      setViewError(t('settings.apiKeyNameRequired', { defaultValue: 'Tên API key không được để trống.' }))
       return
     }
 
@@ -323,9 +325,9 @@ function SettingsView({
       setCreatedApiToken(created.token)
       setApiKeyForm({ name: '', scopes: 'orders:read,wallet:read' })
       await loadSettings()
-      onSetNotice('Đã tạo API key mới.')
+      onSetNotice(t('settings.apiKeyCreated', { defaultValue: 'Đã tạo API key mới.' }))
     } catch (err) {
-      setViewError(err.message || 'Không tạo được API key.')
+      setViewError(err.message || t('settings.apiKeyCreateError', { defaultValue: 'Không tạo được API key.' }))
     } finally {
       setSubmitting(false)
     }
@@ -337,9 +339,9 @@ function SettingsView({
     try {
       await userApi.revokeApiKey(keyId, token)
       setApiKeys(normalizeList(await userApi.getApiKeys(token)))
-      onSetNotice(`Đã thu hồi API key #${keyId}.`)
+      onSetNotice(t('settings.apiKeyRevoked', { id: keyId, defaultValue: 'Đã thu hồi API key #{{id}}.' }))
     } catch (err) {
-      setViewError(err.message || 'Không thu hồi được API key.')
+      setViewError(err.message || t('settings.apiKeyRevokeError', { defaultValue: 'Không thu hồi được API key.' }))
     } finally {
       setSubmitting(false)
     }
@@ -359,16 +361,16 @@ function SettingsView({
       link.click()
       link.remove()
       URL.revokeObjectURL(url)
-      onSetNotice('Đã xuất dữ liệu cá nhân.')
+      onSetNotice(t('settings.exportData', { defaultValue: 'Đã xuất dữ liệu cá nhân.' }))
     } catch (err) {
-      setViewError(err.message || 'Không xuất được dữ liệu cá nhân.')
+      setViewError(err.message || t('settings.exportDataError', { defaultValue: 'Không xuất được dữ liệu cá nhân.' }))
     } finally {
       setSubmitting(false)
     }
   }
 
   const deleteAccount = async () => {
-    const confirmed = window.confirm('Xoá tài khoản sẽ ẩn danh thông tin cá nhân, thu hồi session/API key và bạn sẽ cần đăng nhập lại. Tiếp tục?')
+    const confirmed = window.confirm(t('settings.deleteAccountConfirm', { defaultValue: 'Xoá tài khoản sẽ ẩn danh thông tin cá nhân, thu hồi session/API key và bạn sẽ cần đăng nhập lại. Tiếp tục?' }))
     if (!confirmed) {
       return
     }
@@ -379,10 +381,10 @@ function SettingsView({
       localStorage.removeItem('accessToken')
       localStorage.removeItem('token')
       sessionStorage.clear()
-      onSetNotice('Tài khoản đã được xoá/ẩn danh.')
+      onSetNotice(t('settings.accountDeleted', { defaultValue: 'Tài khoản đã được xoá/ẩn danh.' }))
       window.location.assign('/')
     } catch (err) {
-      setViewError(err.message || 'Không xoá được tài khoản.')
+      setViewError(err.message || t('settings.accountDeleteError', { defaultValue: 'Không xoá được tài khoản.' }))
     } finally {
       setSubmitting(false)
     }
@@ -391,7 +393,7 @@ function SettingsView({
   const handleCopyToken = () => {
     if (createdApiToken) {
       navigator.clipboard.writeText(createdApiToken)
-      onSetNotice('Đã copy API token vào clipboard.')
+      onSetNotice(t('settings.apiTokenCopied', { defaultValue: 'Đã copy API token vào clipboard.' }))
     }
   }
 
@@ -399,14 +401,14 @@ function SettingsView({
     <section className="admin-view" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div className="admin-toolbar" style={{ borderBottom: '1px solid var(--kd-border)', paddingBottom: '16px', marginBottom: '8px' }}>
         <div>
-          <h2>Thiết lập tài khoản</h2>
+          <h2>{t('settings.title', { defaultValue: 'Thiết lập tài khoản' })}</h2>
           <p style={{ margin: '4px 0 0', color: 'var(--kd-muted)', fontSize: '14px' }}>
-            Quản lý thông tin hồ sơ cá nhân, cấu hình bảo mật 2 lớp và API keys của bạn.
+            {t('settings.subtitle', { defaultValue: 'Quản lý thông tin hồ sơ cá nhân, cấu hình bảo mật 2 lớp và API keys của bạn.' })}
           </p>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadSettings} disabled={loading}>
           <RefreshCw size={16} strokeWidth={2.5} className={loading ? 'spin' : ''} aria-hidden="true" />
-          <span>Tải lại</span>
+          <span>{t('settings.reload', { defaultValue: 'Tải lại' })}</span>
         </button>
       </div>
 
@@ -414,9 +416,9 @@ function SettingsView({
 
       <div className="settings-layout-container">
         {/* Facebook style Sidebar */}
-        <aside className="settings-sidebar-nav" aria-label="Menu cài đặt">
+        <aside className="settings-sidebar-nav" aria-label={t('settings.settingsMenu', { defaultValue: 'Menu cài đặt' })}>
           <div className="settings-sidebar-header">
-            <h3>Danh mục</h3>
+            <h3>{t('settings.categories', { defaultValue: 'Danh mục' })}</h3>
           </div>
           <nav className="settings-sidebar-menu">
             <button
@@ -426,8 +428,8 @@ function SettingsView({
             >
               <User size={18} className="menu-icon" />
               <div className="menu-text">
-                <strong>Hồ sơ cá nhân</strong>
-                <span>Hồ sơ & số dư tài khoản</span>
+                <strong>{t('settings.generalTab', { defaultValue: 'Hồ sơ cá nhân' })}</strong>
+                <span>{t('settings.generalTabDesc', { defaultValue: 'Hồ sơ & số dư tài khoản' })}</span>
               </div>
             </button>
             <button
@@ -437,8 +439,8 @@ function SettingsView({
             >
               <ShieldCheck size={18} className="menu-icon" />
               <div className="menu-text">
-                <strong>Bảo mật & Phiên</strong>
-                <span>Mật khẩu, 2FA & Thiết bị</span>
+                <strong>{t('settings.securityTab', { defaultValue: 'Bảo mật & Phiên' })}</strong>
+                <span>{t('settings.securityTabDesc', { defaultValue: 'Mật khẩu, 2FA & Thiết bị' })}</span>
               </div>
             </button>
             <button
@@ -448,8 +450,8 @@ function SettingsView({
             >
               <Code2 size={18} className="menu-icon" />
               <div className="menu-text">
-                <strong>Developer API Keys</strong>
-                <span>Kết nối API & Scopes</span>
+                <strong>{t('settings.apikeysTab', { defaultValue: 'Developer API Keys' })}</strong>
+                <span>{t('settings.apikeysTabDesc', { defaultValue: 'Kết nối API & Scopes' })}</span>
               </div>
             </button>
             <button
@@ -459,8 +461,8 @@ function SettingsView({
             >
               <FileText size={18} className="menu-icon" />
               <div className="menu-text">
-                <strong>Quyền riêng tư</strong>
-                <span>Xuất dữ liệu & Xóa tài khoản</span>
+                <strong>{t('settings.privacyTab', { defaultValue: 'Quyền riêng tư' })}</strong>
+                <span>{t('settings.privacyTabDesc', { defaultValue: 'Xuất dữ liệu & Xóa tài khoản' })}</span>
               </div>
             </button>
           </nav>
@@ -480,29 +482,29 @@ function SettingsView({
                   )}
                 </div>
                 <div className="settings-profile-info">
-                  <span className="eyebrow" style={{ fontSize: '11px', letterSpacing: '1px' }}>Thành viên</span>
-                  <h4>{currentUser?.name || currentUser?.email || 'Người dùng'}</h4>
+                  <span className="eyebrow" style={{ fontSize: '11px', letterSpacing: '1px' }}>{t('settings.member', { defaultValue: 'Thành viên' })}</span>
+                  <h4>{currentUser?.name || currentUser?.email || t('common.user', { defaultValue: 'Người dùng' })}</h4>
                   <p>
                     <span>{currentUser?.email}</span>
                     {oauthProvider && (
                       <span style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '4px', fontSize: '11px' }}>
-                        Đăng nhập bằng {oauthProvider}
+                        {t('settings.loginWith', { provider: oauthProvider, defaultValue: 'Đăng nhập bằng {{provider}}' })}
                       </span>
                     )}
                   </p>
                   <div className="settings-profile-stats">
                     <div className="settings-stat-pill">
-                      <span>Số dư ví:</span>
+                      <span>{t('settings.walletBalance', { defaultValue: 'Số dư ví:' })}</span>
                       <strong style={{ color: 'var(--kd-blue)' }}>{formatAdminMoney(dashboard?.balance ?? currentUser?.balance)}</strong>
                     </div>
                     <div className="settings-stat-pill">
-                      <span>Đơn hàng:</span>
-                      <strong>{dashboard?.orderCount ?? 0} đã tạo</strong>
+                      <span>{t('settings.ordersCount', { defaultValue: 'Đơn hàng:' })}</span>
+                      <strong>{t('settings.ordersCreated', { count: dashboard?.orderCount ?? 0, defaultValue: '{{count}} đã tạo' })}</strong>
                     </div>
                     <div className="settings-stat-pill">
-                      <span>Trạng thái 2FA:</span>
+                      <span>{t('settings.twoFAStatus', { defaultValue: 'Trạng thái 2FA:' })}</span>
                       <strong style={{ color: security?.twoFactorEnabled ? 'var(--kd-success)' : 'var(--kd-warning)' }}>
-                        {security?.twoFactorEnabled ? 'Đang Bật' : 'Đang Tắt'}
+                        {security?.twoFactorEnabled ? t('settings.twoFAOn', { defaultValue: 'Đang Bật' }) : t('settings.twoFAOff', { defaultValue: 'Đang Tắt' })}
                       </strong>
                     </div>
                   </div>
@@ -514,15 +516,15 @@ function SettingsView({
                 <div className="settings-card">
                   <div className="settings-card-header">
                     <div>
-                      <h3><User size={16} /> Cập nhật hồ sơ</h3>
-                      <div className="settings-card-header-desc">Thay đổi thông tin liên lạc hiển thị trên hóa đơn.</div>
+                      <h3><User size={16} /> {t('settings.updateProfile', { defaultValue: 'Cập nhật hồ sơ' })}</h3>
+                      <div className="settings-card-header-desc">{t('settings.profileDesc', { defaultValue: 'Thay đổi thông tin liên lạc hiển thị trên hóa đơn.' })}</div>
                     </div>
                     <AdminStatusBadge status={currentUser?.status || 'ACTIVE'} />
                   </div>
                   <div className="settings-card-body">
                     <form className="settings-form-grid" onSubmit={updateProfile}>
                       <div className="settings-input-group">
-                        <label>Tên hiển thị</label>
+                        <label>{t('settings.displayName', { defaultValue: 'Tên hiển thị' })}</label>
                         <input
                           value={profileForm.name}
                           onChange={(event) => setProfileForm((current) => ({ ...current, name: event.target.value }))}
@@ -530,7 +532,7 @@ function SettingsView({
                         />
                       </div>
                       <div className="settings-input-group">
-                        <label>Địa chỉ Email</label>
+                        <label>{t('settings.emailAddress', { defaultValue: 'Địa chỉ Email' })}</label>
                         <input
                           value={profileForm.email}
                           onChange={(event) => setProfileForm((current) => ({ ...current, email: event.target.value }))}
@@ -539,7 +541,7 @@ function SettingsView({
                         />
                       </div>
                       <div className="settings-input-group full-width">
-                        <label>Ảnh đại diện (Avatar URL)</label>
+                        <label>{t('settings.avatarUrl', { defaultValue: 'Ảnh đại diện (Avatar URL)' })}</label>
                         <input
                           value={profileForm.avatarUrl}
                           onChange={(event) => setProfileForm((current) => ({ ...current, avatarUrl: event.target.value }))}
@@ -547,17 +549,17 @@ function SettingsView({
                         />
                       </div>
                       <div className="settings-input-group full-width">
-                        <label>Số điện thoại</label>
+                        <label>{t('settings.phone', { defaultValue: 'Số điện thoại' })}</label>
                         <input
                           value={profileForm.phone}
                           onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))}
-                          placeholder="Nhập số điện thoại"
+                          placeholder={t('settings.phonePlaceholder', { defaultValue: 'Nhập số điện thoại' })}
                         />
                       </div>
                       <div className="full-width" style={{ marginTop: '8px' }}>
                         <button type="submit" className="settings-btn-save" disabled={submitting}>
                           <Save size={16} />
-                          <span>Lưu thông tin</span>
+                          <span>{t('settings.saveInfo', { defaultValue: 'Lưu thông tin' })}</span>
                         </button>
                       </div>
                     </form>
@@ -568,23 +570,23 @@ function SettingsView({
                 <div className="settings-card">
                   <div className="settings-card-header">
                     <div>
-                      <h3>Thống kê tài khoản</h3>
-                      <div className="settings-card-header-desc">Tổng quan quá trình sử dụng và nạp ví.</div>
+                      <h3>{t('settings.accountStats', { defaultValue: 'Thống kê tài khoản' })}</h3>
+                      <div className="settings-card-header-desc">{t('settings.accountStatsDesc', { defaultValue: 'Tổng quan quá trình sử dụng và nạp ví.' })}</div>
                     </div>
                   </div>
                   <div className="settings-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div className="admin-report-grid compact-report" style={{ border: 'none', background: 'transparent', padding: 0 }}>
-                      <div><span>Đơn xử lý</span><strong>{dashboard?.processingOrders ?? 0}</strong></div>
-                      <div><span>Đơn hoàn tất</span><strong>{dashboard?.completedOrders ?? 0}</strong></div>
-                      <div><span>Nạp hoàn tất</span><strong>{dashboard?.completedDeposits ?? 0}</strong></div>
-                      <div><span>Ticket hỗ trợ</span><strong>{dashboard?.ticketCount ?? 0}</strong></div>
+                      <div><span>{t('settings.processingOrders', { defaultValue: 'Đơn xử lý' })}</span><strong>{dashboard?.processingOrders ?? 0}</strong></div>
+                      <div><span>{t('settings.completedOrders', { defaultValue: 'Đơn hoàn tất' })}</span><strong>{dashboard?.completedOrders ?? 0}</strong></div>
+                      <div><span>{t('settings.completedDeposits', { defaultValue: 'Nạp hoàn tất' })}</span><strong>{dashboard?.completedDeposits ?? 0}</strong></div>
+                      <div><span>{t('settings.supportTickets', { defaultValue: 'Ticket hỗ trợ' })}</span><strong>{dashboard?.ticketCount ?? 0}</strong></div>
                     </div>
                     <div style={{ height: '1px', background: 'var(--kd-border)' }}></div>
                     <div className="admin-report-grid compact-report" style={{ border: 'none', background: 'transparent', padding: 0 }}>
-                      <div><span>Tổng nạp</span><strong>{formatAdminMoney(dashboard?.completedDepositAmount)}</strong></div>
-                      <div><span>Đã chi tiêu</span><strong>{formatAdminMoney(dashboard?.purchaseAmount)}</strong></div>
-                      <div><span>Hoàn trả ví</span><strong>{formatAdminMoney(dashboard?.refundAmount)}</strong></div>
-                      <div><span>Giao dịch ví</span><strong>{dashboard?.walletTransactionCount ?? 0}</strong></div>
+                      <div><span>{t('settings.totalDeposits', { defaultValue: 'Tổng nạp' })}</span><strong>{formatAdminMoney(dashboard?.completedDepositAmount)}</strong></div>
+                      <div><span>{t('settings.totalSpent', { defaultValue: 'Đã chi tiêu' })}</span><strong>{formatAdminMoney(dashboard?.purchaseAmount)}</strong></div>
+                      <div><span>{t('settings.walletRefund', { defaultValue: 'Hoàn trả ví' })}</span><strong>{formatAdminMoney(dashboard?.refundAmount)}</strong></div>
+                      <div><span>{t('settings.walletTransactions', { defaultValue: 'Giao dịch ví' })}</span><strong>{dashboard?.walletTransactionCount ?? 0}</strong></div>
                     </div>
                   </div>
                 </div>
@@ -599,14 +601,14 @@ function SettingsView({
                 <div className="settings-card">
                   <div className="settings-card-header">
                     <div>
-                      <h3><Lock size={16} /> Đổi mật khẩu</h3>
-                      <div className="settings-card-header-desc">Mật khẩu nên chứa tối thiểu 8 ký tự kèm chữ hoa, chữ số.</div>
+                      <h3><Lock size={16} /> {t('settings.changePassword', { defaultValue: 'Đổi mật khẩu' })}</h3>
+                      <div className="settings-card-header-desc">{t('settings.passwordDesc', { defaultValue: 'Mật khẩu nên chứa tối thiểu 8 ký tự kèm chữ hoa, chữ số.' })}</div>
                     </div>
                   </div>
                   <div className="settings-card-body">
                     <form className="settings-form-grid" onSubmit={changePassword}>
                       <div className="settings-input-group full-width">
-                        <label>Mật khẩu hiện tại</label>
+                        <label>{t('settings.currentPassword', { defaultValue: 'Mật khẩu hiện tại' })}</label>
                         <input
                           value={passwordForm.currentPassword}
                           onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))}
@@ -615,7 +617,7 @@ function SettingsView({
                         />
                       </div>
                       <div className="settings-input-group full-width">
-                        <label>Mật khẩu mới</label>
+                        <label>{t('settings.newPassword', { defaultValue: 'Mật khẩu mới' })}</label>
                         <input
                           value={passwordForm.newPassword}
                           onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
@@ -625,7 +627,7 @@ function SettingsView({
                         />
                       </div>
                       <div className="settings-input-group full-width">
-                        <label>Xác nhận mật khẩu mới</label>
+                        <label>{t('settings.confirmNewPassword', { defaultValue: 'Xác nhận mật khẩu mới' })}</label>
                         <input
                           value={passwordForm.confirmPassword}
                           onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
@@ -636,7 +638,7 @@ function SettingsView({
                       </div>
                       <div className="full-width" style={{ marginTop: '8px' }}>
                         <button type="submit" className="settings-btn-save" disabled={submitting}>
-                          Đổi mật khẩu
+                          {t('settings.changePassword', { defaultValue: 'Đổi mật khẩu' })}
                         </button>
                       </div>
                     </form>
@@ -647,8 +649,8 @@ function SettingsView({
                 <div className="settings-card">
                   <div className="settings-card-header">
                     <div>
-                      <h3><Shield size={16} /> Xác thực 2 lớp (2FA)</h3>
-                      <div className="settings-card-header-desc">Xác nhận danh tính của bạn qua mã OTP để bảo vệ tài sản.</div>
+                      <h3><Shield size={16} /> {t('settings.twoFATitle', { defaultValue: 'Xác thực 2 lớp (2FA)' })}</h3>
+                      <div className="settings-card-header-desc">{t('settings.twoFADesc', { defaultValue: 'Xác nhận danh tính của bạn qua mã OTP để bảo vệ tài sản.' })}</div>
                     </div>
                   </div>
                   <div className="settings-card-body">
@@ -658,16 +660,16 @@ function SettingsView({
                         <>
                           <CheckCircle2 size={24} />
                           <div className="twofa-status-desc">
-                            <strong>Bảo mật 2FA đang BẬT</strong>
-                            <span>Tài khoản của bạn đã được bảo vệ tối đa.</span>
+                            <strong>{t('settings.twoFAEnabled', { defaultValue: 'Bảo mật 2FA đang BẬT' })}</strong>
+                            <span>{t('settings.twoFAEnabledDesc', { defaultValue: 'Tài khoản của bạn đã được bảo vệ tối đa.' })}</span>
                           </div>
                         </>
                       ) : (
                         <>
                           <AlertTriangle size={24} />
                           <div className="twofa-status-desc">
-                            <strong>Bảo mật 2FA đang TẮT</strong>
-                            <span>Kích hoạt 2FA để tránh rủi ro mất tài khoản hoặc tiền trong ví.</span>
+                            <strong>{t('settings.twoFADisabled', { defaultValue: 'Bảo mật 2FA đang TẮT' })}</strong>
+                            <span>{t('settings.twoFADisabledDesc', { defaultValue: 'Kích hoạt 2FA để tránh rủi ro mất tài khoản hoặc tiền trong ví.' })}</span>
                           </div>
                         </>
                       )}
@@ -677,17 +679,17 @@ function SettingsView({
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div className="twofa-options-grid">
                           <div className="twofa-setup-box">
-                            <h4>2FA qua Email</h4>
-                            <p>Nhận mã xác nhận dùng 1 lần (OTP) gửi trực tiếp tới email đăng ký của bạn.</p>
+                            <h4>{t('settings.emailOTP', { defaultValue: '2FA qua Email' })}</h4>
+                            <p>{t('settings.emailOTPDesc', { defaultValue: 'Nhận mã xác nhận dùng 1 lần (OTP) gửi trực tiếp tới email đăng ký của bạn.' })}</p>
                             <button type="button" disabled={submitting} onClick={sendEmailTwoFactorCode}>
-                              Thiết lập Email OTP
+                              {t('settings.setupEmailOTP', { defaultValue: 'Thiết lập Email OTP' })}
                             </button>
                           </div>
                           <div className="twofa-setup-box">
-                            <h4>Authenticator App (TOTP)</h4>
-                            <p>Sử dụng ứng dụng như Google Authenticator để quét QR Code và lấy mã tự động.</p>
+                            <h4>{t('settings.authenticatorApp', { defaultValue: 'Authenticator App (TOTP)' })}</h4>
+                            <p>{t('settings.authenticatorDesc', { defaultValue: 'Sử dụng ứng dụng như Google Authenticator để quét QR Code và lấy mã tự động.' })}</p>
                             <button type="button" disabled={submitting} onClick={setupTotp}>
-                              Thiết lập ứng dụng 2FA
+                              {t('settings.setupAuthenticator', { defaultValue: 'Thiết lập ứng dụng 2FA' })}
                             </button>
                           </div>
                         </div>
@@ -695,16 +697,16 @@ function SettingsView({
                         {twoFactorEmailSent && (
                           <form className="admin-form compact" onSubmit={enableEmailTwoFactor} style={{ borderTop: '1px solid var(--kd-border)', paddingTop: '16px', marginTop: '8px' }}>
                             <div className="settings-input-group">
-                              <label>Mã xác minh Email (6 chữ số)</label>
+                              <label>{t('settings.emailCodeLabel', { defaultValue: 'Mã xác minh Email (6 chữ số)' })}</label>
                               <input
                                 value={twoFactorForm.code}
                                 onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.replace(/\D/g, '').slice(0, 6) }))}
                                 inputMode="numeric"
-                                placeholder="Nhập mã OTP nhận được từ email"
+                                placeholder={t('settings.emailCodePlaceholder', { defaultValue: 'Nhập mã OTP nhận được từ email' })}
                               />
                             </div>
                             <button type="submit" className="settings-btn-save" disabled={submitting || twoFactorForm.code.length < 6} style={{ marginTop: '8px' }}>
-                              Xác nhận Bật 2FA Email
+                              {t('settings.confirmEnable2FA', { defaultValue: 'Xác nhận Bật 2FA Email' })}
                             </button>
                           </form>
                         )}
@@ -712,31 +714,31 @@ function SettingsView({
                     ) : (
                       <form className="settings-form-grid" onSubmit={(event) => event.preventDefault()}>
                         <div className="settings-input-group full-width">
-                          <label>Nhập mật khẩu xác thực hành động</label>
+                          <label>{t('settings.passwordAuthLabel', { defaultValue: 'Nhập mật khẩu xác thực hành động' })}</label>
                           <input
                             value={twoFactorForm.password}
                             onChange={(event) => setTwoFactorForm((current) => ({ ...current, password: event.target.value }))}
                             type="password"
-                            placeholder="Nhập mật khẩu hiện tại của bạn"
+                            placeholder={t('settings.passwordAuthPlaceholder', { defaultValue: 'Nhập mật khẩu hiện tại của bạn' })}
                           />
                         </div>
                         <div className="settings-input-group full-width">
-                          <label>Nhập mã 2FA / Backup Code (nếu tắt)</label>
+                          <label>{t('settings.twoFACodeLabel', { defaultValue: 'Nhập mã 2FA / Backup Code (nếu tắt)' })}</label>
                           <input
                             value={twoFactorForm.code}
                             onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.trim() }))}
-                            placeholder="Mã xác thực 6 số"
+                            placeholder={t('settings.twoFACodePlaceholder', { defaultValue: 'Mã xác thực 6 số' })}
                           />
                         </div>
                         <div className="full-width" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
                           <button type="button" className="admin-danger-button slim" style={{ borderRadius: '10px', minHeight: '38px' }} disabled={submitting} onClick={() => runTwoFactorProtectedAction('disable')}>
-                            Tắt bảo mật 2FA
+                            {t('settings.disable2FA', { defaultValue: 'Tắt bảo mật 2FA' })}
                           </button>
                           <button type="button" className="admin-icon-button" style={{ borderRadius: '10px', minHeight: '38px', padding: '0 12px' }} disabled={submitting} onClick={() => runTwoFactorProtectedAction('reset')}>
-                            Reset TOTP App
+                            {t('settings.resetTOTP', { defaultValue: 'Reset TOTP App' })}
                           </button>
                           <button type="button" className="admin-icon-button" style={{ borderRadius: '10px', minHeight: '38px', padding: '0 12px' }} disabled={submitting} onClick={() => runTwoFactorProtectedAction('backup')}>
-                            Tạo mã dự phòng mới
+                            {t('settings.generateBackup', { defaultValue: 'Tạo mã dự phòng mới' })}
                           </button>
                         </div>
                       </form>
@@ -744,18 +746,18 @@ function SettingsView({
 
                     {totpSetup && (
                       <div className="totp-qr-container">
-                        <strong>Quét mã QR bằng Google/Microsoft Authenticator:</strong>
+                        <strong>{t('settings.scanQR', { defaultValue: 'Quét mã QR bằng Google/Microsoft Authenticator:' })}</strong>
                         {totpSetup.qrCodeBase64 && (
                           <img alt="TOTP QR" src={`data:image/png;base64,${totpSetup.qrCodeBase64}`} style={{ width: '180px', height: '180px' }} />
                         )}
                         <div className="totp-secret-block">
-                          <strong>Hoặc nhập Secret Key thủ công:</strong>
+                          <strong>{t('settings.enterSecretKey', { defaultValue: 'Hoặc nhập Secret Key thủ công:' })}</strong>
                           <code>{totpSetup.secret}</code>
                         </div>
                         {totpSetup.backupCodes && totpSetup.backupCodes.length > 0 && (
                           <div style={{ width: '100%', borderTop: '1px solid var(--kd-border)', paddingTop: '12px', marginTop: '8px' }}>
                             <strong style={{ fontSize: '12px', color: 'var(--kd-warning)', display: 'block', marginBottom: '6px' }}>
-                              Lưu trữ các mã dự phòng sau (dùng khi mất điện thoại):
+                              {t('settings.saveBackupCodes', { defaultValue: 'Lưu trữ các mã dự phòng sau (dùng khi mất điện thoại):' })}
                             </strong>
                             <pre style={{ margin: 0, padding: '10px', background: 'var(--kd-bg)', borderRadius: '8px', fontSize: '13px', textAlign: 'center', fontWeight: 'bold' }}>
                               {totpSetup.backupCodes.join('   ')}
@@ -768,15 +770,15 @@ function SettingsView({
                     {totpSetup && (
                       <form className="admin-form compact" onSubmit={enableTotp} style={{ marginTop: '14px' }}>
                         <div className="settings-input-group">
-                          <label>Nhập mã xác thực 6 số trên App</label>
+                          <label>{t('settings.enterTOTPCode', { defaultValue: 'Nhập mã xác thực 6 số trên App' })}</label>
                           <input
                             value={totpCode}
                             onChange={(event) => setTotpCode(event.target.value.trim())}
-                            placeholder="Mã hiển thị trên ứng dụng Authenticator"
+                            placeholder={t('settings.totpPlaceholder', { defaultValue: 'Mã hiển thị trên ứng dụng Authenticator' })}
                           />
                         </div>
                         <button type="submit" className="settings-btn-save" disabled={submitting || !totpCode} style={{ marginTop: '8px' }}>
-                          Kích hoạt ứng dụng TOTP
+                          {t('settings.activateTotp', { defaultValue: 'Kích hoạt ứng dụng TOTP' })}
                         </button>
                       </form>
                     )}
@@ -788,8 +790,8 @@ function SettingsView({
               <div className="settings-card">
                 <div className="settings-card-header">
                   <div>
-                    <h3><Smartphone size={16} /> Các phiên đăng nhập đang hoạt động</h3>
-                    <div className="settings-card-header-desc">Danh sách các trình duyệt và thiết bị đã đăng nhập gần đây.</div>
+                    <h3><Smartphone size={16} /> {t('settings.sessionsTitle', { defaultValue: 'Các phiên đăng nhập đang hoạt động' })}</h3>
+                    <div className="settings-card-header-desc">{t('settings.sessionsDesc', { defaultValue: 'Danh sách các trình duyệt và thiết bị đã đăng nhập gần đây.' })}</div>
                   </div>
                   <button
                     type="button"
@@ -798,7 +800,7 @@ function SettingsView({
                     onClick={revokeAllSessions}
                     style={{ borderRadius: '10px', minHeight: '34px', fontSize: '12px' }}
                   >
-                    Đăng xuất tất cả thiết bị khác
+                    {t('settings.revokeAll', { defaultValue: 'Đăng xuất tất cả thiết bị khác' })}
                   </button>
                 </div>
                 <div className="settings-card-body" style={{ padding: '20px' }}>
@@ -809,11 +811,11 @@ function SettingsView({
                           <Smartphone size={22} style={{ color: 'var(--kd-muted)' }} />
                           <div className="session-details">
                             <strong>
-                              Phiên đăng nhập #{session.id}
-                              {session.isCurrent && <span className="session-badge">Thiết bị hiện tại</span>}
+                              {t('settings.sessionItem', { id: session.id, defaultValue: 'Phiên đăng nhập #{{id}}' })}
+                              {session.isCurrent && <span className="session-badge">{t('settings.currentDevice', { defaultValue: 'Thiết bị hiện tại' })}</span>}
                             </strong>
                             <span>
-                              Tạo ngày: {formatAdminDate(session.createdAt)} · Dùng cuối: {formatAdminDate(session.lastUsedAt)}
+                              {t('settings.sessionTime', { created: formatAdminDate(session.createdAt), lastUsed: formatAdminDate(session.lastUsedAt), defaultValue: 'Tạo ngày: {{created}} · Dùng cuối: {{lastUsed}}' })}
                             </span>
                           </div>
                         </div>
@@ -825,12 +827,12 @@ function SettingsView({
                             onClick={() => revokeSession(session.id)}
                             style={{ borderRadius: '8px', minHeight: '30px', fontSize: '11px', padding: '0 10px' }}
                           >
-                            Thu hồi
+                            {t('settings.revoke', { defaultValue: 'Thu hồi' })}
                           </button>
                         )}
                       </div>
                     ))}
-                    {sessionList.length === 0 && <AdminEmptyState message="Không tìm thấy lịch sử phiên hoạt động." />}
+                    {sessionList.length === 0 && <AdminEmptyState message={t('settings.noSessions', { defaultValue: 'Không tìm thấy lịch sử phiên hoạt động.' })} />}
                   </div>
                 </div>
               </div>
@@ -841,33 +843,33 @@ function SettingsView({
             <div className="settings-card">
               <div className="settings-card-header">
                 <div>
-                  <h3><KeyRound size={16} /> API Keys</h3>
-                  <div className="settings-card-header-desc">Tạo khóa API dùng để xác thực hệ thống bên ngoài với tài khoản của bạn.</div>
+                  <h3><KeyRound size={16} /> {t('settings.apikeysTitle', { defaultValue: 'API Keys' })}</h3>
+                  <div className="settings-card-header-desc">{t('settings.apikeysDesc', { defaultValue: 'Tạo khóa API dùng để xác thực hệ thống bên ngoài với tài khoản của bạn.' })}</div>
                 </div>
               </div>
               <div className="settings-card-body">
                 <form className="settings-form-grid" onSubmit={createApiKey} style={{ borderBottom: '1px solid var(--kd-border)', paddingBottom: '24px', marginBottom: '24px' }}>
                   <div className="settings-input-group">
-                    <label>Tên định danh API Key</label>
+                    <label>{t('settings.apiKeyNameLabel', { defaultValue: 'Tên định danh API Key' })}</label>
                     <input
                       value={apiKeyForm.name}
                       onChange={(event) => setApiKeyForm((current) => ({ ...current, name: event.target.value }))}
-                      placeholder="Ví dụ: Tool Auto Deposit"
+                      placeholder={t('settings.apiKeyNamePlaceholder', { defaultValue: 'Ví dụ: Tool Auto Deposit' })}
                       required
                     />
                   </div>
                   <div className="settings-input-group">
-                    <label>Scopes (Phân quyền API - phân tách bằng dấu phẩy)</label>
+                    <label>{t('settings.apiKeyScopesLabel', { defaultValue: 'Scopes (Phân quyền API - phân tách bằng dấu phẩy)' })}</label>
                     <input
                       value={apiKeyForm.scopes}
                       onChange={(event) => setApiKeyForm((current) => ({ ...current, scopes: event.target.value }))}
-                      placeholder="orders:read,wallet:read"
+                      placeholder={t('settings.apiKeyScopesPlaceholder', { defaultValue: 'orders:read,wallet:read' })}
                     />
                   </div>
                   <div className="full-width" style={{ marginTop: '8px' }}>
                     <button type="submit" className="settings-btn-save" disabled={submitting}>
                       <Plus size={16} />
-                      <span>Tạo khóa API mới</span>
+                      <span>{t('settings.createApiKeyBtn', { defaultValue: 'Tạo khóa API mới' })}</span>
                     </button>
                   </div>
                 </form>
@@ -876,14 +878,14 @@ function SettingsView({
                   <div className="totp-qr-container" style={{ borderLeft: '4px solid var(--kd-blue)', background: 'var(--kd-bg)', margin: '0 0 24px', alignItems: 'stretch' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <strong style={{ color: 'var(--kd-danger)', fontSize: '13px' }}>
-                        API Token mới tạo (Lưu ý: Hãy sao chép ngay, khóa này chỉ hiển thị duy nhất 1 lần):
+                        {t('settings.apiTokenWarning', { defaultValue: 'API Token mới tạo (Lưu ý: Hãy sao chép ngay, khóa này chỉ hiển thị duy nhất 1 lần):' })}
                       </strong>
                       <button
                         type="button"
                         onClick={handleCopyToken}
                         style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', border: 'none', background: 'transparent', color: 'var(--kd-blue)', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
                       >
-                        <Copy size={14} /> Copy Token
+                        <Copy size={14} /> {t('settings.copyTokenBtn', { defaultValue: 'Copy Token' })}
                       </button>
                     </div>
                     <pre style={{ margin: 0, padding: '12px', background: '#0f172a', color: '#10b981', borderRadius: '8px', fontSize: '13px', overflowX: 'auto', fontFamily: 'monospace', wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>
@@ -894,20 +896,20 @@ function SettingsView({
 
                 <div className="apikey-list">
                   <h4 style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--kd-text)' }}>
-                    Danh sách API Keys của bạn
+                    {t('settings.apiKeysListTitle', { defaultValue: 'Danh sách API Keys của bạn' })}
                   </h4>
                   {apiKeyList.map((apiKey) => (
                     <div className="apikey-item" key={apiKey.id}>
                       <div className="apikey-item-info">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <strong>{apiKey.name}</strong>
-                          <span className="key-prefix">ID: #{apiKey.id}</span>
+                          <span className="key-prefix">{t('settings.apiKeyId', { id: apiKey.id, defaultValue: 'ID: #{{id}}' })}</span>
                           <span style={{ fontSize: '12px', color: apiKey.revokedAt ? 'var(--kd-danger)' : 'var(--kd-success)', fontWeight: 'bold' }}>
-                            {apiKey.revokedAt ? '• Đã hủy' : '• Hoạt động'}
+                            {apiKey.revokedAt ? t('settings.keyRevoked', { defaultValue: '• Đã hủy' }) : t('settings.keyActive', { defaultValue: '• Hoạt động' })}
                           </span>
                         </div>
                         <span style={{ fontSize: '13px', color: 'var(--kd-muted)', marginTop: '2px' }}>
-                          Tiền tố: <code>{apiKey.keyPrefix}</code>
+                          {t('settings.keyPrefixLabel', { defaultValue: 'Tiền tố: ' })}<code>{apiKey.keyPrefix}</code>
                         </span>
                         {apiKey.scopes && apiKey.scopes.length > 0 && (
                           <div className="apikey-scope-badges">
@@ -920,7 +922,7 @@ function SettingsView({
                         )}
                         {apiKey.revokedAt && (
                           <span style={{ fontSize: '11px', color: 'var(--kd-muted)', marginTop: '4px' }}>
-                            Thời gian thu hồi: {formatAdminDate(apiKey.revokedAt)}
+                            {t('settings.keyRevokedTime', { time: formatAdminDate(apiKey.revokedAt), defaultValue: 'Thời gian thu hồi: {{time}}' })}
                           </span>
                         )}
                       </div>
@@ -933,12 +935,12 @@ function SettingsView({
                           style={{ borderRadius: '8px', minHeight: '32px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Trash2 size={13} />
-                          <span>Thu hồi</span>
+                          <span>{t('settings.revoke', { defaultValue: 'Thu hồi' })}</span>
                         </button>
                       )}
                     </div>
                   ))}
-                  {apiKeyList.length === 0 && <AdminEmptyState message="Tài khoản của bạn chưa có API key nào." />}
+                  {apiKeyList.length === 0 && <AdminEmptyState message={t('settings.noApiKeys', { defaultValue: 'Tài khoản của bạn chưa có API key nào.' })} />}
                 </div>
               </div>
             </div>
@@ -950,15 +952,14 @@ function SettingsView({
               <div className="settings-card">
                 <div className="settings-card-header">
                   <div>
-                    <h3><Download size={16} /> Xuất dữ liệu cá nhân</h3>
-                    <div className="settings-card-header-desc">Tải về toàn bộ thông tin tài khoản được lưu trên hệ thống.</div>
+                    <h3><Download size={16} /> {t('settings.exportDataTitle', { defaultValue: 'Xuất dữ liệu cá nhân' })}</h3>
+                    <div className="settings-card-header-desc">{t('settings.exportDataDesc', { defaultValue: 'Tải về toàn bộ thông tin tài khoản được lưu trên hệ thống.' })}</div>
                   </div>
                 </div>
                 <div className="settings-card-body" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
                   <div>
                     <div className="privacy-banner">
-                      Bản sao lưu dữ liệu dưới định dạng JSON bao gồm: Thông tin tài khoản, danh sách đơn hàng đã mua,
-                      lịch sử các yêu cầu nạp tiền, giao dịch ví, tickets hỗ trợ và thông số các phiên đăng nhập.
+                      {t('settings.exportDataBanner', { defaultValue: 'Bản sao lưu dữ liệu dưới định dạng JSON bao gồm: Thông tin tài khoản, danh sách đơn hàng đã mua, lịch sử các yêu cầu nạp tiền, giao dịch ví, tickets hỗ trợ và thông số các phiên đăng nhập.' })}
                     </div>
                   </div>
                   <button
@@ -969,7 +970,7 @@ function SettingsView({
                     style={{ width: 'max-content', marginTop: '12px' }}
                   >
                     <Download size={16} />
-                    <span>Tạo bản sao lưu JSON</span>
+                    <span>{t('settings.exportDataBtn', { defaultValue: 'Tạo bản sao lưu JSON' })}</span>
                   </button>
                 </div>
               </div>
@@ -978,17 +979,15 @@ function SettingsView({
               <div className="settings-card">
                 <div className="settings-card-header">
                   <div>
-                    <h3><Trash2 size={16} /> Yêu cầu xoá tài khoản</h3>
-                    <div className="settings-card-header-desc">Xóa hoặc vô hiệu hóa tài khoản và ẩn danh thông tin cá nhân.</div>
+                    <h3><Trash2 size={16} /> {t('settings.deleteAccountTitle', { defaultValue: 'Yêu cầu xoá tài khoản' })}</h3>
+                    <div className="settings-card-header-desc">{t('settings.deleteAccountDesc', { defaultValue: 'Xóa hoặc vô hiệu hóa tài khoản và ẩn danh thông tin cá nhân.' })}</div>
                   </div>
                   <AdminStatusBadge status="GDPR" />
                 </div>
                 <div className="settings-card-body" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
                   <div>
                     <div className="privacy-banner" style={{ background: '#fef2f2', borderColor: '#fecaca', color: '#b91c1c' }}>
-                      <strong>Cảnh báo quan trọng:</strong> Hành động này sẽ ẩn danh toàn bộ email, tên hiển thị, số điện thoại,
-                      ngắt các liên kết OAuth và thu hồi mọi API Keys/Sessions. Dữ liệu tài chính (lịch sử giao dịch ví, đơn hàng)
-                      sẽ được giữ lại ở trạng thái vô danh để phục vụ đối soát tài chính của hệ thống.
+                      {t('settings.deleteAccountBanner', { defaultValue: 'Cảnh báo quan trọng: Hành động này sẽ ẩn danh toàn bộ email, tên hiển thị, số điện thoại, ngắt các liên kết OAuth và thu hồi mọi API Keys/Sessions. Dữ liệu tài chính (lịch sử giao dịch ví, đơn hàng) sẽ được giữ lại ở trạng thái vô danh để phục vụ đối soát tài chính của hệ thống.' })}
                     </div>
                   </div>
                   <button
@@ -999,7 +998,7 @@ function SettingsView({
                     style={{ width: 'max-content', marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                   >
                     <Trash2 size={15} />
-                    <span>Yêu cầu xoá vĩnh viễn</span>
+                    <span>{t('settings.deleteAccountBtn', { defaultValue: 'Yêu cầu xoá vĩnh viễn' })}</span>
                   </button>
                 </div>
               </div>

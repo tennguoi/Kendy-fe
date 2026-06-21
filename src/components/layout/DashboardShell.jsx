@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import './layout.css'
@@ -21,7 +22,8 @@ function DashboardShell({
   subtitle,
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const activeTitle = items.find((item) => item.id === activeView)?.label || 'Tổng quan'
+  const { t } = useTranslation()
+  const activeTitle = t(items.find((item) => item.id === activeView)?.label || 'nav.overview')
   const searchTargetView = items.find((item) => item.id === 'services' || item.id === 'admin-services')?.id
 
   const handleCloseSidebar = () => setIsSidebarOpen(false)

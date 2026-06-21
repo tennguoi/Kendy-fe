@@ -1,9 +1,10 @@
-import { statusLabel } from '../../data/statusLabels'
+import { useTranslation } from 'react-i18next'
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation()
   const raw = String(status ?? '')
-  const label = statusLabel[raw] || raw
-  if (!raw) return <span className="status unknown">Không xác định</span>
+  const label = t(`status.${raw}`, { defaultValue: raw })
+  if (!raw) return <span className="status unknown">{t('status.unknown')}</span>
   return <span className={`status ${raw.toLowerCase()}`}>{label}</span>
 }
 

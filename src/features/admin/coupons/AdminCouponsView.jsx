@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, RefreshCw, Save, TicketPercent } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { normalizePaged } from '../../../utils/pagination'
 import { money } from '../../../utils/currency'
@@ -79,6 +80,7 @@ function payloadFromForm(form) {
 }
 
 function AdminCouponsView({ onSetError, onSetNotice, token }) {
+  const { t } = useTranslation()
   const [coupons, setCoupons] = useState([])
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -108,7 +110,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
       setServices(Array.isArray(serviceData) ? serviceData : [])
       onSetError?.('')
     } catch (err) {
-      onSetError?.(err.message || 'Không tải được danh sách coupon.')
+      onSetError?.(err.message || t('admin.coupons.loadError'))
     } finally {
       setLoading(false)
     }
@@ -156,10 +158,10 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
           ? list.map((item) => (item.id === saved.id ? saved : item))
           : [saved, ...list]
       })
-      onSetNotice?.(`Đã lưu coupon ${saved.code}.`)
+      onSetNotice?.(t('admin.coupons.saveSuccess', { code: saved.code }))
       setIsModalOpen(false)
     } catch (err) {
-      onSetError?.(err.message || 'Không lưu được coupon.')
+      onSetError?.(err.message || t('admin.coupons.saveError'))
     } finally {
       setSaving(false)
     }
@@ -176,10 +178,10 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
         setSelected(saved)
         setForm(formFromCoupon(saved))
       }
-      onSetNotice?.(`Đã cập nhật trạng thái ${saved.code}.`)
+      onSetNotice?.(t('admin.coupons.statusUpdateSuccess', { code: saved.code }))
       setIsModalOpen(false)
     } catch (err) {
-      onSetError?.(err.message || 'Không cập nhật được trạng thái coupon.')
+      onSetError?.(err.message || t('admin.coupons.statusUpdateError'))
     } finally {
       setSaving(false)
     }
@@ -189,18 +191,18 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
     <div className="admin-view">
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
-          <h2>Mã giảm giá</h2>
+          <h2>{t('admin.coupons.title')}</h2>
           <div className="admin-quick-stats">
-            <span className="admin-quick-stat"><strong>{coupons.length}</strong> tổng mã</span>
-            <span className="admin-quick-stat highlight"><strong>{activeCoupons}</strong> đang chạy</span>
+            <span className="admin-quick-stat"><strong>{coupons.length}</strong> {t('admin.coupons.total')}</span>
+            <span className="admin-quick-stat highlight"><strong>{activeCoupons}</strong> {t('admin.coupons.active')}</span>
           </div>
         </div>
         <div className="admin-toolbar-actions coupon-toolbar-actions">
           <button className={`admin-icon-button ${loading ? 'loading' : ''}`} type="button" onClick={loadData}>
-            <RefreshCw size={18} /> Tải lại
+            <RefreshCw size={18} /> {t('admin.coupons.reload')}
           </button>
           <button type="button" className="admin-primary-button" onClick={startCreate}>
-            <Plus size={18} /> Tạo mới
+            <Plus size={18} /> {t('admin.coupons.create')}
           </button>
         </div>
       </div>
@@ -209,24 +211,24 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
         <section className="admin-panel">
           <div className="admin-panel-head">
             <div>
-              <h3><TicketPercent size={18} /> Danh sách coupon</h3>
-              <span>Quản lý mã giảm giá theo thời gian, lượt dùng và dịch vụ áp dụng.</span>
+              <h3><TicketPercent size={18} /> {t('admin.coupons.form.title')}</h3>
+              <span>{t('admin.coupons.form.description')}</span>
             </div>
           </div>
           <div className="admin-filters single-filter">
             <select value={status} onChange={(event) => setStatus(event.target.value)}>
-              <option value="">Tất cả trạng thái</option>
-              <option value="ACTIVE">Đang chạy</option>
-              <option value="DISABLED">Đã tắt</option>
+              <option value="">{t('admin.coupons.form.allStatus')}</option>
+              <option value="ACTIVE">{t('admin.coupons.form.active')}</option>
+              <option value="DISABLED">{t('admin.coupons.form.disabled')}</option>
             </select>
           </div>
           <div className="admin-data-table">
             <div className="admin-data-row head coupons">
-              <span>Mã</span>
-              <span>Ưu đãi</span>
-              <span>Giới hạn</span>
-              <span>Áp dụng</span>
-              <span>Trạng thái</span>
+              <span>{t('admin.coupons.table.code')}</span>
+              <span>{t('admin.coupons.table.deal')}</span>
+              <span>{t('admin.coupons.table.limits')}</span>
+              <span>{t('admin.coupons.table.appliesTo')}</span>
+              <span>{t('admin.coupons.table.status')}</span>
             </div>
             {coupons.map((coupon) => (
               <button
@@ -241,15 +243,15 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
                 </span>
                 <span>
                   <strong>{coupon.type === 'PERCENT' ? `${coupon.value}%` : money.format(Number(coupon.value || 0))}</strong>
-                  <small>{coupon.maxDiscountAmount ? `Tối đa ${money.format(Number(coupon.maxDiscountAmount))}` : 'Không giới hạn trần'}</small>
+                  <small>{coupon.maxDiscountAmount ? `Tối đa ${money.format(Number(coupon.maxDiscountAmount))}` : t('admin.coupons.form.noMaxDiscount')}</small>
                 </span>
                 <span>
                   <strong>{coupon.usedCount || 0}/{coupon.usageLimit || '∞'}</strong>
-                  <small>Mỗi user: {coupon.perUserLimit || '∞'}</small>
+                  <small>{t('admin.coupons.form.perUserLabel', { limit: coupon.perUserLimit || '∞' })}</small>
                 </span>
                 <span>
-                  <strong>{coupon.serviceName || 'Toàn bộ dịch vụ'}</strong>
-                  <small>{coupon.minOrderAmount ? `Tối thiểu ${money.format(Number(coupon.minOrderAmount))}` : 'Không yêu cầu tối thiểu'}</small>
+                  <strong>{coupon.serviceName || t('admin.coupons.form.allServices')}</strong>
+                  <small>{coupon.minOrderAmount ? `Tối thiểu ${money.format(Number(coupon.minOrderAmount))}` : t('admin.coupons.form.noMinOrder')}</small>
                 </span>
                 <span><AdminStatusBadge status={coupon.status} /></span>
               </button>
@@ -260,80 +262,80 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
             totalPages={totalPages}
             onPageChange={(page) => loadData(page - 1)}
           />
-          {!loading && coupons.length === 0 && <AdminEmptyState message="Chưa có mã giảm giá." hint="Tạo mã đầu tiên để chạy ưu đãi." />}
+          {!loading && coupons.length === 0 && <AdminEmptyState message={t('admin.coupons.form.noCoupons')} hint={t('admin.coupons.form.noCouponsHint')} />}
         </section>
       </div>
 
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={selected ? `Sửa mã giảm giá: ${selected.code}` : 'Tạo mã giảm giá mới'}
+        title={selected ? t('admin.coupons.form.editTitle', { code: selected.code }) : t('admin.coupons.form.createTitle')}
         maxWidth="800px"
         variant="editor"
       >
         <form className="admin-form coupon-editor-form" onSubmit={saveCoupon}>
           <div className="admin-form-grid two-columns">
             <label>
-              <span>Mã</span>
+              <span>{t('admin.coupons.form.code')}</span>
               <input value={form.code} onChange={(event) => updateForm('code', event.target.value)} required maxLength={64} />
             </label>
             <label>
-              <span>Trạng thái</span>
+              <span>{t('admin.coupons.form.status')}</span>
               <select value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
-                <option value="ACTIVE">Đang chạy</option>
-                <option value="DISABLED">Đã tắt</option>
+                <option value="ACTIVE">{t('admin.coupons.form.active')}</option>
+                <option value="DISABLED">{t('admin.coupons.form.disabled')}</option>
               </select>
             </label>
             <label className="wide">
-              <span>Tên</span>
+              <span>{t('admin.coupons.form.name')}</span>
               <input value={form.name} onChange={(event) => updateForm('name', event.target.value)} required maxLength={255} />
             </label>
             <label>
-              <span>Loại</span>
+              <span>{t('admin.coupons.form.type')}</span>
               <select value={form.type} onChange={(event) => updateForm('type', event.target.value)}>
-                <option value="PERCENT">Phần trăm</option>
-                <option value="FIXED_AMOUNT">Số tiền cố định</option>
+                <option value="PERCENT">{t('admin.coupons.form.percent')}</option>
+                <option value="FIXED_AMOUNT">{t('admin.coupons.form.fixedAmount')}</option>
               </select>
             </label>
             <label>
-              <span>Giá trị</span>
+              <span>{t('admin.coupons.form.value')}</span>
               <input type="number" min="0.01" step="0.01" value={form.value} onChange={(event) => updateForm('value', event.target.value)} required />
             </label>
             <label>
-              <span>Giảm tối đa</span>
+              <span>{t('admin.coupons.form.maxDiscount')}</span>
               <input type="number" min="0" step="1000" value={form.maxDiscountAmount} onChange={(event) => updateForm('maxDiscountAmount', event.target.value)} />
             </label>
             <label>
-              <span>Đơn tối thiểu</span>
+              <span>{t('admin.coupons.form.minOrder')}</span>
               <input type="number" min="0" step="1000" value={form.minOrderAmount} onChange={(event) => updateForm('minOrderAmount', event.target.value)} />
             </label>
             <label>
-              <span>Tổng lượt</span>
+              <span>{t('admin.coupons.form.totalUsage')}</span>
               <input type="number" min="1" value={form.usageLimit} onChange={(event) => updateForm('usageLimit', event.target.value)} />
             </label>
             <label>
-              <span>Mỗi user</span>
+              <span>{t('admin.coupons.form.perUser')}</span>
               <input type="number" min="1" value={form.perUserLimit} onChange={(event) => updateForm('perUserLimit', event.target.value)} />
             </label>
             <label className="wide">
-              <span>Dịch vụ áp dụng</span>
+              <span>{t('admin.coupons.form.serviceApply')}</span>
               <select value={form.serviceId} onChange={(event) => updateForm('serviceId', event.target.value)}>
-                <option value="">Toàn bộ dịch vụ</option>
+                <option value="">{t('admin.coupons.form.allServices')}</option>
                 {services.map((service) => (
                   <option key={service.id} value={service.id}>{service.name}</option>
                 ))}
               </select>
             </label>
             <label>
-              <span>Bắt đầu</span>
+              <span>{t('admin.coupons.form.startDate')}</span>
               <input type="datetime-local" value={form.startsAt} onChange={(event) => updateForm('startsAt', event.target.value)} />
             </label>
             <label>
-              <span>Kết thúc</span>
+              <span>{t('admin.coupons.form.endDate')}</span>
               <input type="datetime-local" value={form.endsAt} onChange={(event) => updateForm('endsAt', event.target.value)} />
             </label>
             <label className="wide">
-              <span>Ghi chú nội bộ</span>
+              <span>{t('admin.coupons.form.internalNote')}</span>
               <textarea rows={3} value={form.adminNote} onChange={(event) => updateForm('adminNote', event.target.value)} />
             </label>
           </div>
@@ -345,7 +347,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
                 onClick={() => toggleStatus(selected)}
                 className="admin-danger-button coupon-toggle-button"
               >
-                {selected.status === 'ACTIVE' ? 'Tắt mã' : 'Bật mã'}
+                {selected.status === 'ACTIVE' ? t('admin.coupons.form.disableCode') : t('admin.coupons.form.enableCode')}
               </button>
             )}
             <button
@@ -353,10 +355,10 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
               onClick={() => setIsModalOpen(false)}
               className="admin-icon-button coupon-cancel-button"
             >
-              Hủy
+              {t('admin.common.cancel')}
             </button>
             <button type="submit" disabled={saving} className="admin-primary-button">
-              <Save size={16} /> Lưu coupon
+              <Save size={16} /> {t('admin.coupons.form.saveCoupon')}
             </button>
           </div>
         </form>

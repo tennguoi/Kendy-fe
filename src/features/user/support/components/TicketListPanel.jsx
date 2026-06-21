@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { supportStatuses, getSupportCategoryLabel, getSupportPriorityLabel, supportStatusLabels } from '../support.constants'
 import { formatSupportDate } from '../supportFormat'
@@ -16,16 +17,22 @@ function TicketListPanel({
   tickets = [],
   totalPages,
 }) {
+  const { t } = useTranslation()
+
   return (
     <>
       <div className="admin-panel-head">
-        <h2>Ticket của tôi</h2>
-        <span>{tickets.length} ticket</span>
+        <h2>{t('support.myTickets', { defaultValue: 'Ticket của tôi' })}</h2>
+        <span>{t('support.ticketCount', { count: tickets.length, defaultValue: '{{count}} ticket' })}</span>
       </div>
       <div className="admin-filters single-filter">
-        <SearchField value={query} onChange={(event) => onSearchChange(event.target.value)} placeholder="Tìm ticket, chủ đề, mã đơn" />
+        <SearchField value={query} onChange={(event) => onSearchChange(event.target.value)} placeholder={t('support.searchPlaceholder', { defaultValue: 'Tìm ticket, chủ đề, mã đơn' })} />
         <select value={statusFilter} onChange={(event) => onStatusChange(event.target.value)}>
-          {supportStatuses.map((status) => <option value={status} key={status || 'all'}>{supportStatusLabels[status] || status || 'Tất cả trạng thái'}</option>)}
+          {supportStatuses.map((status) => (
+            <option value={status} key={status || 'all'}>
+              {status ? t('status.' + status, { defaultValue: supportStatusLabels[status] }) : t('support.statusAll', { defaultValue: 'Tất cả trạng thái' })}
+            </option>
+          ))}
         </select>
       </div>
       <div className="admin-ticket-list">
@@ -38,15 +45,15 @@ function TicketListPanel({
           >
             <span>
               <strong>{ticket.subject}</strong>
-              <small>{ticket.ticketCode} · {getSupportCategoryLabel(ticket.category)} · {formatSupportDate(ticket.updatedAt)}</small>
+              <small>{ticket.ticketCode} · {t('status.' + ticket.category, { defaultValue: getSupportCategoryLabel(ticket.category) })} · {formatSupportDate(ticket.updatedAt)}</small>
             </span>
             <span className="admin-ticket-meta">
               <StatusBadge status={ticket.status} />
-              <small>{getSupportPriorityLabel(ticket.priority)}</small>
+              <small>{t('status.' + ticket.priority, { defaultValue: getSupportPriorityLabel(ticket.priority) })}</small>
             </span>
           </button>
         ))}
-        {tickets.length === 0 && <p className="admin-empty-state">Chưa có ticket hỗ trợ.</p>}
+        {tickets.length === 0 && <p className="admin-empty-state">{t('support.noTickets', { defaultValue: 'Chưa có ticket hỗ trợ.' })}</p>}
       </div>
       <Pagination
         currentPage={currentPage || 1}

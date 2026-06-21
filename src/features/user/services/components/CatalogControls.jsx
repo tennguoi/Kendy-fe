@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { catalogTabs, getServiceStatusLabel, getServiceTypeLabel } from '../services.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
 
@@ -13,6 +14,38 @@ function CatalogControls({
   statusFilter,
   typeFilter,
 }) {
+  const { t } = useTranslation()
+
+  const getTabLabel = (tab) => {
+    const keyMap = {
+      all: 'services.tabAll',
+      favorites: 'services.tabFavorites',
+      recent: 'services.tabRecent'
+    }
+    return t(keyMap[tab.id], { defaultValue: tab.label })
+  }
+
+  const getServiceTypeTranslation = (type) => {
+    const keyMap = {
+      ACCOUNT_STOCK: 'services.typeAccountStock',
+      MANUAL: 'services.typeManual',
+      AUTO: 'services.typeAuto',
+      SUBSCRIPTION: 'services.typeSubscription',
+      API_CREDIT: 'services.typeApiCredit'
+    }
+    return keyMap[type] ? t(keyMap[type]) : getServiceTypeLabel(type)
+  }
+
+  const getServiceStatusTranslation = (status) => {
+    const keyMap = {
+      ACTIVE: 'services.statusActive',
+      INACTIVE: 'services.statusInactive',
+      MAINTENANCE: 'services.statusMaintenance',
+      DRAFT: 'services.statusDraft'
+    }
+    return keyMap[status] ? t(keyMap[status]) : getServiceStatusLabel(status)
+  }
+
   return (
     <div className="catalog-controls">
       <div className="catalog-tabs">
@@ -23,18 +56,31 @@ function CatalogControls({
             type="button"
             onClick={() => onActiveTabChange(tab.id)}
           >
-            {tab.label}
+            {getTabLabel(tab)}
           </button>
         ))}
       </div>
-      <SearchField className="catalog-search" value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm tên, nhóm hoặc mô tả" />
+      <SearchField
+        className="catalog-search"
+        value={query}
+        onChange={(event) => onQueryChange(event.target.value)}
+        placeholder={t('services.searchPlaceholder', { defaultValue: 'Tìm dịch vụ...' })}
+      />
       <select value={typeFilter} onChange={(event) => onTypeFilterChange(event.target.value)}>
-        <option value="">Tất cả loại</option>
-        {serviceTypes.map((type) => <option value={type} key={type}>{getServiceTypeLabel(type)}</option>)}
+        <option value="">{t('services.typeAll', { defaultValue: 'Tất cả loại' })}</option>
+        {serviceTypes.map((type) => (
+          <option value={type} key={type}>
+            {getServiceTypeTranslation(type)}
+          </option>
+        ))}
       </select>
       <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>
-        <option value="">Tất cả trạng thái</option>
-        {serviceStatuses.map((status) => <option value={status} key={status}>{getServiceStatusLabel(status)}</option>)}
+        <option value="">{t('services.statusAll', { defaultValue: 'Tất cả trạng thái' })}</option>
+        {serviceStatuses.map((status) => (
+          <option value={status} key={status}>
+            {getServiceStatusTranslation(status)}
+          </option>
+        ))}
       </select>
     </div>
   )

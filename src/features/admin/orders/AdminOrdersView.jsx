@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
@@ -54,6 +55,7 @@ function AdminOrdersView({
   const [selectedId, setSelectedId] = useState(null)
   const [statusFilter, setStatusFilter] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const { t } = useTranslation()
 
   const selectedOrder = orders.find((order) => order.id === selectedId) || orders[0]
   const orderForm = selectedOrder && draft?.orderCode === selectedOrder.orderCode
@@ -83,7 +85,7 @@ function AdminOrdersView({
       setCurrentPage(targetPage)
       setSelectedId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
     } catch (err) {
-      setViewError(err.message || 'Không tải được danh sách đơn hàng.')
+      setViewError(err.message || t('admin.orders.loadError'))
     } finally {
       setLoading(false)
     }
@@ -160,7 +162,7 @@ function AdminOrdersView({
     }
 
     if ((action === 'cancel' || action === 'refund' || action === 'extend' || action === 'reprocess') && !orderForm.reason.trim()) {
-      setViewError('Nhập lý do trước khi hủy, refund, gia hạn hoặc chạy lại đơn.')
+      setViewError(t('admin.orders.reasonRequired'))
       return
     }
 
@@ -194,9 +196,9 @@ function AdminOrdersView({
       patchOrder(saved)
       setDraft(formFromOrder(saved))
       await loadOrders()
-      onSetNotice(`Đã cập nhật đơn ${saved.orderCode}.`)
+      onSetNotice(t('admin.orders.updateSuccess', { code: saved.orderCode }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được đơn hàng.')
+      setViewError(err.message || t('admin.orders.updateError'))
     } finally {
       setSubmitting(false)
     }
@@ -205,7 +207,7 @@ function AdminOrdersView({
   const saveAdminNote = async (event) => {
     event.preventDefault()
     if (!selectedOrder || !orderForm.adminNote.trim()) {
-      setViewError('Ghi chú admin không được để trống.')
+      setViewError(t('admin.orders.adminNoteRequired'))
       return
     }
 
@@ -219,9 +221,9 @@ function AdminOrdersView({
       )
       patchOrder(saved)
       setDraft(formFromOrder(saved))
-      onSetNotice(`Đã lưu ghi chú cho đơn ${saved.orderCode}.`)
+      onSetNotice(t('admin.orders.adminNoteSaveSuccess', { code: saved.orderCode }))
     } catch (err) {
-      setViewError(err.message || 'Không lưu được ghi chú đơn hàng.')
+      setViewError(err.message || t('admin.orders.adminNoteSaveError'))
     } finally {
       setSubmitting(false)
     }
@@ -230,7 +232,7 @@ function AdminOrdersView({
   const saveUserNote = async (event) => {
     event.preventDefault()
     if (!selectedOrder || !orderForm.userNote.trim()) {
-      setViewError('Ghi chú user không được để trống.')
+      setViewError(t('admin.orders.userNoteRequired'))
       return
     }
 
@@ -244,9 +246,9 @@ function AdminOrdersView({
       )
       patchOrder(saved)
       setDraft(formFromOrder(saved))
-      onSetNotice(`Đã lưu ghi chú user cho đơn ${saved.orderCode}.`)
+      onSetNotice(t('admin.orders.userNoteSaveSuccess', { code: saved.orderCode }))
     } catch (err) {
-      setViewError(err.message || 'Không lưu được ghi chú user.')
+      setViewError(err.message || t('admin.orders.userNoteSaveError'))
     } finally {
       setSubmitting(false)
     }
@@ -265,9 +267,9 @@ function AdminOrdersView({
       patchOrder(saved)
       setDraft(formFromOrder(saved))
       await loadOrders()
-      onSetNotice(`Đã cập nhật workflow cho đơn ${saved.orderCode}.`)
+      onSetNotice(t('admin.orders.workflowUpdateSuccess', { code: saved.orderCode }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được workflow thủ công.')
+      setViewError(err.message || t('admin.orders.workflowUpdateError'))
     } finally {
       setSubmitting(false)
     }
@@ -281,7 +283,7 @@ function AdminOrdersView({
       .filter(Boolean)
 
     if (orderCodes.length === 0 || !orderForm.reason.trim()) {
-      setViewError('Nhập danh sách mã đơn và lý do bulk refund.')
+      setViewError(t('admin.orders.bulkRefundCodesRequired'))
       return
     }
 
@@ -292,9 +294,9 @@ function AdminOrdersView({
       savedItems.forEach(patchOrder)
       setBulkRefundCodes('')
       await loadOrders()
-      onSetNotice(`Đã refund ${savedItems.length} đơn.`)
+      onSetNotice(t('admin.orders.bulkRefundSuccess', { count: savedItems.length }))
     } catch (err) {
-      setViewError(err.message || 'Không bulk refund được đơn hàng.')
+      setViewError(err.message || t('admin.orders.bulkRefundError'))
     } finally {
       setSubmitting(false)
     }
@@ -305,22 +307,22 @@ function AdminOrdersView({
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
           <div>
-            <h2>Quản lý đơn hàng</h2>
+            <h2>{t('admin.orders.title')}</h2>
           </div>
           {orders.length > 0 && (
             <div className="admin-quick-stats">
-              <span className="admin-quick-stat"><strong>{orders.length}</strong> đơn</span>
+              <span className="admin-quick-stat"><strong>{orders.length}</strong> {t('admin.orders.orders')}</span>
             </div>
           )}
         </div>
         <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadOrders} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Tải lại</span>
+          <span>{t('admin.orders.reload')}</span>
         </button>
       </div>
 
       {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message="Đang tải đơn hàng..." subMessage="" />}
+      {!error && loading && <Loading fullScreen={false} message={t('admin.orders.loading')} subMessage="" />}
 
       <OrderFilterBar
         onQueryChange={setQuery}
@@ -344,7 +346,7 @@ function AdminOrdersView({
       <AdminDrawer
         isOpen={drawerOpen && Boolean(selectedOrder)}
         onClose={() => setDrawerOpen(false)}
-        title={selectedOrder?.orderCode || 'Chi tiết đơn hàng'}
+        title={selectedOrder?.orderCode || t('admin.orders.drawerTitle')}
         width="620px"
       >
         <OrderDetailPanel

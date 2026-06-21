@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { normalizeList, normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
@@ -33,6 +34,7 @@ function AdminTicketsView({
   const [submitting, setSubmitting] = useState(false)
   const [ticketQueue, setTicketQueue] = useState('all')
   const [tickets, setTickets] = useState([])
+  const { t } = useTranslation()
 
   const selectedTicket = tickets.find((ticket) => ticket.ticketCode === selectedCode) || tickets[0]
   const closedTicketsText = resolution ? String(resolution.closedTickets || 0) : '--'
@@ -80,7 +82,7 @@ function AdminTicketsView({
       setResolution(resolutionData)
       setSelectedCode((current) => (current && items.some((ticket) => ticket.ticketCode === current) ? current : items[0]?.ticketCode || null))
     } catch (err) {
-      setViewError(err.message || 'Không tải được danh sách ticket.')
+      setViewError(err.message || t('admin.tickets.loadError'))
     } finally {
       setLoading(false)
     }
@@ -158,9 +160,9 @@ function AdminTicketsView({
       const saved = await adminApi.sendTicketMessage(selectedTicket.ticketCode, { message: message.trim() }, token)
       patchTicket(saved)
       setMessage('')
-      onSetNotice(`Đã phản hồi ticket ${selectedTicket.ticketCode}.`)
+      onSetNotice(t('admin.tickets.sendMessageSuccess', { code: selectedTicket.ticketCode }))
     } catch (err) {
-      setViewError(err.message || 'Không gửi được phản hồi ticket.')
+      setViewError(err.message || t('admin.tickets.sendMessageError'))
     } finally {
       setSubmitting(false)
     }
@@ -187,9 +189,9 @@ function AdminTicketsView({
         saved = await adminApi.updateTicketPriority(selectedTicket.ticketCode, { priority: next.priority }, token)
       }
       patchTicket(saved)
-      onSetNotice(`Đã cập nhật ticket ${selectedTicket.ticketCode}.`)
+      onSetNotice(t('admin.tickets.updateSuccess', { code: selectedTicket.ticketCode }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được ticket.')
+      setViewError(err.message || t('admin.tickets.updateError'))
     } finally {
       setSubmitting(false)
     }
@@ -207,9 +209,9 @@ function AdminTicketsView({
       await adminApi.uploadTicketAttachment(selectedTicket.ticketCode, file, token)
       setFile(null)
       await loadAttachments(selectedTicket.ticketCode)
-      onSetNotice(`Đã tải attachment cho ${selectedTicket.ticketCode}.`)
+      onSetNotice(t('admin.tickets.uploadSuccess', { code: selectedTicket.ticketCode }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được attachment.')
+      setViewError(err.message || t('admin.tickets.uploadError'))
     } finally {
       setSubmitting(false)
     }
@@ -225,9 +227,9 @@ function AdminTicketsView({
     try {
       await adminApi.deleteTicketAttachment(selectedTicket.ticketCode, attachmentId, token)
       await loadAttachments(selectedTicket.ticketCode)
-      onSetNotice(`Đã xóa attachment #${attachmentId}.`)
+      onSetNotice(t('admin.tickets.deleteAttachmentSuccess', { id: attachmentId }))
     } catch (err) {
-      setViewError(err.message || 'Không xóa được attachment.')
+      setViewError(err.message || t('admin.tickets.deleteAttachmentError'))
     } finally {
       setSubmitting(false)
     }
@@ -243,22 +245,22 @@ function AdminTicketsView({
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
           <div>
-            <h2>Quản lý hỗ trợ</h2>
+            <h2>{t('admin.tickets.title')}</h2>
           </div>
           {tickets.length > 0 && (
             <div className="admin-quick-stats">
-              <span className="admin-quick-stat"><strong>{tickets.length}</strong> ticket</span>
+              <span className="admin-quick-stat"><strong>{tickets.length}</strong> {t('admin.tickets.ticket')}</span>
             </div>
           )}
         </div>
         <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadTickets} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Tải lại</span>
+          <span>{t('admin.tickets.reload')}</span>
         </button>
       </div>
 
       {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message="Đang tải hỗ trợ..." subMessage="" />}
+      {!error && loading && <Loading fullScreen={false} message={t('admin.tickets.loading')} subMessage="" />}
 
       <TicketFilterBar
         categoryFilter={categoryFilter}
@@ -274,8 +276,8 @@ function AdminTicketsView({
       />
 
       <div className="admin-report-grid compact-report">
-        <div><span>Ticket đã đóng</span><strong>{closedTicketsText}</strong></div>
-        <div><span>Phút xử lý TB</span><strong>{averageResolutionText}</strong></div>
+        <div><span>{t('admin.tickets.stats.closed')}</span><strong>{closedTicketsText}</strong></div>
+        <div><span>{t('admin.tickets.stats.avgMinutes')}</span><strong>{averageResolutionText}</strong></div>
       </div>
 
       <TicketListPanel
@@ -293,7 +295,7 @@ function AdminTicketsView({
       <AdminDrawer
         isOpen={drawerOpen && Boolean(selectedTicket)}
         onClose={() => setDrawerOpen(false)}
-        title={selectedTicket?.ticketCode || 'Chi tiết ticket'}
+        title={selectedTicket?.ticketCode || t('admin.tickets.drawerTitle')}
         width="640px"
       >
         <TicketDetailPanel

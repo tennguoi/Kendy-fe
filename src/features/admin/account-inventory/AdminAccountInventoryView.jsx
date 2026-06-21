@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Eye, FileUp, PackageOpen, Pencil, Plus, RefreshCw, ShieldOff, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { adminApi } from '../../../api/admin.api'
@@ -14,15 +15,13 @@ const emptyForm = {
   recoveryInfo: '', twoFactorSecret: '', usageNote: '', warrantyUntil: '',
 }
 
-const statusLabels = {
-  AVAILABLE: 'Sẵn sàng', RESERVED: 'Đang giữ', DELIVERED: 'Đã giao',
-  REPLACED: 'Đã đổi', REFUNDED: 'Đã hoàn', DISABLED: 'Đã khóa', EXPIRED: 'Hết hạn',
-}
-
 const toInstant = (value) => value ? new Date(value).toISOString() : null
 const toInputDate = (value) => value ? new Date(value).toISOString().slice(0, 16) : ''
 
 function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
+  const { t } = useTranslation()
+  const getStatusLabel = (status) => t('admin.accountInventory.status.' + status)
+  const statusKeys = ['AVAILABLE', 'RESERVED', 'DELIVERED', 'REPLACED', 'REFUNDED', 'DISABLED', 'EXPIRED']
   const [services, setServices] = useState([])
   const [serviceId, setServiceId] = useState('')
   const [credentials, setCredentials] = useState([])
@@ -52,7 +51,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       setServices(accountServices)
       setServiceId((current) => current || String(accountServices[0]?.id || ''))
     } catch (err) {
-      fail(err.message || 'Không tải được dịch vụ giao tài khoản.')
+      fail(err.message || t('admin.accountInventory.loadServicesError'))
     }
   }, [fail, token])
 
@@ -75,7 +74,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       setTotalPages(pages)
       setCurrentPage(targetPage)
     } catch (err) {
-      fail(err.message || 'Không tải được kho tài khoản.')
+      fail(err.message || t('admin.accountInventory.loadInventoryError'))
     } finally {
       setLoading(false)
     }
@@ -120,11 +119,11 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       }
       if (editingId) await adminApi.updateServiceCredential(editingId, payload, token)
       else await adminApi.createServiceCredential(serviceId, payload, token)
-      onSetNotice(editingId ? 'Đã cập nhật tài khoản trong kho.' : 'Đã nhập tài khoản vào kho.')
+      onSetNotice(editingId ? t('admin.accountInventory.saveSuccess') : t('admin.accountInventory.createSuccess'))
       resetForm()
       await loadCredentials()
     } catch (err) {
-      fail(err.message || 'Không lưu được tài khoản.')
+      fail(err.message || t('admin.accountInventory.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -142,13 +141,13 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
   }
 
   const disableCredential = async (item) => {
-    if (!window.confirm(`Khóa tài khoản ${item.loginIdentifier}?`)) return
+    if (!window.confirm(t('admin.accountInventory.lockConfirm', { identifier: item.loginIdentifier }))) return
     try {
       await adminApi.disableServiceCredential(item.id, token)
-      onSetNotice('Đã khóa tài khoản trong kho.')
+      onSetNotice(t('admin.accountInventory.lockSuccess'))
       await loadCredentials()
     } catch (err) {
-      fail(err.message || 'Không khóa được tài khoản.')
+      fail(err.message || t('admin.accountInventory.lockError'))
     }
   }
 
@@ -157,7 +156,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       const data = await adminApi.revealServiceCredential(item.id, token)
       setRevealed((current) => ({ ...current, [item.id]: data }))
     } catch (err) {
-      fail(err.message || 'Không xem được thông tin tài khoản.')
+      fail(err.message || t('admin.accountInventory.revealError'))
     }
   }
 
@@ -166,12 +165,12 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
     setSubmitting(true)
     try {
       const result = await adminApi.bulkImportServiceCredentials(serviceId, { csvContent: csv, skipDuplicates: true }, token)
-      onSetNotice(`Đã nhập ${result.created || 0} tài khoản, bỏ qua ${result.skipped || 0}.`)
+      onSetNotice(t('admin.accountInventory.importSuccess', { created: result.created, skipped: result.skipped }))
       setCsv('')
       setCreateMode(null)
       await loadCredentials()
     } catch (err) {
-      fail(err.message || 'Import CSV thất bại.')
+      fail(err.message || t('admin.accountInventory.importError'))
     } finally {
       setSubmitting(false)
     }
@@ -180,20 +179,20 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
   return (
     <div className="admin-view account-inventory-view">
       <div className="admin-toolbar">
-        <div><h2>Kho tài khoản</h2></div>
+        <div><h2>{t('admin.accountInventory.title')}</h2></div>
         <div className="admin-toolbar-actions inventory-toolbar-actions">
-          <button type="button" className="admin-icon-button" onClick={loadCredentials}><RefreshCw size={18} /> Tải lại</button>
+          <button type="button" className="admin-icon-button" onClick={loadCredentials}><RefreshCw size={18} /> {t('admin.accountInventory.reload')}</button>
           <div className="admin-create-dropdown-container">
             <button type="button" className="admin-primary-button" onClick={() => setCreateMenuOpen((current) => !current)}>
-              <Plus size={18} /> Tạo mới
+              <Plus size={18} /> {t('admin.accountInventory.createNew')}
             </button>
             {createMenuOpen && (
               <div className="admin-dropdown-menu">
                 <button type="button" onClick={() => { resetForm(); setCreateMode('single'); setCreateMenuOpen(false) }}>
-                  Nhập một tài khoản
+                  {t('admin.accountInventory.form.singleEntry')}
                 </button>
                 <button type="button" onClick={() => { resetForm(); setCreateMode('import'); setCreateMenuOpen(false) }}>
-                  Import CSV
+                  {t('admin.accountInventory.form.importCsv')}
                 </button>
               </div>
             )}
@@ -202,30 +201,30 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       </div>
 
       <div className="admin-metrics">
-        <article className="admin-metric"><span>Tổng trong dịch vụ</span><strong>{stats.total}</strong></article>
-        <article className="admin-metric"><span>Sẵn sàng cấp</span><strong>{stats.available}</strong></article>
-        <article className="admin-metric"><span>Đã giao</span><strong>{stats.delivered}</strong></article>
+        <article className="admin-metric"><span>{t('admin.accountInventory.metrics.totalInService')}</span><strong>{stats.total}</strong></article>
+        <article className="admin-metric"><span>{t('admin.accountInventory.metrics.readyToAssign')}</span><strong>{stats.available}</strong></article>
+        <article className="admin-metric"><span>{t('admin.accountInventory.metrics.delivered')}</span><strong>{stats.delivered}</strong></article>
       </div>
 
       <section className="admin-panel inventory-service-picker">
-        <label><span>Dịch vụ giao tài khoản</span><select value={serviceId} onChange={(event) => { setServiceId(event.target.value); resetForm() }}><option value="">Chọn dịch vụ</option>{services.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
-        <SearchField value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm tài khoản hoặc ghi chú..." />
-        <select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Tất cả trạng thái</option>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+        <label><span>{t('admin.accountInventory.form.selectService')}</span><select value={serviceId} onChange={(event) => { setServiceId(event.target.value); resetForm() }}><option value="">{t('admin.accountInventory.form.selectService')}</option>{services.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+        <SearchField value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('admin.accountInventory.form.searchPlaceholder')} />
+        <select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">{t('admin.accountInventory.form.allStatus')}</option>{statusKeys.map((value) => <option key={value} value={value}>{getStatusLabel(value)}</option>)}</select>
       </section>
 
-      {!services.length ? <AdminEmptyState message="Chưa có dịch vụ giao tài khoản." hint="Tạo một Sản phẩm giao tài khoản trong mục Dịch vụ trước." /> : (
+      {!services.length ? <AdminEmptyState message={t('admin.accountInventory.form.noServiceYet')} hint={t('admin.accountInventory.form.noServiceHint')} /> : (
         <div className="inventory-layout list-only">
           <section className="admin-panel inventory-list-panel">
-            <div className="admin-panel-head"><div><h3>Danh sách tài khoản</h3><span>{credentials.length} kết quả</span></div><PackageOpen size={20} /></div>
-            {loading ? <Loading /> : credentials.length === 0 ? <AdminEmptyState message="Kho chưa có tài khoản phù hợp." /> : (
+            <div className="admin-panel-head"><div><h3>{t('admin.accountInventory.form.listTitle')}</h3><span>{t('admin.accountInventory.form.resultsCount', { count: credentials.length })}</span></div><PackageOpen size={20} /></div>
+            {loading ? <Loading /> : credentials.length === 0 ? <AdminEmptyState message={t('admin.accountInventory.form.noAccounts')} /> : (
               <>
                 <div className="inventory-list">
                   {credentials.map((item) => {
                     const visible = revealed[item.id] || item
                     return (
                       <article key={item.id}>
-                        <div><strong>{item.loginIdentifier}</strong><span>{statusLabels[item.status] || item.status} · Nhập {formatAdminDate(item.createdAt)}</span>{visible.passwordSecret && <code>Mật khẩu: {visible.passwordSecret}</code>}</div>
-                        <div className="inventory-actions"><button type="button" onClick={() => revealCredential(item)}><Eye size={15} /> Xem</button>{item.status === 'AVAILABLE' && <><button type="button" onClick={() => editCredential(item)}><Pencil size={15} /> Sửa</button><button type="button" className="danger" onClick={() => disableCredential(item)}><ShieldOff size={15} /> Khóa</button></>}</div>
+                        <div><strong>{item.loginIdentifier}</strong><span>{getStatusLabel(item.status) || item.status} · {t('admin.accountInventory.form.addedOn', { date: formatAdminDate(item.createdAt) })}</span>{visible.passwordSecret && <code>{t('admin.accountInventory.form.passwordLabel')}: {visible.passwordSecret}</code>}</div>
+                        <div className="inventory-actions"><button type="button" onClick={() => revealCredential(item)}><Eye size={15} /> {t('admin.accountInventory.form.view')}</button>{item.status === 'AVAILABLE' && <><button type="button" onClick={() => editCredential(item)}><Pencil size={15} /> {t('admin.accountInventory.form.edit')}</button><button type="button" className="danger" onClick={() => disableCredential(item)}><ShieldOff size={15} /> {t('admin.accountInventory.form.lock')}</button></>}</div>
                       </article>
                     )
                   })}
@@ -245,27 +244,27 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
         <section className="admin-panel inventory-form-panel" style={{ border: 'none', background: 'transparent', padding: 0, boxShadow: 'none' }}>
           <div className="admin-panel-head">
             <div>
-              <h3>{createMode === 'import' ? 'Import tài khoản' : editingId ? 'Sửa tài khoản' : 'Nhập tài khoản mới'}</h3>
-              <span>Tài khoản sẽ thuộc dịch vụ đang chọn.</span>
+              <h3>{createMode === 'import' ? t('admin.accountInventory.form.modalTitleImport') : editingId ? t('admin.accountInventory.form.modalTitleEdit') : t('admin.accountInventory.form.modalTitleCreate')}</h3>
+              <span>{t('admin.accountInventory.form.modalSubtitle')}</span>
             </div>
-            <button type="button" onClick={resetForm}><X size={16} /> Đóng</button>
+            <button type="button" onClick={resetForm}><X size={16} /> {t('admin.accountInventory.form.close')}</button>
           </div>
           {createMode === 'single' && <form className="admin-form inventory-form" onSubmit={saveCredential}>
-            <label><span>Tài khoản đăng nhập *</span><input value={form.loginIdentifier} onChange={(e) => updateForm('loginIdentifier', e.target.value)} required /></label>
-            <label><span>Mật khẩu *</span><input value={form.passwordSecret} onChange={(e) => updateForm('passwordSecret', e.target.value)} placeholder={editingId ? 'Để trống nếu không đổi' : ''} required={!editingId} /></label>
-            <label><span>Thông tin khôi phục</span><input value={form.recoveryInfo} onChange={(e) => updateForm('recoveryInfo', e.target.value)} /></label>
-            <label><span>Mã/secret 2FA</span><input value={form.twoFactorSecret} onChange={(e) => updateForm('twoFactorSecret', e.target.value)} /></label>
-            <label><span>Hạn tài khoản</span><input type="datetime-local" value={form.expiresAt} onChange={(e) => updateForm('expiresAt', e.target.value)} /></label>
-            <label><span>Bảo hành đến</span><input type="datetime-local" value={form.warrantyUntil} onChange={(e) => updateForm('warrantyUntil', e.target.value)} /></label>
-            <label className="wide"><span>Hướng dẫn cho khách</span><textarea rows="2" value={form.usageNote} onChange={(e) => updateForm('usageNote', e.target.value)} /></label>
-            <label className="wide"><span>Ghi chú nội bộ</span><textarea rows="2" value={form.internalNote} onChange={(e) => updateForm('internalNote', e.target.value)} /></label>
-            <button type="submit" disabled={submitting || !serviceId}><Plus size={16} /> {editingId ? 'Cập nhật' : 'Nhập vào kho'}</button>
+            <label><span>{t('admin.accountInventory.form.loginLabel')}</span><input value={form.loginIdentifier} onChange={(e) => updateForm('loginIdentifier', e.target.value)} required /></label>
+            <label><span>{t('admin.accountInventory.form.passwordField')}</span><input value={form.passwordSecret} onChange={(e) => updateForm('passwordSecret', e.target.value)} placeholder={editingId ? t('admin.accountInventory.form.passwordPlaceholder') : ''} required={!editingId} /></label>
+            <label><span>{t('admin.accountInventory.form.recoveryInfo')}</span><input value={form.recoveryInfo} onChange={(e) => updateForm('recoveryInfo', e.target.value)} /></label>
+            <label><span>{t('admin.accountInventory.form.twoFASecret')}</span><input value={form.twoFactorSecret} onChange={(e) => updateForm('twoFactorSecret', e.target.value)} /></label>
+            <label><span>{t('admin.accountInventory.form.expiresAt')}</span><input type="datetime-local" value={form.expiresAt} onChange={(e) => updateForm('expiresAt', e.target.value)} /></label>
+            <label><span>{t('admin.accountInventory.form.warrantyUntil')}</span><input type="datetime-local" value={form.warrantyUntil} onChange={(e) => updateForm('warrantyUntil', e.target.value)} /></label>
+            <label className="wide"><span>{t('admin.accountInventory.form.usageNote')}</span><textarea rows="2" value={form.usageNote} onChange={(e) => updateForm('usageNote', e.target.value)} /></label>
+            <label className="wide"><span>{t('admin.accountInventory.form.internalNote')}</span><textarea rows="2" value={form.internalNote} onChange={(e) => updateForm('internalNote', e.target.value)} /></label>
+            <button type="submit" disabled={submitting || !serviceId}><Plus size={16} /> {editingId ? t('admin.accountInventory.form.save') : t('admin.accountInventory.form.addToInventory')}</button>
           </form>}
           {createMode === 'import' && <div className="inventory-import standalone">
-            <h3><FileUp size={17} /> Import CSV</h3>
-            <p>Mỗi dòng: login,password,recovery,twoFactor,hướng dẫn,ghi chú.</p>
-            <textarea rows="5" value={csv} onChange={(e) => setCsv(e.target.value)} placeholder="email@test.com,password123,,,Hướng dẫn,Ghi chú" />
-            <button type="button" className="admin-icon-button" disabled={submitting || !csv.trim() || !serviceId} onClick={importCsv}><FileUp size={16} /> Import</button>
+            <h3><FileUp size={17} /> {t('admin.accountInventory.form.importCsv')}</h3>
+            <p>{t('admin.accountInventory.form.csvFormat')}</p>
+            <textarea rows="5" value={csv} onChange={(e) => setCsv(e.target.value)} placeholder={t('admin.accountInventory.form.csvPlaceholder')} />
+            <button type="button" className="admin-icon-button" disabled={submitting || !csv.trim() || !serviceId} onClick={importCsv}><FileUp size={16} /> {t('admin.accountInventory.form.csvImportBtn')}</button>
           </div>}
         </section>
       </Modal>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { getUserRoleLabel } from '../users.constants'
@@ -31,6 +32,7 @@ function UserProfileAvatar({ user }) {
 }
 
 function UserProfileSummary({ detail, selectedUser }) {
+  const { t } = useTranslation()
   const profileUser = detail?.user || selectedUser
 
   return (
@@ -38,17 +40,17 @@ function UserProfileSummary({ detail, selectedUser }) {
       <div className="admin-panel-head">
         <div className="admin-user-profile-title">
           <UserProfileAvatar user={profileUser} />
-          <h3>{selectedUser ? selectedUser.name || selectedUser.email : 'Chọn user'}</h3>
+          <h3>{selectedUser ? selectedUser.name || selectedUser.email : t('admin.users.detail.empty')}</h3>
         </div>
         {selectedUser && <AdminStatusBadge status={selectedUser.status} />}
       </div>
 
       <dl className="admin-detail-list">
         <div><dt>Email</dt><dd>{selectedUser.email}</dd></div>
-        <div><dt>Điện thoại</dt><dd>{selectedUser.phone || 'Chưa có'}</dd></div>
+        <div><dt>{t('admin.users.detail.phone')}</dt><dd>{selectedUser.phone || t('admin.users.detail.noPhone')}</dd></div>
         <div><dt>Vai trò</dt><dd>{getUserRoleLabel(selectedUser.role)}</dd></div>
         <div><dt>Số dư</dt><dd>{formatAdminMoney(selectedUser.balance)}</dd></div>
-        <div><dt>2FA</dt><dd>{selectedUser.twoFactorEnabled ? 'Đã bật' : 'Chưa bật'}</dd></div>
+        <div><dt>2FA</dt><dd>{selectedUser.twoFactorEnabled ? t('admin.users.detail.twoFAEnabled') : t('admin.users.detail.twoFADisabled')}</dd></div>
         <div><dt>Ngày tạo</dt><dd>{formatAdminDate(selectedUser.createdAt)}</dd></div>
       </dl>
 

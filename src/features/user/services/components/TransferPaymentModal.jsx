@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Copy, X, Loader2, CheckCircle2, AlertCircle, RefreshCw, Trash2 } from 'lucide-react'
 import { money } from '../../../../utils/currency'
 import '../../services/services.css' // Reuse services.css or add customized styling
@@ -11,6 +12,7 @@ function TransferPaymentModal({
   onCancel,
   onClose,
 }) {
+  const { t } = useTranslation()
   const [zoomQR, setZoomQR] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -48,19 +50,19 @@ function TransferPaymentModal({
   }
 
   const transferContent = deposit.transferContent || deposit.depositCode || ''
-  const serviceName = activeCheckout.serviceName || 'Dịch vụ'
+  const serviceName = activeCheckout.serviceName || t('common.service', { defaultValue: 'Dịch vụ' })
   const amountNumber = Number(deposit.amount) || 0
 
   return (
     <div className="payment-modal-layer" role="presentation">
-      <section className="payment-modal" role="dialog" aria-modal="true" style={{ width: 'min(680px, 100%)' }} aria-label="Thanh toán chuyển khoản">
+      <section className="payment-modal" role="dialog" aria-modal="true" style={{ width: 'min(680px, 100%)' }} aria-label={t('transfer.title', { defaultValue: 'Thanh toán chuyển khoản' })}>
         {/* Header */}
         <div className="payment-modal-head">
           <div>
-            <span>Thanh toán chuyển khoản</span>
+            <span>{t('transfer.title', { defaultValue: 'Thanh toán chuyển khoản' })}</span>
             <h2 style={{ fontSize: '18px', marginTop: '4px' }}>{serviceName}</h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="Đóng thanh toán">
+          <button type="button" onClick={onClose} aria-label={t('transfer.closePayment', { defaultValue: 'Đóng thanh toán' })}>
             <X size={20} strokeWidth={2.5} />
           </button>
         </div>
@@ -82,7 +84,7 @@ function TransferPaymentModal({
               fontSize: '13.5px'
             }}>
               <Loader2 className="animate-spin" size={18} />
-              <span>Hệ thống đang chờ giao dịch chuyển khoản. Mã QR sẽ tự nhận diện số tiền và nội dung.</span>
+              <span>{t('transfer.waitingMessage', { defaultValue: 'Hệ thống đang chờ giao dịch chuyển khoản. Mã QR sẽ tự nhận diện số tiền và nội dung.' })}</span>
             </div>
           )}
 
@@ -99,7 +101,7 @@ function TransferPaymentModal({
               fontSize: '13.5px'
             }}>
               <AlertCircle size={18} />
-              <span>{activeCheckout.statusMessage || 'Thanh toán đã được cộng vào ví, nhưng đơn hàng chưa được tạo tự động. Bạn có thể đặt lại bằng số dư ví hoặc liên hệ admin hỗ trợ.'}</span>
+              <span>{activeCheckout.statusMessage || t('transfer.walletCreditedMessage', { defaultValue: 'Thanh toán đã được cộng vào ví, nhưng đơn hàng chưa được tạo tự động. Bạn có thể đặt lại bằng số dư ví hoặc liên hệ admin hỗ trợ.' })}</span>
             </div>
           )}
 
@@ -116,7 +118,7 @@ function TransferPaymentModal({
               fontSize: '13.5px'
             }}>
               <CheckCircle2 size={18} />
-              <span>{hasOrder ? 'Thanh toán hoàn tất. Đơn hàng của bạn đã được khởi tạo thành công.' : 'Thanh toán hoàn tất. Hệ thống đang khởi tạo đơn hàng, vui lòng kiểm tra lại trạng thái.'}</span>
+              <span>{hasOrder ? t('transfer.completedWithOrder', { defaultValue: 'Thanh toán hoàn tất. Đơn hàng của bạn đã được khởi tạo thành công.' }) : t('transfer.completedWithoutOrder', { defaultValue: 'Thanh toán hoàn tất. Hệ thống đang khởi tạo đơn hàng, vui lòng kiểm tra lại trạng thái.' })}</span>
             </div>
           )}
 
@@ -133,7 +135,7 @@ function TransferPaymentModal({
               fontSize: '13.5px'
             }}>
               <AlertCircle size={18} />
-              <span>Giao dịch lệch số tiền hoặc sai nội dung. Vui lòng liên hệ Admin hỗ trợ xử lý thủ công.</span>
+              <span>{t('transfer.manualReview', { defaultValue: 'Giao dịch lệch số tiền hoặc sai nội dung. Vui lòng liên hệ Admin hỗ trợ xử lý thủ công.' })}</span>
             </div>
           )}
 
@@ -150,7 +152,7 @@ function TransferPaymentModal({
               fontSize: '13.5px'
             }}>
               <AlertCircle size={18} />
-              <span>Yêu cầu thanh toán này đã bị hủy.</span>
+              <span>{t('transfer.cancelled', { defaultValue: 'Yêu cầu thanh toán này đã bị hủy.' })}</span>
             </div>
           )}
 
@@ -189,7 +191,7 @@ function TransferPaymentModal({
                 {deposit.qrImageUrl ? (
                   <img 
                     src={deposit.qrImageUrl} 
-                    alt="VietQR Code" 
+                    alt={t('transfer.zoomQRAlt', { defaultValue: 'QR phóng to' })} 
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 ) : (
@@ -201,22 +203,22 @@ function TransferPaymentModal({
                     color: '#94a3b8',
                     fontSize: '13px'
                   }}>
-                    Không có QR
+                    {t('transfer.noQR', { defaultValue: 'Không có QR' })}
                   </div>
                 )}
               </div>
               <span style={{ fontSize: '12px', color: '#64748b' }}>
-                Nhấn vào QR để phóng to. Mở app ngân hàng quét mã để thanh toán nhanh.
+                {t('transfer.zoomQR', { defaultValue: 'Nhấn vào QR để phóng to. Mở app ngân hàng quét mã để thanh toán nhanh.' })}
               </span>
             </div>
 
             {/* Bank details side */}
             <div style={{ display: 'grid', gap: '10px' }}>
-              <DetailRow label="Ngân hàng" value={deposit.bankName} copied={copied} onCopy={onCopy} />
-              <DetailRow label="Số tài khoản" value={deposit.bankAccount} copied={copied} onCopy={onCopy} />
-              <DetailRow label="Chủ tài khoản" value={deposit.bankOwner} copied={copied} onCopy={onCopy} />
-              <DetailRow label="Số tiền" value={money.format(amountNumber)} copied={copied} onCopy={onCopy} highlight />
-              <DetailRow label="Nội dung ck" value={transferContent} copied={copied} onCopy={onCopy} highlight strong />
+              <DetailRow label={t('transfer.bankName', { defaultValue: 'Ngân hàng' })} value={deposit.bankName} copied={copied} onCopy={onCopy} />
+              <DetailRow label={t('transfer.accountNumber', { defaultValue: 'Số tài khoản' })} value={deposit.bankAccount} copied={copied} onCopy={onCopy} />
+              <DetailRow label={t('transfer.accountOwner', { defaultValue: 'Chủ tài khoản' })} value={deposit.bankOwner} copied={copied} onCopy={onCopy} />
+              <DetailRow label={t('transfer.amount', { defaultValue: 'Số tiền' })} value={money.format(amountNumber)} copied={copied} onCopy={onCopy} highlight />
+              <DetailRow label={t('transfer.transferContent', { defaultValue: 'Nội dung ck' })} value={transferContent} copied={copied} onCopy={onCopy} highlight strong />
             </div>
           </div>
 
@@ -250,7 +252,7 @@ function TransferPaymentModal({
                   }}
                 >
                   <Trash2 size={16} />
-                  Hủy yêu cầu
+                  {t('transfer.cancelRequest', { defaultValue: 'Hủy yêu cầu' })}
                 </button>
               )}
             </div>
@@ -276,7 +278,7 @@ function TransferPaymentModal({
                   }}
                 >
                   <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
-                  Kiểm tra trạng thái
+                  {t('transfer.checkStatus', { defaultValue: 'Kiểm tra trạng thái' })}
                 </button>
               )}
               
@@ -294,7 +296,7 @@ function TransferPaymentModal({
                   fontSize: '14px'
                 }}
               >
-                {normalizedStatus === 'COMPLETED' && hasOrder ? 'Đóng và Xem đơn hàng' : 'Đóng'}
+                {normalizedStatus === 'COMPLETED' && hasOrder ? t('transfer.closeAndViewOrder', { defaultValue: 'Đóng và Xem đơn hàng' }) : t('transfer.close', { defaultValue: 'Đóng' })}
               </button>
             </div>
           </div>
@@ -321,7 +323,7 @@ function TransferPaymentModal({
         >
           <img
             src={deposit.qrImageUrl}
-            alt="QR phóng to"
+            alt={t('transfer.zoomQRAlt', { defaultValue: 'QR phóng to' })}
             style={{
               maxWidth: '90vw',
               maxHeight: '90vh',
@@ -359,6 +361,7 @@ function TransferPaymentModal({
 }
 
 function DetailRow({ label, value, copied, onCopy, highlight = false, strong = false }) {
+  const { t } = useTranslation()
   if (!value) return null
 
   return (
@@ -397,7 +400,7 @@ function DetailRow({ label, value, copied, onCopy, highlight = false, strong = f
         }}
       >
         <Copy size={13} />
-        {copied === label ? 'Đã copy' : 'Copy'}
+        {copied === label ? t('common.copied', { defaultValue: 'Đã copy' }) : t('common.copy', { defaultValue: 'Copy' })}
       </button>
     </div>
   )

@@ -1,6 +1,7 @@
 import { ArrowRight, Clock3 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { serverNow } from '../../../../utils/serverTime'
 import './PromoBanner.css'
 
@@ -20,6 +21,7 @@ function getRemainingTime(endsAt, now) {
 
 function PromoBanner({ config }) {
   const [now, setNow] = useState(() => serverNow())
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (!config?.enabled || !config.countdownEnabled || !config.endsAt) return undefined
@@ -53,7 +55,7 @@ function PromoBanner({ config }) {
       {config.countdownEnabled && remaining && (
         <div className="promo-countdown" aria-label="Thời gian còn lại">
           <Clock3 size={18} aria-hidden="true" />
-          {remaining.days > 0 && <b>{remaining.days} ngày</b>}
+          {remaining.days > 0 && <b>{remaining.days} {t('common.days', { defaultValue: 'ngày' })}</b>}
           <b>{String(remaining.hours).padStart(2, '0')}:</b>
           <b>{String(remaining.minutes).padStart(2, '0')}:</b>
           <b>{String(remaining.seconds).padStart(2, '0')}</b>

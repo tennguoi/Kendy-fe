@@ -1,20 +1,12 @@
 import { RefreshCw, Search } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
 import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
 import { formatAdminDate } from '../adminFormat'
-
-const WARRANTY_STATUS_LABELS = {
-  OPEN: 'Mở',
-  REVIEWING: 'Đang xem xét',
-  APPROVED_REPLACE: 'Đã duyệt đổi',
-  APPROVED_REFUND: 'Đã duyệt hoàn tiền',
-  REJECTED: 'Từ chối',
-  RESOLVED: 'Đã xử lý',
-}
 
 const WARRANTY_STATUS_COLORS = {
   OPEN: '#ffc107',
@@ -25,21 +17,32 @@ const WARRANTY_STATUS_COLORS = {
   RESOLVED: '#6c757d',
 }
 
-function WarrantyStatusBadge({ status }) {
-  return (
-    <span style={{
-      display: 'inline-block', padding: '2px 8px', borderRadius: '4px',
-      fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap',
-      background: WARRANTY_STATUS_COLORS[status] || '#6c757d', color: '#fff',
-    }}>
-      {WARRANTY_STATUS_LABELS[status] || status}
-    </span>
-  )
-}
-
 const EMPTY_FORM = { status: 'OPEN', replacementCredentialId: '', adminNote: '' }
 
 function AdminWarrantyView({ onSetError, onSetNotice, token }) {
+  const { t } = useTranslation()
+
+  const WARRANTY_STATUS_LABELS = {
+    OPEN: t('admin.warranty.status.OPEN'),
+    REVIEWING: t('admin.warranty.status.REVIEWING'),
+    APPROVED_REPLACE: t('admin.warranty.status.APPROVED_REPLACE'),
+    APPROVED_REFUND: t('admin.warranty.status.APPROVED_REFUND'),
+    REJECTED: t('admin.warranty.status.REJECTED'),
+    RESOLVED: t('admin.warranty.status.RESOLVED'),
+  }
+
+  function WarrantyStatusBadge({ status }) {
+    return (
+      <span style={{
+        display: 'inline-block', padding: '2px 8px', borderRadius: '4px',
+        fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap',
+        background: WARRANTY_STATUS_COLORS[status] || '#6c757d', color: '#fff',
+      }}>
+        {WARRANTY_STATUS_LABELS[status] || status}
+      </span>
+    )
+  }
+
   const [allRequests, setAllRequests] = useState([])
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -69,7 +72,7 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
       setTotalPages(pages)
       setCurrentPage(targetPage)
     } catch (err) {
-      setViewError(err.message || 'Không tải được danh sách bảo hành.')
+      setViewError(err.message || t('admin.warranty.loadError'))
     } finally {
       setLoading(false)
     }
@@ -93,7 +96,7 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
     event.preventDefault()
     if (!selectedRequest || !reviewForm.status) return
     if ((reviewForm.status === 'REJECTED' || reviewForm.status === 'APPROVED_REFUND') && !reviewForm.adminNote.trim()) {
-      setViewError('Nhập ghi chú admin khi từ chối hoặc hoàn tiền.')
+      setViewError(t('admin.warranty.review.requiredNote'))
       return
     }
     setSubmitting(true)
@@ -111,9 +114,9 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
         items.map((item) => (item.id === saved.id ? saved : item))
       )
       setSelectedRequest(saved)
-      onSetNotice('Đã cập nhật yêu cầu bảo hành.')
+      onSetNotice(t('admin.warranty.updateSuccess'))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được yêu cầu bảo hành.')
+      setViewError(err.message || t('admin.warranty.updateError'))
     } finally {
       setSubmitting(false)
     }
@@ -124,19 +127,19 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
           <div>
-            <h2>Quản lý bảo hành</h2>
+            <h2>{t('admin.warranty.title')}</h2>
           </div>
           {allRequests.length > 0 && (
             <div className="admin-quick-stats">
               <span className="admin-quick-stat">
-                <strong>{allRequests.filter((r) => r.status === 'OPEN' || r.status === 'REVIEWING').length}</strong> đang xử lý
+                <strong>{allRequests.filter((r) => r.status === 'OPEN' || r.status === 'REVIEWING').length}</strong> {t('admin.warranty.processing')}
               </span>
             </div>
           )}
         </div>
         <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadRequests} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Tải lại</span>
+          <span>{t('admin.warranty.reload')}</span>
         </button>
       </div>
 
@@ -152,17 +155,17 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
             fontSize: '13px', background: 'var(--kd-card-bg)',
           }}
         >
-          <option value="">Tất cả trạng thái</option>
+          <option value="">{t('admin.warranty.filter.allStatus')}</option>
           {Object.entries(WARRANTY_STATUS_LABELS).map(([value, label]) => (
             <option value={value} key={value}>{label}</option>
           ))}
         </select>
         <span style={{ fontSize: '13px', color: 'var(--kd-muted)' }}>
-          {filteredRequests.length} yêu cầu
+          {filteredRequests.length} {t('admin.warranty.filter.requests')}
         </span>
       </div>
 
-      {!error && loading && <Loading fullScreen={false} message="Đang tải..." subMessage="" />}
+      {!error && loading && <Loading fullScreen={false} message={t('admin.warranty.loading')} subMessage="" />}
 
       <div className="admin-mini-list">
         {filteredRequests.map((request) => (
@@ -187,7 +190,7 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
           </article>
         ))}
         {filteredRequests.length === 0 && !loading && (
-          <p className="admin-empty-state">Chưa có yêu cầu bảo hành nào.</p>
+          <p className="admin-empty-state">{t('admin.warranty.detail.empty')}</p>
         )}
       </div>
 
@@ -200,53 +203,53 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
       <AdminDrawer
         isOpen={drawerOpen && Boolean(selectedRequest)}
         onClose={() => setDrawerOpen(false)}
-        title={`Bảo hành ${selectedRequest?.orderCode || ''}`}
+        title={t('admin.warranty.drawerTitle', { code: selectedRequest?.orderCode || '' })}
         width="580px"
       >
         {selectedRequest && (
           <div style={{ display: 'grid', gap: '16px' }}>
             <dl className="admin-detail-list">
-              <div><dt>Đơn hàng</dt><dd>{selectedRequest.orderCode}</dd></div>
-              <div><dt>Dịch vụ</dt><dd>{selectedRequest.serviceName}</dd></div>
-              <div><dt>User ID</dt><dd>#{selectedRequest.userId}</dd></div>
-              <div><dt>Trạng thái</dt><dd><WarrantyStatusBadge status={selectedRequest.status} /></dd></div>
-              <div><dt>Ngày tạo</dt><dd>{formatAdminDate(selectedRequest.createdAt)}</dd></div>
+              <div><dt>{t('admin.warranty.detail.orderCode')}</dt><dd>{selectedRequest.orderCode}</dd></div>
+              <div><dt>{t('admin.warranty.detail.service')}</dt><dd>{selectedRequest.serviceName}</dd></div>
+              <div><dt>{t('admin.warranty.detail.userId')}</dt><dd>#{selectedRequest.userId}</dd></div>
+              <div><dt>{t('admin.warranty.detail.status')}</dt><dd><WarrantyStatusBadge status={selectedRequest.status} /></dd></div>
+              <div><dt>{t('admin.warranty.detail.createdAt')}</dt><dd>{formatAdminDate(selectedRequest.createdAt)}</dd></div>
               {selectedRequest.resolvedAt && (
-                <div><dt>Xử lý lúc</dt><dd>{formatAdminDate(selectedRequest.resolvedAt)}</dd></div>
+                <div><dt>{t('admin.warranty.detail.resolvedAt')}</dt><dd>{formatAdminDate(selectedRequest.resolvedAt)}</dd></div>
               )}
             </dl>
 
             <div className="admin-code-block">
-              <strong>Lý do</strong>
-              <pre>{selectedRequest.reason || 'Không có'}</pre>
+              <strong>{t('admin.warranty.detail.reason')}</strong>
+              <pre>{selectedRequest.reason || t('admin.warranty.detail.noReason')}</pre>
             </div>
             {selectedRequest.evidenceText && (
               <div className="admin-code-block">
-                <strong>Bằng chứng</strong>
+                <strong>{t('admin.warranty.detail.evidence')}</strong>
                 <pre>{selectedRequest.evidenceText}</pre>
               </div>
             )}
             {selectedRequest.adminNote && (
               <div className="admin-code-block">
-                <strong>Ghi chú admin</strong>
+                <strong>{t('admin.warranty.detail.adminNote')}</strong>
                 <pre>{selectedRequest.adminNote}</pre>
               </div>
             )}
             {selectedRequest.originalCredentialId && (
               <div className="admin-code-block">
-                <strong>Credential gốc</strong>
+                <strong>{t('admin.warranty.detail.originalCredential')}</strong>
                 <pre>ID: {selectedRequest.originalCredentialId}</pre>
               </div>
             )}
             {selectedRequest.replacementCredentialId && (
               <div className="admin-code-block">
-                <strong>Credential thay thế</strong>
+                <strong>{t('admin.warranty.detail.replacementCredential')}</strong>
                 <pre>ID: {selectedRequest.replacementCredentialId}</pre>
               </div>
             )}
             {selectedRequest.refundWalletTransactionId && (
               <div className="admin-code-block">
-                <strong>Giao dịch hoàn tiền</strong>
+                <strong>{t('admin.warranty.detail.refundTransaction')}</strong>
                 <pre>Transaction ID: {selectedRequest.refundWalletTransactionId}</pre>
               </div>
             )}
@@ -255,44 +258,44 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
               && selectedRequest.status !== 'APPROVED_REFUND' && selectedRequest.status !== 'RESOLVED' && (
                 <form onSubmit={handleReview} className="admin-form compact" style={{ borderTop: '1px solid var(--kd-border)', paddingTop: '16px' }}>
                   <div className="admin-panel-head compact-head" style={{ marginTop: 0 }}>
-                    <h3>Xử lý yêu cầu</h3>
+                    <h3>{t('admin.warranty.review.title')}</h3>
                   </div>
                   <label>
-                    <span>Hành động</span>
+                    <span>{t('admin.warranty.review.actionLabel')}</span>
                     <select
                       value={reviewForm.status}
                       onChange={(event) => setReviewForm((f) => ({ ...f, status: event.target.value }))}
                       required
                     >
-                      <option value="">Chọn hành động...</option>
-                      <option value="REVIEWING">Đánh dấu đang xem xét</option>
-                      <option value="APPROVED_REPLACE">Duyệt đổi tài khoản</option>
-                      <option value="APPROVED_REFUND">Duyệt hoàn tiền</option>
-                      <option value="REJECTED">Từ chối</option>
+                      <option value="">{t('admin.warranty.review.selectAction')}</option>
+                      <option value="REVIEWING">{t('admin.warranty.review.actionReviewing')}</option>
+                      <option value="APPROVED_REPLACE">{t('admin.warranty.review.actionReplace')}</option>
+                      <option value="APPROVED_REFUND">{t('admin.warranty.review.actionRefund')}</option>
+                      <option value="REJECTED">{t('admin.warranty.review.actionReject')}</option>
                     </select>
                   </label>
                   {reviewForm.status === 'APPROVED_REPLACE' && (
                     <label>
-                      <span>ID credential thay thế (để trống nếu tự động lấy từ kho)</span>
+                      <span>{t('admin.warranty.review.credentialIdLabel')}</span>
                       <input
                         value={reviewForm.replacementCredentialId}
                         onChange={(event) => setReviewForm((f) => ({ ...f, replacementCredentialId: event.target.value }))}
-                        placeholder="Nhập credential ID hoặc để trống"
+                        placeholder={t('admin.warranty.review.credentialIdPlaceholder')}
                         inputMode="numeric"
                       />
                     </label>
                   )}
                   <label>
-                    <span>Ghi chú admin</span>
+                    <span>{t('admin.warranty.detail.adminNote')}</span>
                     <textarea
                       value={reviewForm.adminNote}
                       onChange={(event) => setReviewForm((f) => ({ ...f, adminNote: event.target.value }))}
                       rows="3"
-                      placeholder="Lý do duyệt / từ chối, hướng dẫn thêm..."
+                      placeholder={t('admin.warranty.review.adminNotePlaceholder')}
                     />
                   </label>
                   <button type="submit" disabled={submitting} className="admin-primary-button" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }}>
-                    {submitting ? 'Đang xử lý...' : 'Xác nhận'}
+                    {submitting ? t('admin.warranty.review.submitting') : t('admin.warranty.review.submit')}
                   </button>
                 </form>
               )}

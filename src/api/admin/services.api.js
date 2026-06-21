@@ -32,6 +32,15 @@ export const adminServicesApi = {
   updateService: (id, data, token) =>
     axiosClient.put(`/api/admin/services/${id}`, data, { token }),
 
+  uploadServiceImage: (file, token) => {
+    const data = new FormData();
+    data.append('file', file);
+    return axiosClient.post('/api/admin/services/images', data, {
+      token,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
   updateServiceStatus: (id, data, token) =>
     axiosClient.patch(`/api/admin/services/${id}/status`, data, { token }),
 

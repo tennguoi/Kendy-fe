@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ShoppingCart, Eye, Sparkles, ArrowRight } from 'lucide-react'
 import Button from '../../../../components/Button/Button'
 import './ServiceCatalog.css'
 
 function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   // Format all services consistently for display and page details
   const formattedServices = useMemo(() => {
@@ -25,7 +27,7 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
       } else if (s.price && !s.price.includes('đ') && !isNaN(Number(s.price))) {
         formattedPrice = `${Number(s.price).toLocaleString('vi-VN')}đ`
       } else if (!s.price) {
-        formattedPrice = s.priceText || 'Báo giá'
+        formattedPrice = s.priceText || t('services.buyNow', { defaultValue: 'Báo giá' })
       }
 
       // Generate slug fallback for static/API services if they don't have it
@@ -37,19 +39,31 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
 
+      // Translate category labels if default
+      let categoryLabel = s.categoryLabel || s.categoryName || s.type || s.category || 'Dịch vụ'
+      if (categorySlug === 'capcut') {
+        categoryLabel = t('public.policies.service.link1', { defaultValue: 'Tài khoản CapCut' })
+      } else if (categorySlug === 'facebook') {
+        categoryLabel = t('public.policies.service.link2', { defaultValue: 'Tài khoản Facebook' })
+      } else if (categorySlug === 'upgrade') {
+        categoryLabel = t('public.policies.service.link3', { defaultValue: 'Nâng cấp tài khoản' })
+      } else if (categorySlug === 'ads') {
+        categoryLabel = t('public.policies.service.link4', { defaultValue: 'Chạy quảng cáo Facebook' })
+      }
+
       return {
         ...s,
         category: s.category || categorySlug,
-        categoryLabel: s.categoryLabel || s.categoryName || s.type || s.category || 'Dịch vụ',
+        categoryLabel,
         price: formattedPrice,
         slug: computedSlug,
-        processingTime: s.processingTime || 'Theo quy trình',
-        warranty: s.warranty || s.warrantyInfo || s.warrantyPolicy || 'Theo điều kiện',
-        status: s.status || (s.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng'),
-        badge: s.badge || (s.featured ? 'Nổi bật' : ''),
+        processingTime: s.processingTime || t('services.defaultDescription'),
+        warranty: s.warranty || s.warrantyInfo || s.warrantyPolicy || t('common.unknown'),
+        status: s.status || (s.stockStatus === 'OUT_OF_STOCK' ? 'OUT_OF_STOCK' : 'AVAILABLE'),
+        badge: s.badge || (s.featured ? t('status.NEW') : ''),
       }
     })
-  }, [services])
+  }, [services, t])
 
   // Lấy tối đa 4 dịch vụ nổi bật hiển thị ở trang chủ
   const displayServices = useMemo(() => {
@@ -62,10 +76,10 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
         {/* Section Title */}
         <div className="catalog-header" style={{ borderBottom: 'none', paddingBottom: 0, alignItems: 'flex-end' }}>
           <div className="catalog-title-wrapper">
-            <span className="eyebrow">Dịch vụ nổi bật</span>
-            <h2 className="catalog-title">Top Dịch Vụ Bán Chạy Nhất</h2>
+            <span className="eyebrow">{t('services.catalogTitle', { defaultValue: 'Dịch vụ nổi bật' })}</span>
+            <h2 className="catalog-title">{t('services.catalogTitle', { defaultValue: 'Top Dịch Vụ Bán Chạy Nhất' })}</h2>
             <p className="catalog-description">
-              Các gói dịch vụ tối ưu, giá cả minh bạch, thời gian xử lý nhanh và được nhiều khách hàng tin dùng nhất
+              {t('services.noServicesMatch', { defaultValue: 'Các gói dịch vụ tối ưu, giá cả minh bạch, thời gian xử lý nhanh và được nhiều khách hàng tin dùng nhất' })}
             </p>
           </div>
           <div className="catalog-header-action" style={{ flexShrink: 0 }}>
@@ -74,7 +88,7 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
               className="btn-view-all-catalog"
               onClick={() => navigate('/catalog')}
             >
-              <span>Xem tất cả dịch vụ</span>
+              <span>{t('common.viewAll', { defaultValue: 'Xem tất cả dịch vụ' })}</span>
               <ArrowRight size={16} />
             </Button>
           </div>
@@ -83,18 +97,18 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
         {/* Grid View */}
         <div className="home-catalog-grid">
           {displayServices.map((service, index) => {
-            const isOutOfStock = service.status === 'Hết hàng' || service.stockStatus === 'OUT_OF_STOCK'
-            const isFeatured = service.featured || service.badge === 'Nổi bật'
+            const isOutOfStock = service.status === 'OUT_OF_STOCK' || service.stockStatus === 'OUT_OF_STOCK'
+            const isFeatured = service.featured || service.badge === t('status.NEW')
 
             return (
               <div className={`service-card ${isFeatured ? 'featured' : ''}${isOutOfStock ? ' out-of-stock' : ''}`} key={service.id || index}>
                 {isFeatured && (
                   <div className="service-card-badge">
-                    <Sparkles size={12} /> {service.badge || 'Nổi bật'}
+                    <Sparkles size={12} /> {service.badge || t('status.NEW')}
                   </div>
                 )}
                 {isOutOfStock && (
-                  <div className="service-card-oos-badge">Hết hàng</div>
+                  <div className="service-card-oos-badge">{t('services.outOfStock', { defaultValue: 'Hết hàng' })}</div>
                 )}
                 
                 <div className="service-card-content">
@@ -103,7 +117,7 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
                   
                   <div className="service-card-footer">
                     <div className="service-card-price-container">
-                      <span className="price-label">Giá trọn gói</span>
+                      <span className="price-label">{t('checkout.servicePrice', { defaultValue: 'Giá trọn gói' })}</span>
                       <span className="price-val">{service.price}</span>
                     </div>
                     
@@ -112,10 +126,10 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
                         variant="ghost"
                         className="btn-action btn-detail"
                         onClick={() => navigate(`/product/${service.slug}`)}
-                        title="Xem chi tiết dịch vụ"
+                        title={t('common.details', { defaultValue: 'Xem chi tiết dịch vụ' })}
                       >
                         <Eye size={16} />
-                        <span>Chi tiết</span>
+                        <span>{t('common.details', { defaultValue: 'Chi tiết' })}</span>
                       </Button>
                       <Button
                         variant="primary"
@@ -124,7 +138,7 @@ function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
                         onClick={() => onPurchaseClick(service)}
                       >
                         <ShoppingCart size={16} />
-                        <span>{isOutOfStock ? 'Hết hàng' : 'Mua ngay'}</span>
+                        <span>{isOutOfStock ? t('services.outOfStock', { defaultValue: 'Hết hàng' }) : t('services.buyNow', { defaultValue: 'Mua ngay' })}</span>
                       </Button>
                     </div>
                   </div>

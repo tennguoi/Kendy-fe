@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { userDetailTabs } from '../users.constants'
@@ -9,6 +10,7 @@ function UserDetailActivity({
   onRevokeSession,
   submitting,
 }) {
+  const { t } = useTranslation()
   return (
     <div className="admin-panel-subsection">
       <div className="admin-tabs">
@@ -32,7 +34,7 @@ function UserDetailActivity({
               <span>{order.serviceName} · {formatAdminMoney(order.amount)} · {order.status}</span>
             </article>
           ))}
-          {detailData.orders.length === 0 && <AdminEmptyState message="User chưa có đơn." />}
+          {detailData.orders.length === 0 && <AdminEmptyState message={t('admin.users.detail.noOrders')} />}
         </div>
       )}
 
@@ -44,7 +46,7 @@ function UserDetailActivity({
               <span>{item.type} · {item.direction} · {formatAdminMoney(item.amount)}</span>
             </article>
           ))}
-          {detailData.wallet.length === 0 && <AdminEmptyState message="User chưa có giao dịch ví." />}
+          {detailData.wallet.length === 0 && <AdminEmptyState message={t('admin.users.detail.noWalletTxns')} />}
         </div>
       )}
 
@@ -56,7 +58,7 @@ function UserDetailActivity({
               <span>{ticket.subject} · {ticket.status}</span>
             </article>
           ))}
-          {detailData.tickets.length === 0 && <AdminEmptyState message="User chưa có ticket." />}
+          {detailData.tickets.length === 0 && <AdminEmptyState message={t('admin.users.detail.noTickets')} />}
         </div>
       )}
 
@@ -71,7 +73,7 @@ function UserDetailActivity({
               </button>
             </article>
           ))}
-          {detailData.sessions.length === 0 && <AdminEmptyState message="User chưa có session." />}
+          {detailData.sessions.length === 0 && <AdminEmptyState message={t('admin.users.detail.noSessions')} />}
         </div>
       )}
 
@@ -83,7 +85,7 @@ function UserDetailActivity({
               <span>{item.targetType || 'SYSTEM'} #{item.targetId || '-'} · {formatAdminDate(item.createdAt)}</span>
             </article>
           ))}
-          {detailData.audit.length === 0 && <AdminEmptyState message="Chưa có audit log liên quan." />}
+          {detailData.audit.length === 0 && <AdminEmptyState message={t('admin.users.detail.noAudit')} />}
         </div>
       )}
     </div>

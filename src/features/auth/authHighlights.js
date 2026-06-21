@@ -2,23 +2,23 @@ import { Film, Users, BarChart2, ShieldCheck } from 'lucide-react'
 
 export const authHighlights = [
   {
-    title: 'CapCut Pro',
-    text: 'Bán tài khoản, nâng cấp gói Pro và hỗ trợ đăng nhập.',
+    titleKey: 'authHighlights.capcut.title',
+    textKey: 'authHighlights.capcut.text',
     icon: Film,
   },
   {
-    title: 'Facebook',
-    text: 'Via, BM, Page, xác minh và hỗ trợ cấu hình tài khoản.',
+    titleKey: 'authHighlights.facebook.title',
+    textKey: 'authHighlights.facebook.text',
     icon: Users,
   },
   {
-    title: 'Chạy quảng cáo FB',
-    text: 'Setup chiến dịch, tối ưu ngân sách và báo cáo hiệu quả.',
+    titleKey: 'authHighlights.ads.title',
+    textKey: 'authHighlights.ads.text',
     icon: BarChart2,
   },
   {
-    title: 'Bảo mật & Nâng cấp',
-    text: 'Hỗ trợ nâng cấp, bảo mật, khôi phục và tư vấn vận hành.',
+    titleKey: 'authHighlights.security.title',
+    textKey: 'authHighlights.security.text',
     icon: ShieldCheck,
   },
 ]

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useToast } from './components/Toast'
 import { adminNavItems } from './features/admin/adminNavigation'
@@ -37,6 +38,7 @@ import { useNotifications } from './features/notifications/hooks/useNotification
 function App() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [showAuthScreen, setShowAuthScreen] = useState(() => (
     Boolean(initialOAuthCallback?.error || initialOAuthCallback?.oauthTwoFactorChallenge)
   ))
@@ -107,10 +109,10 @@ function App() {
   const notify = useCallback((message, type = 'info', title = '') => {
     addToast({
       message,
-      title: title || (type === 'error' ? 'Lỗi' : type === 'success' ? 'Thành công' : 'Thông báo'),
+      title: title || (type === 'error' ? t('common.error') : type === 'success' ? t('common.success') : t('common.info')),
       type,
     })
-  }, [addToast])
+  }, [addToast, t])
 
   const handleRealtimeNotification = useCallback(async (notification) => {
     const type = String(notification?.type || '').toUpperCase()
@@ -225,7 +227,7 @@ function App() {
     fetchUserBootstrap(accessToken)
       .then(applyBootstrapData)
       .catch(() => {
-        const message = 'Không kết nối được API hoặc token đã hết hạn.'
+        const message = t('app.apiError')
         setApiNotice(message)
         notify(message, 'error')
         setAuthInit(true)
@@ -323,7 +325,7 @@ function App() {
         }
       } catch (err) {
         if (!cancelled) {
-          notify(err.message || 'Không tải được dữ liệu trang hiện tại.', 'error')
+          notify(err.message || t('app.loadPageError'), 'error')
         }
       } finally {
         if (!cancelled) {
@@ -345,7 +347,7 @@ function App() {
     setAccessToken(response.accessToken)
     setCurrentUser(response.user)
     setShowAuthScreen(false)
-    const message = 'Đăng nhập thành công.'
+    const message = t('app.loginSuccess')
     setApiNotice(message)
     notify(message, 'success')
   }
@@ -386,7 +388,7 @@ function App() {
     setActiveDeposit(null)
     resetAdminOverview()
     setShowAuthScreen(false)
-    const message = 'Đã đăng xuất.'
+    const message = t('app.loggedOut')
     setApiNotice(message)
     notify(message, 'info')
     navigate('/', { replace: true })
@@ -394,7 +396,7 @@ function App() {
 
   const handleOpenAuth = () => {
     setShowAuthScreen(true)
-    if (apiNotice === 'Đã đăng xuất.') {
+    if (apiNotice === t('app.loggedOut')) {
       setApiNotice('')
     }
   }
@@ -443,14 +445,14 @@ function App() {
 
   const handleCreateDeposit = async () => {
     if (!accessToken) {
-      const message = 'Vui lòng đăng nhập trước khi tạo yêu cầu nạp.'
+      const message = t('app.loginRequired')
       setApiNotice(message)
       notify(message, 'info')
       return
     }
 
     if (amountNumber <= MIN_DEPOSIT_AMOUNT) {
-      const message = 'Số tiền nạp phải lớn hơn 1.000đ.'
+      const message = t('app.depositMinAmount')
       setApiNotice(message)
       notify(message, 'error')
       return
@@ -462,11 +464,11 @@ function App() {
       setActiveDeposit(deposit)
       setApiDeposits((items) => [deposit, ...normalizeList(items).filter((item) => item.depositCode !== deposit.depositCode)])
       await refreshBootstrapData()
-      const message = `Đã tạo mã nạp ${deposit.depositCode}.`
+      const message = t('app.depositCreated', { code: deposit.depositCode })
       setApiNotice(message)
       notify(message, 'success')
     } catch {
-      const message = 'Không tạo được yêu cầu nạp. Kiểm tra backend hoặc số tiền tối thiểu.'
+      const message = t('app.depositCreateError')
       setApiNotice(message)
       notify(message, 'error')
     }
@@ -494,7 +496,7 @@ function App() {
         if (checkout.order) {
           setApiOrders((items) => [checkout.order, ...normalizeList(items).filter((item) => item.orderCode !== checkout.order.orderCode)])
           await refreshBootstrapData()
-          notify(`Thanh toán hoàn tất, đã tạo đơn ${checkout.order.orderCode}.`, 'success')
+          notify(t('app.transferPaymentDone', { code: checkout.order.orderCode }), 'success')
         } else {
           const notice = depositStatusNotice(depositCode, checkout.deposit?.status || checkout.status)
           notify(notice.message, notice.type, notice.title)
@@ -534,10 +536,10 @@ function App() {
             : deposits.find((deposit) => deposit.status === 'PENDING') || deposits[0] || null
         ))
         setWallet(walletData)
-        notify('Đã tải lại lịch sử nạp tiền.', 'success')
+        notify(t('app.depositReloaded'), 'success')
       }
     } catch (err) {
-      notify(err.message || 'Không cập nhật được yêu cầu nạp.', 'error')
+      notify(err.message || t('app.depositRefreshError'), 'error')
     }
   }
 
@@ -547,18 +549,18 @@ function App() {
     }
 
     try {
-      const saved = await userApi.cancelDeposit(deposit.depositCode, { reason: 'Người dùng hủy yêu cầu nạp' }, accessToken)
+      const saved = await userApi.cancelDeposit(deposit.depositCode, { reason: t('app.depositCancelReason') }, accessToken)
       setActiveDeposit(saved)
       setApiDeposits((items) => normalizeList(items).map((item) => (item.depositCode === saved.depositCode ? saved : item)))
-      notify(`Đã hủy yêu cầu nạp ${saved.depositCode}.`, 'success')
+      notify(t('app.depositCancelled', { code: saved.depositCode }), 'success')
     } catch (err) {
-      notify(err.message || 'Không hủy được yêu cầu nạp.', 'error')
+      notify(err.message || t('app.depositCancelError'), 'error')
     }
   }
 
   const handlePurchase = async (service) => {
     if (!accessToken) {
-      const message = 'Vui lòng đăng nhập trước khi mua dịch vụ.'
+      const message = t('app.loginRequiredService')
       setApiNotice(message)
       notify(message, 'info')
       return
@@ -567,11 +569,11 @@ function App() {
     try {
       const serviceId = resolveServiceId(service)
       if (!serviceId) {
-        throw new Error('Dịch vụ chưa có mã hợp lệ để tạo đơn.')
+        throw new Error(t('app.serviceInvalidId'))
       }
 
       if (service.ctaType && service.ctaType !== 'BUY_NOW') {
-        throw new Error('Dịch vụ này cần tư vấn trước khi mua. Vui lòng tạo ticket hỗ trợ.')
+        throw new Error(t('app.serviceNeedConsult'))
       }
 
       const servicePrice = Number(service.price)
@@ -602,7 +604,7 @@ function App() {
     }
     const code = checkoutCouponCode.trim()
     if (!code) {
-      setCheckoutCouponError('Vui lòng nhập mã giảm giá.')
+      setCheckoutCouponError(t('app.couponEmpty'))
       return
     }
 
@@ -612,7 +614,7 @@ function App() {
       const quote = await userApi.validateCoupon({ serviceId, couponCode: code }, accessToken)
       if (!quote?.valid) {
         setCheckoutCouponQuote(null)
-        setCheckoutCouponError(quote?.message || 'Mã giảm giá không hợp lệ.')
+        setCheckoutCouponError(quote?.message || t('app.couponInvalid'))
         return
       }
       setCheckoutCouponQuote(quote)
@@ -620,7 +622,7 @@ function App() {
       setCheckoutCouponError('')
     } catch (err) {
       setCheckoutCouponQuote(null)
-      setCheckoutCouponError(err.message || 'Không kiểm tra được mã giảm giá.')
+      setCheckoutCouponError(err.message || t('app.couponCheckError'))
     } finally {
       setCheckoutCouponSubmitting(false)
     }
@@ -641,7 +643,7 @@ function App() {
     const serviceId = resolveServiceId(checkoutService)
     const payableAmount = checkoutPayableAmount
     if (Number.isFinite(payableAmount) && payableAmount > displayBalance) {
-      const message = 'Số dư ví không đủ. Chọn thanh toán chuyển khoản để tạo mã QR đúng số tiền dịch vụ.'
+      const message = t('app.walletInsufficient')
       setApiNotice(message)
       notify(message, 'info')
       return
@@ -657,12 +659,12 @@ function App() {
       }, accessToken)
 
       if (!order?.orderCode) {
-        throw new Error('API tạo đơn không trả về mã đơn. Vui lòng tải lại trang và thử lại.')
+        throw new Error(t('app.orderApiError'))
       }
 
       setApiOrders((items) => [order, ...normalizeList(items).filter((item) => item.orderCode !== order.orderCode)])
       await refreshBootstrapData()
-      const message = `Đã tạo đơn ${order.orderCode}.`
+      const message = t('app.orderCreated', { code: order.orderCode })
       setApiNotice(message)
       notify(message, 'success')
       closeCheckoutModal()
@@ -682,7 +684,7 @@ function App() {
 
     const payableAmount = checkoutPayableAmount
     if (!Number.isFinite(payableAmount) || payableAmount <= MIN_DEPOSIT_AMOUNT) {
-      const message = 'Số tiền thanh toán phải lớn hơn 1.000đ để tạo mã QR.'
+      const message = t('app.transferMinAmount')
       setApiNotice(message)
       notify(message, 'error')
       return
@@ -703,9 +705,9 @@ function App() {
       setApiDeposits((items) => [deposit, ...normalizeList(items).filter((item) => item.depositCode !== deposit.depositCode)])
       setDepositAmount(String(payableAmount))
       closeCheckoutModal()
-      notify(`Đã tạo mã thanh toán ${deposit.depositCode} cho ${checkout.serviceName || checkoutService.name}.`, 'success')
+      notify(t('app.transferCheckoutCreated', { code: deposit.depositCode, name: checkout.serviceName || checkoutService.name }), 'success')
     } catch (err) {
-      const message = err.message || 'Không tạo được mã thanh toán. Vui lòng thử lại.'
+      const message = err.message || t('app.transferCheckoutError')
       setApiNotice(message)
       notify(message, 'error')
     } finally {
@@ -715,7 +717,7 @@ function App() {
 
   const handleToggleFavoriteService = async (service) => {
     if (!accessToken || !service?.id) {
-      const message = 'Vui lòng đăng nhập trước khi ghim dịch vụ.'
+      const message = t('app.loginRequiredFavorite')
       setApiNotice(message)
       notify(message, 'info')
       return
@@ -727,14 +729,14 @@ function App() {
       if (isFavorite) {
         await userApi.removeFavoriteService(service.id, accessToken)
         setFavoriteServices((items) => items.filter((item) => item.id !== service.id))
-        notify(`Đã bỏ ghim ${service.name}.`, 'success')
+        notify(t('app.favoriteRemoved', { name: service.name }), 'success')
       } else {
         const saved = await userApi.addFavoriteService(service.id, accessToken)
         setFavoriteServices((items) => [saved, ...items.filter((item) => item.id !== saved.id)])
-        notify(`Đã ghim ${saved.name}.`, 'success')
+        notify(t('app.favoriteAdded', { name: saved.name }), 'success')
       }
     } catch (err) {
-      notify(err.message || 'Không cập nhật được dịch vụ yêu thích.', 'error')
+      notify(err.message || t('app.favoriteError'), 'error')
     }
   }
 
@@ -744,12 +746,12 @@ function App() {
     }
 
     try {
-      const saved = await userApi.cancelOrder(order.orderCode, { reason: 'Người dùng hủy đơn' }, accessToken)
+      const saved = await userApi.cancelOrder(order.orderCode, { reason: t('app.orderCancelReason') }, accessToken)
       setApiOrders((items) => normalizeList(items).map((item) => (item.orderCode === saved.orderCode ? saved : item)))
       await refreshBootstrapData()
-      notify(`Đã hủy đơn ${saved.orderCode}.`, 'success')
+      notify(t('app.orderCancelled', { code: saved.orderCode }), 'success')
     } catch (err) {
-      notify(err.message || 'Không hủy được đơn hàng.', 'error')
+      notify(err.message || t('app.orderCancelError'), 'error')
     }
   }
 
@@ -770,7 +772,7 @@ function App() {
       })
       return detail
     } catch (err) {
-      notify(err.message || 'Không tải được chi tiết đơn hàng.', 'error')
+      notify(err.message || t('app.orderDetailError'), 'error')
       return order || null
     } finally {
       setDetailOrderLoading(false)
@@ -786,9 +788,9 @@ function App() {
       const saved = await userApi.reorder(order.orderCode, accessToken)
       setApiOrders((items) => [saved, ...normalizeList(items).filter((item) => item.orderCode !== saved.orderCode)])
       await refreshBootstrapData()
-      notify(`Đã tạo lại đơn ${saved.orderCode}.`, 'success')
+      notify(t('app.orderReordered', { code: saved.orderCode }), 'success')
     } catch (err) {
-      notify(err.message || 'Không mua lại được đơn hàng.', 'error')
+      notify(err.message || t('app.orderReorderError'), 'error')
     }
   }
 
@@ -815,7 +817,7 @@ function App() {
           : items[0]?.ticketCode || null
       ))
     } catch (err) {
-      notify(err.message || 'Không tải được ticket hỗ trợ.', 'error')
+      notify(err.message || t('app.ticketLoadError'), 'error')
     } finally {
       setSupportLoading(false)
     }
@@ -849,7 +851,7 @@ function App() {
       })
       setSupportAttachments(normalizeList(attachments))
     } catch (err) {
-      notify(err.message || 'Không tải được chi tiết ticket.', 'error')
+      notify(err.message || t('app.ticketDetailError'), 'error')
     }
   }
 
@@ -884,7 +886,7 @@ function App() {
         message: ticketForm.message.trim(),
         orderCode: ticketForm.orderCode.trim() || undefined,
         priority: ticketForm.priority,
-        subject: ticketForm.subject.trim() || `Yêu cầu hỗ trợ ${ticketForm.category}`,
+        subject: ticketForm.subject.trim() || t('app.ticketDefaultSubject', { category: ticketForm.category }),
       }, accessToken)
       if (supportFile) {
         await userApi.uploadTicketAttachment(saved.ticketCode, supportFile, accessToken)
@@ -893,10 +895,10 @@ function App() {
       setApiTickets((items) => [saved, ...normalizeList(items).filter((item) => item.ticketCode !== saved.ticketCode)])
       setSupportSelectedCode(saved.ticketCode)
       setTicketForm({ category: 'DEPOSIT', depositCode: '', message: '', orderCode: '', priority: 'NORMAL', subject: '' })
-      notify(`Đã tạo ticket ${saved.ticketCode}.`, 'success')
+      notify(t('app.ticketCreated', { code: saved.ticketCode }), 'success')
       return saved
     } catch (err) {
-      notify(err.message || 'Không tạo được ticket.', 'error')
+      notify(err.message || t('app.ticketCreateError'), 'error')
       return null
     } finally {
       setSupportSubmitting(false)
@@ -914,9 +916,9 @@ function App() {
       const saved = await userApi.sendTicketMessage(selectedTicket.ticketCode, { message: supportMessage.trim() }, accessToken)
       setApiTickets((items) => normalizeList(items).map((item) => (item.ticketCode === saved.ticketCode ? saved : item)))
       setSupportMessage('')
-      notify(`Đã phản hồi ticket ${saved.ticketCode}.`, 'success')
+      notify(t('app.ticketReply', { code: saved.ticketCode }), 'success')
     } catch (err) {
-      notify(err.message || 'Không gửi được phản hồi ticket.', 'error')
+      notify(err.message || t('app.ticketReplyError'), 'error')
     } finally {
       setSupportSubmitting(false)
     }
@@ -933,9 +935,9 @@ function App() {
         ? await userApi.closeTicket(ticketCode, accessToken)
         : await userApi.reopenTicket(ticketCode, accessToken)
       setApiTickets((items) => normalizeList(items).map((item) => (item.ticketCode === saved.ticketCode ? saved : item)))
-      notify(`Đã cập nhật ticket ${saved.ticketCode}.`, 'success')
+      notify(t('app.ticketUpdated', { code: saved.ticketCode }), 'success')
     } catch (err) {
-      notify(err.message || 'Không cập nhật được ticket.', 'error')
+      notify(err.message || t('app.ticketUpdateError'), 'error')
     } finally {
       setSupportSubmitting(false)
     }
@@ -952,9 +954,9 @@ function App() {
       await userApi.uploadTicketAttachment(selectedTicket.ticketCode, supportFile, accessToken)
       setSupportFile(null)
       setSupportAttachments(normalizeList(await userApi.getTicketAttachments(selectedTicket.ticketCode, accessToken)))
-      notify('Đã upload attachment.', 'success')
+      notify(t('app.attachmentUploaded'), 'success')
     } catch (err) {
-      notify(err.message || 'Không upload được attachment.', 'error')
+      notify(err.message || t('app.attachmentUploadError'), 'error')
     } finally {
       setSupportSubmitting(false)
     }
@@ -969,9 +971,9 @@ function App() {
     try {
       await userApi.deleteTicketAttachment(ticketCode, attachmentId, accessToken)
       setSupportAttachments(normalizeList(await userApi.getTicketAttachments(ticketCode, accessToken)))
-      notify(`Đã xóa attachment #${attachmentId}.`, 'success')
+      notify(t('app.attachmentDeleted', { id: attachmentId }), 'success')
     } catch (err) {
-      notify(err.message || 'Không xóa được attachment.', 'error')
+      notify(err.message || t('app.attachmentDeleteError'), 'error')
     } finally {
       setSupportSubmitting(false)
     }
@@ -1024,7 +1026,7 @@ function App() {
   }
 
   if (!authInit) {
-    return <Loading message="Đang khởi tạo ứng dụng..." subMessage="Vui lòng chờ trong giây lát" />
+    return <Loading message={t('loading.initApp')} />
   }
 
   if (isAdmin) {
@@ -1042,7 +1044,7 @@ function App() {
         onOpenNotifications={loadNotifications}
         onViewChange={handleAdminViewChange}
         showBalance={false}
-        subtitle="Quản trị nội dung public site"
+        subtitle={t('app.adminSubtitle')}
       >
         {adminActiveView === 'admin-overview' && adminOverview.error && (
           <p className="admin-message error">{adminOverview.error}</p>
@@ -1086,7 +1088,7 @@ function App() {
       onViewChange={handleUserViewChange}
     >
       {routeLoading && userActiveView !== 'support' && userActiveView !== 'profile' && (
-        <Loading fullScreen={false} message="Đang tải dữ liệu..." subMessage="" />
+        <Loading fullScreen={false} message={t('loading.loadingData')} />
       )}
       <UserRoutes
         activeDeposit={activeDeposit}

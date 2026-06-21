@@ -1,8 +1,10 @@
 import { ArrowRight, LogIn, Menu, Moon, Sun, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Button from '../../../../components/Button/Button'
 import { useTheme } from '../../../../contexts/ThemeContext'
+import LanguageSwitcher from '../../../../components/LanguageSwitcher/LanguageSwitcher'
 import './PublicHeader.css'
 
 function PublicHeader({
@@ -13,6 +15,7 @@ function PublicHeader({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
+  const { t } = useTranslation()
   const location = useLocation()
 
   const closeMenu = () => setIsMenuOpen(false)
@@ -58,32 +61,33 @@ function PublicHeader({
         {navItems.map((item) =>
           item.href.startsWith('/') ? (
             <Link to={item.href} key={item.href} onClick={(e) => handleNavClick(e, item.href)}>
-              {item.label}
+              {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
             </Link>
           ) : (
             <a href={item.href} key={item.href} onClick={(e) => handleNavClick(e, item.href)}>
-              {item.label}
+              {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
             </a>
           )
         )}
       </nav>
 
       <div className="public-header-actions">
+        <LanguageSwitcher />
         <button
           type="button"
           className="public-theme-toggle"
           onClick={toggleTheme}
-          title={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
-          aria-label={theme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
+          title={theme === 'dark' ? t('auth.switchToLight') : t('auth.switchToDark')}
+          aria-label={theme === 'dark' ? t('auth.switchToLight') : t('auth.switchToDark')}
         >
           {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
         </button>
         <Button variant="ghost" onClick={openAuth}>
           <LogIn size={17} strokeWidth={2} aria-hidden="true" />
-          <span>Đăng nhập</span>
+          <span>{t('public.header.login')}</span>
         </Button>
         <Button variant="primary" to="/catalog">
-          <span>Xem dịch vụ</span>
+          <span>{t('public.header.services')}</span>
           <ArrowRight size={17} strokeWidth={2} aria-hidden="true" />
         </Button>
         <button
@@ -91,7 +95,7 @@ function PublicHeader({
           className="mobile-menu-button"
           onClick={() => setIsMenuOpen((current) => !current)}
           aria-expanded={isMenuOpen}
-          aria-label={isMenuOpen ? 'Đóng menu' : 'Mở menu'}
+          aria-label={isMenuOpen ? t('sidebar.closeMenu') : t('topbar.openMenu')}
         >
           {isMenuOpen ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
         </button>
@@ -102,16 +106,16 @@ function PublicHeader({
           {navItems.map((item) =>
             item.href.startsWith('/') ? (
               <Link to={item.href} key={item.href} onClick={(e) => { closeMenu(); handleNavClick(e, item.href); }}>
-                {item.label}
+                {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
               </Link>
             ) : (
               <a href={item.href} key={item.href} onClick={(e) => { closeMenu(); handleNavClick(e, item.href); }}>
-                {item.label}
+                {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
               </a>
             )
           )}
           <button type="button" onClick={openAuth}>
-            Đăng nhập / đăng ký
+            {t('public.header.loginOrRegister')}
           </button>
         </div>
       )}

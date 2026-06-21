@@ -1,5 +1,6 @@
 import { Lock, MoreHorizontal, Unlock, UserRoundCog } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import Modal from '../../../../components/Modal/Modal'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
@@ -52,6 +53,7 @@ function UserListPanel({
   submitting,
   users = [],
 }) {
+  const { t } = useTranslation()
   const location = useLocation()
   const [openToolbarId, setOpenToolbarId] = useState(null)
   const [activeToolTab, setActiveToolTab] = useState('wallet')
@@ -93,10 +95,10 @@ function UserListPanel({
     <div className="admin-panel">
       <div className="admin-panel-head">
         <h3>Danh sách user</h3>
-        <span>{users.length} tài khoản</span>
+        <span>{users.length} {t('admin.users.accounts')}</span>
       </div>
       {!hasLoadedUsers ? (
-        <AdminEmptyState message="Đang tải danh sách user..." />
+        <AdminEmptyState message={t('admin.users.loading')} />
       ) : (
         <div className="admin-data-table">
           <div className="admin-data-row head users">
@@ -116,7 +118,7 @@ function UserListPanel({
                   <div className="admin-row-user-info">
                     <AdminUserAvatar user={user} />
                     <div className="admin-row-user-text">
-                      <strong>{user.name || 'Chưa đặt tên'}</strong>
+                      <strong>{user.name || t('admin.users.detail.noName')}</strong>
                       <small>{user.email}</small>
                     </div>
                   </div>

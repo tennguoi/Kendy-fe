@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { userApi } from '../../../api/user.api'
 import AdminAccessTab from './components/AdminAccessTab'
@@ -8,6 +9,7 @@ import FilesTab from './components/FilesTab'
 import GuideTab from './components/GuideTab'
 import HealthTab from './components/HealthTab'
 import JobsTab from './components/JobsTab'
+import LanguageTab from './components/LanguageTab'
 import NotificationsTab from './components/NotificationsTab'
 import OperationsTab from './components/OperationsTab'
 import SettingsTab from './components/SettingsTab'
@@ -70,6 +72,8 @@ function AdminSettingsView({
   const [twoFactorCode, setTwoFactorCode] = useState('')
   const [twoFactorEmailSent, setTwoFactorEmailSent] = useState(false)
 
+  const { t } = useTranslation()
+
   const settingsMap = toSettingsMap(settings)
   const twoFactorRequired = settingsMap.admin_2fa_required === 'true'
   const selectedAdmin = admins.find((admin) => admin.id === selectedAdminId) || admins[0]
@@ -127,7 +131,7 @@ function AdminSettingsView({
       setHealth(healthData)
       setSelectedAdminId((current) => (current && adminsData.some((admin) => admin.id === current) ? current : adminsData[0]?.id || null))
     } catch (err) {
-      setViewError(err.message || 'Không tải được cài đặt hệ thống.')
+      setViewError(err.message || t('admin.settings.loadError'))
     } finally {
       setLoading(false)
     }
@@ -165,7 +169,7 @@ function AdminSettingsView({
         setTotpSetup(null)
       } catch (err) {
         if (active) {
-          setViewError(err.message || 'Không tải được chi tiết admin.')
+          setViewError(err.message || t('admin.settings.error.loadAdminDetail'))
         }
       }
     }
@@ -190,9 +194,9 @@ function AdminSettingsView({
         ],
       }, token)
       setSettings((current) => mergeSettings(current, savedSettings))
-      onSetNotice(`Đã ${twoFactorRequired ? 'tắt' : 'bật'} yêu cầu 2FA.`)
+      onSetNotice(t('admin.settings.success.twoFAUpdated'))
     } catch (err) {
-      setViewError(err.message || 'Không thể cập nhật cài đặt.')
+      setViewError(err.message || t('admin.settings.error.updateFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -204,9 +208,9 @@ function AdminSettingsView({
     try {
       await userApi.sendTwoFactorEnableEmailCode(token)
       setTwoFactorEmailSent(true)
-      onSetNotice(`Đã gửi mã xác thực tới ${currentUser?.email || 'email admin'}.`)
+      onSetNotice(t('admin.settings.success.twoFAEmailSent', { email: currentUser?.email || 'email admin' }))
     } catch (err) {
-      setViewError(err.message || 'Không gửi được mã xác thực 2FA.')
+      setViewError(err.message || t('admin.settings.error.twoFAEmailFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -221,9 +225,9 @@ function AdminSettingsView({
       setTwoFactorCode('')
       setTwoFactorEmailSent(false)
       onCurrentUserChange(savedUser)
-      onSetNotice('Đã bật 2FA email cho tài khoản admin hiện tại.')
+      onSetNotice(t('admin.settings.success.twoFAEnabled'))
     } catch (err) {
-      setViewError(err.message || 'Mã xác thực 2FA không hợp lệ hoặc đã hết hạn.')
+      setViewError(err.message || t('admin.settings.error.twoFAInvalidCode'))
     } finally {
       setSubmitting(false)
     }
@@ -235,9 +239,9 @@ function AdminSettingsView({
     try {
       await adminApi.updateSepayConfig({ config: JSON.parse(sepayConfigText) }, token)
       await loadSettings()
-      onSetNotice('Đã lưu webhook config.')
+      onSetNotice(t('admin.settings.success.webhookSaved'))
     } catch (err) {
-      setViewError(err.message || 'Webhook config phải là JSON hợp lệ.')
+      setViewError(err.message || t('admin.settings.error.webhookSaveFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -255,9 +259,9 @@ function AdminSettingsView({
       }, token)
       setRetryForm({ bankTransactionId: '', depositCode: '', reason: '' })
       await loadSettings()
-      onSetNotice('Đã gửi retry webhook.')
+      onSetNotice(t('admin.settings.success.webhookRetried'))
     } catch (err) {
-      setViewError(err.message || 'Không retry được webhook.')
+      setViewError(err.message || t('admin.settings.error.webhookRetryFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -269,9 +273,9 @@ function AdminSettingsView({
     try {
       await adminApi.updateNotificationSettings({ value: notificationSetting?.value || '{}' }, token)
       await loadSettings()
-      onSetNotice('Đã lưu notification settings.')
+      onSetNotice(t('admin.settings.success.notificationSaved'))
     } catch (err) {
-      setViewError(err.message || 'Không lưu được notification settings.')
+      setViewError(err.message || t('admin.settings.error.notificationSaveFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -287,9 +291,9 @@ function AdminSettingsView({
         await adminApi.cancelJob(jobId, token)
       }
       await loadSettings()
-      onSetNotice(`Đã ${action} job #${jobId}.`)
+      onSetNotice(t('admin.settings.success.jobUpdated', { id: jobId }))
     } catch (err) {
-      setViewError(err.message || 'Không xử lý được job.')
+      setViewError(err.message || t('admin.settings.error.jobActionFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -301,9 +305,9 @@ function AdminSettingsView({
     try {
       const data = await adminApi.backupSettings(token)
       setSettings(data)
-      onSetNotice(`Backup settings hoàn tất: ${data.length} key.`)
+      onSetNotice(t('admin.settings.success.backupDone', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không backup được settings.')
+      setViewError(err.message || t('admin.settings.error.backupFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -318,9 +322,9 @@ function AdminSettingsView({
       const payload = Array.isArray(parsed) ? { settings: parsed } : parsed
       const saved = await adminApi.restoreSettings(payload, token)
       setSettings(saved)
-      onSetNotice(`Restore settings hoàn tất: ${saved.length} key.`)
+      onSetNotice(t('admin.settings.success.restoreDone', { count: saved.length }))
     } catch (err) {
-      setViewError(err.message || 'JSON restore settings không hợp lệ.')
+      setViewError(err.message || t('admin.settings.error.restoreFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -329,7 +333,7 @@ function AdminSettingsView({
   const loadSettingHistory = async (event) => {
     event.preventDefault()
     if (!settingHistoryKey.trim()) {
-      setViewError('Nhập setting key cần xem lịch sử.')
+      setViewError(t('admin.settings.error.historyKeyRequired'))
       return
     }
 
@@ -338,9 +342,9 @@ function AdminSettingsView({
     try {
       const data = await adminApi.getSettingHistory(settingHistoryKey.trim(), token)
       setSettingHistory(data)
-      onSetNotice(`Đã tải ${data.length} lịch sử setting.`)
+      onSetNotice(t('admin.settings.success.historyLoaded', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được lịch sử setting.')
+      setViewError(err.message || t('admin.settings.error.historyLoadFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -361,9 +365,9 @@ function AdminSettingsView({
       const data = await adminApi.getAuditLogs(params, token)
       setAuditLogs(data)
       setSelectedAudit(data[0] || null)
-      onSetNotice(`Đã tải ${data.length} audit log.`)
+      onSetNotice(t('admin.settings.success.auditLoaded', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được audit log.')
+      setViewError(err.message || t('admin.settings.error.auditLoadFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -376,9 +380,9 @@ function AdminSettingsView({
       const data = await adminApi.listAuditLogs({ action: auditFilter.action.trim() }, token)
       setAuditLogs(data)
       setSelectedAudit(data[0] || null)
-      onSetNotice(`Đã tải ${data.length} audit log cơ bản.`)
+      onSetNotice(t('admin.settings.success.auditLoaded', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được audit log cơ bản.')
+      setViewError(err.message || t('admin.settings.error.auditLoadFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -386,7 +390,7 @@ function AdminSettingsView({
 
   const loadAdminActions = async () => {
     if (!auditFilter.adminId) {
-      setViewError('Nhập Admin/User ID để tải admin actions.')
+      setViewError(t('admin.settings.error.adminActionIdRequired'))
       return
     }
 
@@ -396,9 +400,9 @@ function AdminSettingsView({
       const data = await adminApi.getAdminActions(Number(auditFilter.adminId), {}, token)
       setAuditLogs(data)
       setSelectedAudit(data[0] || null)
-      onSetNotice(`Đã tải ${data.length} admin action.`)
+      onSetNotice(t('admin.settings.success.auditLoaded', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được admin actions.')
+      setViewError(err.message || t('admin.settings.error.adminActionsLoadFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -410,7 +414,7 @@ function AdminSettingsView({
     try {
       setSelectedAudit(await adminApi.getAuditLogDetail(auditId, token))
     } catch (err) {
-      setViewError(err.message || 'Không tải được chi tiết audit log.')
+      setViewError(err.message || t('admin.settings.error.auditDetailFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -426,9 +430,9 @@ function AdminSettingsView({
       } else {
         downloadTextFile('audit-logs.csv', data)
       }
-      onSetNotice(`Đã export audit-logs.${auditExportFormat}.`)
+      onSetNotice(t('admin.settings.success.exportDone', { type: 'audit-logs', format: auditExportFormat }))
     } catch (err) {
-      setViewError(err.message || 'Không export được audit logs.')
+      setViewError(err.message || t('admin.settings.error.exportFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -447,9 +451,9 @@ function AdminSettingsView({
       setUploadedFiles((items) => [saved, ...items.filter((item) => item.id !== saved.id)])
       setFileIdInput(String(saved.id))
       setFileToUpload(null)
-      onSetNotice(`Đã upload ${saved.fileName}.`)
+      onSetNotice(t('admin.settings.success.fileUploaded', { name: saved.fileName }))
     } catch (err) {
-      setViewError(err.message || 'Không upload được file.')
+      setViewError(err.message || t('admin.settings.error.fileUploadFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -458,7 +462,7 @@ function AdminSettingsView({
   const downloadAdminFile = async (mode, fileId = fileIdInput) => {
     const normalizedId = Number(fileId)
     if (!normalizedId) {
-      setViewError('Nhập file ID hợp lệ.')
+      setViewError(t('admin.settings.error.fileIdRequired'))
       return
     }
 
@@ -469,9 +473,9 @@ function AdminSettingsView({
         ? await adminApi.previewAdminFile(normalizedId, token)
         : await adminApi.downloadAdminFile(normalizedId, token)
       downloadBlobFile(`admin-file-${normalizedId}${mode === 'preview' ? '-preview' : ''}`, data)
-      onSetNotice(`Đã tải file #${normalizedId}.`)
+      onSetNotice(t('admin.settings.success.fileDownloaded', { id: normalizedId }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được file.')
+      setViewError(err.message || t('admin.settings.error.fileDownloadFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -480,7 +484,7 @@ function AdminSettingsView({
   const deleteAdminFile = async (fileId = fileIdInput) => {
     const normalizedId = Number(fileId)
     if (!normalizedId) {
-      setViewError('Nhập file ID hợp lệ.')
+      setViewError(t('admin.settings.error.fileIdRequired'))
       return
     }
 
@@ -492,9 +496,9 @@ function AdminSettingsView({
       if (fileIdInput === String(normalizedId)) {
         setFileIdInput('')
       }
-      onSetNotice(`Đã xóa file #${normalizedId}.`)
+      onSetNotice(t('admin.settings.success.fileDeleted', { id: normalizedId }))
     } catch (err) {
-      setViewError(err.message || 'Không xóa được file.')
+      setViewError(err.message || t('admin.settings.error.fileDeleteFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -506,9 +510,9 @@ function AdminSettingsView({
     try {
       const saved = await adminApi.getJobStatus(jobId, token)
       setJobs((items) => items.map((item) => (item.id === saved.id ? saved : item)))
-      onSetNotice(`Đã cập nhật job #${jobId}.`)
+      onSetNotice(t('admin.settings.success.jobUpdated', { id: jobId }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được trạng thái job.')
+      setViewError(err.message || t('admin.settings.error.jobStatusFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -519,9 +523,9 @@ function AdminSettingsView({
     setViewError('')
     try {
       setJobs(await adminApi.getJobLogs(token))
-      onSetNotice('Đã tải job logs.')
+      onSetNotice(t('admin.settings.success.jobLogsLoaded'))
     } catch (err) {
-      setViewError(err.message || 'Không tải được job logs.')
+      setViewError(err.message || t('admin.settings.error.jobLogsFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -551,7 +555,7 @@ function AdminSettingsView({
   const saveRole = async (event) => {
     event.preventDefault()
     if (!roleDraft.name.trim()) {
-      setViewError('Tên role không được để trống.')
+      setViewError(t('admin.settings.error.roleNameRequired'))
       return
     }
 
@@ -568,9 +572,9 @@ function AdminSettingsView({
         : await adminApi.createRole(payload, token)
       setSelectedRoleId(saved.id)
       await loadSettings()
-      onSetNotice(`Đã lưu role ${saved.name}.`)
+      onSetNotice(t('admin.settings.success.roleSaved', { name: saved.name }))
     } catch (err) {
-      setViewError(err.message || 'Không lưu được role.')
+      setViewError(err.message || t('admin.settings.error.roleSaveFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -588,9 +592,9 @@ function AdminSettingsView({
       setSelectedRoleId(null)
       setRoleDraft({ description: '', name: '', permissionIds: [] })
       await loadSettings()
-      onSetNotice(`Đã xóa role ${selectedRole.name}.`)
+      onSetNotice(t('admin.settings.success.roleDeleted', { name: selectedRole.name }))
     } catch (err) {
-      setViewError(err.message || 'Không xóa được role.')
+      setViewError(err.message || t('admin.settings.error.roleDeleteFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -617,9 +621,9 @@ function AdminSettingsView({
         adminApi.setUserAdminRoles(selectedAdmin.id, adminEditor.roleIds, token),
       ])
       await loadSettings()
-      onSetNotice(`Đã lưu quyền cho ${selectedAdmin.email}.`)
+      onSetNotice(t('admin.settings.success.adminAccessSaved', { email: selectedAdmin.email }))
     } catch (err) {
-      setViewError(err.message || 'Không lưu được quyền admin.')
+      setViewError(err.message || t('admin.settings.error.adminSaveFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -633,16 +637,16 @@ function AdminSettingsView({
     setSubmitting(true)
     setViewError('')
     try {
-      const payload = { ids: [selectedAdmin.id], reason: adminEditor.reason.trim() || 'Cập nhật từ màn hình quản trị' }
+      const payload = { ids: [selectedAdmin.id], reason: adminEditor.reason.trim() || t('admin.settings.defaultLockReason') }
       if (status === 'LOCKED') {
         await adminApi.bulkLockAdmins(payload, token)
       } else {
         await adminApi.bulkUnlockAdmins(payload, token)
       }
       await loadSettings()
-      onSetNotice(`Đã cập nhật trạng thái ${selectedAdmin.email}.`)
+      onSetNotice(t('admin.settings.success.adminStatusUpdated', { email: selectedAdmin.email }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được trạng thái admin.')
+      setViewError(err.message || t('admin.settings.error.adminStatusFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -668,9 +672,9 @@ function AdminSettingsView({
         await adminApi.disableAdminTwoFactor(selectedAdmin.id, token)
         await loadSettings()
       }
-      onSetNotice(`Đã xử lý 2FA cho ${selectedAdmin.email}.`)
+      onSetNotice(t('admin.settings.success.twoFAProcessed', { email: selectedAdmin.email }))
     } catch (err) {
-      setViewError(err.message || 'Không xử lý được 2FA admin.')
+      setViewError(err.message || t('admin.settings.error.twoFAFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -686,9 +690,9 @@ function AdminSettingsView({
     try {
       await adminApi.revokeAdminSession(selectedAdmin.id, sessionId, token)
       setAdminSessions(await adminApi.getAdminSessions(selectedAdmin.id, token))
-      onSetNotice(`Đã thu hồi session #${sessionId}.`)
+      onSetNotice(t('admin.settings.success.sessionRevoked', { id: sessionId }))
     } catch (err) {
-      setViewError(err.message || 'Không thu hồi được session admin.')
+      setViewError(err.message || t('admin.settings.error.sessionRevokeFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -705,9 +709,9 @@ function AdminSettingsView({
     try {
       const saved = await adminApi.bulkReadNotifications({ ids: unreadIds }, token)
       setNotifications(saved)
-      onSetNotice(`Đã đọc ${unreadIds.length} notification.`)
+      onSetNotice(t('admin.settings.success.notificationsRead', { count: unreadIds.length }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được notification.')
+      setViewError(err.message || t('admin.settings.error.notificationFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -720,7 +724,7 @@ function AdminSettingsView({
       const saved = await adminApi.markNotificationRead(notificationId, token)
       setNotifications((items) => items.map((item) => (item.id === saved.id ? saved : item)))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được notification.')
+      setViewError(err.message || t('admin.settings.error.notificationFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -730,23 +734,23 @@ function AdminSettingsView({
     <section className="admin-view settings-view">
       <div className="admin-toolbar settings-toolbar">
         <div>
-          <h2>Cài đặt hệ thống</h2>
-          <p>Quản trị vận hành, bảo mật, audit và các cấu hình nền của hệ thống.</p>
+          <h2>{t('admin.settings.title')}</h2>
+          <p>{t('admin.settings.description')}</p>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadSettings} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Tải lại</span>
+          <span>{t('admin.common.reload')}</span>
         </button>
       </div>
 
       {(error || loading) && (
         <p className={error ? 'admin-message error' : 'admin-message'}>
-          {error || 'Đang tải cài đặt...'}
+          {error || t('admin.settings.loading')}
         </p>
       )}
 
       <div className="settings-layout">
-        <aside className="settings-rail" aria-label="Nhóm cài đặt">
+        <aside className="settings-rail" aria-label={t('admin.settings.settingsGroup')}>
           {settingsTabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -769,7 +773,7 @@ function AdminSettingsView({
         <div className="settings-main">
           <div className="settings-section-head">
             <div>
-              <span>{activeTabMeta.kicker || 'System'}</span>
+              <span>{activeTabMeta.kicker || t('admin.common.system')}</span>
               <h3>{activeTabMeta.title || activeTabMeta.label}</h3>
             </div>
             {activeTabMeta.description && <p>{activeTabMeta.description}</p>}
@@ -909,6 +913,8 @@ function AdminSettingsView({
             {activeTab === 'health' && <HealthTab health={health} />}
 
             {activeTab === 'guide' && <GuideTab />}
+
+            {activeTab === 'language' && <LanguageTab />}
           </div>
         </div>
       </div>

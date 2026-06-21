@@ -1,4 +1,5 @@
 import { Mail } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   EMAIL_TEMPLATE_DEFINITIONS,
   renderEmailPreview,
@@ -11,12 +12,13 @@ function EmailTextEditor({
   onActiveSlugChange,
   onChange,
 }) {
+  const { t } = useTranslation()
   const definition = EMAIL_TEMPLATE_DEFINITIONS.find((item) => item.slug === activeSlug)
   const draft = drafts[activeSlug]
 
   return (
     <div className="admin-form compact email-text-settings">
-      <div className="email-template-tabs" aria-label="Loại email">
+      <div className="email-template-tabs" aria-label={t('admin.content.email.tabsLabel')}>
         {EMAIL_TEMPLATE_DEFINITIONS.map((item) => (
           <button
             key={item.slug}
@@ -35,7 +37,7 @@ function EmailTextEditor({
 
       <div className="admin-form-grid two-columns">
         <label>
-          <span>Tiêu đề email</span>
+          <span>{t('admin.content.email.subjectLabel')}</span>
           <input
             value={draft.subject}
             onChange={(event) => onChange({ subject: event.target.value })}
@@ -43,7 +45,7 @@ function EmailTextEditor({
           />
         </label>
         <label>
-          <span>Tiêu đề trong email</span>
+          <span>{t('admin.content.email.headingLabel')}</span>
           <input
             value={draft.heading}
             onChange={(event) => onChange({ heading: event.target.value })}
@@ -53,7 +55,7 @@ function EmailTextEditor({
       </div>
 
       <label>
-        <span>Nội dung chính</span>
+        <span>{t('admin.content.email.introLabel')}</span>
         <textarea
           value={draft.intro}
           onChange={(event) => onChange({ intro: event.target.value })}
@@ -64,7 +66,7 @@ function EmailTextEditor({
 
       {definition.type === 'link' ? (
         <label>
-          <span>Chữ trên nút hành động</span>
+          <span>{t('admin.content.email.actionLabel')}</span>
           <input
             value={draft.actionLabel}
             onChange={(event) => onChange({ actionLabel: event.target.value })}
@@ -73,7 +75,7 @@ function EmailTextEditor({
         </label>
       ) : (
         <label>
-          <span>Nhãn phía trên mã xác thực</span>
+          <span>{t('admin.content.email.codeLabel')}</span>
           <input
             value={draft.codeLabel}
             onChange={(event) => onChange({ codeLabel: event.target.value })}
@@ -83,16 +85,16 @@ function EmailTextEditor({
       )}
 
       <label>
-        <span>Dòng thời hạn</span>
+        <span>{t('admin.content.email.detailLabel')}</span>
         <input
           value={draft.detail}
           onChange={(event) => onChange({ detail: event.target.value })}
         />
-        <small>Dùng biến {'{{expiresAt}}'} để hiển thị thời gian hết hạn.</small>
+        <small>{t('admin.content.email.detailHint')}</small>
       </label>
 
       <label>
-        <span>Cảnh báo bảo mật</span>
+        <span>{t('admin.content.email.securityNoteLabel')}</span>
         <textarea
           value={draft.securityNote}
           onChange={(event) => onChange({ securityNote: event.target.value })}
@@ -101,7 +103,7 @@ function EmailTextEditor({
       </label>
 
       <label>
-        <span>Chân email</span>
+        <span>{t('admin.content.email.footerLabel')}</span>
         <textarea
           value={draft.footer}
           onChange={(event) => onChange({ footer: event.target.value })}
@@ -110,7 +112,7 @@ function EmailTextEditor({
       </label>
 
       <div className="email-variable-note">
-        <strong>Biến được phép:</strong>
+        <strong>{t('admin.content.email.allowedVariables')}</strong>
         <code>{'{{name}}'}</code>
         <code>{'{{email}}'}</code>
         {definition.type === 'link' && <code>{'{{link}}'}</code>}
@@ -119,10 +121,10 @@ function EmailTextEditor({
       </div>
 
       <div className="content-preview-block">
-        <span>Xem trước form email cố định</span>
+        <span>{t('admin.content.email.previewLabel')}</span>
         <iframe
           className="email-fixed-preview"
-          title={`Xem trước ${definition.label}`}
+          title={t('admin.content.email.previewTitle', { label: definition.label })}
           srcDoc={renderEmailPreview(definition, draft, brand)}
           sandbox=""
         />

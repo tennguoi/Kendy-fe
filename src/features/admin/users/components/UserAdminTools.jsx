@@ -1,12 +1,7 @@
 import { Eye, EyeOff, Lock, Save, Shield, Unlock, UserRoundCog, Wallet, X } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { userRoles, userRoleLabels } from '../users.constants'
-
-const userToolTabs = [
-  { id: 'bulk', label: 'Bulk', icon: Shield },
-  { id: 'role', label: 'Vai trò', icon: UserRoundCog },
-  { id: 'wallet', label: 'Ví', icon: Wallet },
-]
 
 function UserAdminTools({
   activeToolTab,
@@ -24,18 +19,25 @@ function UserAdminTools({
   selectedUser,
   submitting,
 }) {
+  const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
+
+  const userToolTabs = useMemo(() => [
+    { id: 'bulk', label: 'Bulk', icon: Shield },
+    { id: 'role', label: t('admin.users.detail.roles'), icon: UserRoundCog },
+    { id: 'wallet', label: t('admin.users.detail.wallet'), icon: Wallet },
+  ], [t])
 
   return (
     <section className="admin-panel user-tools-panel">
       <div className="admin-panel-head">
         <div>
-          <h3>Công cụ quản trị user</h3>
-          <span>{selectedUser?.email || 'User đang chọn'}</span>
+          <h3>{t('admin.users.detail.toolsLabel')}</h3>
+          <span>{selectedUser?.email || t('admin.users.detail.toolsLabel')}</span>
         </div>
         <button type="button" onClick={onClose}><X size={16} /> Đóng</button>
       </div>
-      <div className="user-tool-tabs" role="tablist" aria-label="Công cụ quản trị user">
+      <div className="user-tool-tabs" role="tablist" aria-label={t('admin.users.detail.toolsLabel')}>
         {userToolTabs.map((tab) => {
           const Icon = tab.icon
           return (
@@ -62,7 +64,7 @@ function UserAdminTools({
           </div>
           <label>
             <span>User IDs</span>
-            <textarea value={bulkStatusForm.ids} onChange={(event) => onBulkStatusFormChange((current) => ({ ...current, ids: event.target.value }))} rows="2" placeholder="VD: 1, 2, 3" />
+            <textarea value={bulkStatusForm.ids} onChange={(event) => onBulkStatusFormChange((current) => ({ ...current, ids: event.target.value }))} rows="2" placeholder={t('admin.users.detail.bulkPlaceholder')} />
           </label>
           <label>
             <span>Lý do</span>
@@ -86,7 +88,7 @@ function UserAdminTools({
         <form className="admin-form compact user-tool-section" id="user-role-form" onSubmit={onUpdateRole}>
           <div className="user-tool-head">
             <UserRoundCog size={18} strokeWidth={2} aria-hidden="true" />
-            <strong>Vai trò</strong>
+            <strong>{t('admin.users.detail.roles')}</strong>
           </div>
           <label>
             <span>Role</span>
@@ -108,7 +110,7 @@ function UserAdminTools({
         <form className="admin-form compact user-tool-section" id="user-wallet-form" onSubmit={onAdjustWallet}>
           <div className="user-tool-head">
             <Wallet size={18} strokeWidth={2} aria-hidden="true" />
-            <strong>Điều chỉnh ví</strong>
+            <strong>{t('admin.users.detail.wallet')}</strong>
           </div>
           <label>
             <span>Loại</span>
@@ -146,8 +148,8 @@ function UserAdminTools({
               />
               <button
                 type="button"
-                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                aria-label={showPassword ? t('admin.users.detail.hidePassword') : t('admin.users.detail.showPassword')}
+                title={showPassword ? t('admin.users.detail.hidePassword') : t('admin.users.detail.showPassword')}
                 onClick={() => setShowPassword((current) => !current)}
               >
                 {showPassword ? (

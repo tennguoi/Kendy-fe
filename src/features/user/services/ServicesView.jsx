@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import CatalogControls from './components/CatalogControls'
 import CatalogToolbar from './components/CatalogToolbar'
 import ServiceCatalogCard from './components/ServiceCatalogCard'
@@ -12,6 +13,7 @@ function ServicesView({
   recentServices = [],
   services = [],
 }) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [query, setQuery] = useState('')
@@ -92,7 +94,7 @@ function ServicesView({
           )
         })}
         {visibleServices.length === 0 && (
-          <p className="admin-empty-state">Không có dịch vụ phù hợp bộ lọc hiện tại.</p>
+          <p className="admin-empty-state">{t('services.noServicesMatch', { defaultValue: 'Không có dịch vụ phù hợp bộ lọc hiện tại.' })}</p>
         )}
       </div>
       <Pagination
@@ -101,7 +103,7 @@ function ServicesView({
         onPageChange={setCurrentPage}
       />
       {services.length === 0 && (
-        <p className="admin-empty-state">Chưa có dịch vụ đang mở bán.</p>
+        <p className="admin-empty-state">{t('services.noServicesAvailable', { defaultValue: 'Chưa có dịch vụ đang mở bán.' })}</p>
       )}
     </section>
   )

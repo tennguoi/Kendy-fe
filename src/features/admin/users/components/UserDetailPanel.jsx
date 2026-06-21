@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { AdminEmptyState } from '../../AdminShared'
 import UserDetailActivity from './UserDetailActivity'
 import UserProfileSummary from './UserProfileSummary'
@@ -12,10 +13,11 @@ function UserDetailPanel({
   selectedUser,
   submitting,
 }) {
+  const { t } = useTranslation()
   if (!hasLoadedUsers) {
     return (
       <aside className="admin-panel admin-detail-panel">
-        <AdminEmptyState message="Đang tải chi tiết user..." />
+        <AdminEmptyState message={t('admin.users.detail.loading')} />
       </aside>
     )
   }
@@ -23,7 +25,7 @@ function UserDetailPanel({
   if (!selectedUser) {
     return (
       <aside className="admin-panel admin-detail-panel">
-        <AdminEmptyState message="Chọn một user để xem chi tiết." />
+        <AdminEmptyState message={t('admin.users.detail.empty')} />
       </aside>
     )
   }

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import './PublicFooter.css'
 
 function PublicFooter({
@@ -14,6 +15,8 @@ function PublicFooter({
   logo,
   footerGroups,
 }) {
+  const { t } = useTranslation()
+
   const contacts = [
     brand.email && { label: brand.email, url: `mailto:${brand.email}` },
     brand.phone && { label: brand.phone, url: `tel:${brand.phone.replace(/\s+/g, '')}` },
@@ -34,17 +37,22 @@ function PublicFooter({
       <div className="footer-links">
         {footerGroups.map((group) => (
           <div key={group.title}>
-            <strong>{group.title}</strong>
-            {group.links.map((link) => (
-              <a href="#top" key={link}>
-                {link}
-              </a>
-            ))}
+            <strong>{group.titleKey ? t(group.titleKey, { defaultValue: group.title }) : group.title}</strong>
+            {group.links.map((link, idx) => {
+              const label = typeof link === 'object' && link.labelKey
+                ? t(link.labelKey, { defaultValue: link.label })
+                : (typeof link === 'object' ? link.label : link)
+              return (
+                <a href="#top" key={idx}>
+                  {label}
+                </a>
+              )
+            })}
           </div>
         ))}
         {(contacts.length > 0 || socials.length > 0) && (
           <div>
-            <strong>Liên hệ</strong>
+            <strong>{t('support.title', { defaultValue: 'Liên hệ' })}</strong>
             {contacts.map((item) =>
               item.url ? (
                 <a href={item.url} key={item.label}>{item.label}</a>

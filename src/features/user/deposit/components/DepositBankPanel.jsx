@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import InfoLine from '../../../../components/bank/InfoLine'
 import { money } from '../../../../utils/currency'
 
@@ -10,6 +11,7 @@ function DepositBankPanel({
   onCopy,
   onRefreshDeposit,
 }) {
+  const { t } = useTranslation()
   const [zoomQR, setZoomQR] = useState(false)
   const transferContent = activeDeposit?.transferContent || activeDeposit?.depositCode || ''
 
@@ -19,7 +21,7 @@ function DepositBankPanel({
         {activeDeposit?.qrImageUrl ? (
           <>
             <img
-              alt={`QR nạp ${activeDeposit.depositCode}`}
+              alt={t('deposit.qrAlt', { defaultValue: 'QR nạp {{code}}', code: activeDeposit.depositCode })}
               src={activeDeposit.qrImageUrl}
               onClick={() => setZoomQR(true)}
               style={{
@@ -44,7 +46,7 @@ function DepositBankPanel({
               >
                 <img
                   src={activeDeposit.qrImageUrl}
-                  alt="QR phóng to"
+                  alt={t('deposit.zoomQRAlt', { defaultValue: 'QR phóng to' })}
                   style={{
                     maxWidth: '90vw',
                     maxHeight: '90vh',
@@ -56,7 +58,7 @@ function DepositBankPanel({
                 <button
                   type="button"
                   className="qr-zoom-close"
-                  aria-label="Đóng QR phóng to"
+                  aria-label={t('deposit.closeZoomQR', { defaultValue: 'Đóng QR phóng to' })}
                   onClick={(event) => {
                     event.stopPropagation()
                     setZoomQR(false)
@@ -68,31 +70,31 @@ function DepositBankPanel({
             )}
           </>
         ) : (
-          <div className="qr-mark">Tạo yêu cầu nạp để lấy QR</div>
+          <div className="qr-mark">{t('deposit.createForQR', { defaultValue: 'Tạo yêu cầu nạp để lấy QR' })}</div>
         )}
       </div>
 
       <div className="bank-lines">
         <InfoLine
-          label="Ngân hàng"
-          value={activeDeposit?.bankName || 'Chưa tạo'}
+          label={t('deposit.bankName', { defaultValue: 'Ngân hàng' })}
+          value={activeDeposit?.bankName || t('deposit.notCreated', { defaultValue: 'Chưa tạo' })}
           copied={copied}
           onCopy={onCopy}
         />
         <InfoLine
-          label="Số tài khoản"
-          value={activeDeposit?.bankAccount || 'Chưa tạo'}
+          label={t('deposit.accountNumber', { defaultValue: 'Số tài khoản' })}
+          value={activeDeposit?.bankAccount || t('deposit.notCreated', { defaultValue: 'Chưa tạo' })}
           copied={copied}
           onCopy={onCopy}
         />
         <InfoLine
-          label="Chủ tài khoản"
-          value={activeDeposit?.bankOwner || 'Chưa tạo'}
+          label={t('deposit.accountOwner', { defaultValue: 'Chủ tài khoản' })}
+          value={activeDeposit?.bankOwner || t('deposit.notCreated', { defaultValue: 'Chưa tạo' })}
           copied={copied}
           onCopy={onCopy}
         />
         <InfoLine
-          label="Số tiền"
+          label={t('deposit.amount', { defaultValue: 'Số tiền' })}
           value={
             activeDeposit
               ? money.format(Number(activeDeposit.amount))
@@ -102,8 +104,8 @@ function DepositBankPanel({
           onCopy={onCopy}
         />
         <InfoLine
-          label="Nội dung"
-          value={transferContent || 'Chưa tạo'}
+          label={t('deposit.transferContent', { defaultValue: 'Nội dung' })}
+          value={transferContent || t('deposit.notCreated', { defaultValue: 'Chưa tạo' })}
           copied={copied}
           onCopy={onCopy}
           strong
@@ -115,7 +117,7 @@ function DepositBankPanel({
               className="admin-icon-button"
               onClick={() => onRefreshDeposit?.(activeDeposit.depositCode)}
             >
-              Kiểm tra trạng thái
+              {t('deposit.checkStatus', { defaultValue: 'Kiểm tra trạng thái' })}
             </button>
             <button
               type="button"
@@ -123,7 +125,7 @@ function DepositBankPanel({
               disabled={activeDeposit.status !== 'PENDING'}
               onClick={() => onCancelDeposit?.(activeDeposit)}
             >
-              Hủy yêu cầu
+              {t('deposit.cancelRequest', { defaultValue: 'Hủy yêu cầu' })}
             </button>
           </div>
         )}

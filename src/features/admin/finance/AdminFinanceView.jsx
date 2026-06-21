@@ -1,5 +1,6 @@
 import { Ban, CreditCard, DollarSign, Download, RefreshCw, RotateCcw, Save, ShieldAlert, Wallet } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
@@ -14,12 +15,6 @@ import WalletPanel from './components/WalletPanel'
 import Loading from '../../../components/Loading/Loading'
 import Modal from '../../../components/Modal/Modal'
 import SearchField from '../../../components/SearchField/SearchField'
-
-const financeTabs = [
-  { id: 'bank', label: 'Bank transactions' },
-  { id: 'deposits', label: 'Yêu cầu nạp' },
-  { id: 'wallet', label: 'Ví tiền' },
-]
 
 const bankStatuses = ['', 'NEW', 'MATCHED', 'CREDITED', 'MANUAL_REVIEW', 'DUPLICATE', 'IGNORED']
 const depositStatuses = ['', 'PENDING', 'COMPLETED', 'MANUAL_REVIEW', 'EXPIRED', 'CANCELLED']
@@ -44,6 +39,12 @@ function AdminFinanceView({
   onSetNotice,
   token,
 }) {
+  const { t } = useTranslation()
+  const financeTabs = [
+    { id: 'bank', label: t('admin.finance.tabs.bank') },
+    { id: 'deposits', label: t('admin.finance.tabs.deposits') },
+    { id: 'wallet', label: t('admin.finance.tabs.wallet') },
+  ]
   const [activeTab, setActiveTab] = useState('bank')
   const [bankActionForm, setBankActionForm] = useState({ depositCode: '', reason: '', userId: '' })
   const [bankBulkForm, setBankBulkForm] = useState({ depositCode: '', ids: '', reason: '', userId: '' })
@@ -79,10 +80,10 @@ function AdminFinanceView({
   const selectedDeposit = deposits.find((item) => item.depositCode === selectedDepositCode) || deposits[0]
 
   const financeMetrics = [
-    { label: 'Tiền nạp hoàn tất', value: formatAdminMoney(dashboard?.completedDepositAmount), icon: CreditCard, accent: 'accent-emerald' },
-    { label: 'Doanh thu hôm nay', value: formatAdminMoney(dashboard?.todayRevenue), icon: DollarSign, accent: 'accent-emerald' },
-    { label: 'Ví đang giữ', value: formatAdminMoney(revenue?.walletLiability || dashboard?.totalWalletBalance), icon: Wallet, accent: '' },
-    { label: 'Bank chưa khớp', value: String(dashboard?.unmatchedBankCount ?? 0), icon: ShieldAlert, accent: 'accent-amber' },
+    { label: t('admin.finance.metrics.completedDeposits'), value: formatAdminMoney(dashboard?.completedDepositAmount), icon: CreditCard, accent: 'accent-emerald' },
+    { label: t('admin.finance.metrics.todayRevenue'), value: formatAdminMoney(dashboard?.todayRevenue), icon: DollarSign, accent: 'accent-emerald' },
+    { label: t('admin.finance.metrics.walletLiability'), value: formatAdminMoney(revenue?.walletLiability || dashboard?.totalWalletBalance), icon: Wallet, accent: '' },
+    { label: t('admin.finance.metrics.unmatchedBank'), value: String(dashboard?.unmatchedBankCount ?? 0), icon: ShieldAlert, accent: 'accent-amber' },
   ]
 
   const setViewError = useCallback((message) => {
@@ -130,7 +131,7 @@ function AdminFinanceView({
         setWalletCurrentPage(targetPage)
       }
     } catch (err) {
-      setViewError(err.message || 'Không tải được dữ liệu tài chính.')
+      setViewError(err.message || t('admin.finance.loadError'))
     } finally {
       setLoading(false)
     }
@@ -208,7 +209,7 @@ function AdminFinanceView({
 
   const runBankAction = async (action) => {
     if (!selectedBank || !bankActionForm.reason.trim()) {
-      setViewError('Chọn bank transaction và nhập lý do xử lý.')
+      setViewError(t('admin.finance.bank.selectError'))
       return
     }
 
@@ -237,9 +238,9 @@ function AdminFinanceView({
       }
       patchBank(saved)
       await loadFinance()
-      onSetNotice(`Đã xử lý bank transaction #${saved.id}.`)
+      onSetNotice(t('admin.finance.bank.processSuccess', { id: saved.id }))
     } catch (err) {
-      setViewError(err.message || 'Không xử lý được bank transaction.')
+      setViewError(err.message || t('admin.finance.bank.processError'))
     } finally {
       setSubmitting(false)
     }
@@ -253,7 +254,7 @@ function AdminFinanceView({
       .filter(Boolean)
 
     if (bankTransactionIds.length === 0 || !bankBulkForm.userId || !bankBulkForm.reason.trim()) {
-      setViewError('Nhập danh sách bank transaction ID, user ID và lý do bulk manual credit.')
+      setViewError(t('admin.finance.bank.bulkCreditRequired'))
       return
     }
 
@@ -269,9 +270,9 @@ function AdminFinanceView({
       saved.forEach(patchBank)
       setBankBulkForm({ depositCode: '', ids: '', reason: '', userId: '' })
       await loadFinance()
-      onSetNotice(`Đã manual credit ${saved.length} bank transaction.`)
+      onSetNotice(t('admin.finance.bank.bulkCreditSuccess', { count: saved.length }))
     } catch (err) {
-      setViewError(err.message || 'Không bulk manual credit được bank transaction.')
+      setViewError(err.message || t('admin.finance.bank.bulkCreditError'))
     } finally {
       setSubmitting(false)
     }
@@ -289,9 +290,9 @@ function AdminFinanceView({
       setBankTransactions(data)
       setSelectedBankId(data[0]?.id || null)
       setActiveTab('bank')
-      onSetNotice(`Đã tải ${data.length} bank transaction.`)
+      onSetNotice(t('admin.finance.bank.queueLoadSuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được bank queue.')
+      setViewError(err.message || t('admin.finance.bank.queueLoadError'))
     } finally {
       setSubmitting(false)
     }
@@ -307,9 +308,9 @@ function AdminFinanceView({
       setDeposits(data)
       setSelectedDepositCode(data[0]?.depositCode || null)
       setActiveTab('deposits')
-      onSetNotice(`Đã tải ${data.length} yêu cầu nạp.`)
+      onSetNotice(t('admin.finance.deposit.queueLoadSuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được deposit queue.')
+      setViewError(err.message || t('admin.finance.deposit.queueLoadError'))
     } finally {
       setSubmitting(false)
     }
@@ -317,7 +318,7 @@ function AdminFinanceView({
 
   const runDepositAction = async (action) => {
     if (!selectedDeposit || !depositActionForm.reason.trim()) {
-      setViewError('Chọn yêu cầu nạp và nhập lý do xử lý.')
+      setViewError(t('admin.finance.deposit.selectError'))
       return
     }
 
@@ -337,9 +338,9 @@ function AdminFinanceView({
       }
       patchDeposit(saved)
       await loadFinance()
-      onSetNotice(`Đã xử lý yêu cầu nạp ${saved.depositCode}.`)
+      onSetNotice(t('admin.finance.deposit.processSuccess', { code: saved.depositCode }))
     } catch (err) {
-      setViewError(err.message || 'Không xử lý được yêu cầu nạp.')
+      setViewError(err.message || t('admin.finance.deposit.processError'))
     } finally {
       setSubmitting(false)
     }
@@ -351,9 +352,9 @@ function AdminFinanceView({
     try {
       const data = await adminApi.getBalanceCheck(token)
       setBalanceIssues(data)
-      onSetNotice(`Balance check hoàn tất: ${data.length} vấn đề.`)
+      onSetNotice(t('admin.finance.wallet.balanceCheckSuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không chạy được balance check.')
+      setViewError(err.message || t('admin.finance.error.balanceCheck'))
     } finally {
       setSubmitting(false)
     }
@@ -365,9 +366,9 @@ function AdminFinanceView({
     try {
       const data = await adminApi.reconcileWallet(token)
       setBalanceIssues(data)
-      onSetNotice(`Reconciliation hoàn tất: ${data.length} vấn đề.`)
+      onSetNotice(t('admin.finance.wallet.reconciliationSuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không chạy được reconciliation.')
+      setViewError(err.message || t('admin.finance.error.reconciliation'))
     } finally {
       setSubmitting(false)
     }
@@ -379,9 +380,9 @@ function AdminFinanceView({
     try {
       const data = await adminApi.getBalanceIntegrityReport(token)
       setBalanceIssues(data)
-      onSetNotice(`Đã tải báo cáo balance integrity: ${data.length} vấn đề.`)
+      onSetNotice(t('admin.finance.report.balanceIntegritySuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || 'Không tải được báo cáo balance integrity.')
+      setViewError(err.message || t('admin.finance.error.balanceIntegrity'))
     } finally {
       setSubmitting(false)
     }
@@ -397,9 +398,9 @@ function AdminFinanceView({
       } else {
         downloadTextFile(`${type}.csv`, data)
       }
-      onSetNotice(`Đã export ${type}.${format}.`)
+      onSetNotice(t('admin.finance.report.exportSuccess', { type, format }))
     } catch (err) {
-      setViewError(err.message || 'Không export được báo cáo.')
+      setViewError(err.message || t('admin.finance.error.exportFailed'))
     } finally {
       setSubmitting(false)
     }
@@ -425,17 +426,17 @@ function AdminFinanceView({
       <div className="admin-toolbar">
         <div className="admin-toolbar-info">
           <div>
-            <h2>Quản lý tài chính</h2>
+            <h2>{t('admin.finance.title')}</h2>
           </div>
         </div>
         <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadFinance} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Tải lại</span>
+          <span>{t('admin.finance.reload')}</span>
         </button>
       </div>
 
       {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message="Đang tải tài chính..." subMessage="" />}
+      {!error && loading && <Loading fullScreen={false} message={t('admin.finance.loading')} subMessage="" />}
 
       <div className="admin-metrics">
         {financeMetrics.map((metric) => {
@@ -456,20 +457,20 @@ function AdminFinanceView({
 
       <div className="admin-panel">
         <div className="admin-panel-head">
-          <h3>Báo cáo doanh thu</h3>
-          <span>Lãi tạm tính {formatAdminMoney(revenue?.profit)}</span>
+          <h3>{t('admin.finance.revenue.title')}</h3>
+          <span>{t('admin.finance.revenue.profit')} {formatAdminMoney(revenue?.profit)}</span>
         </div>
         <div className="admin-report-grid">
-          <div><span>Tổng tiền user nạp</span><strong>{formatAdminMoney(revenue?.depositVolume)}</strong></div>
-          <div><span>Tổng doanh thu</span><strong>{formatAdminMoney(revenue?.grossRevenue)}</strong></div>
-          <div><span>Tổng hoàn tiền</span><strong>{formatAdminMoney(revenue?.totalRefunds)}</strong></div>
-          <div><span>Doanh thu ròng</span><strong>{formatAdminMoney(revenue?.netRevenue)}</strong></div>
+          <div><span>{t('admin.finance.revenue.totalDeposits')}</span><strong>{formatAdminMoney(revenue?.depositVolume)}</strong></div>
+          <div><span>{t('admin.finance.revenue.grossRevenue')}</span><strong>{formatAdminMoney(revenue?.grossRevenue)}</strong></div>
+          <div><span>{t('admin.finance.revenue.totalRefunds')}</span><strong>{formatAdminMoney(revenue?.totalRefunds)}</strong></div>
+          <div><span>{t('admin.finance.revenue.netRevenue')}</span><strong>{formatAdminMoney(revenue?.netRevenue)}</strong></div>
         </div>
         <div className="admin-action-row">
-          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadBankQueue('manual')}>Bank manual review</button>
-          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadBankQueue('duplicate')}>Bank duplicate</button>
-          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadDepositQueue('manual')}>Nạp manual review</button>
-          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadDepositQueue('expired')}>Nạp hết hạn</button>
+          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadBankQueue('manual')}>{t('admin.finance.actions.bankManual')}</button>
+          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadBankQueue('duplicate')}>{t('admin.finance.actions.bankDuplicate')}</button>
+          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadDepositQueue('manual')}>{t('admin.finance.actions.depositManual')}</button>
+          <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => loadDepositQueue('expired')}>{t('admin.finance.actions.depositExpired')}</button>
         </div>
 
         <div className="admin-action-row">
@@ -488,7 +489,7 @@ function AdminFinanceView({
 
       <div className="admin-panel">
         <div className="admin-panel-head">
-          <h3>Đối soát và lịch sử ví</h3>
+          <h3>{t('admin.finance.report.title')}</h3>
           <div className="admin-tabs">
             {financeTabs.map((tab) => (
               <button type="button" className={activeTab === tab.id ? 'active' : ''} key={tab.id} onClick={() => setActiveTab(tab.id)}>
@@ -499,7 +500,7 @@ function AdminFinanceView({
         </div>
 
         <div className="admin-filters single-filter">
-          <SearchField value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm nội dung, mã giao dịch, user id" />
+          <SearchField value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('admin.finance.report.searchPlaceholder')} />
         </div>
 
         {activeTab === 'bank' && (
@@ -564,7 +565,7 @@ function AdminFinanceView({
       <AdminDrawer
         isOpen={bankDrawerOpen && activeTab === 'bank' && Boolean(selectedBank)}
         onClose={() => setBankDrawerOpen(false)}
-        title={selectedBank ? `Bank #${selectedBank.id}` : 'Chi tiết bank'}
+        title={selectedBank ? `${t('admin.finance.bank.detailTitle')} #${selectedBank.id}` : t('admin.finance.bank.detailTitle')}
         width="560px"
       >
         <BankDetailPanel
@@ -577,7 +578,7 @@ function AdminFinanceView({
       <AdminDrawer
         isOpen={depositDrawerOpen && activeTab === 'deposits' && Boolean(selectedDeposit)}
         onClose={() => setDepositDrawerOpen(false)}
-        title={selectedDeposit?.depositCode || 'Chi tiết nạp'}
+        title={selectedDeposit?.depositCode || t('admin.finance.deposit.detailTitle')}
         width="560px"
       >
         <DepositDetailPanel
@@ -594,40 +595,40 @@ function AdminFinanceView({
               <>
                 <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runBankAction('match')}>
                   <Save size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Gán</span>
+                  <span>{t('admin.finance.tools.bankAction.match')}</span>
                 </button>
                 <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting || !bankActionForm.userId} onClick={() => runBankAction('manual-credit')}>
                   <Save size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Cộng tiền thủ công</span>
+                  <span>{t('admin.finance.tools.bankAction.manualCredit')}</span>
                 </button>
                 <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runBankAction('reprocess')}>
                   <RotateCcw size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Xử lý lại</span>
+                  <span>{t('admin.finance.tools.bankAction.reprocess')}</span>
                 </button>
                 <button type="button" className="admin-danger-button finance-modal-action" disabled={submitting} onClick={() => runBankAction('ignore')}>
                   <Ban size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Bỏ qua</span>
+                  <span>{t('admin.finance.tools.bankAction.ignore')}</span>
                 </button>
               </>
             )}
             {activeToolTab === 'deposits' && (
               <>
-                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('extend')}>Gia hạn</button>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('extend')}>{t('admin.finance.tools.depositAction.extend')}</button>
                 <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('manual-credit')}>
                   <Save size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Cộng tiền</span>
+                  <span>{t('admin.finance.tools.depositAction.manualCredit')}</span>
                 </button>
                 <button type="button" className="admin-danger-button finance-modal-action" disabled={submitting} onClick={() => runDepositAction('cancel')}>
                   <Ban size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Hủy</span>
+                  <span>{t('admin.finance.tools.depositAction.cancel')}</span>
                 </button>
               </>
             )}
             {activeToolTab === 'wallet' && (
               <>
-                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={runBalanceCheck}>Check</button>
-                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={runReconciliation}>Preview</button>
-                <button type="button" className="admin-primary-button finance-modal-action" disabled={submitting} onClick={loadBalanceIntegrityReport}>Report</button>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={runBalanceCheck}>{t('admin.finance.tools.walletAction.check')}</button>
+                <button type="button" className="admin-icon-button finance-modal-action" disabled={submitting} onClick={runReconciliation}>{t('admin.finance.tools.walletAction.preview')}</button>
+                <button type="button" className="admin-primary-button finance-modal-action" disabled={submitting} onClick={loadBalanceIntegrityReport}>{t('admin.finance.tools.walletAction.report')}</button>
               </>
             )}
           </div>
@@ -635,7 +636,7 @@ function AdminFinanceView({
         isOpen={toolsOpen}
         maxWidth="760px"
         onClose={() => setToolsOpen(false)}
-        title="Công cụ tài chính"
+        title={t('admin.finance.tools.title')}
       >
         <FinanceTools
           activeToolTab={activeToolTab}

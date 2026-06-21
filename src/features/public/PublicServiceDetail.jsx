@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   ArrowLeft,
   CheckCircle2,
@@ -37,10 +38,11 @@ function renderBulletPoints(text) {
     ))
 }
 
-function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
+function PublicServiceDetail({ propSlug, notice, onLoginClick }) {
   const { slug: paramSlug } = useParams()
   const slug = propSlug || paramSlug
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [service, setService] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -70,12 +72,12 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
       })
       .catch((err) => {
         console.error('Error fetching service detail:', err)
-        setError(err.message || 'Không thể tìm thấy dịch vụ được yêu cầu.')
+        setError(err.message || t('services.noServicesMatch', { defaultValue: 'Không thể tìm thấy dịch vụ được yêu cầu.' }))
       })
       .finally(() => {
         setLoading(false)
       })
-  }, [slug])
+  }, [slug, t])
 
   // Consolidate pricing display
   const formattedPrice = useMemo(() => {
@@ -85,17 +87,17 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
     } else if (service.price && !service.price.toString().includes('đ') && !isNaN(Number(service.price))) {
       return `${Number(service.price).toLocaleString('vi-VN')}đ`
     } else if (!service.price) {
-      return service.priceText || 'Báo giá'
+      return service.priceText || t('services.buyNow', { defaultValue: 'Báo giá' })
     }
     return service.price
-  }, [service])
+  }, [service, t])
 
   if (loading) {
     return (
       <div className="public-home">
         <PublicHeader logo={heroImg} navItems={navItems} onLoginClick={onLoginClick} />
         <main style={{ minHeight: 'calc(100svh - 200px)', paddingTop: '160px' }}>
-          <Loading message="Đang tải thông tin dịch vụ..." />
+          <Loading message={t('loading.loadingData')} />
         </main>
         <PublicFooter footerGroups={footerGroups} logo={heroImg} />
       </div>
@@ -109,11 +111,11 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
         <main className="detail-error-container">
           <div className="error-card">
             <AlertCircle size={48} className="error-icon" />
-            <h2>Dịch Vụ Không Tồn Tại</h2>
-            <p>{error || 'Thông tin gói dịch vụ này không khả dụng hoặc đã bị ẩn.'}</p>
+            <h2>{t('services.noServicesMatch', { defaultValue: 'Dịch Vụ Không Tồn Tại' })}</h2>
+            <p>{error || t('services.noServicesMatch', { defaultValue: 'Thông tin gói dịch vụ này không khả dụng hoặc đã bị ẩn.' })}</p>
             <div className="error-actions">
               <Button onClick={() => navigate('/services')} variant="" className="btn-back">
-                <ArrowLeft size={16} /> Quay lại danh sách
+                <ArrowLeft size={16} /> {t('common.back', { defaultValue: 'Quay lại danh sách' })}
               </Button>
             </div>
           </div>
@@ -135,9 +137,9 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
         <div className="detail-container">
           {/* Breadcrumbs */}
           <nav className="detail-breadcrumbs" aria-label="Breadcrumb">
-            <a href="/">Trang chủ</a>
+            <a href="/">{t('auth.homePage', { defaultValue: 'Trang chủ' })}</a>
             <ChevronRight size={14} />
-            <a href="/services">Dịch vụ</a>
+            <a href="/services">{t('nav.services', { defaultValue: 'Dịch vụ' })}</a>
             <ChevronRight size={14} />
             <span>{categoryLabel}</span>
             <ChevronRight size={14} />
@@ -153,9 +155,9 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
                 <span className="product-category">{categoryLabel}</span>
                 <h1 className="product-name">{service.name}</h1>
                 <div className="product-badges">
-                  {isFeatured && <span className="pub-badge featured">Nổi bật</span>}
+                  {isFeatured && <span className="pub-badge featured">{t('status.NEW', { defaultValue: 'Nổi bật' })}</span>}
                   <span className={`pub-badge ${isOutOfStock ? 'out-of-stock' : 'in-stock'}`}>
-                    {isOutOfStock ? 'Hết hàng' : 'Còn hàng'}
+                    {isOutOfStock ? t('services.outOfStock', { defaultValue: 'Hết hàng' }) : t('status.AVAILABLE', { defaultValue: 'Còn hàng' })}
                   </span>
                 </div>
               </div>
@@ -170,7 +172,7 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
               {/* Detailed Description */}
               {service.description && (
                 <section className="detail-content-section">
-                  <h3 className="section-title"><Info size={18} /> Mô tả chi tiết</h3>
+                  <h3 className="section-title"><Info size={18} /> {t('common.details', { defaultValue: 'Mô tả chi tiết' })}</h3>
                   <div className="section-body text-block">
                     <p>{service.description}</p>
                   </div>
@@ -180,7 +182,7 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
               {/* Benefits */}
               {service.benefits && (
                 <section className="detail-content-section">
-                  <h3 className="section-title"><CheckCircle2 size={18} /> Lợi ích & Quyền lợi</h3>
+                  <h3 className="section-title"><CheckCircle2 size={18} /> {t('services.benefitsTitle', { defaultValue: 'Lợi ích & Quyền lợi' })}</h3>
                   <div className="section-body">
                     <ul className="bullet-list-container">
                       {renderBulletPoints(service.benefits)}
@@ -192,7 +194,7 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
               {/* Requirements */}
               {service.requirements && (
                 <section className="detail-content-section">
-                  <h3 className="section-title"><ShieldAlert size={18} /> Yêu cầu khi mua dịch vụ</h3>
+                  <h3 className="section-title"><ShieldAlert size={18} /> {t('checkout.inputRequirements', { defaultValue: 'Yêu cầu khi mua dịch vụ' })}</h3>
                   <div className="section-body">
                     <ul className="bullet-list-container">
                       {renderBulletPoints(service.requirements)}
@@ -204,7 +206,7 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
               {/* Usage Notes */}
               {service.usageNotes && (
                 <section className="detail-content-section">
-                  <h3 className="section-title"><HelpCircle size={18} /> Lưu ý sử dụng quan trọng</h3>
+                  <h3 className="section-title"><HelpCircle size={18} /> {t('services.usageNotesTitle', { defaultValue: 'Lưu ý sử dụng quan trọng' })}</h3>
                   <div className="section-body">
                     <ul className="bullet-list-container">
                       {renderBulletPoints(service.usageNotes)}
@@ -217,14 +219,14 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
             {/* Right Column: Sticky Checkout box */}
             <div className="detail-checkout-right">
               <div className="sticky-checkout-pane">
-                <span className="price-label">Giá trọn gói</span>
+                <span className="price-label">{t('checkout.servicePrice', { defaultValue: 'Giá trọn gói' })}</span>
                 <div className="product-price-display">{formattedPrice}</div>
 
                 <div className="checkout-spec-list">
                   <div className="spec-item">
                     <Clock size={18} className="spec-icon" />
                     <div className="spec-content">
-                      <strong>Thời gian xử lý dự kiến</strong>
+                      <strong>{t('services.processingTimeLabel', { defaultValue: 'Thời gian xử lý dự kiến' })}</strong>
                       <span>{service.processingTime || '5 - 30 phút'}</span>
                     </div>
                   </div>
@@ -232,8 +234,8 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
                   <div className="spec-item">
                     <ShieldCheck size={18} className="spec-icon" />
                     <div className="spec-content">
-                      <strong>Chế độ bảo hành</strong>
-                      <span>{service.warrantyInfo || service.warranty || 'Bảo hành đầy đủ'}</span>
+                      <strong>{t('nav.warranty', { defaultValue: 'Chế độ bảo hành' })}</strong>
+                      <span>{service.warrantyInfo || service.warranty || t('status.WARRANTY', { defaultValue: 'Bảo hành đầy đủ' })}</span>
                     </div>
                   </div>
                 </div>
@@ -242,7 +244,7 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
                   <div className="refund-policy-alert">
                     <AlertCircle size={16} />
                     <div className="alert-content">
-                      <strong>Chính sách hoàn tiền:</strong>
+                      <strong>{t('services.refundPolicyLabel', { defaultValue: 'Chính sách hoàn tiền:' })}</strong>
                       <span>{service.refundPolicy}</span>
                     </div>
                   </div>
@@ -255,13 +257,13 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
                   className="btn-checkout-cta"
                 >
                   <ShoppingCart size={18} />
-                  <span>{isOutOfStock ? 'Tạm hết hàng' : 'MUA NGAY'}</span>
+                  <span>{isOutOfStock ? t('services.outOfStock', { defaultValue: 'Tạm hết hàng' }) : t('services.buyNow', { defaultValue: 'MUA NGAY' })}</span>
                 </Button>
 
                 <div className="checkout-guarantee-list">
-                  <div className="guarantee-item">✓ Giao hàng tự động hoặc nhanh chóng</div>
-                  <div className="guarantee-item">✓ Hỗ trợ kỹ thuật qua ticket 24/7</div>
-                  <div className="guarantee-item">✓ Bảo hành đúng cam kết chính sách</div>
+                  <div className="guarantee-item">{t('services.guaranteeAuto', { defaultValue: '✓ Giao hàng tự động hoặc nhanh chóng' })}</div>
+                  <div className="guarantee-item">{t('services.guaranteeSupport', { defaultValue: '✓ Hỗ trợ kỹ thuật qua ticket 24/7' })}</div>
+                  <div className="guarantee-item">{t('services.guaranteeWarranty', { defaultValue: '✓ Bảo hành đúng cam kết chính sách' })}</div>
                 </div>
               </div>
             </div>
@@ -271,13 +273,13 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
           {/* Related Products Section */}
           {relatedServices.length > 0 && (
             <section className="related-products-section">
-              <h2 className="related-title">Sản phẩm tương tự</h2>
+              <h2 className="related-title">{t('services.relatedTitle', { defaultValue: 'Sản phẩm tương tự' })}</h2>
               <div className="related-grid">
                 {relatedServices.map((item, idx) => {
                   const itemOutOfStock = item.status === 'Hết hàng' || item.stockStatus === 'OUT_OF_STOCK'
                   const itemPrice = typeof item.price === 'number'
                     ? `${Number(item.price).toLocaleString('vi-VN')}đ`
-                    : item.priceText || 'Báo giá'
+                    : item.priceText || t('services.buyNow', { defaultValue: 'Báo giá' })
                   const itemCategory = item.categoryLabel || item.categoryName || 'Dịch vụ'
 
                   return (
@@ -291,7 +293,7 @@ function PublicServiceDetail({ slug: propSlug, notice, onLoginClick }) {
                           className="btn-related-action"
                           onClick={() => navigate(`/service/${item.slug}`)}
                         >
-                          Chi tiết
+                          {t('common.details', { defaultValue: 'Chi tiết' })}
                         </Button>
                       </div>
                     </div>

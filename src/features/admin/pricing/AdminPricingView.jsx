@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
@@ -30,6 +31,7 @@ function AdminPricingView({
   onSetNotice,
   token,
 }) {
+  const { t } = useTranslation()
   const [categories, setCategories] = useState([])
   const [categorySlug, setCategorySlug] = useState('')
   const [currentPage, setCurrentPage] = useState(0)
@@ -79,7 +81,7 @@ function AdminPricingView({
       setCurrentPage(targetPage)
       setSelectedId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
     } catch (err) {
-      setViewError(err.message || 'Không tải được bảng giá.')
+      setViewError(err.message || t('admin.pricing.loadError'))
     } finally {
       setLoading(false)
     }
@@ -140,9 +142,9 @@ function AdminPricingView({
       setPricingItems((items) => items.map((item) => (item.id === saved.id ? { ...item, ...saved } : item)))
       setFormDraft(null)
       await loadPricing()
-      onSetNotice(`Đã cập nhật bảng giá cho ${saved.name}.`)
+      onSetNotice(t('admin.pricing.updateSuccess', { name: saved.name }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật được bảng giá.')
+      setViewError(err.message || t('admin.pricing.updateError'))
     } finally {
       setSubmitting(false)
     }
@@ -152,16 +154,16 @@ function AdminPricingView({
     <section className="admin-view">
       <div className="admin-toolbar">
         <div>
-          <h2>Quản lý bảng giá public</h2>
+          <h2>{t('admin.pricing.title')}</h2>
         </div>
         <button type="button" className="admin-icon-button" onClick={loadPricing} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Tải lại</span>
+          <span>{t('admin.pricing.reload')}</span>
         </button>
       </div>
 
       {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message="Đang tải bảng giá..." subMessage="" />}
+      {!error && loading && <Loading fullScreen={false} message={t('admin.pricing.loading')} subMessage="" />}
 
       <PricingFilterBar
         categories={categories}
@@ -190,7 +192,7 @@ function AdminPricingView({
       <AdminDrawer
         isOpen={drawerOpen && Boolean(selectedItem)}
         onClose={() => setDrawerOpen(false)}
-        title={selectedItem?.name || 'Chi tiết bảng giá'}
+        title={selectedItem?.name || t('admin.pricing.drawerTitle')}
         width="540px"
       >
         <PricingEditor

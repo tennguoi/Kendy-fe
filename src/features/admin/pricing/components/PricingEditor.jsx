@@ -1,5 +1,6 @@
 import { Save } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ctaTypes, stockStatuses } from '../../services/services.constants'
 
 function PricingEditor({
@@ -9,15 +10,16 @@ function PricingEditor({
   selectedItem,
   submitting,
 }) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('basic') // 'basic' | 'content'
 
   if (!selectedItem) {
     return (
       <form className="admin-form pricing-editor" onSubmit={(e) => e.preventDefault()}>
         <div className="admin-panel-head">
-          <h3>Chọn gói dịch vụ</h3>
+          <h3>{t('admin.pricing.form.selectService')}</h3>
         </div>
-        <p className="admin-empty-state">Chọn một gói dịch vụ từ danh sách bên trái để chỉnh sửa bảng giá.</p>
+        <p className="admin-empty-state">{t('admin.pricing.form.empty')}</p>
       </form>
     )
   }
@@ -31,7 +33,7 @@ function PricingEditor({
         </div>
         <button type="submit" disabled={submitting} className="admin-primary-button" style={{ height: '32px', minHeight: '32px', padding: '0 12px' }}>
           <Save size={17} strokeWidth={2} aria-hidden="true" />
-          <span>Lưu</span>
+          <span>{t('admin.pricing.form.save')}</span>
         </button>
       </div>
 
@@ -51,7 +53,7 @@ function PricingEditor({
           onClick={() => setActiveTab('content')}
           style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}
         >
-          Điều khoản & Lưu ý
+          {t('admin.pricing.form.termsHeading')}
         </button>
       </div>
 
@@ -65,11 +67,11 @@ function PricingEditor({
               </label>
               <label>
                 <span>Giá hiển thị text</span>
-                <input value={form.priceText} onChange={(event) => onUpdateForm('priceText', event.target.value)} placeholder="Từ 390.000đ" />
+                <input value={form.priceText} onChange={(event) => onUpdateForm('priceText', event.target.value)} placeholder={t('admin.pricing.form.pricePlaceholder')} />
               </label>
               <label>
                 <span>Badge nổi bật ở bảng giá</span>
-                <input value={form.pricingBadge} onChange={(event) => onUpdateForm('pricingBadge', event.target.value)} placeholder="Bán chạy, Giá tốt..." />
+                <input value={form.pricingBadge} onChange={(event) => onUpdateForm('pricingBadge', event.target.value)} placeholder={t('admin.pricing.form.badgePlaceholder')} />
               </label>
               <label>
                 <span>Trạng thái kho</span>
@@ -85,11 +87,11 @@ function PricingEditor({
               </label>
               <label>
                 <span>Thời gian xử lý</span>
-                <input value={form.processingTime} onChange={(event) => onUpdateForm('processingTime', event.target.value)} placeholder="Trong 24h" />
+                <input value={form.processingTime} onChange={(event) => onUpdateForm('processingTime', event.target.value)} placeholder={t('admin.pricing.form.processingPlaceholder')} />
               </label>
               <label>
                 <span>Chính sách bảo hành</span>
-                <textarea value={form.warrantyPolicy} onChange={(event) => onUpdateForm('warrantyPolicy', event.target.value)} rows="3" placeholder="Bảo hành 1 đổi 1..." />
+                <textarea value={form.warrantyPolicy} onChange={(event) => onUpdateForm('warrantyPolicy', event.target.value)} rows="3" placeholder={t('admin.pricing.form.warrantyPlaceholder')} />
               </label>
             </div>
 
@@ -111,11 +113,11 @@ function PricingEditor({
             <div className="admin-form-grid single">
               <label>
                 <span>Điều kiện chuẩn bị / Cần có</span>
-                <textarea value={form.requirements} onChange={(event) => onUpdateForm('requirements', event.target.value)} rows="4" placeholder="Chuẩn bị link trang cá nhân, bật chế độ công khai..." />
+                <textarea value={form.requirements} onChange={(event) => onUpdateForm('requirements', event.target.value)} rows="4" placeholder={t('admin.pricing.form.requirementsPlaceholder')} />
               </label>
               <label>
-                <span>Lưu ý khi sử dụng dịch vụ</span>
-                <textarea value={form.usageNotes} onChange={(event) => onUpdateForm('usageNotes', event.target.value)} rows="4" placeholder="Không đổi tên trong quá trình chạy..." />
+                <span>{t('admin.pricing.form.usageNotesHeading')}</span>
+                <textarea value={form.usageNotes} onChange={(event) => onUpdateForm('usageNotes', event.target.value)} rows="4" placeholder={t('admin.pricing.form.usageNotesPlaceholder')} />
               </label>
             </div>
           </section>

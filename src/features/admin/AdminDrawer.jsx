@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 function AdminDrawer({
   children,
@@ -8,6 +9,8 @@ function AdminDrawer({
   title,
   width = '520px',
 }) {
+  const { t } = useTranslation()
+
   useEffect(() => {
     if (isOpen) {
       document.body.classList.add('admin-drawer-open')
@@ -42,12 +45,12 @@ function AdminDrawer({
         style={{ '--admin-drawer-width': width }}
         role="dialog"
         aria-modal="true"
-        aria-label={title || 'Chi tiết'}
+        aria-label={title || t('common.details', { defaultValue: 'Chi tiết' })}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="admin-drawer-head">
-          <h3>{title || 'Chi tiết'}</h3>
-          <button type="button" onClick={onClose} aria-label="Đóng">
+          <h3>{title || t('common.details', { defaultValue: 'Chi tiết' })}</h3>
+          <button type="button" onClick={onClose} aria-label={t('common.close', { defaultValue: 'Đóng' })}>
             <X size={20} strokeWidth={2.4} aria-hidden="true" />
           </button>
         </div>

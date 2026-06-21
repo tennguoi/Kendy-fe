@@ -5,6 +5,7 @@ import {
   FileArchive,
   HeartPulse,
   History,
+  Languages,
   ShieldCheck,
   SlidersHorizontal,
   UserCog,
@@ -22,4 +23,5 @@ export const settingsTabs = [
   { id: 'jobs', label: 'Công việc', title: 'Background jobs', kicker: 'Jobs', description: 'Theo dõi trạng thái job, retry hoặc hủy job khi cần.', icon: Activity },
   { id: 'health', label: 'Trạng thái', title: 'Sức khỏe hệ thống', kicker: 'Health', description: 'Thông tin trạng thái API và các chỉ báo vận hành nhanh.', icon: HeartPulse },
   { id: 'guide', label: 'Hướng dẫn', title: 'Hướng dẫn vận hành', kicker: 'Docs', description: 'Tài liệu thao tác nhanh cho admin khi vận hành hệ thống.', icon: BookOpen },
+  { id: 'language', label: 'Ngôn ngữ', title: 'Ngôn ngữ giao diện', kicker: 'Language', description: 'Chuyển đổi ngôn ngữ hiển thị giữa Tiếng Việt và English.', icon: Languages },
 ]

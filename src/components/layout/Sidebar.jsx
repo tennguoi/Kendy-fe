@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { X, LogOut, User, MoreVertical, Settings } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import heroImg from '../../assets/hero.png'
 
 function Sidebar({
@@ -13,6 +14,7 @@ function Sidebar({
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const { t } = useTranslation()
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -48,13 +50,13 @@ function Sidebar({
         <img src={heroImg} alt="Kendy Digital" />
         <div>
           <strong>Kendy Digital</strong>
-          <span>Ví mua dịch vụ</span>
+          <span>{t('sidebar.walletService')}</span>
         </div>
         <button
           type="button"
           className="sidebar-close"
           onClick={onClose}
-          aria-label="Đóng menu"
+          aria-label={t('sidebar.closeMenu')}
         >
           <X size={20} strokeWidth={2} />
         </button>
@@ -74,7 +76,7 @@ function Sidebar({
               <span aria-hidden="true">
                 <Icon size={18} strokeWidth={2} />
               </span>
-              {item.label}
+              {t(item.label)}
             </button>
           )
         })}
@@ -87,23 +89,23 @@ function Sidebar({
           {isDropdownOpen && (
             <div className="sidebar-account-dropdown">
               <div className="dropdown-user-info">
-                <strong>{currentUser.name || 'Người dùng'}</strong>
+                <strong>{currentUser.name || t('common.user')}</strong>
                 <span>{currentUser.email}</span>
               </div>
               <div className="dropdown-divider" />
               <button type="button" className="dropdown-item" onClick={handleProfileClick}>
                 <User size={16} strokeWidth={2} />
-                <span>Hồ sơ cá nhân</span>
+                <span>{t('sidebar.personalProfile')}</span>
               </button>
               {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && (
                 <button type="button" className="dropdown-item" onClick={handleSettingsClick}>
                   <Settings size={16} strokeWidth={2} />
-                  <span>Cài đặt hệ thống</span>
+                  <span>{t('sidebar.systemSettings')}</span>
                 </button>
               )}
               <button type="button" className="dropdown-item logout" onClick={() => { setIsDropdownOpen(false); onLogout?.(); }}>
                 <LogOut size={16} strokeWidth={2} />
-                <span>Đăng xuất</span>
+                <span>{t('sidebar.logout')}</span>
               </button>
             </div>
           )}
@@ -120,7 +122,7 @@ function Sidebar({
               </div>
             )}
             <div className="account-details">
-              <strong>{currentUser.name || 'Người dùng'}</strong>
+              <strong>{currentUser.name || t('common.user')}</strong>
               <span>{currentUser.email}</span>
             </div>
             <MoreVertical size={16} className="more-icon" />

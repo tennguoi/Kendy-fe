@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import './Pagination.css'
 
@@ -12,6 +13,8 @@ function Pagination({
   onPageChange,
   siblingCount = 1,
 }) {
+  const { t } = useTranslation()
+
   if (totalPages <= 1) return null
 
   const totalPageNumbers = siblingCount * 2 + 5
@@ -40,16 +43,16 @@ function Pagination({
   }
 
   return (
-    <nav className="pagination" role="navigation" aria-label="Phân trang">
+    <nav className="pagination" role="navigation" aria-label={t('common.pagination', { defaultValue: 'Phân trang' })}>
       <button
         type="button"
         className="pagination-btn prev-next"
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
-        aria-label="Trang trước"
+        aria-label={t('common.prevPage', { defaultValue: 'Trang trước' })}
       >
         <ChevronLeft size={16} strokeWidth={2} />
-        <span>Trang trước</span>
+        <span>{t('common.prevPage', { defaultValue: 'Trang trước' })}</span>
       </button>
 
       <div className="pagination-pages">
@@ -68,7 +71,7 @@ function Pagination({
               className={`pagination-btn page-num ${currentPage === page ? 'active' : ''}`}
               disabled={currentPage === page}
               onClick={() => onPageChange(page)}
-              aria-label={`Trang ${page}`}
+              aria-label={t('common.pageNumber', { page, defaultValue: 'Trang {{page}}' })}
               aria-current={currentPage === page ? 'page' : undefined}
             >
               {page}
@@ -82,9 +85,9 @@ function Pagination({
         className="pagination-btn prev-next"
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
-        aria-label="Trang sau"
+        aria-label={t('common.nextPage', { defaultValue: 'Trang sau' })}
       >
-        <span>Trang sau</span>
+        <span>{t('common.nextPage', { defaultValue: 'Trang sau' })}</span>
         <ChevronRight size={16} strokeWidth={2} />
       </button>
     </nav>

@@ -1,5 +1,6 @@
-import { Download, Eye, FileUp, KeyRound, Pencil, RefreshCw, Save, ShieldOff, Trash2, X } from 'lucide-react'
+import { Download, Eye, FileUp, ImageUp, KeyRound, Pencil, RefreshCw, Save, ShieldOff, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
@@ -23,6 +24,7 @@ function ServiceEditor({
   onUpdateCredentialForm,
   onUpdateCredentialFilter,
   onUpdateServiceForm,
+  onUploadServiceImage,
   selectedServiceCategories = [],
   selectedServiceId,
   revealedCredentials = {},
@@ -30,8 +32,10 @@ function ServiceEditor({
   serviceForm,
   serviceOrders = [],
   submitting,
+  uploadingImage,
   onClose,
 }) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('basic')
   const navigate = useNavigate()
   const [selectedCredentialId, setSelectedCredentialId] = useState('')
@@ -54,10 +58,10 @@ function ServiceEditor({
     setBulkResult(null)
     try {
       await onBulkImportCredentials(bulkCsv.trim())
-      setBulkResult({ type: 'success', message: 'Import kho tài khoản thành công.' })
+      setBulkResult({ type: 'success', message: t('admin.services.editor.importSuccess') })
       setBulkCsv('')
     } catch (err) {
-      setBulkResult({ type: 'error', message: err.message || 'Import thất bại.' })
+      setBulkResult({ type: 'error', message: err.message || t('admin.services.editor.importFailed') })
     } finally {
       setBulkSubmitting(false)
     }
@@ -92,21 +96,21 @@ function ServiceEditor({
         <div style={{ flex: '1 1 auto', minWidth: 0 }}>
           <h3 style={{ whiteSpace: 'nowrap', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>
             {selectedServiceId
-              ? (isAccountStock ? 'Sản phẩm giao tài khoản' : 'Chi tiết dịch vụ')
-              : (isAccountStock ? 'Tạo sản phẩm giao tài khoản' : 'Tạo dịch vụ mới')}
+              ? (isAccountStock ? t('admin.services.editor.title.editAccountStock') : t('admin.services.editor.title.editService'))
+              : (isAccountStock ? t('admin.services.editor.title.createAccountStock') : t('admin.services.editor.title.createService'))}
           </h3>
           <span style={{ fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', maxWidth: '280px', whiteSpace: 'nowrap' }}>
-            {serviceForm.name || 'Điền thông tin dịch vụ để mở bán'}
+            {serviceForm.name || t('admin.services.editor.placeholder')}
           </span>
         </div>
         <div className="service-editor-actions" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           <button type="button" className="admin-danger-button slim" disabled={!selectedServiceId || submitting} onClick={onDeleteService}>
             <Trash2 size={17} strokeWidth={2} aria-hidden="true" />
-            <span>Xóa</span>
+            <span>{t('admin.common.delete')}</span>
           </button>
           <button type="submit" disabled={submitting} className="admin-primary-button" style={{ height: '32px', minHeight: '32px', padding: '0 12px' }}>
             <Save size={17} strokeWidth={2} aria-hidden="true" />
-            <span>Lưu</span>
+            <span>{t('admin.common.save')}</span>
           </button>
           {onClose && (
             <button
@@ -126,7 +130,7 @@ function ServiceEditor({
                 cursor: 'pointer',
                 color: 'var(--kd-muted)'
               }}
-              title="Đóng"
+              title={t('admin.common.close')}
             >
               <X size={18} strokeWidth={2} />
             </button>
@@ -138,11 +142,11 @@ function ServiceEditor({
         <div>
           <KeyRound size={20} aria-hidden="true" />
           <span>
-            <strong>{isAccountStock ? 'Giao tài khoản tự động' : 'Dịch vụ xử lý thông thường'}</strong>
+            <strong>{isAccountStock ? t('admin.services.editor.mode.autoDelivery') : t('admin.services.editor.mode.manual')}</strong>
             <small>
               {isAccountStock
-                ? 'Tài khoản trong kho sẽ được backend giữ chỗ và gắn vào đúng đơn hàng sau thanh toán.'
-                : 'Không sử dụng kho tài khoản. Admin xử lý và trả kết quả qua đơn hàng.'}
+                ? t('admin.services.editor.mode.autoDeliveryDesc')
+                : t('admin.services.editor.mode.manualDesc')}
             </small>
           </span>
         </div>
@@ -155,20 +159,20 @@ function ServiceEditor({
             }
             onUpdateServiceForm('type', nextType)
           }}
-          aria-label="Chọn cách cung cấp dịch vụ"
+          aria-label={t('admin.services.editor.selectMode')}
         >
           {serviceTypes.map((type) => <option value={type} key={type}>{getServiceTypeLabel(type)}</option>)}
         </select>
       </div>
 
       <div className="admin-tabs" style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '6px', borderBottom: '1px solid var(--kd-border)', paddingBottom: '12px' }}>
-        <button type="button" className={activeTab === 'basic' ? 'active' : ''} onClick={() => handleTabChange('basic')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>Cơ bản</button>
-        <button type="button" className={activeTab === 'pricing' ? 'active' : ''} onClick={() => handleTabChange('pricing')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>Giá & Cam kết</button>
-        <button type="button" className={activeTab === 'content' ? 'active' : ''} onClick={() => handleTabChange('content')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>Nội dung</button>
-        <button type="button" className={activeTab === 'seo' ? 'active' : ''} onClick={() => handleTabChange('seo')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>SEO</button>
+        <button type="button" className={activeTab === 'basic' ? 'active' : ''} onClick={() => handleTabChange('basic')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>{t('admin.services.editor.tab.basic')}</button>
+        <button type="button" className={activeTab === 'pricing' ? 'active' : ''} onClick={() => handleTabChange('pricing')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>{t('admin.services.editor.tab.pricing')}</button>
+        <button type="button" className={activeTab === 'content' ? 'active' : ''} onClick={() => handleTabChange('content')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>{t('admin.services.editor.tab.content')}</button>
+        <button type="button" className={activeTab === 'seo' ? 'active' : ''} onClick={() => handleTabChange('seo')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>{t('admin.services.editor.tab.seo')}</button>
         {selectedServiceId && (
           <button type="button" className={activeTab === 'orders' ? 'active' : ''} onClick={() => handleTabChange('orders')} style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}>
-            Đơn hàng ({serviceOrders.length})
+            {t('admin.services.editor.tab.orders')} ({serviceOrders.length})
           </button>
         )}
         <button
@@ -178,14 +182,14 @@ function ServiceEditor({
           onClick={() => handleTabChange('credentials')}
           title={
             !isAccountStock
-              ? 'Chọn loại Kho tài khoản để sử dụng chức năng này'
+              ? t('admin.services.editor.selectAccountStockType')
               : !selectedServiceId
-                ? 'Lưu sản phẩm trước khi nhập tài khoản'
-                : 'Quản lý tài khoản cấp cho khách'
+                ? t('admin.services.editor.saveServiceFirst')
+                : t('admin.services.editor.manageCredentials')
           }
           style={{ height: '30px', minHeight: '30px', padding: '0 10px', fontSize: '12px' }}
         >
-          Tài khoản cấp khách {selectedServiceId && isAccountStock ? `(${availableCredentials}/${serviceCredentials.length})` : ''}
+          {t('admin.services.editor.tab.credentials')} {selectedServiceId && isAccountStock ? `(${availableCredentials}/${serviceCredentials.length})` : ''}
         </button>
       </div>
 
@@ -193,80 +197,99 @@ function ServiceEditor({
         {activeTab === 'basic' && (
           <section className="service-editor-section">
             <div className="service-section-title">
-              <h4>Cơ bản</h4>
-              <span>Thông tin định danh và trạng thái</span>
+              <h4>{t('admin.services.editor.section.basic')}</h4>
+              <span>{t('admin.services.editor.section.basicDesc')}</span>
             </div>
             <div className="admin-form-grid service-form-grid">
               <label className="wide">
-                <span>Tên dịch vụ</span>
+                <span>{t('admin.services.editor.field.serviceName')}</span>
                 <input value={serviceForm.name} onChange={(event) => onUpdateServiceForm('name', event.target.value)} required />
               </label>
               <label className="wide">
-                <span>Slug</span>
+                <span>{t('admin.services.editor.field.slug')}</span>
                 <input value={serviceForm.slug} onChange={(event) => onUpdateServiceForm('slug', event.target.value)} required />
               </label>
               <label>
-                <span>Nhóm danh mục</span>
+                <span>{t('admin.services.editor.field.category')}</span>
                 <select value={serviceForm.categoryId} onChange={(event) => onUpdateServiceForm('categoryId', event.target.value)}>
-                  <option value="">Chưa phân nhóm</option>
+                  <option value="">{t('admin.services.summary.ungrouped')}</option>
                   {categories.map((category) => (
                     <option value={category.id} key={category.id}>{category.name}</option>
                   ))}
                 </select>
               </label>
               <label>
-                <span>Trạng thái</span>
+                <span>{t('admin.common.status')}</span>
                 <select value={serviceForm.status} onChange={(event) => onUpdateServiceForm('status', event.target.value)}>
                   {serviceStatuses.map((status) => <option value={status} key={status}>{getServiceStatusLabel(status)}</option>)}
                 </select>
               </label>
               <label>
-                <span>Tình trạng kho</span>
+                <span>{t('admin.services.editor.field.stockStatus')}</span>
                 <select value={serviceForm.stockStatus} onChange={(event) => onUpdateServiceForm('stockStatus', event.target.value)}>
                   {stockStatuses.map((status) => <option value={status} key={status}>{getStockStatusLabel(status)}</option>)}
                 </select>
               </label>
               <label>
-                <span>CTA hiển thị</span>
+                <span>{t('admin.services.editor.field.cta')}</span>
                 <select value={serviceForm.ctaType} onChange={(event) => onUpdateServiceForm('ctaType', event.target.value)}>
                   {ctaTypes.map((type) => <option value={type} key={type}>{getCtaTypeLabel(type)}</option>)}
                 </select>
               </label>
               <label>
-                <span>Thứ tự sắp xếp</span>
+                <span>{t('admin.services.editor.field.sortOrder')}</span>
                 <input value={serviceForm.sortOrder} onChange={(event) => onUpdateServiceForm('sortOrder', event.target.value)} inputMode="numeric" />
               </label>
               <label className="wide">
-                <span>Ảnh minh họa (Icon/Image URL)</span>
+                <span>{t('admin.services.editor.field.iconUrl')}</span>
                 <input value={serviceForm.iconUrl} onChange={(event) => onUpdateServiceForm('iconUrl', event.target.value)} placeholder="Đường dẫn ảnh sản phẩm (ví dụ: https://example.com/image.png hoặc /assets/...)" />
               </label>
+              <div className="wide service-image-upload">
+                <label className="service-image-upload-button">
+                  <ImageUp size={18} aria-hidden="true" />
+                  <span>{uploadingImage ? 'Đang tải ảnh...' : 'Tải ảnh lên Cloudinary'}</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    disabled={uploadingImage || submitting}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0]
+                      if (file) {
+                        onUploadServiceImage(file)
+                      }
+                      event.target.value = ''
+                    }}
+                  />
+                </label>
+                <small>Hỗ trợ JPG, PNG, GIF, WEBP; tối đa 10 MB.</small>
+                {serviceForm.iconUrl && (
+                  <img src={serviceForm.iconUrl} alt="Xem trước ảnh dịch vụ" className="service-image-preview" />
+                )}
+              </div>
             </div>
             <div className="admin-check-row">
               <label style={{ cursor: 'pointer' }}>
                 <input checked={serviceForm.featured} onChange={(event) => onUpdateServiceForm('featured', event.target.checked)} type="checkbox" />
-                <span>Nổi bật</span>
+                <span>{t('admin.services.editor.field.featured')}</span>
               </label>
               <label style={{ cursor: 'pointer' }}>
                 <input checked={serviceForm.publicVisible} onChange={(event) => onUpdateServiceForm('publicVisible', event.target.checked)} type="checkbox" />
-                <span>Hiển thị công khai</span>
+                <span>{t('admin.services.editor.field.publicVisible')}</span>
               </label>
             </div>
             {isAccountStock && (
               <div className="service-account-stock-guide">
                 <KeyRound size={20} aria-hidden="true" />
                 <div>
-                  <strong>Dịch vụ giao tài khoản tự động</strong>
-                  <p>
-                    Mỗi tài khoản nhập tại đây thuộc riêng dịch vụ này. Khi khách thanh toán,
-                    backend sẽ giữ một tài khoản AVAILABLE rồi gắn trực tiếp vào đơn hàng.
-                  </p>
+                  <strong>{t('admin.services.editor.accountStockGuide.title')}</strong>
+                  <p>{t('admin.services.editor.accountStockGuide.desc')}</p>
                 </div>
                 {selectedServiceId ? (
                   <button type="button" className="admin-icon-button" onClick={() => setActiveTab('credentials')}>
-                    Mở danh sách tài khoản
+                    {t('admin.services.editor.accountStockGuide.openList')}
                   </button>
                 ) : (
-                  <span className="service-account-stock-pending">Lưu dịch vụ trước để nhập tài khoản</span>
+                  <span className="service-account-stock-pending">{t('admin.services.editor.accountStockGuide.pending')}</span>
                 )}
               </div>
             )}
@@ -276,32 +299,32 @@ function ServiceEditor({
         {activeTab === 'pricing' && (
           <section className="service-editor-section">
             <div className="service-section-title">
-              <h4>Giá và cam kết</h4>
-              <span>Giá bán, giá vốn, badge và thời gian xử lý</span>
+              <h4>{t('admin.services.editor.section.pricing')}</h4>
+              <span>{t('admin.services.editor.section.pricingDesc')}</span>
             </div>
             <div className="admin-form-grid service-form-grid">
               <label>
-                <span>Giá bán</span>
+                <span>{t('admin.services.editor.field.price')}</span>
                 <input value={serviceForm.price} onChange={(event) => onUpdateServiceForm('price', event.target.value)} inputMode="text" placeholder="390k, 1tr..." required />
               </label>
               <label>
-                <span>Giá hiển thị text</span>
+                <span>{t('admin.services.editor.field.priceText')}</span>
                 <input value={serviceForm.priceText} onChange={(event) => onUpdateServiceForm('priceText', event.target.value)} placeholder="Từ 390.000đ" />
               </label>
               <label>
-                <span>Giá vốn</span>
+                <span>{t('admin.services.editor.field.costPrice')}</span>
                 <input value={serviceForm.costPrice} onChange={(event) => onUpdateServiceForm('costPrice', event.target.value)} inputMode="text" placeholder="250k, 500k..." />
               </label>
               <label>
-                <span>Badge bảng giá</span>
+                <span>{t('admin.services.editor.field.pricingBadge')}</span>
                 <input value={serviceForm.pricingBadge} onChange={(event) => onUpdateServiceForm('pricingBadge', event.target.value)} placeholder="Phổ biến, Bán chạy..." />
               </label>
               <label>
-                <span>Thời gian xử lý</span>
+                <span>{t('admin.services.editor.field.processingTime')}</span>
                 <input value={serviceForm.processingTime} onChange={(event) => onUpdateServiceForm('processingTime', event.target.value)} placeholder="Trong 24h" />
               </label>
               <label>
-                <span>Chính sách bảo hành</span>
+                <span>{t('admin.services.editor.field.warrantyPolicy')}</span>
                 <input value={serviceForm.warrantyPolicy} onChange={(event) => onUpdateServiceForm('warrantyPolicy', event.target.value)} placeholder="Bảo hành 7 ngày" />
               </label>
             </div>
@@ -311,28 +334,28 @@ function ServiceEditor({
         {activeTab === 'content' && (
           <section className="service-editor-section">
             <div className="service-section-title">
-              <h4>Nội dung hiển thị</h4>
-              <span>Mô tả ngắn, chi tiết và lưu ý sử dụng</span>
+              <h4>{t('admin.services.editor.section.content')}</h4>
+              <span>{t('admin.services.editor.section.contentDesc')}</span>
             </div>
             <div className="admin-form-grid service-form-grid">
               <label className="wide">
-                <span>Mô tả ngắn</span>
+                <span>{t('admin.services.editor.field.shortDescription')}</span>
                 <textarea value={serviceForm.shortDescription} onChange={(event) => onUpdateServiceForm('shortDescription', event.target.value)} rows="3" />
               </label>
               <label className="wide">
-                <span>Mô tả chi tiết</span>
+                <span>{t('admin.services.editor.field.description')}</span>
                 <textarea value={serviceForm.description} onChange={(event) => onUpdateServiceForm('description', event.target.value)} rows="6" />
               </label>
               <label className="wide">
-                <span>Yêu cầu đầu vào (chuẩn bị gì)</span>
+                <span>{t('admin.services.editor.field.requirements')}</span>
                 <textarea value={serviceForm.requirements} onChange={(event) => onUpdateServiceForm('requirements', event.target.value)} rows="3" />
               </label>
               <label className="wide">
-                <span>Lợi ích dịch vụ</span>
+                <span>{t('admin.services.editor.field.benefits')}</span>
                 <textarea value={serviceForm.benefits} onChange={(event) => onUpdateServiceForm('benefits', event.target.value)} rows="3" />
               </label>
               <label className="wide">
-                <span>Lưu ý khi sử dụng</span>
+                <span>{t('admin.services.editor.field.usageNotes')}</span>
                 <textarea value={serviceForm.usageNotes} onChange={(event) => onUpdateServiceForm('usageNotes', event.target.value)} rows="3" />
               </label>
             </div>
@@ -342,16 +365,16 @@ function ServiceEditor({
         {activeTab === 'seo' && (
           <section className="service-editor-section">
             <div className="service-section-title">
-              <h4>Thông tin SEO</h4>
-              <span>Tiêu đề và mô tả hiển thị trên công cụ tìm kiếm</span>
+              <h4>{t('admin.services.editor.section.seo')}</h4>
+              <span>{t('admin.services.editor.section.seoDesc')}</span>
             </div>
             <div className="admin-form-grid service-form-grid">
               <label className="wide">
-                <span>Meta Title (SEO)</span>
+                <span>{t('admin.services.editor.field.metaTitle')}</span>
                 <input value={serviceForm.metaTitle} onChange={(event) => onUpdateServiceForm('metaTitle', event.target.value)} />
               </label>
               <label className="wide">
-                <span>Meta Description (SEO)</span>
+                <span>{t('admin.services.editor.field.metaDescription')}</span>
                 <input value={serviceForm.metaDescription} onChange={(event) => onUpdateServiceForm('metaDescription', event.target.value)} />
               </label>
             </div>
@@ -361,8 +384,8 @@ function ServiceEditor({
         {activeTab === 'orders' && selectedServiceId && (
           <div className="admin-panel-subsection" style={{ borderTop: 'none', marginTop: 0, paddingTop: 0 }}>
             <div className="admin-panel-head compact-head" style={{ marginTop: 0 }}>
-              <h3>Đơn gần đây & liên kết</h3>
-              <span>{serviceOrders.length} đơn hàng</span>
+              <h3>{t('admin.services.editor.recentOrders')}</h3>
+              <span>{t('admin.services.editor.orderCount', { count: serviceOrders.length })}</span>
             </div>
             <div className="admin-mini-list">
               {selectedServiceCategories.map((category) => (
@@ -377,7 +400,7 @@ function ServiceEditor({
                   <span>User #{order.userId} · {formatAdminMoney(order.amount)} · {getOrderStatusLabel(order.status)} · {formatAdminDate(order.createdAt)}</span>
                 </article>
               ))}
-              {selectedServiceCategories.length === 0 && serviceOrders.length === 0 && <AdminEmptyState message="Chưa có danh mục hoặc đơn gần đây cho dịch vụ này." />}
+              {selectedServiceCategories.length === 0 && serviceOrders.length === 0 && <AdminEmptyState message={t('admin.services.editor.noRecentData')} />}
             </div>
           </div>
         )}
@@ -385,17 +408,17 @@ function ServiceEditor({
         {activeTab === 'credentials' && selectedServiceId && isAccountStock && (
           <section className="service-editor-section">
             <div className="service-section-title">
-              <h4>Tài khoản của dịch vụ</h4>
-              <span>{availableCredentials} tài khoản sẵn sàng, {deliveredCredentials} đã cấp</span>
+              <h4>{t('admin.services.editor.serviceCredentials')}</h4>
+              <span>{t('admin.services.editor.credentialSummary', { available: availableCredentials, delivered: deliveredCredentials })}</span>
             </div>
             <div className="service-credential-selector">
               <SearchField
                 value={credentialFilters.query}
                 onChange={(event) => onUpdateCredentialFilter('query', event.target.value)}
-                placeholder="Tìm tài khoản trong dịch vụ..."
+                placeholder={t('admin.services.editor.searchCredential')}
               />
               <select value={selectedCredentialId} onChange={(event) => setSelectedCredentialId(event.target.value)}>
-                <option value="">Chọn tài khoản</option>
+                <option value="">{t('admin.services.editor.selectCredential')}</option>
                 {filteredCredentials.map((credential) => (
                   <option key={credential.id} value={credential.id}>
                     {credential.loginIdentifier} — {getCredentialStatusLabel(credential.status)}
@@ -403,12 +426,11 @@ function ServiceEditor({
                 ))}
               </select>
               <button type="button" className="admin-icon-button" onClick={() => navigate('/admin/account-inventory')}>
-                <KeyRound size={16} /> Mở Kho tài khoản
+                <KeyRound size={16} /> {t('admin.services.editor.openInventory')}
               </button>
             </div>
             <p className="service-credential-selector-note">
-              Việc nhập, import, sửa và khóa tài khoản được thực hiện tại Kho tài khoản. Khi khách mua,
-              hệ thống tự lấy một tài khoản đang ở trạng thái Sẵn sàng.
+              {t('admin.services.editor.inventoryNote')}
             </p>
           </section>
         )}
@@ -416,15 +438,15 @@ function ServiceEditor({
         {activeTab === '__legacy_credentials' && selectedServiceId && isAccountStock && (
           <section className="service-editor-section">
             <div className="service-section-title">
-              <h4>Tài khoản cấp cho khách hàng</h4>
-              <span>{availableCredentials} sẵn sàng cấp, {deliveredCredentials} đã liên kết đơn hàng</span>
+              <h4>{t('admin.services.editor.legacyCredentials.title')}</h4>
+              <span>{t('admin.services.editor.legacyCredentials.subtitle', { available: availableCredentials, delivered: deliveredCredentials })}</span>
             </div>
             <div className="service-credential-flow">
-              <strong>Liên kết tự động:</strong>
-              <span>Tài khoản AVAILABLE</span>
-              <span>→ Checkout giữ chỗ</span>
-              <span>→ Đơn hàng</span>
-              <span>→ DELIVERED</span>
+              <strong>{t('admin.services.editor.legacyCredentials.flowLabel')}:</strong>
+              <span>{t('admin.services.editor.legacyCredentials.flowAvailable')}</span>
+              <span>{t('admin.services.editor.legacyCredentials.flowCheckout')}</span>
+              <span>{t('admin.services.editor.legacyCredentials.flowOrder')}</span>
+              <span>{t('admin.services.editor.legacyCredentials.flowDelivered')}</span>
             </div>
 
             {/* Filter bar */}
@@ -434,24 +456,24 @@ function ServiceEditor({
                 onChange={(event) => onUpdateCredentialFilter('status', event.target.value)}
                 style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--kd-border)', fontSize: '12px', background: 'var(--kd-card-bg)' }}
               >
-                <option value="">Tất cả trạng thái</option>
-                <option value="AVAILABLE">Sẵn sàng</option>
-                <option value="RESERVED">Đang giữ</option>
-                <option value="DELIVERED">Đã giao</option>
-                <option value="REPLACED">Đã đổi</option>
-                <option value="REFUNDED">Đã hoàn</option>
-                <option value="DISABLED">Đã khóa</option>
-                <option value="EXPIRED">Hết hạn</option>
+                <option value="">{t('admin.common.allStatus')}</option>
+                <option value="AVAILABLE">{t('status.AVAILABLE')}</option>
+                <option value="RESERVED">{t('status.RESERVED')}</option>
+                <option value="DELIVERED">{t('status.DELIVERED')}</option>
+                <option value="REPLACED">{t('status.REPLACED')}</option>
+                <option value="REFUNDED">{t('status.REFUNDED')}</option>
+                <option value="DISABLED">{t('status.DISABLED')}</option>
+                <option value="EXPIRED">{t('status.EXPIRED')}</option>
               </select>
               <SearchField
                 size="compact"
                 value={credentialFilters.query}
                 onChange={(event) => onUpdateCredentialFilter('query', event.target.value)}
-                placeholder="Tìm kiếm tài khoản..."
+                placeholder={t('admin.services.editor.legacyCredentials.searchPlaceholder')}
                 style={{ flex: 1, minWidth: '120px' }}
               />
               <label style={{ display: 'grid', gap: '3px', fontSize: '11px', color: 'var(--kd-muted)' }}>
-                Nhập từ
+                {t('admin.services.editor.legacyCredentials.createdFrom')}
                 <input
                   type="datetime-local"
                   value={credentialFilters.createdFrom}
@@ -460,7 +482,7 @@ function ServiceEditor({
                 />
               </label>
               <label style={{ display: 'grid', gap: '3px', fontSize: '11px', color: 'var(--kd-muted)' }}>
-                Nhập đến
+                {t('admin.services.editor.legacyCredentials.createdTo')}
                 <input
                   type="datetime-local"
                   value={credentialFilters.createdTo}
@@ -469,7 +491,7 @@ function ServiceEditor({
                 />
               </label>
               <label style={{ display: 'grid', gap: '3px', fontSize: '11px', color: 'var(--kd-muted)' }}>
-                Giao từ
+                {t('admin.services.editor.legacyCredentials.deliveredFrom')}
                 <input
                   type="datetime-local"
                   value={credentialFilters.deliveredFrom}
@@ -478,7 +500,7 @@ function ServiceEditor({
                 />
               </label>
               <label style={{ display: 'grid', gap: '3px', fontSize: '11px', color: 'var(--kd-muted)' }}>
-                Giao đến
+                {t('admin.services.editor.legacyCredentials.deliveredTo')}
                 <input
                   type="datetime-local"
                   value={credentialFilters.deliveredTo}
@@ -487,7 +509,7 @@ function ServiceEditor({
                 />
               </label>
               <label style={{ display: 'grid', gap: '3px', fontSize: '11px', color: 'var(--kd-muted)' }}>
-                Hết hạn trước
+                {t('admin.services.editor.legacyCredentials.expiresBefore')}
                 <input
                   type="datetime-local"
                   value={credentialFilters.expiresBefore}
@@ -496,57 +518,57 @@ function ServiceEditor({
                 />
               </label>
               <button type="button" className="admin-icon-button" disabled={submitting} onClick={onApplyCredentialFilters} style={{ height: '30px', minHeight: '30px', fontSize: '12px' }}>
-                <RefreshCw size={14} /> <span>Lọc</span>
+                <RefreshCw size={14} /> <span>{t('admin.common.filter')}</span>
               </button>
               <button type="button" className="admin-icon-button" disabled={submitting} onClick={onResetCredentialFilters} style={{ height: '30px', minHeight: '30px', fontSize: '12px' }}>
-                <X size={14} /> <span>Xóa lọc</span>
+                <X size={14} /> <span>{t('admin.common.clearFilter')}</span>
               </button>
-              <span style={{ fontSize: '12px', color: 'var(--kd-muted)', whiteSpace: 'nowrap' }}>{filteredCredentials.length} hiển thị</span>
+              <span style={{ fontSize: '12px', color: 'var(--kd-muted)', whiteSpace: 'nowrap' }}>{t('admin.services.editor.legacyCredentials.showingCount', { count: filteredCredentials.length })}</span>
             </div>
 
             {/* Create/Edit credential form */}
             <div className="admin-form-grid service-form-grid" style={{ borderBottom: '1px solid var(--kd-border)', paddingBottom: '12px', marginBottom: '12px' }}>
               <label>
-                <span>Tài khoản khách sẽ nhận *</span>
+                <span>{t('admin.services.editor.legacyCredentials.loginLabel')}</span>
                 <input value={credentialForm.loginIdentifier} onChange={(event) => onUpdateCredentialForm('loginIdentifier', event.target.value)} placeholder="Email, username hoặc số điện thoại đăng nhập" required />
               </label>
               <label>
-                <span>Mật khẩu khách sẽ nhận *</span>
+                <span>{t('admin.services.editor.legacyCredentials.passwordLabel')}</span>
                 <input value={credentialForm.passwordSecret} onChange={(event) => onUpdateCredentialForm('passwordSecret', event.target.value)} placeholder={editingCredentialId ? 'Để trống nếu không đổi mật khẩu' : 'Mật khẩu đăng nhập'} required={!editingCredentialId} />
               </label>
               <label>
-                <span>Email / thông tin khôi phục</span>
+                <span>{t('admin.services.editor.legacyCredentials.recoveryLabel')}</span>
                 <input value={credentialForm.recoveryInfo} onChange={(event) => onUpdateCredentialForm('recoveryInfo', event.target.value)} placeholder="Thông tin khôi phục nếu có" />
               </label>
               <label>
-                <span>Mã hoặc secret 2FA</span>
+                <span>{t('admin.services.editor.legacyCredentials.twoFALabel')}</span>
                 <input value={credentialForm.twoFactorSecret} onChange={(event) => onUpdateCredentialForm('twoFactorSecret', event.target.value)} placeholder="Mã 2FA hoặc secret" />
               </label>
               <label>
-                <span>Hạn tài khoản</span>
+                <span>{t('admin.services.editor.legacyCredentials.expiresLabel')}</span>
                 <input type="datetime-local" value={credentialForm.expiresAt} onChange={(event) => onUpdateCredentialForm('expiresAt', event.target.value)} />
               </label>
               <label>
-                <span>Bảo hành đến</span>
+                <span>{t('admin.services.editor.legacyCredentials.warrantyLabel')}</span>
                 <input type="datetime-local" value={credentialForm.warrantyUntil} onChange={(event) => onUpdateCredentialForm('warrantyUntil', event.target.value)} />
               </label>
               <label className="wide">
-                <span>Hướng dẫn hiển thị cho khách</span>
+                <span>{t('admin.services.editor.legacyCredentials.usageNoteLabel')}</span>
                 <textarea value={credentialForm.usageNote} onChange={(event) => onUpdateCredentialForm('usageNote', event.target.value)} rows="2" placeholder="Ví dụ: không đổi mật khẩu trong 24h đầu, đăng nhập đúng khu vực..." />
               </label>
               <label className="wide">
-                <span>Ghi chú nội bộ — khách không nhìn thấy</span>
+                <span>{t('admin.services.editor.legacyCredentials.internalNoteLabel')}</span>
                 <textarea value={credentialForm.internalNote} onChange={(event) => onUpdateCredentialForm('internalNote', event.target.value)} rows="2" placeholder="Nguồn hàng, chi phí, lưu ý bảo hành..." />
               </label>
             </div>
             <div className="admin-action-row" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
               <button type="button" className="admin-primary-button" disabled={submitting} onClick={onCreateCredential} style={{ height: '34px', minHeight: '34px', fontSize: '13px' }}>
                 <KeyRound size={16} />
-                <span>{editingCredentialId ? 'Cập nhật tài khoản' : 'Thêm tài khoản sẵn sàng cấp'}</span>
+                <span>{editingCredentialId ? t('admin.services.editor.legacyCredentials.updateCredential') : t('admin.services.editor.legacyCredentials.addCredential')}</span>
               </button>
               {editingCredentialId && (
                 <button type="button" className="admin-icon-button" onClick={() => onStartEditCredential(null)} style={{ height: '34px', minHeight: '34px', fontSize: '13px' }}>
-                  <X size={16} /> <span>Huỷ sửa</span>
+                  <X size={16} /> <span>{t('admin.services.editor.legacyCredentials.cancelEdit')}</span>
                 </button>
               )}
             </div>
@@ -554,11 +576,11 @@ function ServiceEditor({
             {/* Bulk import */}
             <div style={{ marginTop: '16px', borderTop: '1px solid var(--kd-border)', paddingTop: '12px' }}>
               <div className="admin-panel-head compact-head" style={{ marginTop: 0 }}>
-                <h3>Thêm nhiều tài khoản bằng CSV</h3>
+                <h3>{t('admin.services.editor.legacyCredentials.bulkImportTitle')}</h3>
                 <FileUp size={18} strokeWidth={2} aria-hidden="true" />
               </div>
               <p style={{ fontSize: '12px', color: 'var(--kd-muted)', margin: '0 0 8px' }}>
-                Mỗi dòng: login, password, recovery, twoFactor, hướng dẫn khách, ghi chú nội bộ.
+                {t('admin.services.editor.legacyCredentials.csvFormat')}
               </p>
               <textarea
                 value={bulkCsv}
@@ -570,7 +592,7 @@ function ServiceEditor({
               <div className="admin-action-row" style={{ marginTop: '8px' }}>
                 <button type="button" className="admin-icon-button" disabled={submitting || bulkSubmitting || !bulkCsv.trim()} onClick={handleBulkImport} style={{ height: '34px', minHeight: '34px', fontSize: '13px' }}>
                   <Download size={16} />
-                  <span>{bulkSubmitting ? 'Đang import...' : 'Import CSV'}</span>
+                  <span>{bulkSubmitting ? t('admin.services.editor.legacyCredentials.importing') : t('admin.services.editor.legacyCredentials.importBtn')}</span>
                 </button>
               </div>
               {bulkResult && (
@@ -607,23 +629,23 @@ function ServiceEditor({
                   <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
                     {!revealed && (
                       <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => onRevealCredential(credential)} style={{ height: '30px', minHeight: '30px', fontSize: '12px', width: 'fit-content' }}>
-                        <Eye size={15} /> <span>Hiện</span>
+                        <Eye size={15} /> <span>{t('admin.services.editor.legacyCredentials.reveal')}</span>
                       </button>
                     )}
                     {credential.status === 'AVAILABLE' && (
                       <>
                         <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => onStartEditCredential(credential)} style={{ height: '30px', minHeight: '30px', fontSize: '12px', width: 'fit-content' }}>
-                          <Pencil size={15} /> <span>Sửa</span>
+                          <Pencil size={15} /> <span>{t('admin.common.edit')}</span>
                         </button>
                         <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={() => onDisableCredential(credential)} style={{ height: '30px', minHeight: '30px', fontSize: '12px', width: 'fit-content' }}>
-                          <ShieldOff size={15} /> <span>Khóa</span>
+                          <ShieldOff size={15} /> <span>{t('admin.services.editor.legacyCredentials.lock')}</span>
                         </button>
                       </>
                     )}
                   </div>
                 </article>
               )})}
-              {filteredCredentials.length === 0 && <AdminEmptyState message={credentialFilters.status || credentialFilters.query ? 'Không tìm thấy tài khoản phù hợp.' : 'Chưa có tài khoản nào trong kho cho sản phẩm này.'} />}
+              {filteredCredentials.length === 0 && <AdminEmptyState message={credentialFilters.status || credentialFilters.query ? t('admin.services.editor.legacyCredentials.noFilteredCredential') : t('admin.services.editor.legacyCredentials.noCredential')} />}
             </div>
           </section>
         )}

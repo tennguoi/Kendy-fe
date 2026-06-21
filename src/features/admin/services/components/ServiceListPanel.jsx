@@ -1,5 +1,6 @@
 import { MoreHorizontal } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminMoney } from '../../adminFormat'
 import { getServiceStatusLabel, serviceStatuses } from '../services.constants'
@@ -26,6 +27,7 @@ function ServiceListPanel({
   onDeleteServiceQuick,
   onDeleteCategoryQuick,
 }) {
+  const { t } = useTranslation()
   const [openToolbarId, setOpenToolbarId] = useState(null)
   const selectedCount = selectedIds.length
 
@@ -98,7 +100,7 @@ function ServiceListPanel({
               onQueryChange('')
             }}
           >
-            Sản phẩm ({services.length})
+            {t('admin.services.summary.products')} ({services.length})
           </button>
           <button
             type="button"
@@ -108,7 +110,7 @@ function ServiceListPanel({
               onQueryChange('')
             }}
           >
-            Danh mục ({categories.length})
+            {t('admin.services.summary.categories')} ({categories.length})
           </button>
         </div>
       </div>
@@ -117,12 +119,12 @@ function ServiceListPanel({
         <SearchField
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder={activeTab === 'services' ? 'Tìm tên sản phẩm, slug, nhóm...' : 'Tìm tên danh mục, slug...'}
+          placeholder={t('admin.common.search')}
         />
 
         {activeTab === 'services' && (
           <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>
-            <option value="">Tất cả trạng thái</option>
+            <option value="">{t('admin.common.allStatus')}</option>
             {serviceStatuses.map((status) => (
               <option value={status} key={status}>
                 {getServiceStatusLabel(status)}
@@ -135,7 +137,7 @@ function ServiceListPanel({
       {activeTab === 'services' && (
         <div className="admin-action-row service-bulk-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
           <span style={{ marginRight: 'auto', fontSize: '13px', color: 'var(--kd-muted)', fontWeight: 600 }}>
-            {selectedCount} đang chọn
+            {t('admin.services.selectedCount', { count: selectedCount })}
           </span>
           <button
             type="button"
@@ -144,7 +146,7 @@ function ServiceListPanel({
             disabled={submitting || selectedCount === 0}
             onClick={() => onBulkStatus(true)}
           >
-            Bật đã chọn
+            {t('admin.services.bulkEnable')}
           </button>
           <button
             type="button"
@@ -153,7 +155,7 @@ function ServiceListPanel({
             disabled={submitting || selectedCount === 0}
             onClick={() => onBulkStatus(false)}
           >
-            Tắt đã chọn
+            {t('admin.services.bulkDisable')}
           </button>
         </div>
       )}
@@ -162,11 +164,11 @@ function ServiceListPanel({
         {activeTab === 'services' ? (
           <>
             <div className="admin-data-row head services">
-              <span>Sản phẩm</span>
-              <span>Danh mục</span>
-              <span>Giá hiển thị</span>
-              <span>Trạng thái</span>
-              <span style={{ textAlign: 'right' }}>Thao tác</span>
+              <span>{t('admin.services.column.product')}</span>
+              <span>{t('admin.services.column.category')}</span>
+              <span>{t('admin.services.column.displayPrice')}</span>
+              <span>{t('admin.common.status')}</span>
+              <span style={{ textAlign: 'right' }}>{t('admin.common.actions')}</span>
             </div>
             {filteredServices.map((service) => (
               <div className="admin-user-row-wrap" key={service.id}>
@@ -188,12 +190,12 @@ function ServiceListPanel({
                       <small>/{service.slug}</small>
                     </div>
                   </div>
-                  <span>{service.categoryName || <span style={{ color: 'var(--kd-muted)', fontStyle: 'italic' }}>Chưa phân nhóm</span>}</span>
+                  <span>{service.categoryName || <span style={{ color: 'var(--kd-muted)', fontStyle: 'italic' }}>{t('admin.services.summary.ungrouped')}</span>}</span>
                   <strong>{service.priceText || formatAdminMoney(service.price)}</strong>
                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                     <AdminStatusBadge status={service.status} />
                     {!service.publicVisible && (
-                      <span className="admin-status locked" style={{ padding: '0 6px', height: '20px', minHeight: '20px', fontSize: '10px' }}>Ẩn</span>
+                      <span className="admin-status locked" style={{ padding: '0 6px', height: '20px', minHeight: '20px', fontSize: '10px' }}>{t('admin.services.hidden')}</span>
                     )}
                   </div>
                   <span className="admin-row-actions">
@@ -201,7 +203,7 @@ function ServiceListPanel({
                       type="button"
                       className="admin-row-menu-button"
                       aria-expanded={openToolbarId === `service-${service.id}`}
-                      aria-label="Thao tác nhanh"
+                      aria-label={t('admin.services.quickActions')}
                       onClick={(event) => handleToggleToolbar(event, `service-${service.id}`)}
                     >
                       <MoreHorizontal size={18} strokeWidth={2} />
@@ -210,7 +212,7 @@ function ServiceListPanel({
                     {openToolbarId === `service-${service.id}` && (
                       <span className="admin-row-toolbar" style={{ right: '42px', top: '50%', transform: 'translateY(-50%)' }}>
                         <button type="button" onClick={() => handleSelectService(service)}>
-                          Chi tiết
+                          {t('admin.common.viewDetails')}
                         </button>
                         <button
                           type="button"
@@ -221,7 +223,7 @@ function ServiceListPanel({
                             })
                           }
                         >
-                          {service.status === 'ACTIVE' ? 'Tắt bán' : 'Bật bán'}
+                          {service.status === 'ACTIVE' ? t('admin.services.disableSale') : t('admin.services.enableSale')}
                         </button>
                         <button
                           type="button"
@@ -232,7 +234,7 @@ function ServiceListPanel({
                             })
                           }
                         >
-                          {service.publicVisible ? 'Ẩn' : 'Hiện'}
+                          {service.publicVisible ? t('admin.services.hide') : t('admin.services.show')}
                         </button>
                         <button
                           type="button"
@@ -240,7 +242,7 @@ function ServiceListPanel({
                           disabled={submitting}
                           onClick={(event) => handleDeleteServiceQuick(event, service.id)}
                         >
-                          Xóa
+                          {t('admin.common.delete')}
                         </button>
                       </span>
                     )}
@@ -253,10 +255,10 @@ function ServiceListPanel({
         ) : (
           <>
             <div className="admin-data-row head categories">
-              <span>Danh mục</span>
-              <span>Danh mục cha</span>
-              <span>Thứ tự</span>
-              <span style={{ textAlign: 'right' }}>Thao tác</span>
+              <span>{t('admin.services.summary.categories')}</span>
+              <span>{t('admin.services.column.parentCategory')}</span>
+              <span>{t('admin.services.column.sortOrder')}</span>
+              <span style={{ textAlign: 'right' }}>{t('admin.common.actions')}</span>
             </div>
             {filteredCategories.map((category) => {
               const parent = categories.find((cat) => cat.id === category.parentId)
@@ -271,14 +273,14 @@ function ServiceListPanel({
                       <strong>{category.name}</strong>
                       <small>/{category.slug}</small>
                     </div>
-                    <span>{parent ? parent.name : <span style={{ color: 'var(--kd-muted)' }}>Không có</span>}</span>
+                    <span>{parent ? parent.name : <span style={{ color: 'var(--kd-muted)' }}>{t('admin.services.noParent')}</span>}</span>
                     <span>{category.sortOrder ?? 0}</span>
                     <span className="admin-row-actions">
                       <button
                         type="button"
                         className="admin-row-menu-button"
                         aria-expanded={openToolbarId === `category-${category.id}`}
-                        aria-label="Thao tác danh mục"
+                        aria-label={t('admin.services.categoryActions')}
                         onClick={(event) => handleToggleToolbar(event, `category-${category.id}`)}
                       >
                         <MoreHorizontal size={18} strokeWidth={2} />
@@ -287,7 +289,7 @@ function ServiceListPanel({
                       {openToolbarId === `category-${category.id}` && (
                         <span className="admin-row-toolbar" style={{ right: '42px', top: '50%', transform: 'translateY(-50%)' }}>
                           <button type="button" onClick={() => handleSelectCategory(category)}>
-                            Chi tiết
+                            {t('admin.common.viewDetails')}
                           </button>
                           <button
                             type="button"
@@ -295,7 +297,7 @@ function ServiceListPanel({
                             disabled={submitting}
                             onClick={(event) => handleDeleteCategoryQuick(event, category.id)}
                           >
-                            Xóa
+                            {t('admin.common.delete')}
                           </button>
                         </span>
                       )}

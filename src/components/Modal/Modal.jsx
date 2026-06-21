@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 import './modal.css'
 
@@ -14,6 +15,8 @@ function Modal({
   className = '',
   variant = 'default',
 }) {
+  const { t } = useTranslation()
+
   // Lock body scroll when modal is active
   useEffect(() => {
     if (isOpen) {
@@ -49,14 +52,14 @@ function Modal({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label={title || 'Hộp thoại'}
+        aria-label={title || t('common.dialog', { defaultValue: 'Hộp thoại' })}
       >
         {showHeader && (
           <div className="kd-modal-header">
             <h3>{title}</h3>
             <div className="kd-modal-header-actions">
               {headerActions}
-              <button type="button" className="kd-modal-close-btn" onClick={onClose} aria-label="Đóng">
+              <button type="button" className="kd-modal-close-btn" onClick={onClose} aria-label={t('common.close', { defaultValue: 'Đóng' })}>
                 <X size={20} strokeWidth={2.5} />
               </button>
             </div>

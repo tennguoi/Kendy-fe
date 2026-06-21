@@ -1,5 +1,6 @@
 import { RefreshCw, ShieldCheck } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { userApi } from '../../../api/user.api'
 import { normalizePaged } from '../../../utils/pagination'
 import Pagination from '../../../components/Pagination/Pagination'
@@ -31,6 +32,7 @@ function normalizeWarrantyList(value) {
 }
 
 function WarrantyView({ onSetNotice, token }) {
+  const { t } = useTranslation()
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [error, setError] = useState('')
@@ -52,11 +54,11 @@ function WarrantyView({ onSetNotice, token }) {
       setTotalPages(pages)
       setCurrentPage(targetPage)
     } catch (err) {
-      setError(err.message || 'Không tải được danh sách bảo hành.')
+      setError(err.message || t('warranty.loadError', { defaultValue: 'Không tải được danh sách bảo hành.' }))
     } finally {
       setLoading(false)
     }
-  }, [currentPage, token])
+  }, [currentPage, token, t])
 
   useEffect(() => { setCurrentPage(0) }, [statusFilter])
 
@@ -73,7 +75,7 @@ function WarrantyView({ onSetNotice, token }) {
   const handleRefresh = async () => {
     await loadRequests()
     if (onSetNotice) {
-      onSetNotice('Đã tải lại yêu cầu bảo hành.')
+      onSetNotice(t('warranty.loadedNotice', { defaultValue: 'Đã tải lại yêu cầu bảo hành.' }))
     }
   }
 
@@ -81,12 +83,12 @@ function WarrantyView({ onSetNotice, token }) {
     <section className="warranty-workspace">
       <div className="warranty-toolbar">
         <div>
-          <h2>Bảo hành của tôi</h2>
-          <p>{openCount} yêu cầu đang xử lý</p>
+          <h2>{t('warranty.myWarranties', { defaultValue: 'Bảo hành của tôi' })}</h2>
+          <p>{t('warranty.openRequests', { count: openCount, defaultValue: '{{count}} yêu cầu đang xử lý' })}</p>
         </div>
         <button type="button" className="admin-icon-button" onClick={handleRefresh} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-          <span>Tải lại</span>
+          <span>{t('warranty.reload', { defaultValue: 'Tải lại' })}</span>
         </button>
       </div>
 
@@ -95,15 +97,15 @@ function WarrantyView({ onSetNotice, token }) {
       <div className="warranty-filter-row">
         <ShieldCheck size={18} strokeWidth={2} aria-hidden="true" />
         <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-          <option value="">Tất cả trạng thái</option>
+          <option value="">{t('warranty.statusAll', { defaultValue: 'Tất cả trạng thái' })}</option>
           {Object.entries(WARRANTY_STATUS_LABELS).map(([value, label]) => (
-            <option value={value} key={value}>{label}</option>
+            <option value={value} key={value}>{t(`status.${value}`, { defaultValue: label })}</option>
           ))}
         </select>
-        <span>{filteredRequests.length} yêu cầu</span>
+        <span>{t('warranty.requestCount', { count: filteredRequests.length, defaultValue: '{{count}} yêu cầu' })}</span>
       </div>
 
-      {loading && <p className="warranty-muted">Đang tải yêu cầu bảo hành...</p>}
+      {loading && <p className="warranty-muted">{t('warranty.loading', { defaultValue: 'Đang tải yêu cầu bảo hành...' })}</p>}
 
       <div className="warranty-list">
         {filteredRequests.map((request) => (
@@ -114,26 +116,26 @@ function WarrantyView({ onSetNotice, token }) {
                 <span>{request.serviceName}</span>
               </div>
               <span className={statusClass(request.status)}>
-                {WARRANTY_STATUS_LABELS[request.status] || request.status}
+                {t(`status.${request.status}`, { defaultValue: WARRANTY_STATUS_LABELS[request.status] || request.status })}
               </span>
             </div>
             <dl className="warranty-meta">
-              <div><dt>Ngày gửi</dt><dd>{formatDate(request.createdAt)}</dd></div>
-              <div><dt>Cập nhật</dt><dd>{formatDate(request.updatedAt || request.resolvedAt)}</dd></div>
+              <div><dt>{t('warranty.sentDate', { defaultValue: 'Ngày gửi' })}</dt><dd>{formatDate(request.createdAt)}</dd></div>
+              <div><dt>{t('warranty.updatedDate', { defaultValue: 'Cập nhật' })}</dt><dd>{formatDate(request.updatedAt || request.resolvedAt)}</dd></div>
               {request.originalCredentialId && (
-                <div><dt>Credential gốc</dt><dd>#{request.originalCredentialId}</dd></div>
+                <div><dt>{t('warranty.originalCredential', { defaultValue: 'Credential gốc' })}</dt><dd>#{request.originalCredentialId}</dd></div>
               )}
               {request.replacementCredentialId && (
-                <div><dt>Credential mới</dt><dd>#{request.replacementCredentialId}</dd></div>
+                <div><dt>{t('warranty.replacementCredential', { defaultValue: 'Credential mới' })}</dt><dd>#{request.replacementCredentialId}</dd></div>
               )}
             </dl>
             <div className="warranty-copy">
-              <strong>Lý do</strong>
+              <strong>{t('warranty.reason', { defaultValue: 'Lý do' })}</strong>
               <p>{request.reason || '-'}</p>
             </div>
             {request.adminNote && (
               <div className="warranty-copy">
-                <strong>Phản hồi admin</strong>
+                <strong>{t('warranty.adminResponse', { defaultValue: 'Phản hồi admin' })}</strong>
                 <p>{request.adminNote}</p>
               </div>
             )}
@@ -152,8 +154,8 @@ function WarrantyView({ onSetNotice, token }) {
       {!loading && filteredRequests.length === 0 && (
         <div className="warranty-empty">
           <ShieldCheck size={28} strokeWidth={2} aria-hidden="true" />
-          <strong>Chưa có yêu cầu bảo hành</strong>
-          <span>Yêu cầu bảo hành được tạo từ chi tiết đơn hàng đã hoàn thành.</span>
+          <strong>{t('warranty.noWarranties', { defaultValue: 'Chưa có yêu cầu bảo hành' })}</strong>
+          <span>{t('warranty.warrantyInstruction', { defaultValue: 'Yêu cầu bảo hành được tạo từ chi tiết đơn hàng đã hoàn thành.' })}</span>
         </div>
       )}
     </section>

@@ -1,6 +1,7 @@
 import { RefreshCw, Plus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { normalizePaged } from '../../../utils/pagination'
 import { parseMoneyInput } from '../../../utils/moneyInput'
@@ -220,6 +221,7 @@ function AdminServicesView({
   token,
 }) {
   const location = useLocation()
+  const { t } = useTranslation()
   const [categories, setCategories] = useState([])
   const [categoryForm, setCategoryForm] = useState(emptyCategoryForm)
   const [error, setError] = useState('')
@@ -241,6 +243,7 @@ function AdminServicesView({
   const [services, setServices] = useState([])
   const [statusFilter, setStatusFilter] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   // Layout & Navigation States
   const [activeTab, setActiveTab] = useState('services')
@@ -264,7 +267,7 @@ function AdminServicesView({
     try {
       setCategories(await adminApi.getServiceCategories(token))
     } catch (err) {
-      setViewError(err.message || 'Không tải được nhóm dịch vụ.')
+      setViewError(err.message || t('admin.services.loadCategoriesError'))
     }
   }, [setViewError, token])
 
@@ -284,7 +287,7 @@ function AdminServicesView({
       setCurrentPage(targetPage)
       setSelectedServiceId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
     } catch (err) {
-      setViewError(err.message || 'Không tải được dịch vụ.')
+      setViewError(err.message || t('admin.services.loadServicesError'))
     } finally {
       setLoading(false)
     }
@@ -480,9 +483,9 @@ function AdminServicesView({
       setCategoryForm(emptyCategoryForm)
       setActiveEditor(null)
       await reloadAll()
-      onSetNotice(`Đã lưu nhóm ${saved.name}.`)
+      onSetNotice(t('admin.services.categorySaveSuccess', { name: saved.name }))
     } catch (err) {
-      setViewError(err.message || 'Không lưu được nhóm dịch vụ.')
+      setViewError(err.message || t('admin.services.categorySaveError'))
     } finally {
       setSubmitting(false)
     }
@@ -502,9 +505,9 @@ function AdminServicesView({
       setCategoryForm(emptyCategoryForm)
       setActiveEditor(null)
       await loadServices()
-      onSetNotice('Đã xóa nhóm dịch vụ.')
+      onSetNotice(t('admin.services.categoryDeleteSuccess'))
     } catch (err) {
-      setViewError(err.message || 'Không xóa được nhóm dịch vụ.')
+      setViewError(err.message || t('admin.services.categoryDeleteError'))
     } finally {
       setSubmitting(false)
     }
@@ -530,17 +533,34 @@ function AdminServicesView({
       if (!isEditing) {
         setServiceCredentials([])
       }
-      onSetNotice(`Đã lưu dịch vụ ${saved.name}.`)
+      onSetNotice(t('admin.services.serviceSaveSuccess', { name: saved.name }))
     } catch (err) {
-      setViewError(err.message || 'Không lưu được dịch vụ.')
+      setViewError(err.message || t('admin.services.serviceSaveError'))
     } finally {
       setSubmitting(false)
     }
   }
 
+  const uploadServiceImage = async (file) => {
+    if (!file) {
+      return
+    }
+    setUploadingImage(true)
+    setViewError('')
+    try {
+      const uploaded = await adminApi.uploadServiceImage(file, token)
+      updateServiceForm('iconUrl', uploaded.url)
+      onSetNotice('Đã tải ảnh dịch vụ lên Cloudinary.')
+    } catch (err) {
+      setViewError(err.message || 'Không thể tải ảnh dịch vụ lên Cloudinary.')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   const bulkStatus = async (enabled) => {
     if (selectedIds.length === 0) {
-      setViewError('Chọn ít nhất một dịch vụ để bulk update.')
+      setViewError(t('admin.services.bulkSelectError'))
       return
     }
 
@@ -551,9 +571,9 @@ function AdminServicesView({
       await (enabled ? adminApi.bulkEnableServices(payload, token) : adminApi.bulkDisableServices(payload, token))
       setSelectedIds([])
       await loadServices()
-      onSetNotice(`Đã ${enabled ? 'bật' : 'tắt'} ${selectedIds.length} dịch vụ.`)
+      onSetNotice(t('admin.services.bulkUpdateSuccess', { action: enabled ? t('admin.services.enabled') : t('admin.services.disabled'), count: selectedIds.length }))
     } catch (err) {
-      setViewError(err.message || 'Không bulk update được dịch vụ.')
+      setViewError(err.message || t('admin.services.bulkUpdateError'))
     } finally {
       setSubmitting(false)
     }
@@ -570,9 +590,9 @@ function AdminServicesView({
       const saved = await adminApi.deleteService(selectedServiceId, token)
       setServices((items) => items.map((item) => (item.id === saved.id ? saved : item)))
       setServiceForm(serviceToForm(saved))
-      onSetNotice(`Đã xóa/ẩn dịch vụ ${saved.name}.`)
+      onSetNotice(t('admin.services.serviceDeleteSuccess', { name: saved.name }))
     } catch (err) {
-      setViewError(err.message || 'Không xóa được dịch vụ.')
+      setViewError(err.message || t('admin.services.serviceDeleteError'))
     } finally {
       setSubmitting(false)
     }
@@ -580,11 +600,11 @@ function AdminServicesView({
 
   const createCredential = async () => {
     if (!selectedServiceId) {
-      setViewError('Lưu sản phẩm trước khi nhập kho tài khoản.')
+      setViewError(t('admin.services.credentialSaveServiceRequired'))
       return
     }
     if (!credentialForm.loginIdentifier.trim() || (!editingCredentialId && !credentialForm.passwordSecret.trim())) {
-      setViewError('Nhập đủ tài khoản/email và mật khẩu.')
+      setViewError(t('admin.services.credentialFieldsRequired'))
       return
     }
 
@@ -602,9 +622,9 @@ function AdminServicesView({
       setEditingCredentialId(null)
       setCredentialForm(emptyCredentialForm)
       await loadServices()
-      onSetNotice(editingCredentialId ? `Đã cập nhật tài khoản ${saved.loginIdentifier}.` : `Đã nhập kho tài khoản ${saved.loginIdentifier}.`)
+      onSetNotice(t('admin.services.credentialSaveSuccess', { identifier: saved.loginIdentifier }))
     } catch (err) {
-      setViewError(err.message || 'Không lưu được tài khoản trong kho.')
+      setViewError(err.message || t('admin.services.credentialSaveError'))
     } finally {
       setSubmitting(false)
     }
@@ -622,7 +642,7 @@ function AdminServicesView({
 
   const bulkImportCredentials = async (csvContent) => {
     if (!selectedServiceId) {
-      throw new Error('Lưu sản phẩm trước khi import kho tài khoản.')
+      throw new Error(t('admin.services.credentialImportServiceRequired'))
     }
     const result = await adminApi.bulkImportServiceCredentials(
       selectedServiceId,
@@ -631,7 +651,7 @@ function AdminServicesView({
     )
     await loadServiceCredentials(selectedServiceId, credentialFilters)
     await loadServices()
-    onSetNotice(`Đã import ${result.created || 0} tài khoản, bỏ qua ${result.skipped || 0}.`)
+    onSetNotice(t('admin.services.credentialImportSuccess', { created: result.created || 0, skipped: result.skipped || 0 }))
     return result
   }
 
@@ -644,7 +664,7 @@ function AdminServicesView({
     try {
       await loadServiceCredentials(selectedServiceId, credentialFilters)
     } catch (err) {
-      setViewError(err.message || 'Không lọc được kho tài khoản.')
+      setViewError(err.message || t('admin.services.credentialFilterError'))
     } finally {
       setSubmitting(false)
     }
@@ -660,7 +680,7 @@ function AdminServicesView({
     try {
       await loadServiceCredentials(selectedServiceId, emptyCredentialFilters)
     } catch (err) {
-      setViewError(err.message || 'Không tải lại được kho tài khoản.')
+      setViewError(err.message || t('admin.services.credentialResetError'))
     } finally {
       setSubmitting(false)
     }
@@ -673,9 +693,9 @@ function AdminServicesView({
       const saved = await adminApi.disableServiceCredential(credential.id, token)
       setServiceCredentials((items) => items.map((item) => (item.id === saved.id ? saved : item)))
       await loadServices()
-      onSetNotice(`Đã khóa tài khoản ${saved.loginIdentifier}.`)
+      onSetNotice(t('admin.services.credentialDisableSuccess', { identifier: saved.loginIdentifier }))
     } catch (err) {
-      setViewError(err.message || 'Không khóa được tài khoản trong kho.')
+      setViewError(err.message || t('admin.services.credentialDisableError'))
     } finally {
       setSubmitting(false)
     }
@@ -687,9 +707,9 @@ function AdminServicesView({
     try {
       const revealed = await adminApi.revealServiceCredential(credential.id, token)
       setRevealedCredentials((items) => ({ ...items, [credential.id]: revealed }))
-      onSetNotice(`Đã hiển thị thông tin tài khoản ${revealed.loginIdentifier}.`)
+      onSetNotice(t('admin.services.credentialRevealSuccess', { identifier: revealed.loginIdentifier }))
     } catch (err) {
-      setViewError(err.message || 'Không hiển thị được thông tin tài khoản.')
+      setViewError(err.message || t('admin.services.credentialRevealError'))
     } finally {
       setSubmitting(false)
     }
@@ -720,9 +740,9 @@ function AdminServicesView({
       if (selectedServiceId === serviceId) {
         setServiceForm(serviceToForm(saved))
       }
-      onSetNotice(`Đã cập nhật dịch vụ ${saved.name}.`)
+      onSetNotice(t('admin.services.quickUpdateSuccess', { name: saved.name }))
     } catch (err) {
-      setViewError(err.message || 'Không cập nhật nhanh được dịch vụ.')
+      setViewError(err.message || t('admin.services.quickUpdateError'))
     } finally {
       setSubmitting(false)
     }
@@ -737,9 +757,9 @@ function AdminServicesView({
       if (selectedServiceId === serviceId) {
         setServiceForm(serviceToForm(saved))
       }
-      onSetNotice(`Đã ẩn/xóa dịch vụ ${saved.name}.`)
+      onSetNotice(t('admin.services.quickDeleteSuccess', { name: saved.name }))
     } catch (err) {
-      setViewError(err.message || 'Không xóa nhanh được dịch vụ.')
+      setViewError(err.message || t('admin.services.quickDeleteError'))
     } finally {
       setSubmitting(false)
     }
@@ -757,9 +777,9 @@ function AdminServicesView({
         setActiveEditor(null)
       }
       await loadServices()
-      onSetNotice('Đã xóa danh mục.')
+      onSetNotice(t('admin.services.quickCategoryDeleteSuccess'))
     } catch (err) {
-      setViewError(err.message || 'Không xóa nhanh được danh mục.')
+      setViewError(err.message || t('admin.services.quickCategoryDeleteError'))
     } finally {
       setSubmitting(false)
     }
@@ -769,12 +789,12 @@ function AdminServicesView({
     <section className="admin-view">
       <div className="admin-toolbar">
         <div>
-          <h2>Quản lý dịch vụ & danh mục</h2>
+          <h2>{t('admin.services.title')}</h2>
         </div>
         <div className="admin-toolbar-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center', position: 'relative' }}>
           <button type="button" className="admin-icon-button" onClick={reloadAll} disabled={loading}>
             <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
-            <span>Tải lại</span>
+            <span>{t('admin.services.reload')}</span>
           </button>
 
           <div className="admin-create-dropdown-container">
@@ -787,7 +807,7 @@ function AdminServicesView({
               }}
             >
               <Plus size={18} strokeWidth={2} />
-              <span>Tạo mới</span>
+              <span>{t('admin.services.createNew')}</span>
             </button>
             {showCreateDropdown && (
               <div className="admin-dropdown-menu">
@@ -798,7 +818,7 @@ function AdminServicesView({
                     setShowCreateDropdown(false)
                   }}
                 >
-                  Dịch vụ thường
+                  {t('admin.services.dropdown.manualService')}
                 </button>
                 <button
                   type="button"
@@ -807,7 +827,7 @@ function AdminServicesView({
                     setShowCreateDropdown(false)
                   }}
                 >
-                  Sản phẩm giao tài khoản
+                  {t('admin.services.dropdown.accountStock')}
                 </button>
                 <button
                   type="button"
@@ -816,7 +836,7 @@ function AdminServicesView({
                     setShowCreateDropdown(false)
                   }}
                 >
-                  Danh mục mới
+                  {t('admin.services.dropdown.newCategory')}
                 </button>
               </div>
             )}
@@ -825,27 +845,27 @@ function AdminServicesView({
       </div>
 
       {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message="Đang tải dữ liệu admin..." subMessage="" />}
+      {!error && loading && <Loading fullScreen={false} message={t('admin.services.loading')} subMessage="" />}
 
-      <div className="admin-services-summary" aria-label="Tổng quan dịch vụ">
+      <div className="admin-services-summary" aria-label={t('admin.services.title')}>
         <div>
-          <span>Danh mục</span>
+          <span>{t('admin.services.summary.categories')}</span>
           <strong>{categories.length}</strong>
         </div>
         <div>
-          <span>Sản phẩm</span>
+          <span>{t('admin.services.summary.products')}</span>
           <strong>{services.length}</strong>
         </div>
         <div>
-          <span>Đang bán</span>
+          <span>{t('admin.services.summary.active')}</span>
           <strong>{activeServices}</strong>
         </div>
         <div>
-          <span>Public</span>
+          <span>{t('admin.services.summary.public')}</span>
           <strong>{visibleServices}</strong>
         </div>
         <div>
-          <span>Chưa phân nhóm</span>
+          <span>{t('admin.services.summary.ungrouped')}</span>
           <strong>{ungroupedServices}</strong>
         </div>
       </div>
@@ -898,6 +918,7 @@ function AdminServicesView({
           onUpdateCredentialForm={updateCredentialForm}
           onUpdateCredentialFilter={updateCredentialFilter}
           onUpdateServiceForm={updateServiceForm}
+          onUploadServiceImage={uploadServiceImage}
           credentialForm={credentialForm}
           selectedServiceCategories={selectedServiceCategories}
           selectedServiceId={selectedServiceId}
@@ -906,6 +927,7 @@ function AdminServicesView({
           serviceForm={serviceForm}
           serviceOrders={serviceOrders}
           submitting={submitting}
+          uploadingImage={uploadingImage}
           onClose={handleCloseEditor}
         />
       </Modal>
