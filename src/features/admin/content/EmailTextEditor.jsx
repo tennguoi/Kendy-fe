@@ -4,6 +4,7 @@ import {
   EMAIL_TEMPLATE_DEFINITIONS,
   renderEmailPreview,
 } from './emailTemplates'
+import RichEditor from '../../../components/RichEditor/RichEditor'
 
 function EmailTextEditor({
   activeSlug,
@@ -56,12 +57,7 @@ function EmailTextEditor({
 
       <label>
         <span>{t('admin.content.email.introLabel')}</span>
-        <textarea
-          value={draft.intro}
-          onChange={(event) => onChange({ intro: event.target.value })}
-          rows={4}
-          required
-        />
+        <RichEditor value={draft.intro} onChange={(value) => onChange({ intro: value })} minHeight={150} />
       </label>
 
       {definition.type === 'link' ? (
@@ -95,20 +91,12 @@ function EmailTextEditor({
 
       <label>
         <span>{t('admin.content.email.securityNoteLabel')}</span>
-        <textarea
-          value={draft.securityNote}
-          onChange={(event) => onChange({ securityNote: event.target.value })}
-          rows={3}
-        />
+        <RichEditor value={draft.securityNote} onChange={(value) => onChange({ securityNote: value })} minHeight={120} />
       </label>
 
       <label>
         <span>{t('admin.content.email.footerLabel')}</span>
-        <textarea
-          value={draft.footer}
-          onChange={(event) => onChange({ footer: event.target.value })}
-          rows={2}
-        />
+        <RichEditor value={draft.footer} onChange={(value) => onChange({ footer: value })} minHeight={100} />
       </label>
 
       <div className="email-variable-note">

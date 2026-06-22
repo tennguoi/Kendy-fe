@@ -1,5 +1,6 @@
 import { Plus, Trash2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import RichEditor from '../../../../components/RichEditor/RichEditor'
 
 function CategoryEditor({
   categories = [],
@@ -130,11 +131,7 @@ function CategoryEditor({
           <div className="admin-form-grid service-form-grid">
             <label className="wide">
               <span>{t('admin.services.categoryEditor.field.description')}</span>
-              <textarea
-                value={categoryForm.description}
-                onChange={(event) => onCategoryFormChange('description', event.target.value)}
-                rows="4"
-              />
+              <RichEditor value={categoryForm.description} onChange={(value) => onCategoryFormChange('description', value)} minHeight={150} />
             </label>
           </div>
         </section>
@@ -187,12 +184,7 @@ function CategoryEditor({
             </label>
             <label className="wide">
               <span>{t('admin.services.categoryEditor.field.requirements')}</span>
-              <textarea
-                value={categoryForm.requirements || ''}
-                onChange={(event) => onCategoryFormChange('requirements', event.target.value)}
-                placeholder="Ví dụ:&#10;Email nhận gói&#10;Thiết bị đăng nhập ổn định"
-                rows="3"
-              />
+              <RichEditor value={categoryForm.requirements || ''} onChange={(value) => onCategoryFormChange('requirements', value)} minHeight={120} />
             </label>
           </div>
         </section>

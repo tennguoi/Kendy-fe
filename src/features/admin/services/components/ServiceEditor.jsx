@@ -6,6 +6,7 @@ import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { accessStrategies, accessStrategyLabels, getCtaTypeLabel, getCredentialStatusLabel, getServiceStatusLabel, getServiceTypeLabel, getStockStatusLabel, getOrderStatusLabel, ctaTypes, serviceStatuses, serviceTypes, stockStatuses } from '../services.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
+import RichEditor from '../../../../components/RichEditor/RichEditor'
 
 function ServiceEditor({
   categories = [],
@@ -365,23 +366,23 @@ function ServiceEditor({
             <div className="admin-form-grid service-form-grid">
               <label className="wide">
                 <span>{t('admin.services.editor.field.shortDescription')}</span>
-                <textarea value={serviceForm.shortDescription} onChange={(event) => onUpdateServiceForm('shortDescription', event.target.value)} rows="3" />
+                <RichEditor value={serviceForm.shortDescription} onChange={(value) => onUpdateServiceForm('shortDescription', value)} minHeight={120} />
               </label>
               <label className="wide">
                 <span>{t('admin.services.editor.field.description')}</span>
-                <textarea value={serviceForm.description} onChange={(event) => onUpdateServiceForm('description', event.target.value)} rows="6" />
+                <RichEditor value={serviceForm.description} onChange={(value) => onUpdateServiceForm('description', value)} minHeight={250} />
               </label>
               <label className="wide">
                 <span>{t('admin.services.editor.field.requirements')}</span>
-                <textarea value={serviceForm.requirements} onChange={(event) => onUpdateServiceForm('requirements', event.target.value)} rows="3" />
+                <RichEditor value={serviceForm.requirements} onChange={(value) => onUpdateServiceForm('requirements', value)} minHeight={120} />
               </label>
               <label className="wide">
                 <span>{t('admin.services.editor.field.benefits')}</span>
-                <textarea value={serviceForm.benefits} onChange={(event) => onUpdateServiceForm('benefits', event.target.value)} rows="3" />
+                <RichEditor value={serviceForm.benefits} onChange={(value) => onUpdateServiceForm('benefits', value)} minHeight={120} />
               </label>
               <label className="wide">
                 <span>{t('admin.services.editor.field.usageNotes')}</span>
-                <textarea value={serviceForm.usageNotes} onChange={(event) => onUpdateServiceForm('usageNotes', event.target.value)} rows="3" />
+                <RichEditor value={serviceForm.usageNotes} onChange={(value) => onUpdateServiceForm('usageNotes', value)} minHeight={120} />
               </label>
             </div>
           </section>

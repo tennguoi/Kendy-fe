@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import PromoBanner from '../../public/components/PromoBanner/PromoBanner'
 import EmailTextEditor from './EmailTextEditor'
+import RichEditor from '../../../components/RichEditor/RichEditor'
 import {
   buildEmailTemplateDrafts,
   EMAIL_TEMPLATE_DEFINITIONS,
@@ -348,11 +349,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               </div>
               <label>
                 <span>{t('admin.content.banner.description')}</span>
-                <textarea
-                  value={drafts.banner.description}
-                  onChange={(event) => updateDraft({ description: event.target.value })}
-                  rows={3}
-                />
+                <RichEditor value={drafts.banner.description} onChange={(value) => updateDraft({ description: value })} minHeight={120} />
               </label>
               <div className="admin-form-grid two-columns">
                 <label>
@@ -480,12 +477,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                     </label>
                     <label>
                       <span>{t('admin.content.faq.answerLabel')}</span>
-                      <textarea
-                        value={item.answer}
-                        onChange={(event) => updateFaqItem(item.id, { answer: event.target.value })}
-                        rows={3}
-                        required
-                      />
+                      <RichEditor value={item.answer} onChange={(value) => updateFaqItem(item.id, { answer: value })} minHeight={120} />
                     </label>
                   </article>
                 ))}
@@ -539,11 +531,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               </label>
               <label>
                 <span>{t('admin.content.brand.footerDesc')}</span>
-                <textarea
-                  value={drafts.brand.description}
-                  onChange={(event) => updateDraft({ description: event.target.value })}
-                  rows={3}
-                />
+                <RichEditor value={drafts.brand.description} onChange={(value) => updateDraft({ description: value })} minHeight={120} />
               </label>
               <div className="admin-form-grid two-columns">
                 <label>

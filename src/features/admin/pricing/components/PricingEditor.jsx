@@ -2,6 +2,7 @@ import { Save } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ctaTypes, stockStatuses } from '../../services/services.constants'
+import RichEditor from '../../../../components/RichEditor/RichEditor'
 
 function PricingEditor({
   form,
@@ -91,7 +92,7 @@ function PricingEditor({
               </label>
               <label>
                 <span>Chính sách bảo hành</span>
-                <textarea value={form.warrantyPolicy} onChange={(event) => onUpdateForm('warrantyPolicy', event.target.value)} rows="3" placeholder={t('admin.pricing.form.warrantyPlaceholder')} />
+                <RichEditor value={form.warrantyPolicy} onChange={(value) => onUpdateForm('warrantyPolicy', value)} minHeight={120} />
               </label>
             </div>
 
@@ -113,11 +114,11 @@ function PricingEditor({
             <div className="admin-form-grid single">
               <label>
                 <span>Điều kiện chuẩn bị / Cần có</span>
-                <textarea value={form.requirements} onChange={(event) => onUpdateForm('requirements', event.target.value)} rows="4" placeholder={t('admin.pricing.form.requirementsPlaceholder')} />
+                <RichEditor value={form.requirements} onChange={(value) => onUpdateForm('requirements', value)} minHeight={150} />
               </label>
               <label>
                 <span>{t('admin.pricing.form.usageNotesHeading')}</span>
-                <textarea value={form.usageNotes} onChange={(event) => onUpdateForm('usageNotes', event.target.value)} rows="4" placeholder={t('admin.pricing.form.usageNotesPlaceholder')} />
+                <RichEditor value={form.usageNotes} onChange={(value) => onUpdateForm('usageNotes', value)} minHeight={150} />
               </label>
             </div>
           </section>
