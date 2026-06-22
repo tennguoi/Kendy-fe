@@ -1,5 +1,6 @@
-import { Clock3, Star } from 'lucide-react'
+import { Clock3, Eye, Star } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { money } from '../../../../utils/currency'
 import { getServiceTypeLabel } from '../services.constants'
@@ -11,6 +12,7 @@ function ServiceCatalogCard({
   onToggleFavorite,
   service,
 }) {
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const isDisabled = service.status !== 'ACTIVE' || isServiceOutOfStock(service)
   const outOfStock = isServiceOutOfStock(service)
@@ -19,9 +21,6 @@ function ServiceCatalogCard({
     const keyMap = {
       ACCOUNT_STOCK: 'services.typeAccountStock',
       MANUAL: 'services.typeManual',
-      AUTO: 'services.typeAuto',
-      SUBSCRIPTION: 'services.typeSubscription',
-      API_CREDIT: 'services.typeApiCredit'
     }
     return keyMap[type] ? t(keyMap[type]) : getServiceTypeLabel(type)
   }
@@ -57,6 +56,15 @@ function ServiceCatalogCard({
       <div className="service-actions">
         <button type="button" disabled={isDisabled} onClick={() => onPurchase(service)}>
           {actionLabel}
+        </button>
+        <button
+          type="button"
+          className="admin-icon-button"
+          onClick={() => navigate(`/services/${service.slug || service.id || encodeURIComponent(service.name)}`)}
+          title={t('common.viewDetail', { defaultValue: 'Xem chi tiết' })}
+          style={{ height: '34px', minHeight: '34px', width: '34px' }}
+        >
+          <Eye size={16} strokeWidth={2} />
         </button>
         <button
           type="button"

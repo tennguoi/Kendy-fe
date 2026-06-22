@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
-import { getCtaTypeLabel, getCredentialStatusLabel, getServiceStatusLabel, getServiceTypeLabel, getStockStatusLabel, getOrderStatusLabel, ctaTypes, serviceStatuses, serviceTypes, stockStatuses } from '../services.constants'
+import { accessStrategies, accessStrategyLabels, getCtaTypeLabel, getCredentialStatusLabel, getServiceStatusLabel, getServiceTypeLabel, getStockStatusLabel, getOrderStatusLabel, ctaTypes, serviceStatuses, serviceTypes, stockStatuses } from '../services.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
 
 function ServiceEditor({
@@ -158,6 +158,7 @@ function ServiceEditor({
               setActiveTab('basic')
             }
             onUpdateServiceForm('type', nextType)
+            onUpdateServiceForm('accessStrategy', nextType === 'ACCOUNT_STOCK' ? 'DEDICATED_ACCOUNT' : 'MANUAL')
           }}
           aria-label={t('admin.services.editor.selectMode')}
         >
@@ -235,6 +236,30 @@ function ServiceEditor({
                 <select value={serviceForm.ctaType} onChange={(event) => onUpdateServiceForm('ctaType', event.target.value)}>
                   {ctaTypes.map((type) => <option value={type} key={type}>{getCtaTypeLabel(type)}</option>)}
                 </select>
+              </label>
+              <label>
+                <span>Cách cấp quyền</span>
+                <select
+                  value={serviceForm.accessStrategy}
+                  onChange={(event) => onUpdateServiceForm('accessStrategy', event.target.value)}
+                  disabled={isAccountStock}
+                >
+                  {accessStrategies
+                    .filter((strategy) => !isAccountStock || strategy === 'DEDICATED_ACCOUNT')
+                    .map((strategy) => (
+                      <option value={strategy} key={strategy}>{accessStrategyLabels[strategy]}</option>
+                    ))}
+                </select>
+              </label>
+              <label>
+                <span>Thời hạn truy cập (ngày)</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={serviceForm.accessDurationDays}
+                  onChange={(event) => onUpdateServiceForm('accessDurationDays', event.target.value)}
+                  placeholder="30"
+                />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.sortOrder')}</span>

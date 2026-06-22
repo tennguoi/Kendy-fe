@@ -1,5 +1,6 @@
-import { Ban, CircleCheck, CircleX, Download, RefreshCw, RotateCcw, Save, UserCheck, ListTodo } from 'lucide-react'
+import { Ban, CircleCheck, CircleX, Download, MoreHorizontal, RefreshCw, RotateCcw, Save, UserCheck, ListTodo } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { safeOrderBlock } from '../orders.utils'
@@ -20,13 +21,15 @@ function OrderDetailPanel({
   selectedOrder,
   submitting,
 }) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('info') // 'info' | 'process' | 'notes' | 'bulk' | 'manual'
+  const [showActions, setShowActions] = useState(false)
   const isManualOrder = selectedOrder?.serviceType === 'MANUAL'
 
   if (!selectedOrder) {
     return (
       <aside className="admin-panel admin-detail-panel">
-        <AdminEmptyState message="Chọn một đơn để xem chi tiết." />
+        <AdminEmptyState message={t('admin.orders.detail.empty')} />
       </aside>
     )
   }
@@ -41,7 +44,7 @@ function OrderDetailPanel({
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button type="button" className="admin-icon-button" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }} onClick={() => printOrderInvoice(selectedOrder)}>
             <Download size={16} />
-            <span>Hóa đơn</span>
+            <span>{t('admin.orders.invoice')}</span>
           </button>
           <AdminStatusBadge status={selectedOrder.status} />
         </div>
@@ -173,31 +176,38 @@ function OrderDetailPanel({
                 placeholder="60"
               />
             </label>
-            <div className="admin-action-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              <button type="button" className="admin-icon-button" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }} disabled={submitting || !activeOrder} onClick={() => onRunOrderAction('complete')}>
-                <CircleCheck size={16} />
-                <span>Hoàn thành</span>
+            <div className="admin-action-row" style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="admin-row-menu-button"
+                aria-expanded={showActions}
+                aria-label="Order actions"
+                onClick={(e) => { e.stopPropagation(); setShowActions((v) => !v) }}
+              >
+                <MoreHorizontal size={18} />
               </button>
-              <button type="button" className="admin-icon-button" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }} disabled={submitting || !activeOrder} onClick={() => onRunOrderAction('fail')}>
-                <CircleX size={16} />
-                <span>Báo lỗi</span>
-              </button>
-              <button type="button" className="admin-danger-button slim" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }} disabled={submitting || !activeOrder} onClick={() => onRunOrderAction('cancel')}>
-                <Ban size={16} />
-                <span>Hủy & hoàn</span>
-              </button>
-              <button type="button" className="admin-danger-button slim" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }} disabled={submitting || !refundableOrder} onClick={() => onRunOrderAction('refund')}>
-                <RotateCcw size={16} />
-                <span>Refund</span>
-              </button>
-              <button type="button" className="admin-icon-button" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }} disabled={submitting || !activeOrder} onClick={() => onRunOrderAction('extend')}>
-                <RefreshCw size={16} />
-                <span>Gia hạn</span>
-              </button>
-              <button type="button" className="admin-icon-button" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }} disabled={submitting || selectedOrder.status === 'REFUNDED'} onClick={() => onRunOrderAction('reprocess')}>
-                <RotateCcw size={16} />
-                <span>Chạy lại</span>
-              </button>
+              {showActions && (
+                <span className="admin-row-toolbar" style={{ position: 'absolute', top: '100%', right: 0, transform: 'none', zIndex: 10 }}>
+                  <button type="button" disabled={submitting || !activeOrder} onClick={() => { onRunOrderAction('complete'); setShowActions(false) }}>
+                    <CircleCheck size={15} /> {t('admin.orders.detail.actionComplete')}
+                  </button>
+                  <button type="button" disabled={submitting || !activeOrder} onClick={() => { onRunOrderAction('fail'); setShowActions(false) }}>
+                    <CircleX size={15} /> {t('admin.orders.detail.actionFail')}
+                  </button>
+                  <button type="button" className="danger" disabled={submitting || !activeOrder} onClick={() => { onRunOrderAction('cancel'); setShowActions(false) }}>
+                    <Ban size={15} /> {t('admin.orders.detail.actionCancel')}
+                  </button>
+                  <button type="button" className="danger" disabled={submitting || !refundableOrder} onClick={() => { onRunOrderAction('refund'); setShowActions(false) }}>
+                    <RotateCcw size={15} /> {t('admin.orders.detail.actionRefund')}
+                  </button>
+                  <button type="button" disabled={submitting || !activeOrder} onClick={() => { onRunOrderAction('extend'); setShowActions(false) }}>
+                    <RefreshCw size={15} /> {t('admin.orders.detail.actionExtend')}
+                  </button>
+                  <button type="button" disabled={submitting || selectedOrder.status === 'REFUNDED'} onClick={() => { onRunOrderAction('reprocess'); setShowActions(false) }}>
+                    <RotateCcw size={15} /> {t('admin.orders.detail.actionReprocess')}
+                  </button>
+                </span>
+              )}
             </div>
           </form>
         )}

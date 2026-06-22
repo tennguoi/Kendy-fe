@@ -13,6 +13,18 @@
   min-width: 0;
 }
 
+.order-history-heading h2,
+.order-history-heading p {
+  margin: 0;
+}
+
+.order-history-heading p {
+  margin-top: 4px;
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .warranty-workspace {
   display: grid;
   gap: 16px;
@@ -298,27 +310,6 @@
   }
 }
 
-.order-detail-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(15, 23, 42, 0.55);
-}
-
-.order-detail-modal {
-  width: min(760px, 100%);
-  max-height: min(860px, calc(100vh - 48px));
-  overflow: auto;
-  border: 1px solid var(--kd-border);
-  border-radius: 16px;
-  background: var(--kd-card);
-  box-shadow: var(--kd-shadow);
-}
-
-.order-detail-head,
 .invoice-preview-top {
   display: flex;
   align-items: center;
@@ -326,16 +317,6 @@
   gap: 16px;
 }
 
-.order-detail-head {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  padding: 18px 20px;
-  border-bottom: 1px solid var(--kd-border);
-  background: var(--kd-card);
-}
-
-.order-detail-head span,
 .invoice-preview-card span,
 .order-detail-list dt {
   color: var(--kd-muted);
@@ -343,32 +324,15 @@
   font-weight: 800;
 }
 
-.order-detail-head h2 {
-  margin: 3px 0 0;
-  color: var(--kd-text);
-  font-size: 24px;
-}
-
-.order-detail-head button {
-  width: 38px;
-  height: 38px;
-  border: 1px solid var(--kd-border);
-  border-radius: 10px;
-  background: var(--kd-soft);
-  color: var(--kd-muted);
-  cursor: pointer;
-}
-
 .order-detail-loading {
   margin: 0;
-  padding: 24px 20px;
   color: var(--kd-muted);
 }
 
 .invoice-preview-card,
 .order-detail-list,
 .order-detail-block {
-  margin: 16px 20px;
+  margin: 16px 0;
 }
 
 .invoice-preview-card {
@@ -464,11 +428,24 @@
   font: inherit;
 }
 
-@media (max-width: 700px) {
-  .order-detail-layer {
-    padding: 12px;
-  }
+html.dark .invoice-preview-card {
+  border-color: rgba(96, 165, 250, 0.34);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(14, 165, 233, 0.1));
+}
 
+html.dark .invoice-preview-grid div,
+html.dark .order-detail-list div {
+  border-color: var(--kd-border);
+  background: var(--kd-bg);
+}
+
+html.dark .order-detail-block textarea {
+  border-color: var(--kd-border) !important;
+  color: var(--kd-text);
+  background: var(--kd-bg);
+}
+
+@media (max-width: 700px) {
   .invoice-preview-grid,
   .order-detail-list,
   .warranty-meta {
@@ -660,6 +637,95 @@ html.dark .settings-card-header {
   height: 96px;
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.settings-avatar-upload {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 2px solid var(--kd-card);
+  border-radius: 50%;
+  color: #fff;
+  background: var(--kd-blue);
+  cursor: pointer;
+}
+
+.invoice-preview-top button span {
+  color: inherit;
+}
+
+.settings-avatar-upload input,
+.settings-avatar-file-button input {
+  display: none;
+}
+
+.settings-avatar-file-button {
+  display: inline-flex !important;
+  width: fit-content;
+  min-height: 40px;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  color: var(--kd-text);
+  background: var(--kd-bg);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.settings-input-group small {
+  color: var(--kd-muted);
+  font-size: 12px;
+}
+
+.settings-preferences-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.settings-preference-item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  background: var(--kd-bg);
+}
+
+.settings-preference-item strong,
+.settings-preference-item span {
+  display: block;
+}
+
+.settings-preference-item span {
+  margin-top: 3px;
+  color: var(--kd-muted);
+  font-size: 12px;
+}
+
+.settings-card .admin-report-grid.compact-report {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-card .admin-report-grid.compact-report > div {
+  overflow: hidden;
+}
+
+.settings-card .admin-report-grid.compact-report strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: clamp(17px, 2vw, 22px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .settings-profile-avatar {
@@ -1157,6 +1223,15 @@ html.dark .totp-qr-container {
 
   .settings-card-body {
     padding: 18px 20px;
+  }
+
+  .settings-card .admin-report-grid.compact-report {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-preference-item {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .session-item,

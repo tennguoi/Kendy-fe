@@ -29,9 +29,6 @@ function CatalogControls({
     const keyMap = {
       ACCOUNT_STOCK: 'services.typeAccountStock',
       MANUAL: 'services.typeManual',
-      AUTO: 'services.typeAuto',
-      SUBSCRIPTION: 'services.typeSubscription',
-      API_CREDIT: 'services.typeApiCredit'
     }
     return keyMap[type] ? t(keyMap[type]) : getServiceTypeLabel(type)
   }

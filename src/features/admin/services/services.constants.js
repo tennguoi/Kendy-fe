@@ -1,10 +1,16 @@
-export const serviceTypes = ['ACCOUNT_STOCK', 'MANUAL', 'AUTO', 'SUBSCRIPTION', 'API_CREDIT']
+export const serviceTypes = ['ACCOUNT_STOCK', 'MANUAL']
 export const serviceTypeLabels = {
   ACCOUNT_STOCK: 'Kho tài khoản (giao tự động)',
-  MANUAL: 'Dịch vụ thủ công',
-  AUTO: 'Tự động',
-  SUBSCRIPTION: 'Đăng ký (Gia hạn)',
-  API_CREDIT: 'Tài nguyên API'
+  MANUAL: 'Dịch vụ thủ công'
+}
+
+export const accessStrategies = ['DEDICATED_ACCOUNT', 'TEAM_INVITE', 'PROVIDER_API', 'INTERNAL_ACCESS', 'MANUAL']
+export const accessStrategyLabels = {
+  DEDICATED_ACCOUNT: 'Tài khoản riêng (legacy)',
+  TEAM_INVITE: 'Mời thành viên / Team seat',
+  PROVIDER_API: 'Tạo tài nguyên qua API',
+  INTERNAL_ACCESS: 'Quyền dùng trên KendyDigital',
+  MANUAL: 'Admin cấp quyền thủ công'
 }
 
 export const serviceStatuses = ['DRAFT', 'ACTIVE', 'INACTIVE', 'MAINTENANCE']

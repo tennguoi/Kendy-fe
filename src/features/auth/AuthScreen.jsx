@@ -24,6 +24,7 @@ import { useTheme } from '../../contexts/ThemeContext'
 import { toApiUrl } from '../../lib/api'
 import { authApi } from '../../api/auth.api'
 import LanguageSwitcher from '../../components/LanguageSwitcher/LanguageSwitcher'
+import { usePublicSiteSettings } from '../public/hooks/usePublicSiteSettings'
 import './AuthScreen.css'
 
 const defaultOAuthProviders = [
@@ -64,6 +65,10 @@ function GithubIcon() {
 
 function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
   const { t } = useTranslation()
+  const { settings: siteSettings } = usePublicSiteSettings()
+  const brand = siteSettings.brand
+  const brandName = brand.name || 'Kendy Digital'
+  const brandLogo = brand.logoUrl || heroImg
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({
     name: '',
@@ -314,14 +319,14 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
   return (
     <section className="auth-screen">
-      <aside className="auth-brand-panel" aria-label="Kendy Digital">
+      <aside className="auth-brand-panel" aria-label={brandName}>
         <div className="pixel-layer" aria-hidden="true" />
         <div className="auth-brand-content">
           <div className="auth-logo-lockup">
-            <img src={heroImg} alt="Kendy Digital" />
+            <img src={brandLogo} alt={brandName} />
             <div>
-              <strong>{t('auth.heroTitle')}</strong>
-              <span>{t('auth.heroSubtitle')}</span>
+              <strong>{brandName}</strong>
+              <span>{brand.tagline || t('auth.heroSubtitle')}</span>
             </div>
           </div>
 
@@ -330,8 +335,8 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
               <CheckCircle2 size={18} strokeWidth={2} aria-hidden="true" />
               {t('auth.heroKicker')}
             </span>
-            <h1>{t('auth.heroTitle')}</h1>
-            <p>{t('auth.heroDescription')}</p>
+            <h1>{brandName}</h1>
+            <p>{brand.description || t('auth.heroDescription')}</p>
           </div>
 
           <div className="auth-highlight-list">
@@ -385,7 +390,9 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
                   : isVerify ? t('auth.verifyTitle')
                   : isForgot ? t('auth.forgotTitle')
                   : isReset ? t('auth.resetTitle')
-                  : isRegister ? t('auth.registerTitle') : t('auth.loginTitle')}
+                  : isRegister
+                    ? t('auth.registerTitle').replace('Kendy Digital', brandName)
+                    : t('auth.loginTitle').replace('Kendy Digital', brandName)}
               </h2>
             </div>
           </div>

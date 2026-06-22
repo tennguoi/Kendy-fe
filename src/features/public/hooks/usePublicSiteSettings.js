@@ -44,8 +44,15 @@ export function usePublicSiteSettings() {
 
   useEffect(() => {
     applySiteTheme(settings.theme)
+    document.title = settings.brand?.name || 'Kendy Digital'
     return resetSiteTheme
-  }, [settings.theme])
+  }, [settings.brand?.name, settings.theme])
+
+  useEffect(() => {
+    const handleSettingsUpdate = () => load()
+    window.addEventListener('kd-site-settings-updated', handleSettingsUpdate)
+    return () => window.removeEventListener('kd-site-settings-updated', handleSettingsUpdate)
+  }, [load])
 
   return { settings, loading, reload: load }
 }

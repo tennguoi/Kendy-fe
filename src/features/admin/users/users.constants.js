@@ -16,6 +16,7 @@ export const userDetailTabs = [
   { id: 'wallet', label: 'Ví' },
   { id: 'tickets', label: 'Ticket' },
   { id: 'sessions', label: 'Session' },
+  { id: 'api-keys', label: 'API Keys' },
   { id: 'audit', label: 'Audit' },
 ]
 

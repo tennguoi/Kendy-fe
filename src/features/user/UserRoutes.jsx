@@ -4,14 +4,17 @@ import { navItems } from './navigation'
 import DepositView from './deposit/DepositView'
 import OverviewView from './overview/OverviewView'
 import ServicesView from './services/ServicesView'
+import UserServiceDetail from './services/components/UserServiceDetail'
 import SettingsView from './settings/SettingsView'
 import SupportView from './support/SupportView'
 import WarrantyView from './warranty/WarrantyView'
+import LockerView from './locker/LockerView'
 import './user.css'
 import './deposit/deposit.css'
 import './overview/overview.css'
 import './services/services.css'
 import './support/support.css'
+import './locker/locker.css'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')
@@ -45,10 +48,10 @@ function UserRoutes({
   onLoadOrder,
   onOpenServices,
   onPurchase,
+  onReorder,
   onRefreshDeposit,
   onRefreshTickets,
   onReopenTicket,
-  onReorder,
   onSearchChange,
   onSendMessage,
   onSetMessage,
@@ -78,6 +81,13 @@ function UserRoutes({
   const location = useLocation()
   const activePath = normalizePathname(location.pathname)
   const mountedPaths = [...navItems.map((item) => item.path), '/profile']
+
+  const isServiceDetail = activePath.startsWith('/services/') && activePath.length > '/services/'.length
+  const serviceSlug = isServiceDetail ? decodeURIComponent(activePath.slice('/services/'.length)) : null
+  const matchedService = serviceSlug
+    ? (serviceList || []).find((s) => s.slug === serviceSlug || String(s.id) === serviceSlug || s.name === serviceSlug)
+    : null
+
   const routes = [
     {
       path: '/',
@@ -115,13 +125,29 @@ function UserRoutes({
     },
     {
       path: '/services',
-      element: (
+      element: isServiceDetail ? (
+        <UserServiceDetail
+          isFavorite={matchedService ? (favoriteServices || []).some((f) => f.id === matchedService.id) : false}
+          onPurchase={onPurchase}
+          onToggleFavorite={onToggleFavorite}
+          service={matchedService}
+        />
+      ) : (
         <ServicesView
           favoriteServices={favoriteServices}
           onPurchase={onPurchase}
           onToggleFavorite={onToggleFavorite}
           recentServices={recentServices}
           services={serviceList}
+        />
+      ),
+    },
+    {
+      path: '/locker',
+      element: (
+        <LockerView
+          onSetNotice={onSetNotice}
+          token={token}
         />
       ),
     },
@@ -204,18 +230,20 @@ function UserRoutes({
     return <Navigate to="/profile" replace />
   }
 
-  if (!routes.some((route) => route.path === activePath)) {
+  if (!routes.some((route) => route.path === activePath || (route.path === '/services' && isServiceDetail))) {
     return <Navigate to="/" replace />
   }
+
+  const isActive = (routePath) => routePath === activePath || (routePath === '/services' && isServiceDetail)
 
   return (
     <div className="user-route-stack">
       {routes.map((route) => (
         mountedPaths.includes(route.path) && (
           <div
-            className={`user-route-panel ${route.path === activePath ? 'active' : 'inactive'}`}
+            className={`user-route-panel ${isActive(route.path) ? 'active' : 'inactive'}`}
             key={route.path}
-            aria-hidden={route.path !== activePath}
+            aria-hidden={!isActive(route.path)}
           >
             {route.element}
           </div>

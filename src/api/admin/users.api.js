@@ -35,6 +35,12 @@ export const adminUsersApi = {
   revokeUserSession: (userId, sessionId, token) =>
     axiosClient.delete(`/api/admin/users/${userId}/sessions/${sessionId}`, { token }),
 
+  getUserApiKeys: (userId, token) =>
+    axiosClient.get(`/api/admin/users/${userId}/api-keys?size=20`, { token }),
+
+  revokeUserApiKey: (userId, keyId, token) =>
+    axiosClient.delete(`/api/admin/users/${userId}/api-keys/${keyId}`, { token }),
+
   bulkLockUsers: (data, token) =>
     axiosClient.post('/api/admin/users/bulk-lock', data, { token }),
 

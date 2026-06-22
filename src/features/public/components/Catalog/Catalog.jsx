@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Clapperboard, Megaphone, PackageCheck, Search, ShieldCheck, ShoppingCart, Users } from 'lucide-react'
 import { publicApi } from '../../../../api/public.api'
 import { serviceTableRows as staticRows } from '../../data/services.public'
@@ -25,11 +26,11 @@ function pickCategorySlug(categoryName) {
   return 'default'
 }
 
-function buildFilters(apiCategories) {
+function buildFilters(apiCategories, t) {
   const cats = Array.isArray(apiCategories) ? apiCategories : []
-  if (cats.length === 0) return [{ id: 'all', label: 'Tất cả' }]
+  if (cats.length === 0) return [{ id: 'all', label: t('public.catalog.filterAll') }]
   return [
-    { id: 'all', label: 'Tất cả' },
+    { id: 'all', label: t('public.catalog.filterAll') },
     ...cats.map((cat) => ({
       id: cat.slug || String(cat.id),
       label: cat.name,
@@ -37,7 +38,7 @@ function buildFilters(apiCategories) {
   ]
 }
 
-function mapServiceToCard(service) {
+function mapServiceToCard(service, t) {
   const slug = pickCategorySlug(service.categoryName || service.type)
   const categorySlug = service.categorySlug || (service.categoryName ? service.categoryName.toLowerCase().replace(/[^a-z0-9-]/g, '-') : slug)
   return {
@@ -48,15 +49,15 @@ function mapServiceToCard(service) {
     category: slug,
     categoryId: service.categoryId,
     categorySlug: categorySlug,
-    categoryLabel: service.categoryName || service.type || 'Dịch vụ',
+    categoryLabel: service.categoryName || service.type || t('public.catalog.defaultCategory'),
     price: service.priceText || `Từ ${Number(service.price).toLocaleString('vi-VN')}đ`,
     priceVal: service.price,
     featured: service.featured,
     sortOrder: service.sortOrder,
     iconUrl: service.iconUrl,
-    processingTime: service.processingTime || 'Theo quy trình',
-    warranty: service.warrantyPolicy || 'Theo điều kiện',
-    status: service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng',
+    processingTime: service.processingTime || t('public.catalog.defaultProcessing'),
+    warranty: service.warrantyPolicy || t('public.catalog.defaultWarranty'),
+    status: service.stockStatus === 'OUT_OF_STOCK' ? t('public.catalog.outOfStock') : t('public.catalog.inStock'),
     stockStatus: service.stockStatus,
     pricingBadge: service.pricingBadge,
     _outOfStock: service.stockStatus === 'OUT_OF_STOCK',
@@ -65,6 +66,7 @@ function mapServiceToCard(service) {
 }
 
 function Catalog() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [apiServices, setApiServices] = useState([])
@@ -94,21 +96,21 @@ function Catalog() {
   const hasApiData = apiServices.length > 0
 
   const filters = useMemo(() => {
-    const f = buildFilters(apiCategories)
+    const f = buildFilters(apiCategories, t)
     if (f.length > 1) return f
     return [
-      { id: 'all', label: 'Tất cả' },
-      { id: 'capcut', label: 'CapCut' },
-      { id: 'facebook', label: 'Facebook' },
-      { id: 'upgrade', label: 'Nâng cấp' },
-      { id: 'ads', label: 'Quảng cáo' },
+      { id: 'all', label: t('public.catalog.filterAll') },
+      { id: 'capcut', label: t('public.catalog.filterCapcut') },
+      { id: 'facebook', label: t('public.catalog.filterFacebook') },
+      { id: 'upgrade', label: t('public.catalog.filterUpgrade') },
+      { id: 'ads', label: t('public.catalog.filterAds') },
     ]
-  }, [apiCategories])
+  }, [apiCategories, t])
 
   const allServices = useMemo(() => {
     if (!hasApiData) return []
-    return apiServices.map(mapServiceToCard)
-  }, [apiServices, hasApiData])
+    return apiServices.map((svc) => mapServiceToCard(svc, t))
+  }, [apiServices, hasApiData, t])
 
   // Lọc theo search và category
   const filteredServices = useMemo(() => {
@@ -241,9 +243,9 @@ function Catalog() {
     <div className="catalog-page">
       <div className="catalog-hero">
         <div className="catalog-hero-content">
-          <span className="eyebrow">Danh mục dịch vụ</span>
-          <h1>Tất cả dịch vụ tại Kendy Digital</h1>
-          <p>Khám phá đầy đủ các gói dịch vụ CapCut, Facebook, nâng cấp tài khoản và quảng cáo</p>
+          <span className="eyebrow">{t('public.catalog.eyebrow')}</span>
+          <h1>{t('public.catalog.title')}</h1>
+          <p>{t('public.catalog.subtitle')}</p>
         </div>
       </div>
 
@@ -254,17 +256,17 @@ function Catalog() {
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             type="search"
-            placeholder="Tìm kiếm dịch vụ..."
+            placeholder={t('public.catalog.searchPlaceholder')}
           />
         </div>
         <div className="catalog-sort">
-          <span className="sort-label">Sắp xếp:</span>
+          <span className="sort-label">{t('public.catalog.sortLabel')}</span>
           <select value={activeSort} onChange={(e) => handleSortChange(e.target.value)} className="sort-select">
-            <option value="popular">Bán chạy & Nổi bật</option>
-            <option value="name-asc">Tên dịch vụ (A - Z)</option>
-            <option value="name-desc">Tên dịch vụ (Z - A)</option>
-            <option value="price-asc">Giá (Thấp - Cao)</option>
-            <option value="price-desc">Giá (Cao - Thấp)</option>
+            <option value="popular">{t('public.catalog.sortPopular')}</option>
+            <option value="name-asc">{t('public.catalog.sortNameAsc')}</option>
+            <option value="name-desc">{t('public.catalog.sortNameDesc')}</option>
+            <option value="price-asc">{t('public.catalog.sortPriceAsc')}</option>
+            <option value="price-desc">{t('public.catalog.sortPriceDesc')}</option>
           </select>
         </div>
       </div>
@@ -285,13 +287,13 @@ function Catalog() {
       {loading ? (
         <div className="catalog-loading">
           <div className="catalog-spinner" />
-          <p>Đang tải danh sách dịch vụ...</p>
+          <p>{t('public.catalog.loading')}</p>
         </div>
       ) : paginatedServices.length === 0 ? (
         <div className="catalog-empty">
           <ShoppingCart size={48} strokeWidth={1.5} />
-          <h3>Không tìm thấy dịch vụ</h3>
-          <p>Thử tìm kiếm với từ khóa khác hoặc chọn nhóm dịch vụ khác</p>
+          <h3>{t('public.catalog.emptyTitle')}</h3>
+          <p>{t('public.catalog.emptyText')}</p>
         </div>
       ) : (
         <>
@@ -304,7 +306,7 @@ function Catalog() {
                   key={service.name + (service.id || '')}
                   onClick={() => handleViewDetail(service)}
                 >
-                  {service._outOfStock && <span className="catalog-card-oos-badge">Hết hàng</span>}
+                  {service._outOfStock && <span className="catalog-card-oos-badge">{t('public.catalog.outOfStock')}</span>}
                   <div className="catalog-card-head">
                     <span className="catalog-card-icon">
                       {service.iconUrl ? (
@@ -327,10 +329,10 @@ function Catalog() {
                   </div>
                   <div className="catalog-card-footer">
                     <span className="catalog-card-info">
-                      <strong>Xử lý:</strong> {service.processingTime}
+                      <strong>{t('public.catalog.processing')}</strong> {service.processingTime}
                     </span>
                     <span className="catalog-card-info">
-                      <strong>Bảo hành:</strong> {service.warranty}
+                      <strong>{t('public.catalog.warranty')}</strong> {service.warranty}
                     </span>
                   </div>
                   <Button
@@ -341,7 +343,7 @@ function Catalog() {
                       handleViewDetail(service)
                     }}
                   >
-                    Xem chi tiết
+                    {t('public.catalog.viewDetail')}
                   </Button>
                 </article>
               )

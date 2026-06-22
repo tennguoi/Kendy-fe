@@ -5,6 +5,7 @@ import heroImg from '../../assets/hero.png'
 
 function Sidebar({
   activeView,
+  brand,
   items = [],
   onViewChange,
   isOpen,
@@ -43,14 +44,17 @@ function Sidebar({
 
   const userInitial = (currentUser?.name || currentUser?.email || 'U').charAt(0).toUpperCase()
   const avatarUrl = currentUser?.avatarUrl || currentUser?.avatar || currentUser?.picture || currentUser?.imageUrl || currentUser?.photoUrl
+  const brandName = brand?.name || 'Kendy Digital'
+  const brandTagline = brand?.tagline || t('sidebar.walletService')
+  const brandLogo = brand?.logoUrl || heroImg
 
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="brand">
-        <img src={heroImg} alt="Kendy Digital" />
+        <img src={brandLogo} alt={brandName} />
         <div>
-          <strong>Kendy Digital</strong>
-          <span>{t('sidebar.walletService')}</span>
+          <strong>{brandName}</strong>
+          <span>{brandTagline}</span>
         </div>
         <button
           type="button"

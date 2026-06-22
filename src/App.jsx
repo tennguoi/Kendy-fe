@@ -34,6 +34,7 @@ import { adminRoutePaths, depositStatusNotice, fetchUserBootstrap, initialOAuthC
 import { useAdminOverview } from './features/admin/hooks/useAdminOverview'
 import { useDashboardMetrics } from './features/user/overview/hooks/useDashboardMetrics'
 import { useNotifications } from './features/notifications/hooks/useNotifications'
+import { usePublicSiteSettings } from './features/public/hooks/usePublicSiteSettings'
 
 function App() {
   const location = useLocation()
@@ -88,6 +89,7 @@ function App() {
   const [apiNotice, setApiNotice] = useState('')
   const { copied, copyText } = useClipboard()
   const { addToast } = useToast()
+  const { settings: siteSettings } = usePublicSiteSettings()
 
   const amountNumber = Number(depositAmount) || 0
   const serviceList = useMemo(() => (Array.isArray(apiServices) ? apiServices : []), [apiServices])
@@ -558,6 +560,16 @@ function App() {
     }
   }
 
+  const handleReorder = (order) => {
+    if (!accessToken || !order) return
+    const service = serviceList.find((s) => s.id === order.serviceId)
+    if (!service) {
+      notify(t('orders.orderNotFound', { defaultValue: 'Không tìm thấy dịch vụ để mua lại.' }), 'error')
+      return
+    }
+    handlePurchase(service)
+  }
+
   const handlePurchase = async (service) => {
     if (!accessToken) {
       const message = t('app.loginRequiredService')
@@ -776,21 +788,6 @@ function App() {
       return order || null
     } finally {
       setDetailOrderLoading(false)
-    }
-  }
-
-  const handleReorder = async (order) => {
-    if (!accessToken || !order?.orderCode) {
-      return
-    }
-
-    try {
-      const saved = await userApi.reorder(order.orderCode, accessToken)
-      setApiOrders((items) => [saved, ...normalizeList(items).filter((item) => item.orderCode !== saved.orderCode)])
-      await refreshBootstrapData()
-      notify(t('app.orderReordered', { code: saved.orderCode }), 'success')
-    } catch (err) {
-      notify(err.message || t('app.orderReorderError'), 'error')
     }
   }
 
@@ -1033,6 +1030,7 @@ function App() {
     return (
       <DashboardShell
         activeView={adminActiveView}
+        brand={siteSettings.brand}
         currentUser={currentUser}
         displayBalance={displayBalance}
         items={adminNavItems}
@@ -1076,6 +1074,7 @@ function App() {
   return (
     <DashboardShell
       activeView={userActiveView}
+      brand={siteSettings.brand}
       currentUser={currentUser}
       displayBalance={displayBalance}
       items={navItems}
@@ -1116,11 +1115,11 @@ function App() {
         onLoadOrder={handleLoadOrderDetail}
         onOpenServices={() => handleUserViewChange('services')}
         onPurchase={handlePurchase}
+        onReorder={handleReorder}
         onRefreshDeposit={handleRefreshDeposit}
         onFiltersChange={handleDepositFiltersChange}
         onRefreshTickets={loadTickets}
         onReopenTicket={(ticketCode) => handleTicketState(ticketCode, 'reopen')}
-        onReorder={handleReorder}
         onSearchChange={setSupportQuery}
         onSendMessage={handleSendTicketMessage}
         onSetMessage={setSupportMessage}

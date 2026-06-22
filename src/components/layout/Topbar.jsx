@@ -1,8 +1,6 @@
-import { Bell, Menu, User, Sun, Moon } from 'lucide-react'
+import { Bell, Menu, User } from 'lucide-react'
 import SearchField from '../SearchField/SearchField'
-import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher'
 import { useState } from 'react'
-import { useTheme } from '../../contexts/ThemeContext'
 import { useTranslation } from 'react-i18next'
 import { money } from '../../utils/currency'
 
@@ -23,7 +21,6 @@ function Topbar({
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
-  const { theme, toggleTheme } = useTheme()
   const { t, i18n } = useTranslation()
 
   const formatNotificationTime = (value) => {
@@ -82,17 +79,7 @@ function Topbar({
             {money.format(displayBalance)}
           </button>
         )}
-        <LanguageSwitcher />
         <div className="notification-menu">
-          <button
-            type="button"
-            className="notification-bell"
-            title={t('topbar.toggleTheme')}
-            onClick={toggleTheme}
-            style={{ marginRight: 10 }}
-          >
-            {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
-          </button>
           <button
             type="button"
             className="notification-bell"

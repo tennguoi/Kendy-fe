@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   ArrowLeft,
   ShoppingCart,
@@ -14,6 +15,7 @@ import Button from '../../../../components/Button/Button'
 import './ProductDetail.css'
 
 function ProductDetail({ onLoginClick }) {
+  const { t } = useTranslation()
   const { slug } = useParams()
   const navigate = useNavigate()
   const [service, setService] = useState(null)
@@ -34,7 +36,7 @@ function ProductDetail({ onLoginClick }) {
         if (found) {
           setService(found)
         } else {
-          setError('Không tìm thấy dịch vụ này.')
+          setError(t('public.productDetail.notFoundExact'))
         }
         setLoading(false)
       })
@@ -45,7 +47,7 @@ function ProductDetail({ onLoginClick }) {
         if (found) {
           setService(found)
         } else {
-          setError('Không tìm thấy dịch vụ.')
+          setError(t('public.productDetail.notFound'))
         }
         setLoading(false)
       })
@@ -56,7 +58,7 @@ function ProductDetail({ onLoginClick }) {
       <div className="product-detail-page">
         <div className="product-detail-loading">
           <div className="product-detail-spinner" />
-          <p>Đang tải thông tin dịch vụ...</p>
+          <p>{t('public.productDetail.loading')}</p>
         </div>
       </div>
     )
@@ -67,10 +69,10 @@ function ProductDetail({ onLoginClick }) {
       <div className="product-detail-page">
         <div className="product-detail-error">
           <AlertTriangle size={48} strokeWidth={1.5} />
-          <h3>{error || 'Không tìm thấy dịch vụ'}</h3>
+          <h3>{error || t('public.productDetail.notFound')}</h3>
           <Button variant="ghost" className="product-detail-back-btn" onClick={() => navigate('/catalog')}>
             <ArrowLeft size={18} strokeWidth={2} />
-            <span>Quay lại danh mục</span>
+            <span>{t('public.productDetail.backToCatalog')}</span>
           </Button>
         </div>
       </div>
@@ -78,8 +80,8 @@ function ProductDetail({ onLoginClick }) {
   }
 
   const price = service.priceText || `Từ ${Number(service.price).toLocaleString('vi-VN')}đ`
-  const categoryName = service.categoryName || service.type || 'Dịch vụ'
-  const stockStatus = service.stockStatus === 'OUT_OF_STOCK' ? 'Hết hàng' : service.stockStatus === 'CONSULTING_ONLY' ? 'Tư vấn' : 'Còn hàng'
+  const categoryName = service.categoryName || service.type || t('public.productDetail.defaultCategory')
+  const stockStatus = service.stockStatus === 'OUT_OF_STOCK' ? t('public.productDetail.outOfStock') : service.stockStatus === 'CONSULTING_ONLY' ? t('public.productDetail.consulting') : t('public.productDetail.inStock')
   const isOutOfStock = service.stockStatus === 'OUT_OF_STOCK'
 
   return (
@@ -89,14 +91,14 @@ function ProductDetail({ onLoginClick }) {
         {/* Nút quay lại */}
         <Button variant="ghost" className="product-detail-back-btn" onClick={() => navigate('/catalog')}>
           <ArrowLeft size={18} strokeWidth={2} />
-          <span>Quay lại danh mục</span>
+          <span>{t('public.productDetail.backToCatalog')}</span>
         </Button>
 
         {/* Banner hết hàng */}
         {isOutOfStock && (
           <div className="product-oos-banner">
             <AlertTriangle size={18} />
-            <span>Dịch vụ này hiện đang hết hàng. Vui lòng quay lại sau hoặc liên hệ hỗ trợ.</span>
+            <span>{t('public.productDetail.outOfStockBanner')}</span>
           </div>
         )}
 
@@ -111,7 +113,7 @@ function ProductDetail({ onLoginClick }) {
                 <span>{service.name}</span>
               </div>
             )}
-            <span className="image-zoom-hint">Hình ảnh minh họa dịch vụ</span>
+            <span className="image-zoom-hint">{t('public.productDetail.imageHint')}</span>
           </div>
 
           {/* Cột phải: Thông tin & nút mua */}
@@ -121,17 +123,17 @@ function ProductDetail({ onLoginClick }) {
             
             <div className="product-meta-rows">
               <div className="meta-item-row">
-                <span className="meta-label">Tình trạng:</span>
+                <span className="meta-label">{t('public.productDetail.statusLabel')}</span>
                 <span className={`meta-value stock-status ${isOutOfStock ? 'out' : 'in'}`}>
                   {stockStatus}
                 </span>
               </div>
               <div className="meta-item-row">
-                <span className="meta-label">Mã sản phẩm:</span>
+                <span className="meta-label">{t('public.productDetail.productCodeLabel')}</span>
                 <span className="meta-value code">{service.slug || service.id}</span>
               </div>
               <div className="meta-item-row">
-                <span className="meta-label">Thể loại:</span>
+                <span className="meta-label">{t('public.productDetail.categoryLabel')}</span>
                 <span className="meta-value category">{categoryName}</span>
               </div>
             </div>
@@ -150,7 +152,7 @@ function ProductDetail({ onLoginClick }) {
                 onClick={onLoginClick}
               >
                 <ShoppingCart size={20} />
-                <span>{isOutOfStock ? 'Hết hàng' : 'Mua ngay'}</span>
+                <span>{isOutOfStock ? t('public.productDetail.outOfStock') : t('public.productDetail.buyNow')}</span>
               </Button>
             </div>
           </div>
@@ -163,7 +165,7 @@ function ProductDetail({ onLoginClick }) {
           <div className="product-notice-box">
             <div className="notice-title">
               <AlertTriangle size={18} />
-              <span>Lưu ý quan trọng:</span>
+              <span>{t('public.productDetail.importantNote')}</span>
             </div>
             <div className="notice-content">
               {service.usageNotes ? (
@@ -182,13 +184,13 @@ function ProductDetail({ onLoginClick }) {
         {/* Khối Chi tiết sản phẩm (Layout 2 cột) */}
         <div className="product-detail-layout-row">
           <div className="layout-left-title">
-            <h3>Chi tiết sản phẩm</h3>
+            <h3>{t('public.productDetail.detailTitle')}</h3>
           </div>
           <div className="layout-right-content">
             {/* Quy trình nhận hàng */}
             {service.requirements && (
               <div className="content-subsection">
-                <h4>Quy trình nhận hàng</h4>
+                <h4>{t('public.productDetail.deliveryProcess')}</h4>
                 <ol className="processing-steps-list">
                   {parseListContent(service.requirements).map((step, idx) => (
                     <li key={idx}>
@@ -203,7 +205,7 @@ function ProductDetail({ onLoginClick }) {
             {/* Mô tả chi tiết */}
             {service.description && (
               <div className="content-subsection">
-                <h4>Mô tả chi tiết</h4>
+                <h4>{t('public.productDetail.description')}</h4>
                 <div className="formatted-desc-text">{service.description}</div>
               </div>
             )}
@@ -211,7 +213,7 @@ function ProductDetail({ onLoginClick }) {
             {/* Tính năng nổi bật */}
             {service.benefits && (
               <div className="content-subsection">
-                <h4>Tính năng nổi bật</h4>
+                <h4>{t('public.productDetail.features')}</h4>
                 <ul className="benefits-bullet-list">
                   {parseListContent(service.benefits).map((benefit, i) => (
                     <li key={i}>{benefit}</li>
@@ -226,19 +228,19 @@ function ProductDetail({ onLoginClick }) {
         {(service.warrantyPolicy || service.nonWarrantyCases) && (
           <div className="product-detail-layout-row border-top">
             <div className="layout-left-title">
-              <h3>Chính sách bảo hành</h3>
+              <h3>{t('public.productDetail.warrantyPolicy')}</h3>
             </div>
             <div className="layout-right-content">
               {service.warrantyPolicy && (
                 <div className="content-subsection">
-                  <h4>Thời hạn bảo hành</h4>
+                  <h4>{t('public.productDetail.warrantyDuration')}</h4>
                   <div className="warranty-duration-text">{service.warrantyPolicy}</div>
                 </div>
               )}
 
               {service.nonWarrantyCases && (
                 <div className="content-subsection">
-                  <h4>Các trường hợp không bảo hành</h4>
+                  <h4>{t('public.productDetail.nonWarrantyCases')}</h4>
                   <ul className="non-warranty-list">
                     {parseListContent(service.nonWarrantyCases).map((caseItem, i) => (
                       <li key={i}>{caseItem}</li>

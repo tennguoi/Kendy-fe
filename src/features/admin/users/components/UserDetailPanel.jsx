@@ -9,6 +9,7 @@ function UserDetailPanel({
   detailData,
   hasLoadedUsers,
   onActiveDetailTabChange,
+  onRevokeApiKey,
   onRevokeSession,
   selectedUser,
   submitting,
@@ -38,6 +39,7 @@ function UserDetailPanel({
         activeDetailTab={activeDetailTab}
         detailData={detailData}
         onActiveDetailTabChange={onActiveDetailTabChange}
+        onRevokeApiKey={onRevokeApiKey}
         onRevokeSession={onRevokeSession}
         submitting={submitting}
       />

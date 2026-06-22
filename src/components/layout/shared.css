@@ -157,7 +157,7 @@
 }
 
 .table-row.has-actions {
-  grid-template-columns: 1.1fr 1.4fr 1fr 1fr 1.2fr 1.1fr;
+  grid-template-columns: 1.1fr 1.4fr 1fr 1fr 1.2fr 0.7fr;
 }
 
 .table-row:last-child {
@@ -172,9 +172,9 @@
 }
 
 .table-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 6px;
 }
 
 .table-actions button {
@@ -192,6 +192,21 @@
 .table-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+.table-actions .order-action-button {
+  width: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+}
+
+.table-actions .order-action-button.danger:not(:disabled) {
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
 }
 
 /* admin-view wrapper */
@@ -946,6 +961,12 @@ html.dark .table-actions button:hover,
 html.dark .admin-icon-button:hover,
 html.dark .admin-panel-head button:hover {
   background: rgba(37, 99, 235, 0.24);
+}
+
+html.dark .table-actions .order-action-button.danger:not(:disabled) {
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+  background: rgba(127, 29, 29, 0.22);
 }
 
 html.dark .dashboard-input,

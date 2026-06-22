@@ -409,3 +409,26 @@ html.dark .user-password-control button:hover {
   background: rgba(37, 99, 235, 0.15);
   color: #93c5fd;
 }
+
+.admin-drawer-body .admin-report-grid.compact-report {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-drawer-body .admin-report-grid.compact-report > div {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-drawer-body .admin-report-grid.compact-report strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: clamp(17px, 3vw, 22px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .admin-drawer-body .admin-report-grid.compact-report {
+    grid-template-columns: 1fr;
+  }
+}

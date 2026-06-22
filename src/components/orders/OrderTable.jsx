@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next'
+import { Eye, ReceiptText, RotateCcw, XCircle } from 'lucide-react'
 import { money } from '../../utils/currency'
 import { printOrderInvoice } from '../../utils/invoicePrint'
 import StatusBadge from '../status/StatusBadge'
 import UserOrderDetailModal from './UserOrderDetailModal'
+import ConfirmModal from '../Modal/ConfirmModal'
 import { useState } from 'react'
 import { formatDate } from '../../utils/date'
 
@@ -19,13 +21,23 @@ function rowsToCsv(rows, t) {
 }
 
 function downloadCsv(content, filename) {
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+  const blob = new Blob([`\uFEFF${content}`], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = filename
   a.click()
   URL.revokeObjectURL(url)
+}
+
+function parseInputData(inputData) {
+  if (!inputData) return ''
+  try {
+    const parsed = JSON.parse(inputData)
+    return parsed.email || parsed.username || parsed.account || Object.values(parsed)[0] || inputData
+  } catch {
+    return inputData
+  }
 }
 
 function OrderTable({
@@ -42,6 +54,7 @@ function OrderTable({
   const { t } = useTranslation()
   const visibleOrders = compact ? orders.slice(0, 2) : orders
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [reorderTarget, setReorderTarget] = useState(null)
 
   const handleExportCsv = () => {
     if (orders.length === 0) return
@@ -57,10 +70,28 @@ function OrderTable({
     }
   }
 
+  const handleReorderClick = (order) => {
+    setReorderTarget(order)
+  }
+
+  const handleReorderConfirm = () => {
+    if (!reorderTarget) return
+    onReorder?.(reorderTarget)
+    setReorderTarget(null)
+  }
+
+  const canReorder = (order) =>
+    ['COMPLETED', 'CANCELLED', 'FAILED', 'REFUNDED'].includes(order.status)
+
+  const reorderTargetAccount = reorderTarget ? parseInputData(reorderTarget.inputData) : ''
+
   return (
     <section className="table-panel">
       <div className="section-head">
-        <h2>{t('orders.title', { defaultValue: 'Đơn hàng' })}</h2>
+        <div className="order-history-heading">
+          <h2>{t('orders.title', { defaultValue: 'Lịch sử đơn hàng' })}</h2>
+          {!compact && <p>Hóa đơn và trạng thái thanh toán. Quyền truy cập được quản lý tại “Dịch vụ của tôi”.</p>}
+        </div>
         <button type="button" onClick={handleExportCsv}>{t('common.exportCsv', { defaultValue: 'Xuất CSV' })}</button>
       </div>
       <div className="data-table">
@@ -81,18 +112,20 @@ function OrderTable({
             <span>{formatDate(order.createdAt)}</span>
             {!compact && (
               <span className="table-actions">
-                <button type="button" disabled={!['PENDING', 'PROCESSING'].includes(order.status)} onClick={() => onCancelOrder?.(order)}>
-                  {t('orders.cancel', { defaultValue: 'Hủy' })}
+                <button type="button" className="order-action-button danger" disabled={!['PENDING', 'PROCESSING'].includes(order.status)} onClick={() => onCancelOrder?.(order)} title={t('orders.cancel', { defaultValue: 'Hủy' })} aria-label={t('orders.cancel', { defaultValue: 'Hủy' })}>
+                  <XCircle size={16} />
                 </button>
-                <button type="button" onClick={() => onReorder?.(order)}>
-                  {t('orders.reorder', { defaultValue: 'Mua lại' })}
+                <button type="button" className="order-action-button" onClick={() => handleOpenDetail(order)} title={t('orders.detail', { defaultValue: 'Chi tiết' })} aria-label={t('orders.detail', { defaultValue: 'Chi tiết' })}>
+                  <Eye size={16} />
                 </button>
-                <button type="button" onClick={() => handleOpenDetail(order)}>
-                  {t('orders.detail', { defaultValue: 'Chi tiết' })}
+                <button type="button" className="order-action-button" onClick={() => printOrderInvoice(order, { customer: currentUser })} title={t('orders.invoice', { defaultValue: 'Hóa đơn' })} aria-label={t('orders.invoice', { defaultValue: 'Hóa đơn' })}>
+                  <ReceiptText size={16} />
                 </button>
-                <button type="button" onClick={() => printOrderInvoice(order, { customer: currentUser })}>
-                  {t('orders.invoice', { defaultValue: 'Hóa đơn' })}
-                </button>
+                {canReorder(order) && (
+                  <button type="button" className="order-action-button" onClick={() => handleReorderClick(order)} title={t('orders.reorder', { defaultValue: 'Mua lại' })} aria-label={t('orders.reorder', { defaultValue: 'Mua lại' })}>
+                    <RotateCcw size={16} />
+                  </button>
+                )}
               </span>
             )}
           </div>
@@ -108,6 +141,23 @@ function OrderTable({
         onSetNotice={onSetNotice}
         order={selectedOrder}
         token={token}
+      />
+
+      <ConfirmModal
+        isOpen={!!reorderTarget}
+        onClose={() => setReorderTarget(null)}
+        onConfirm={handleReorderConfirm}
+        title={t('orders.reorderConfirmTitle', { defaultValue: 'Xác nhận mua lại' })}
+        message={reorderTarget
+          ? t('orders.reorderConfirmMessage', {
+              serviceName: reorderTarget.serviceName || reorderTarget.service || '',
+              accountInfo: reorderTargetAccount,
+              defaultValue: 'Gửi yêu cầu mua lại {{serviceName}} cho tài khoản {{accountInfo}}? Tài khoản hiện tại sẽ được giữ nguyên.'
+            })
+          : ''}
+        confirmText={t('common.confirm', { defaultValue: 'Có' })}
+        cancelText={t('common.cancel', { defaultValue: 'Không' })}
+        variant="primary"
       />
     </section>
   )

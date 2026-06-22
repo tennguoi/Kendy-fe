@@ -3,6 +3,7 @@
     "overview": "Tổng quan",
     "deposit": "Nạp tiền",
     "services": "Dịch vụ",
+    "locker": "Dịch vụ của tôi",
     "orders": "Đơn hàng",
     "warranty": "Bảo hành",
     "support": "Hỗ trợ",
@@ -17,6 +18,7 @@
     "services": "Dịch vụ",
     "accountInventory": "Kho tài khoản",
     "assignedAccounts": "Tài khoản đã cấp",
+    "entitlements": "Quyền truy cập",
     "pricing": "Bảng giá",
     "coupons": "Coupon",
     "warranty": "Bảo hành",
@@ -55,6 +57,7 @@
     "actions": "Thao tác",
     "service": "Dịch vụ",
     "details": "Chi tiết",
+    "viewDetail": "Xem chi tiết",
     "processing": "Đang xử lý...",
     "unknown": "Không xác định"
   },
@@ -299,7 +302,7 @@
     "statusCancelled": "Đã hủy"
   },
   "orders": {
-    "title": "Đơn hàng",
+    "title": "Lịch sử đơn hàng",
     "orderCode": "Mã đơn",
     "service": "Dịch vụ",
     "amount": "Số tiền",
@@ -307,7 +310,6 @@
     "createdAt": "Ngày tạo",
     "actions": "Thao tác",
     "cancel": "Hủy",
-    "reorder": "Mua lại",
     "detail": "Chi tiết",
     "invoice": "Hóa đơn",
     "noOrders": "Chưa có đơn hàng.",
@@ -342,7 +344,13 @@
     "unfavorite": "Bỏ ghim dịch vụ",
     "favorite": "Ghim dịch vụ",
     "defaultProcessingTime": "Theo quy trình",
-    "pricingStandard": "Chuẩn"
+    "pricingStandard": "Chuẩn",
+    "notFound": "Không tìm thấy dịch vụ",
+    "outOfStockBanner": "Dịch vụ này hiện đang hết hàng.",
+    "importantNote": "Lưu ý quan trọng",
+    "features": "Tính năng nổi bật",
+    "warrantyDuration": "Thời hạn bảo hành",
+    "nonWarrantyCases": "Các trường hợp không bảo hành"
   },
   "overview": {
     "quickActions": "Thao tác nhanh",
@@ -883,9 +891,62 @@
           "answer": "Các lỗi phát sinh do sử dụng sai hướng dẫn, vi phạm chính sách nền tảng hoặc hành vi không phù hợp pháp luật sẽ không thuộc phạm vi bảo hành."
         }
       }
+    },
+    "catalog": {
+      "eyebrow": "Danh mục dịch vụ",
+      "title": "Tất cả dịch vụ tại Kendy Digital",
+      "subtitle": "Khám phá đầy đủ các gói dịch vụ CapCut, Facebook, nâng cấp tài khoản và quảng cáo",
+      "searchPlaceholder": "Tìm kiếm dịch vụ...",
+      "sortLabel": "Sắp xếp:",
+      "sortPopular": "Bán chạy & Nổi bật",
+      "sortNameAsc": "Tên dịch vụ (A - Z)",
+      "sortNameDesc": "Tên dịch vụ (Z - A)",
+      "sortPriceAsc": "Giá (Thấp - Cao)",
+      "sortPriceDesc": "Giá (Cao - Thấp)",
+      "filterAll": "Tất cả",
+      "filterCapcut": "CapCut",
+      "filterFacebook": "Facebook",
+      "filterUpgrade": "Nâng cấp",
+      "filterAds": "Quảng cáo",
+      "loading": "Đang tải danh sách dịch vụ...",
+      "emptyTitle": "Không tìm thấy dịch vụ",
+      "emptyText": "Thử tìm kiếm với từ khóa khác hoặc chọn nhóm dịch vụ khác",
+      "outOfStock": "Hết hàng",
+      "inStock": "Còn hàng",
+      "processing": "Xử lý:",
+      "warranty": "Bảo hành:",
+      "viewDetail": "Xem chi tiết",
+      "defaultProcessing": "Theo quy trình",
+      "defaultWarranty": "Theo điều kiện",
+      "defaultCategory": "Dịch vụ"
+    },
+    "productDetail": {
+      "backToCatalog": "Quay lại danh mục",
+      "notFound": "Không tìm thấy dịch vụ",
+      "notFoundExact": "Không tìm thấy dịch vụ này.",
+      "outOfStockBanner": "Dịch vụ này hiện đang hết hàng. Vui lòng quay lại sau hoặc liên hệ hỗ trợ.",
+      "imageHint": "Hình ảnh minh họa dịch vụ",
+      "statusLabel": "Tình trạng:",
+      "productCodeLabel": "Mã sản phẩm:",
+      "categoryLabel": "Thể loại:",
+      "buyNow": "Mua ngay",
+      "outOfStock": "Hết hàng",
+      "consulting": "Tư vấn",
+      "inStock": "Còn hàng",
+      "loading": "Đang tải thông tin dịch vụ...",
+      "importantNote": "Lưu ý quan trọng:",
+      "detailTitle": "Chi tiết sản phẩm",
+      "description": "Mô tả chi tiết",
+      "features": "Tính năng nổi bật",
+      "warrantyPolicy": "Chính sách bảo hành",
+      "deliveryProcess": "Quy trình nhận hàng",
+      "warrantyDuration": "Thời hạn bảo hành",
+      "nonWarrantyCases": "Các trường hợp không bảo hành",
+      "defaultCategory": "Dịch vụ"
     }
   },
   "support": {
+    "title": "Liên hệ",
     "myTickets": "Ticket của tôi",
     "ticketCount": "{{count}} ticket",
     "searchPlaceholder": "Tìm ticket, chủ đề, mã đơn",
@@ -992,9 +1053,25 @@
         "guide": "Hướng dẫn",
         "language": "Ngôn ngữ"
       },
+      "tabDesc": {
+        "settings": "2FA admin, backup/restore setting và lịch sử thay đổi cấu hình.",
+        "operations": "Maintenance mode, giới hạn API và nội dung email bảo mật.",
+        "webhooks": "Theo dõi trạng thái webhook, cấu hình SePay và retry giao dịch cần xử lý.",
+        "notifications": "Quản lý notification settings và các thông báo vận hành cần đọc.",
+        "admins": "Role, permission, trạng thái admin, 2FA và session của quản trị viên.",
+        "audit": "Tra cứu, lọc và xuất lịch sử thao tác quan trọng trong hệ thống.",
+        "files": "Upload, preview, tải xuống và xóa tệp dành cho vận hành.",
+        "jobs": "Theo dõi trạng thái job, retry hoặc hủy job khi cần.",
+        "health": "Thông tin trạng thái API và các chỉ báo vận hành nhanh.",
+        "guide": "Tài liệu thao tác nhanh cho admin khi vận hành hệ thống.",
+        "language": "Chuyển đổi ngôn ngữ hiển thị giữa Tiếng Việt và English."
+      },
       "language": {
         "label": "Ngôn ngữ giao diện",
-        "description": "Chuyển đổi ngôn ngữ hiển thị giữa Tiếng Việt và English."
+        "description": "Chuyển đổi ngôn ngữ hiển thị giữa Tiếng Việt và English.",
+        "themeLabel": "Giao diện",
+        "themeLight": "Chuyển sang giao diện sáng",
+        "themeDark": "Chuyển sang giao diện tối"
       },
       "twoFactor": {
         "title": "Bảo mật",
@@ -1203,6 +1280,7 @@
       "loading": "Đang tải đơn hàng...",
       "drawerTitle": "Chi tiết đơn hàng",
       "loadError": "Không tải được danh sách đơn hàng.",
+      "invoice": "Hóa đơn",
       "reasonRequired": "Nhập lý do trước khi hủy, refund, gia hạn hoặc chạy lại đơn.",
       "updateSuccess": "Đã cập nhật đơn {{code}}.",
       "updateError": "Không cập nhật được đơn hàng.",
@@ -1256,6 +1334,8 @@
       "walletAdjustError": "Không điều chỉnh được ví.",
       "sessionRevokeSuccess": "Đã thu hồi session #{{id}}.",
       "sessionRevokeError": "Không thu hồi được session.",
+      "apiKeyRevokeSuccess": "Đã thu hồi API key #{{id}}.",
+      "apiKeyRevokeError": "Không thu hồi được API key.",
       "bulkIdsRequired": "Nhập danh sách user ID cần xử lý.",
       "bulkUpdateSuccess": "Đã cập nhật {{count}} user.",
       "bulkUpdateError": "Không cập nhật bulk user.",

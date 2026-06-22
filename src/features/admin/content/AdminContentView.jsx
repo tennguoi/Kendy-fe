@@ -93,6 +93,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
   const [records, setRecords] = useState({})
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
 
   const loadContent = useCallback(async () => {
     if (!token) return
@@ -141,6 +142,24 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
       ...current,
       [activeEmailSlug]: { ...current[activeEmailSlug], ...patch },
     }))
+  }
+
+  const uploadLogo = async (file) => {
+    if (!file) return
+    setUploadingLogo(true)
+    onSetError('')
+    try {
+      const uploaded = await adminApi.uploadServiceImage(file, token)
+      setDrafts((current) => ({
+        ...current,
+        brand: { ...current.brand, logoUrl: uploaded.url },
+      }))
+      onSetNotice('Đã tải logo lên. Nhấn “Lưu thay đổi” để áp dụng toàn hệ thống.')
+    } catch (error) {
+      onSetError(error.message || 'Không thể tải logo lên.')
+    } finally {
+      setUploadingLogo(false)
+    }
   }
 
   const saveSection = async (event) => {
@@ -199,6 +218,9 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
         ? await adminApi.updateContent(existing.id, payload, token)
         : await adminApi.createContent(payload, token)
       setRecords((current) => ({ ...current, [slug]: saved }))
+      if (activeSection !== 'email') {
+        window.dispatchEvent(new CustomEvent('kd-site-settings-updated'))
+      }
       onSetNotice(
         activeSection === 'email'
           ? t('admin.content.saveSuccessEmail', { name: emailDefinition.label.toLowerCase() })
@@ -504,6 +526,16 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                   />
                   {drafts.brand.logoUrl && <img src={drafts.brand.logoUrl} alt={t('admin.content.brand.logoPreview')} />}
                 </div>
+              </label>
+              <label>
+                <span>Tải logo từ máy</span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  disabled={uploadingLogo || submitting}
+                  onChange={(event) => uploadLogo(event.target.files?.[0])}
+                />
+                <small>{uploadingLogo ? 'Đang tải logo...' : 'Sau khi tải lên, nhấn lưu thay đổi để áp dụng.'}</small>
               </label>
               <label>
                 <span>{t('admin.content.brand.footerDesc')}</span>

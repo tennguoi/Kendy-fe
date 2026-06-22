@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   KeyRound,
   PackageOpen,
+  Shield,
   Users,
   WalletCards,
 } from 'lucide-react'
@@ -23,6 +24,7 @@ export const adminNavItems = [
   { id: 'admin-services', label: 'adminNav.services', path: '/admin/services', icon: Grid3X3 },
   { id: 'admin-account-inventory', label: 'adminNav.accountInventory', path: '/admin/account-inventory', icon: PackageOpen },
   { id: 'admin-assigned-accounts', label: 'adminNav.assignedAccounts', path: '/admin/assigned-accounts', icon: KeyRound },
+  { id: 'admin-entitlements', label: 'adminNav.entitlements', path: '/admin/entitlements', icon: Shield },
   { id: 'admin-pricing', label: 'adminNav.pricing', path: '/admin/pricing', icon: BadgeDollarSign },
   { id: 'admin-coupons', label: 'adminNav.coupons', path: '/admin/coupons', icon: Percent },
   { id: 'admin-warranty', label: 'adminNav.warranty', path: '/admin/warranty', icon: ShieldCheck },

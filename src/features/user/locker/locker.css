@@ -1,0 +1,380 @@
+.locker-workspace {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.locker-header,
+.locker-toolbar,
+.locker-card-head,
+.locker-dates,
+.locker-actions,
+.locker-header-actions,
+.locker-warranty-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.locker-header,
+.locker-card-head,
+.locker-dates {
+  justify-content: space-between;
+}
+
+.locker-header {
+  align-items: flex-end;
+}
+
+.locker-header h2,
+.locker-header p,
+.locker-card h3 {
+  margin: 0;
+}
+
+.locker-header h2 {
+  margin-top: 5px;
+  color: var(--kd-text);
+  font-size: 28px;
+}
+
+.locker-header p,
+.locker-card-head span,
+.locker-muted {
+  color: var(--kd-muted);
+}
+
+.locker-header p {
+  margin-top: 5px;
+}
+
+.locker-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--kd-blue);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.locker-primary-button,
+.locker-secondary-button,
+.locker-actions button,
+.locker-warranty-form button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  color: var(--kd-text);
+  background: var(--kd-card);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.locker-primary-button,
+.locker-actions button.primary {
+  border-color: var(--kd-blue);
+  color: #fff;
+  background: var(--kd-blue);
+}
+
+.locker-primary-button:disabled,
+.locker-secondary-button:disabled,
+.locker-actions button:disabled,
+.locker-warranty-form button:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.locker-toolbar {
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  background: var(--kd-card);
+}
+
+.locker-toolbar label {
+  display: flex;
+  min-width: min(440px, 100%);
+  align-items: center;
+  gap: 9px;
+  color: var(--kd-muted);
+}
+
+.locker-toolbar input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--kd-text);
+  background: transparent;
+  font: inherit;
+}
+
+.locker-toolbar > span {
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.locker-list {
+  display: grid;
+  gap: 14px;
+}
+
+.locker-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  background: var(--kd-card);
+  box-shadow: var(--kd-soft-shadow);
+}
+
+.locker-card h3 {
+  color: var(--kd-text);
+  font-size: 19px;
+}
+
+.locker-card-head > div > span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.locker-state {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.locker-state.active {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.locker-state.expired {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.locker-secrets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.locker-access-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.locker-access-summary > div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  background: var(--kd-bg);
+}
+
+.locker-access-summary span,
+.locker-access-summary strong {
+  display: block;
+}
+
+.locker-access-summary span {
+  color: var(--kd-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.locker-access-summary strong {
+  margin-top: 5px;
+  color: var(--kd-text);
+  overflow-wrap: anywhere;
+}
+
+.locker-secret {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(74px, auto) minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 11px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  background: var(--kd-bg);
+}
+
+.locker-secret > span {
+  color: var(--kd-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.locker-secret code {
+  overflow: hidden;
+  color: var(--kd-text);
+  font-size: 13px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.locker-secret button {
+  display: grid;
+  width: 34px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: var(--kd-blue);
+  background: var(--kd-card);
+  cursor: pointer;
+}
+
+.locker-note {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--kd-blue);
+  color: var(--kd-muted);
+  background: var(--kd-bg);
+  white-space: pre-wrap;
+}
+
+.locker-dates {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--kd-border);
+}
+
+.locker-dates span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #047857;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.locker-dates span.danger {
+  color: #dc2626;
+}
+
+.locker-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.locker-warranty-form {
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  background: var(--kd-bg);
+}
+
+.locker-warranty-form select {
+  min-height: 38px;
+  flex: 1 1 240px;
+  border: 1px solid var(--kd-border);
+  border-radius: 9px;
+  padding: 0 10px;
+  color: var(--kd-text);
+  background: var(--kd-card);
+  font: inherit;
+}
+
+.locker-warranty-form button:not(.plain) {
+  color: #fff;
+  background: var(--kd-blue);
+}
+
+.locker-error,
+.locker-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px;
+  border-radius: 10px;
+}
+
+.locker-error {
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.locker-empty {
+  min-height: 220px;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px dashed var(--kd-border);
+  color: var(--kd-muted);
+  background: var(--kd-card);
+  text-align: center;
+}
+
+.locker-empty strong {
+  color: var(--kd-text);
+}
+
+html.dark .locker-state.active {
+  color: #6ee7b7;
+  background: rgba(4, 120, 87, .25);
+}
+
+html.dark .locker-state.expired {
+  color: #fca5a5;
+  background: rgba(185, 28, 28, .22);
+}
+
+html.dark .locker-error {
+  border-color: rgba(248, 113, 113, .3);
+  color: #fca5a5;
+  background: rgba(127, 29, 29, .2);
+}
+
+@media (max-width: 760px) {
+  .locker-header,
+  .locker-card-head,
+  .locker-dates {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .locker-header-actions,
+  .locker-actions {
+    justify-content: stretch;
+  }
+
+  .locker-header-actions button,
+  .locker-actions button {
+    flex: 1 1 auto;
+  }
+
+  .locker-secrets {
+    grid-template-columns: 1fr;
+  }
+
+  .locker-access-summary {
+    grid-template-columns: 1fr;
+  }
+}

@@ -629,3 +629,259 @@ html.dark .payment-options button:hover:not(:disabled) {
   background: var(--kd-hover);
   border-color: var(--kd-blue);
 }
+
+/* ================================================
+ * User Service Detail
+ * ================================================ */
+.user-service-detail {
+  min-width: 0;
+}
+
+.user-service-detail-container {
+  max-width: 860px;
+}
+
+.user-service-detail-error {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--kd-muted);
+}
+
+.user-service-oos-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  font-size: 14px;
+}
+
+html.dark .user-service-oos-banner {
+  background: rgba(255, 193, 7, 0.12);
+  border-color: rgba(255, 193, 7, 0.3);
+  color: #fbbf24;
+}
+
+.user-service-main-card {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: var(--kd-card);
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+}
+
+.user-service-image-column {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: var(--kd-soft);
+  overflow: hidden;
+}
+
+.user-service-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-service-image-fallback {
+  color: var(--kd-muted);
+}
+
+.user-service-info-column {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.user-service-category-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--kd-soft);
+  color: var(--kd-muted);
+  font-size: 12px;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.user-service-title-main {
+  margin: 0;
+  font-size: 22px;
+  color: var(--kd-text);
+}
+
+.user-service-meta-rows {
+  display: grid;
+  gap: 8px;
+}
+
+.user-service-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.user-service-meta-label {
+  color: var(--kd-muted);
+  font-weight: 600;
+  min-width: 70px;
+}
+
+.user-service-meta-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--kd-text);
+}
+
+.user-service-price-section {
+  padding: 12px 0;
+}
+
+.user-service-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-service-price-actual {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--kd-blue);
+}
+
+.user-service-purchase-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.user-service-purchase-actions .favorite-active {
+  background: rgba(217, 119, 6, 0.1);
+  border-color: #d97706;
+  color: #d97706;
+}
+
+.user-service-section {
+  margin-bottom: 20px;
+  padding: 20px;
+  background: var(--kd-card);
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+}
+
+.user-service-section h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: var(--kd-text);
+}
+
+.user-service-description-text {
+  margin: 0;
+  color: var(--kd-text);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.user-service-notice-box {
+  border-color: #ffc107;
+  background: #fffef5;
+}
+
+html.dark .user-service-notice-box {
+  border-color: rgba(255, 193, 7, 0.3);
+  background: rgba(255, 193, 7, 0.05);
+}
+
+.user-service-notice-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #856404;
+  font-weight: 700;
+}
+
+html.dark .user-service-notice-title {
+  color: #fbbf24;
+}
+
+.user-service-notice-content {
+  color: var(--kd-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.user-service-notice-content ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.user-service-notice-content li {
+  margin-bottom: 4px;
+}
+
+.user-service-benefits-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.user-service-benefits-list li {
+  margin-bottom: 6px;
+  color: var(--kd-text);
+  line-height: 1.5;
+}
+
+.user-service-warranty-block {
+  margin-bottom: 14px;
+}
+
+.user-service-warranty-block:last-child {
+  margin-bottom: 0;
+}
+
+.user-service-warranty-block strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: var(--kd-text);
+}
+
+.user-service-warranty-block p {
+  margin: 0;
+  color: var(--kd-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.user-service-warranty-block ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.user-service-warranty-block li {
+  margin-bottom: 4px;
+  color: var(--kd-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .user-service-main-card {
+    grid-template-columns: 1fr;
+  }
+  .user-service-image-column {
+    max-width: 200px;
+  }
+}

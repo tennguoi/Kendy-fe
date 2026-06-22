@@ -19,7 +19,6 @@ import {
 export const navItems = [
   { labelKey: 'auth.homePage', label: 'Trang chủ', href: '/' },
   { labelKey: 'public.policies.service.title', label: 'Danh mục', href: '/catalog' },
-  { labelKey: 'nav.services', label: 'Dịch vụ', href: '/#services' },
   { labelKey: 'adminNav.pricing', label: 'Bảng giá', href: '/#pricing' },
   { labelKey: 'public.workflow.eyebrow', label: 'Hướng dẫn', href: '/#workflow' },
   { labelKey: 'public.whyChooseUs.policy.title', label: 'Chính sách', href: '/#policies' },

@@ -1,0 +1,117 @@
+.entitlements-view .admin-toolbar p {
+  margin: 6px 0 0;
+  color: var(--kd-muted);
+}
+
+.entitlements-eyebrow {
+  color: var(--kd-blue);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.entitlement-filters {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 210px auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px;
+}
+
+.entitlement-filters input,
+.entitlement-filters select {
+  min-height: 40px;
+  border: 1px solid var(--kd-border);
+  border-radius: 9px;
+  padding: 0 11px;
+  color: var(--kd-text);
+  background: var(--kd-card);
+}
+
+.entitlement-table-wrap {
+  overflow-x: auto;
+}
+
+.entitlement-table {
+  width: 100%;
+  min-width: 1020px;
+  border-collapse: collapse;
+}
+
+.entitlement-table th,
+.entitlement-table td {
+  padding: 13px;
+  border-bottom: 1px solid var(--kd-border);
+  color: var(--kd-text);
+  text-align: left;
+  vertical-align: top;
+}
+
+.entitlement-table th {
+  color: var(--kd-muted);
+  background: var(--kd-soft);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.entitlement-table td strong,
+.entitlement-table td small {
+  display: block;
+}
+
+.entitlement-table td small {
+  margin-top: 4px;
+  color: var(--kd-muted);
+}
+
+.entitlement-status {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #047857;
+  background: #d1fae5;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.entitlement-status.pending,
+.entitlement-status.expiring {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.entitlement-status.suspended,
+.entitlement-status.revoked,
+.entitlement-status.failed {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.entitlement-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.entitlement-actions button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid var(--kd-border);
+  border-radius: 8px;
+  color: var(--kd-blue);
+  background: var(--kd-card);
+  cursor: pointer;
+}
+
+.entitlement-actions button.danger {
+  color: #dc2626;
+}
+
+@media (max-width: 700px) {
+  .entitlement-filters {
+    grid-template-columns: 1fr;
+  }
+}

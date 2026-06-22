@@ -208,7 +208,6 @@ function GuideTab() {
             <ul>
               <li><code>MANUAL</code>: đơn được tạo ở trạng thái <code>PROCESSING</code>, có ticket hỗ trợ đi kèm và admin xử lý thủ công.</li>
               <li><code>ACCOUNT_STOCK</code>: lấy đúng một credential trong kho cho mỗi đơn và tự hoàn thành sau khi giao.</li>
-              <li><code>AUTO</code>, <code>SUBSCRIPTION</code>, <code>API_CREDIT</code>: có thể chọn trong form, nhưng không sử dụng kho credential của <code>ACCOUNT_STOCK</code>.</li>
             </ul>
 
             <h4>Các tab trong form dịch vụ</h4>
@@ -917,11 +916,6 @@ function GuideTab() {
               → vào Audit → lọc admin = "all", target type = "USER", target ID = Y → thấy ai đã
               ADJUSTMENT số dư của Y và lý do.
             </div>
-            <div className="admin-guide-info">
-              <strong>Ví dụ 4 (jobs):</strong> Đơn hàng AUTO không xử lý → vào Jobs → thấy job
-              "processOrder" bị FAILED → click Logs → thấy lỗi "API timeout" → Retry → job chạy
-              lại thành công.
-            </div>
           </div>
         )}
 
@@ -1192,7 +1186,6 @@ function GuideTab() {
             <ul>
               <li>Kiểm tra loại dịch vụ: <code>MANUAL</code> → cần admin xử lý thủ công.</li>
               <li>Kiểm tra Jobs tab có job xử lý bị lỗi không.</li>
-              <li>Kiểm tra kết nối API bên thứ ba (nếu AUTO).</li>
               <li>Thử retry job nếu FAILED.</li>
             </ul>
 

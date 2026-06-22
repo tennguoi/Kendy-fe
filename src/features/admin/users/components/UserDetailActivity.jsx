@@ -7,6 +7,7 @@ function UserDetailActivity({
   activeDetailTab,
   detailData,
   onActiveDetailTabChange,
+  onRevokeApiKey,
   onRevokeSession,
   submitting,
 }) {
@@ -74,6 +75,28 @@ function UserDetailActivity({
             </article>
           ))}
           {detailData.sessions.length === 0 && <AdminEmptyState message={t('admin.users.detail.noSessions')} />}
+        </div>
+      )}
+
+      {activeDetailTab === 'api-keys' && (
+        <div className="admin-mini-list">
+          {detailData.apiKeys.map((key) => (
+            <article key={key.id}>
+              <strong>{key.name}</strong>
+              <span>
+                {key.keyPrefix}...
+                {key.scopes?.length > 0 && ` · ${key.scopes.join(', ')}`}
+                {key.lastUsedAt ? ` · Used ${formatAdminDate(key.lastUsedAt)}` : ''}
+                {key.revokedAt ? ` · Revoked ${formatAdminDate(key.revokedAt)}` : ''}
+              </span>
+              {!key.revokedAt && (
+                <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={() => onRevokeApiKey(key.id)}>
+                  Thu hồi
+                </button>
+              )}
+            </article>
+          ))}
+          {detailData.apiKeys.length === 0 && <AdminEmptyState message="Chưa có API key nào" />}
         </div>
       )}
 

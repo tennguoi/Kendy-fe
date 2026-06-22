@@ -21,7 +21,7 @@ function AdminUsersView({
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [detail, setDetail] = useState(null)
-  const [detailData, setDetailData] = useState({ audit: [], orders: [], sessions: [], tickets: [], wallet: [] })
+  const [detailData, setDetailData] = useState({ apiKeys: [], audit: [], orders: [], sessions: [], tickets: [], wallet: [] })
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [error, setError] = useState('')
   const [hasLoadedUsers, setHasLoadedUsers] = useState(false)
@@ -80,16 +80,18 @@ function AdminUsersView({
 
     setViewError('')
     try {
-      const [profile, orders, wallet, tickets, sessions, audit] = await Promise.all([
+      const [profile, orders, wallet, tickets, sessions, audit, apiKeys] = await Promise.all([
         adminApi.getUserDetail(userId, token),
         adminApi.getUserOrders(userId, token),
         adminApi.getUserWalletTransactions(userId, token),
         adminApi.getUserTickets(userId, token),
         adminApi.getUserSessions(userId, token),
         adminApi.getAuditLogs({ actorUserId: userId, targetId: userId }, token),
+        adminApi.getUserApiKeys(userId, token),
       ])
       setDetail(profile)
       setDetailData({
+        apiKeys: normalizeList(apiKeys),
         audit: normalizeList(audit),
         orders: normalizeList(orders),
         sessions: normalizeList(sessions),
@@ -187,6 +189,24 @@ function AdminUsersView({
       onSetNotice(t('admin.users.walletAdjustSuccess', { email: selectedUser.email }))
     } catch (err) {
       setViewError(err.message || t('admin.users.walletAdjustError'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const revokeApiKey = async (keyId) => {
+    if (!selectedUser) {
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      await adminApi.revokeUserApiKey(selectedUser.id, keyId, token)
+      await loadUserDetail(selectedUser.id)
+      onSetNotice(t('admin.users.apiKeyRevokeSuccess', { id: keyId }))
+    } catch (err) {
+      setViewError(err.message || t('admin.users.apiKeyRevokeError'))
     } finally {
       setSubmitting(false)
     }
@@ -311,6 +331,7 @@ function AdminUsersView({
           detailData={detailData}
           hasLoadedUsers={hasLoadedUsers}
           onActiveDetailTabChange={setActiveDetailTab}
+          onRevokeApiKey={revokeApiKey}
           onRevokeSession={revokeSession}
           selectedUser={selectedUser}
           submitting={submitting}

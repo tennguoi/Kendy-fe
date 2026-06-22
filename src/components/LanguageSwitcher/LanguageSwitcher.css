@@ -1,43 +1,28 @@
 .lang-switcher {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: var(--kd-surface, #f1f5f9);
-  border: 1px solid var(--kd-border, #e2e8f0);
-  border-radius: 10px;
-  padding: 2px;
-  margin-right: 4px;
-}
-
-.lang-switcher button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--kd-muted, #64748b);
-  font-size: 12px;
-  font-weight: 600;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  color: var(--kd-text);
+  background: var(--kd-card);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 700;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
   line-height: 1;
-  white-space: nowrap;
+  padding: 0;
 }
 
-.lang-switcher button.active {
-  background: var(--kd-blue, #2563eb);
-  color: #fff;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
+.lang-switcher:hover {
+  border-color: rgba(20, 124, 255, 0.35);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
 }
 
-.lang-switcher button:not(.active):hover {
-  background: var(--kd-hover, rgba(0, 0, 0, 0.04));
-  color: var(--kd-text, #1e293b);
-}
-
-.lang-switcher .lang-flag {
-  font-size: 14px;
-  line-height: 1;
+.lang-switcher:focus-visible {
+  outline: 3px solid rgba(24, 196, 199, 0.28);
+  outline-offset: 3px;
 }

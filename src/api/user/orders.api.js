@@ -16,7 +16,4 @@ export const userOrdersApi = {
 
   cancelOrder: (orderCode, data, token) =>
     axiosClient.post(`/api/orders/${orderCode}/cancel`, data, { token }),
-
-  reorder: (orderCode, token) =>
-    axiosClient.post(`/api/orders/${orderCode}/reorder`, {}, { token }),
 };

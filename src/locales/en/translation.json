@@ -3,6 +3,7 @@
     "overview": "Overview",
     "deposit": "Deposit",
     "services": "Services",
+    "locker": "My Services",
     "orders": "Orders",
     "warranty": "Warranty",
     "support": "Support",
@@ -17,6 +18,7 @@
     "services": "Services",
     "accountInventory": "Account Inventory",
     "assignedAccounts": "Assigned Accounts",
+    "entitlements": "Access Rights",
     "pricing": "Pricing",
     "coupons": "Coupons",
     "warranty": "Warranty",
@@ -55,6 +57,7 @@
     "actions": "Actions",
     "service": "Service",
     "details": "Details",
+    "viewDetail": "View details",
     "processing": "Processing...",
     "unknown": "Unknown"
   },
@@ -299,7 +302,7 @@
     "statusCancelled": "Cancelled"
   },
   "orders": {
-    "title": "Orders",
+    "title": "Order History",
     "orderCode": "Order Code",
     "service": "Service",
     "amount": "Amount",
@@ -307,7 +310,6 @@
     "createdAt": "Created",
     "actions": "Actions",
     "cancel": "Cancel",
-    "reorder": "Reorder",
     "detail": "Details",
     "invoice": "Invoice",
     "noOrders": "No orders yet.",
@@ -342,7 +344,13 @@
     "unfavorite": "Unpin service",
     "favorite": "Pin service",
     "defaultProcessingTime": "Standard workflow",
-    "pricingStandard": "Standard"
+    "pricingStandard": "Standard",
+    "notFound": "Service not found",
+    "outOfStockBanner": "This service is currently out of stock.",
+    "importantNote": "Important notes",
+    "features": "Highlighted features",
+    "warrantyDuration": "Warranty duration",
+    "nonWarrantyCases": "Non-warranty cases"
   },
   "overview": {
     "quickActions": "Quick Actions",
@@ -883,9 +891,62 @@
           "answer": "Issues caused by user guidelines violation, platform policy breaches, or illegal behavior are excluded from warranty."
         }
       }
+    },
+    "catalog": {
+      "eyebrow": "Service catalog",
+      "title": "All services at Kendy Digital",
+      "subtitle": "Explore full packages of CapCut, Facebook, account upgrades and advertising",
+      "searchPlaceholder": "Search services...",
+      "sortLabel": "Sort:",
+      "sortPopular": "Popular & Featured",
+      "sortNameAsc": "Name (A - Z)",
+      "sortNameDesc": "Name (Z - A)",
+      "sortPriceAsc": "Price (Low - High)",
+      "sortPriceDesc": "Price (High - Low)",
+      "filterAll": "All",
+      "filterCapcut": "CapCut",
+      "filterFacebook": "Facebook",
+      "filterUpgrade": "Upgrade",
+      "filterAds": "Advertising",
+      "loading": "Loading services...",
+      "emptyTitle": "No services found",
+      "emptyText": "Try a different keyword or choose another category",
+      "outOfStock": "Out of stock",
+      "inStock": "In stock",
+      "processing": "Processing:",
+      "warranty": "Warranty:",
+      "viewDetail": "View details",
+      "defaultProcessing": "Per process",
+      "defaultWarranty": "Per terms",
+      "defaultCategory": "Service"
+    },
+    "productDetail": {
+      "backToCatalog": "Back to catalog",
+      "notFound": "Service not found",
+      "notFoundExact": "This service was not found.",
+      "outOfStockBanner": "This service is currently out of stock. Please come back later or contact support.",
+      "imageHint": "Service illustration image",
+      "statusLabel": "Status:",
+      "productCodeLabel": "Product code:",
+      "categoryLabel": "Category:",
+      "buyNow": "Buy now",
+      "outOfStock": "Out of stock",
+      "consulting": "Consulting",
+      "inStock": "In stock",
+      "loading": "Loading service details...",
+      "importantNote": "Important notes:",
+      "detailTitle": "Product details",
+      "description": "Detailed description",
+      "features": "Highlighted features",
+      "warrantyPolicy": "Warranty policy",
+      "deliveryProcess": "Delivery process",
+      "warrantyDuration": "Warranty duration",
+      "nonWarrantyCases": "Non-warranty cases",
+      "defaultCategory": "Service"
     }
   },
   "support": {
+    "title": "Contact",
     "myTickets": "My Tickets",
     "ticketCount": "{{count}} tickets",
     "searchPlaceholder": "Search ticket, subject, order code",
@@ -992,9 +1053,25 @@
         "guide": "Guide",
         "language": "Language"
       },
+      "tabDesc": {
+        "settings": "2FA admin, backup/restore settings and config change history.",
+        "operations": "Maintenance mode, API rate limits and security email content.",
+        "webhooks": "Track webhook status, SePay configuration and retry failed transactions.",
+        "notifications": "Manage notification settings and operational alerts.",
+        "admins": "Roles, permissions, admin status, 2FA and sessions.",
+        "audit": "Search, filter and export important system audit logs.",
+        "files": "Upload, preview, download and delete operation files.",
+        "jobs": "Track background job status, retry or cancel jobs.",
+        "health": "API health status and quick operational indicators.",
+        "guide": "Quick admin guide for system operations.",
+        "language": "Switch display language between Vietnamese and English."
+      },
       "language": {
         "label": "Interface Language",
-        "description": "Switch the display language between Vietnamese and English."
+        "description": "Switch the display language between Vietnamese and English.",
+        "themeLabel": "Interface Theme",
+        "themeLight": "Switch to light theme",
+        "themeDark": "Switch to dark theme"
       },
       "twoFactor": {
         "title": "Security",
@@ -1203,6 +1280,7 @@
       "loading": "Loading orders...",
       "drawerTitle": "Order Details",
       "loadError": "Could not load order list.",
+      "invoice": "Invoice",
       "reasonRequired": "Enter reason before cancel, refund, extend or reprocess.",
       "updateSuccess": "Updated order {{code}}.",
       "updateError": "Could not update order.",
@@ -1256,6 +1334,8 @@
       "walletAdjustError": "Could not adjust wallet.",
       "sessionRevokeSuccess": "Revoked session #{{id}}.",
       "sessionRevokeError": "Could not revoke session.",
+      "apiKeyRevokeSuccess": "Revoked API key #{{id}}.",
+      "apiKeyRevokeError": "Could not revoke API key.",
       "bulkIdsRequired": "Enter user IDs to process.",
       "bulkUpdateSuccess": "Updated {{count}} users.",
       "bulkUpdateError": "Could not update bulk users.",

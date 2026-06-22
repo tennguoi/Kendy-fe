@@ -3,6 +3,7 @@ import { adminAuditApi } from './admin/audit.api';
 import { adminCouponsApi } from './admin/coupons.api';
 import { adminContentApi } from './admin/content.api';
 import { adminDashboardApi } from './admin/dashboard.api';
+import { adminEntitlementsApi } from './admin/entitlements.api';
 import { adminFilesApi } from './admin/files.api';
 import { adminFinanceApi } from './admin/finance.api';
 import { adminNotificationsApi } from './admin/notifications.api';
@@ -23,6 +24,7 @@ export const adminApi = {
   ...adminAccessApi,
   ...adminSystemApi,
   ...adminDashboardApi,
+  ...adminEntitlementsApi,
   ...adminUsersApi,
   ...adminAuditApi,
   ...adminOrdersApi,

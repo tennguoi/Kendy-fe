@@ -1,6 +1,7 @@
 import { userAccountApi } from './user/account.api';
 import { userCheckoutApi } from './user/checkout.api';
 import { userCouponsApi } from './user/coupons.api';
+import { userCredentialsApi } from './user/credentials.api';
 import { userDepositsApi } from './user/deposits.api';
 import { userNotificationsApi } from './user/notifications.api';
 import { userOrdersApi } from './user/orders.api';
@@ -14,6 +15,7 @@ export const userApi = {
   ...userAccountApi,
   ...userCheckoutApi,
   ...userCouponsApi,
+  ...userCredentialsApi,
   ...userSecurityApi,
   ...userWalletApi,
   ...userOrdersApi,

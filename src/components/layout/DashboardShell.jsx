@@ -7,6 +7,7 @@ import './shared.css'
 
 function DashboardShell({
   activeView,
+  brand,
   children,
   currentUser,
   displayBalance,
@@ -36,6 +37,7 @@ function DashboardShell({
       )}
       <Sidebar
         activeView={activeView}
+        brand={brand}
         items={items}
         onViewChange={(view) => {
           onViewChange(view)

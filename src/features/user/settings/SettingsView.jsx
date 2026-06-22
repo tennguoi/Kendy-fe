@@ -5,7 +5,9 @@ import {
   Copy,
   Download,
   FileText,
+  Globe2,
   HelpCircle,
+  ImageUp,
   KeyRound,
   Lock,
   LogOut,
@@ -15,6 +17,8 @@ import {
   Shield,
   ShieldCheck,
   Smartphone,
+  Moon,
+  Sun,
   Trash2,
   User,
   XCircle,
@@ -24,6 +28,8 @@ import { useTranslation } from 'react-i18next'
 import { userApi } from '../../../api/user.api'
 import { AdminEmptyState, AdminStatusBadge } from '../../admin/AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../admin/adminFormat'
+import LanguageSwitcher from '../../../components/LanguageSwitcher/LanguageSwitcher'
+import { useTheme } from '../../../contexts/ThemeContext'
 
 function profileToForm(user) {
   const avatarUrl = user?.avatarUrl || user?.avatar || user?.picture || user?.imageUrl || user?.photoUrl || ''
@@ -57,6 +63,7 @@ function SettingsView({
   token,
 }) {
   const { t } = useTranslation()
+  const { theme, setTheme } = useTheme()
   const [apiKeyForm, setApiKeyForm] = useState({ name: '', scopes: 'orders:read,wallet:read' })
   const [apiKeys, setApiKeys] = useState([])
   const [createdApiToken, setCreatedApiToken] = useState('')
@@ -69,13 +76,14 @@ function SettingsView({
   const [security, setSecurity] = useState(null)
   const [sessions, setSessions] = useState([])
   const [submitting, setSubmitting] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [totpCode, setTotpCode] = useState('')
   const [totpSetup, setTotpSetup] = useState(null)
   const [twoFactorForm, setTwoFactorForm] = useState({ code: '', password: '' })
   const [twoFactorEmailSent, setTwoFactorEmailSent] = useState(false)
 
   // Mobile optimization tab state
-  const [activeSettingsTab, setActiveSettingsTab] = useState('general') // 'general' | 'security' | 'apikeys' | 'privacy'
+  const [activeSettingsTab, setActiveSettingsTab] = useState('general')
 
   const setViewError = useCallback((message) => {
     setError(message)
@@ -130,19 +138,9 @@ function SettingsView({
     setSubmitting(true)
     setViewError('')
     try {
-      const currentAvatarUrl = currentUser?.avatarUrl || currentUser?.avatar || currentUser?.picture || currentUser?.imageUrl || currentUser?.photoUrl || ''
       const payload = {
-        email: profileForm.email.trim() || undefined,
         name: profileForm.name.trim(),
         phone: profileForm.phone.trim() || undefined,
-      }
-
-      if (profileForm.avatarUrl.trim() !== currentAvatarUrl) {
-        payload.avatarUrl = profileForm.avatarUrl.trim() || undefined
-      }
-
-      if (profileForm.email.trim() === currentUser?.email) {
-        delete payload.email
       }
 
       const saved = await userApi.updateProfile(payload, token)
@@ -153,6 +151,24 @@ function SettingsView({
       setViewError(err.message || t('settings.profileUpdateError', { defaultValue: 'Không cập nhật được thông tin tài khoản.' }))
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const uploadAvatar = async (file) => {
+    if (!file) {
+      return
+    }
+    setUploadingAvatar(true)
+    setViewError('')
+    try {
+      const saved = await userApi.uploadAvatar(file, token)
+      onCurrentUserChange(saved)
+      setProfileForm(profileToForm(saved))
+      onSetNotice(t('settings.avatarUploaded', { defaultValue: 'Đã cập nhật ảnh đại diện.' }))
+    } catch (err) {
+      setViewError(err.message || t('settings.avatarUploadError', { defaultValue: 'Không tải được ảnh đại diện.' }))
+    } finally {
+      setUploadingAvatar(false)
     }
   }
 
@@ -434,6 +450,17 @@ function SettingsView({
             </button>
             <button
               type="button"
+              className={`settings-menu-item ${activeSettingsTab === 'preferences' ? 'active' : ''}`}
+              onClick={() => setActiveSettingsTab('preferences')}
+            >
+              <Globe2 size={18} className="menu-icon" />
+              <div className="menu-text">
+                <strong>{t('settings.preferencesTab', { defaultValue: 'Giao diện & ngôn ngữ' })}</strong>
+                <span>{t('settings.preferencesTabDesc', { defaultValue: 'Chế độ sáng tối và ngôn ngữ' })}</span>
+              </div>
+            </button>
+            <button
+              type="button"
               className={`settings-menu-item ${activeSettingsTab === 'security' ? 'active' : ''}`}
               onClick={() => setActiveSettingsTab('security')}
             >
@@ -480,6 +507,21 @@ function SettingsView({
                   ) : (
                     <div className="settings-profile-avatar fallback">{profileInitial}</div>
                   )}
+                  <label className="settings-avatar-upload" title={t('settings.uploadAvatar', { defaultValue: 'Tải ảnh đại diện' })}>
+                    <ImageUp size={16} />
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      disabled={uploadingAvatar}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0]
+                        if (file) {
+                          uploadAvatar(file)
+                        }
+                        event.target.value = ''
+                      }}
+                    />
+                  </label>
                 </div>
                 <div className="settings-profile-info">
                   <span className="eyebrow" style={{ fontSize: '11px', letterSpacing: '1px' }}>{t('settings.member', { defaultValue: 'Thành viên' })}</span>
@@ -541,12 +583,26 @@ function SettingsView({
                         />
                       </div>
                       <div className="settings-input-group full-width">
-                        <label>{t('settings.avatarUrl', { defaultValue: 'Ảnh đại diện (Avatar URL)' })}</label>
-                        <input
-                          value={profileForm.avatarUrl}
-                          onChange={(event) => setProfileForm((current) => ({ ...current, avatarUrl: event.target.value }))}
-                          placeholder="https://example.com/avatar.png"
-                        />
+                        <label>{t('settings.uploadAvatar', { defaultValue: 'Ảnh đại diện' })}</label>
+                        <label className="settings-avatar-file-button">
+                          <ImageUp size={17} />
+                          <span>{uploadingAvatar
+                            ? t('settings.uploadingAvatar', { defaultValue: 'Đang tải ảnh...' })
+                            : t('settings.chooseAvatar', { defaultValue: 'Chọn ảnh từ máy' })}</span>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/gif,image/webp"
+                            disabled={uploadingAvatar}
+                            onChange={(event) => {
+                              const file = event.target.files?.[0]
+                              if (file) {
+                                uploadAvatar(file)
+                              }
+                              event.target.value = ''
+                            }}
+                          />
+                        </label>
+                        <small>JPG, PNG, GIF hoặc WEBP; tối đa 10 MB.</small>
                       </div>
                       <div className="settings-input-group full-width">
                         <label>{t('settings.phone', { defaultValue: 'Số điện thoại' })}</label>
@@ -592,6 +648,46 @@ function SettingsView({
                 </div>
               </div>
             </>
+          )}
+
+          {activeSettingsTab === 'preferences' && (
+            <div className="settings-card">
+              <div className="settings-card-header">
+                <div>
+                  <h3><Globe2 size={16} /> {t('settings.preferencesTab', { defaultValue: 'Giao diện & ngôn ngữ' })}</h3>
+                  <div className="settings-card-header-desc">
+                    {t('settings.preferencesDesc', { defaultValue: 'Lựa chọn được lưu trên trình duyệt và giữ nguyên trước, trong và sau khi đăng nhập.' })}
+                  </div>
+                </div>
+              </div>
+              <div className="settings-card-body settings-preferences-grid">
+                <div className="settings-preference-item">
+                  <div>
+                    <strong>{t('settings.languageLabel', { defaultValue: 'Ngôn ngữ' })}</strong>
+                    <span>Tiếng Việt / English</span>
+                  </div>
+                  <LanguageSwitcher />
+                </div>
+                <div className="settings-preference-item">
+                  <div>
+                    <strong>{t('settings.themeLabel', { defaultValue: 'Giao diện' })}</strong>
+                    <span>{theme === 'dark'
+                      ? t('settings.darkTheme', { defaultValue: 'Chế độ tối' })
+                      : t('settings.lightTheme', { defaultValue: 'Chế độ sáng' })}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-icon-button"
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  >
+                    {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+                    <span>{theme === 'dark'
+                      ? t('settings.switchLight', { defaultValue: 'Chuyển sang sáng' })
+                      : t('settings.switchDark', { defaultValue: 'Chuyển sang tối' })}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
 
           {activeSettingsTab === 'security' && (

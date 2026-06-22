@@ -13,6 +13,8 @@ import Loading from '../../../components/Loading/Loading'
 import Modal from '../../../components/Modal/Modal'
 
 const emptyServiceForm = {
+  accessDurationDays: '30',
+  accessStrategy: 'MANUAL',
   benefits: '',
   categoryId: '',
   clearCategory: false,
@@ -98,6 +100,8 @@ function toMoney(value, fallback = undefined) {
 
 function serviceToForm(service) {
   return {
+    accessDurationDays: service.accessDurationDays ?? '30',
+    accessStrategy: service.accessStrategy || (service.type === 'ACCOUNT_STOCK' ? 'DEDICATED_ACCOUNT' : 'MANUAL'),
     benefits: service.benefits || '',
     categoryId: service.categoryId ? String(service.categoryId) : '',
     clearCategory: false,
@@ -128,6 +132,8 @@ function serviceToForm(service) {
 
 function buildServicePayload(form, isEditing) {
   return {
+    accessDurationDays: form.accessDurationDays ? Number(form.accessDurationDays) : undefined,
+    accessStrategy: form.accessStrategy,
     benefits: form.benefits || undefined,
     categoryId: form.categoryId ? Number(form.categoryId) : undefined,
     clearCategory: isEditing && !form.categoryId ? true : undefined,

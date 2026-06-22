@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useLayoutEffect, useState } from 'react'
 
 const ThemeContext = createContext()
 
@@ -12,7 +12,7 @@ export function ThemeProvider({ children }) {
     return 'light'
   })
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = window.document.documentElement
     if (theme === 'dark') {
       root.classList.add('dark')
@@ -27,7 +27,7 @@ export function ThemeProvider({ children }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   )

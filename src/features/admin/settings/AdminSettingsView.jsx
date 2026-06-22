@@ -762,8 +762,8 @@ function AdminSettingsView({
               >
                 {Icon && <Icon size={18} className="menu-icon" strokeWidth={2.5} aria-hidden="true" />}
                 <div className="menu-text">
-                  <strong>{tab.label}</strong>
-                  <span>{tab.description}</span>
+                  <strong>{t(`admin.settings.tabs.${tab.id}`, { defaultValue: tab.label })}</strong>
+                  <span>{t(`admin.settings.tabDesc.${tab.id}`, { defaultValue: tab.description })}</span>
                 </div>
               </button>
             )
@@ -774,7 +774,7 @@ function AdminSettingsView({
           <div className="settings-section-head">
             <div>
               <span>{activeTabMeta.kicker || t('admin.common.system')}</span>
-              <h3>{activeTabMeta.title || activeTabMeta.label}</h3>
+              <h3>{t(`admin.settings.tabTitle.${activeTabMeta.id}`, { defaultValue: activeTabMeta.title || activeTabMeta.label })}</h3>
             </div>
             {activeTabMeta.description && <p>{activeTabMeta.description}</p>}
           </div>

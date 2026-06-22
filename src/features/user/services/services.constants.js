@@ -7,9 +7,6 @@ export const catalogTabs = [
 export const serviceTypeLabels = {
   ACCOUNT_STOCK: 'Tài khoản giao ngay',
   MANUAL: 'Dịch vụ thủ công',
-  AUTO: 'Tự động',
-  SUBSCRIPTION: 'Gia hạn',
-  API_CREDIT: 'Tài nguyên API',
 }
 
 export const serviceStatusLabels = {
