@@ -1,5 +1,5 @@
-import { RefreshCw } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { ChevronDown, RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { userApi } from '../../../api/user.api'
@@ -14,7 +14,7 @@ import NotificationsTab from './components/NotificationsTab'
 import OperationsTab from './components/OperationsTab'
 import SettingsTab from './components/SettingsTab'
 import WebhooksTab from './components/WebhooksTab'
-import { settingsTabs } from './settings.constants'
+import { settingsGroups, settingsTabs } from './settings.constants'
 import {
   downloadBlobFile,
   downloadTextFile,
@@ -31,6 +31,8 @@ function AdminSettingsView({
   token,
 }) {
   const [activeTab, setActiveTab] = useState('settings')
+  const [openSettingsGroup, setOpenSettingsGroup] = useState(null)
+  const settingsNavRef = useRef(null)
   const [admins, setAdmins] = useState([])
   const [adminEditor, setAdminEditor] = useState({
     legacyRole: 'ADMIN',
@@ -79,6 +81,28 @@ function AdminSettingsView({
   const selectedAdmin = admins.find((admin) => admin.id === selectedAdminId) || admins[0]
   const selectedRole = roles.find((role) => role.id === selectedRoleId)
   const activeTabMeta = settingsTabs.find((tab) => tab.id === activeTab) || settingsTabs[0]
+  const activeGroupId = activeTabMeta.group
+
+  useEffect(() => {
+    if (!openSettingsGroup) return undefined
+
+    const closeDropdown = (event) => {
+      if (settingsNavRef.current && !settingsNavRef.current.contains(event.target)) {
+        setOpenSettingsGroup(null)
+      }
+    }
+
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setOpenSettingsGroup(null)
+    }
+
+    document.addEventListener('mousedown', closeDropdown)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('mousedown', closeDropdown)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [openSettingsGroup])
 
   const setViewError = useCallback((message) => {
     setError(message)
@@ -373,11 +397,12 @@ function AdminSettingsView({
     }
   }
 
-  const loadAuditList = async () => {
+  const loadAuditList = async (actionOverride) => {
     setSubmitting(true)
     setViewError('')
     try {
-      const data = await adminApi.listAuditLogs({ action: auditFilter.action.trim() }, token)
+      const action = typeof actionOverride === 'string' ? actionOverride : auditFilter.action.trim()
+      const data = await adminApi.listAuditLogs({ action }, token)
       setAuditLogs(data)
       setSelectedAudit(data[0] || null)
       onSetNotice(t('admin.settings.success.auditLoaded', { count: data.length }))
@@ -750,25 +775,55 @@ function AdminSettingsView({
       )}
 
       <div className="settings-layout">
-        <aside className="settings-rail" aria-label={t('admin.settings.settingsGroup')}>
-          {settingsTabs.map((tab) => {
-            const Icon = tab.icon
+        <nav className="settings-rail" aria-label={t('admin.settings.settingsGroup')} ref={settingsNavRef}>
+          {settingsGroups.map((group) => {
+            const groupTabs = settingsTabs.filter((tab) => tab.group === group.id)
+            const isOpen = openSettingsGroup === group.id
+            const isActive = activeGroupId === group.id
+
             return (
-              <button
-                type="button"
-                className={activeTab === tab.id ? 'active' : ''}
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {Icon && <Icon size={18} className="menu-icon" strokeWidth={2.5} aria-hidden="true" />}
-                <div className="menu-text">
-                  <strong>{t(`admin.settings.tabs.${tab.id}`, { defaultValue: tab.label })}</strong>
-                  <span>{t(`admin.settings.tabDesc.${tab.id}`, { defaultValue: tab.description })}</span>
-                </div>
-              </button>
+              <div className={`settings-nav-group ${isOpen ? 'open' : ''}`} key={group.id}>
+                <button
+                  type="button"
+                  className={`settings-group-trigger ${isActive ? 'active' : ''}`}
+                  onClick={() => setOpenSettingsGroup((current) => current === group.id ? null : group.id)}
+                  aria-expanded={isOpen}
+                  aria-haspopup="menu"
+                >
+                  <span>{group.label}</span>
+                  <ChevronDown size={15} strokeWidth={2.2} aria-hidden="true" />
+                </button>
+
+                {isOpen && (
+                  <div className="settings-dropdown" role="menu">
+                    {groupTabs.map((tab) => {
+                  const Icon = tab.icon
+                  return (
+                    <button
+                      type="button"
+                      className={`settings-dropdown-item ${activeTab === tab.id ? 'active' : ''}`}
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id)
+                        setOpenSettingsGroup(null)
+                      }}
+                      aria-current={activeTab === tab.id ? 'page' : undefined}
+                      role="menuitem"
+                    >
+                      {Icon && <Icon size={17} className="menu-icon" strokeWidth={2.2} aria-hidden="true" />}
+                      <span>
+                        <strong>{t(`admin.settings.tabs.${tab.id}`, { defaultValue: tab.label })}</strong>
+                        <small>{tab.description}</small>
+                      </span>
+                    </button>
+                  )
+                    })}
+                  </div>
+                )}
+              </div>
             )
           })}
-        </aside>
+        </nav>
 
         <div className="settings-main">
           <div className="settings-section-head">

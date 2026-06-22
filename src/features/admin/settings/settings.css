@@ -209,104 +209,183 @@ html.dark .admin-guide-code {
 
 /* === Redesigned Admin Settings Layout === */
 .settings-layout {
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 28px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
   min-width: 0;
   margin-top: 16px;
 }
 
 .settings-rail {
   position: sticky;
-  top: 18px;
+  top: 72px;
+  z-index: 12;
   background: var(--kd-card);
   border: 1px solid var(--kd-border);
-  border-radius: 16px;
-  padding: 16px 12px;
+  border-radius: 14px;
+  padding: 6px;
   box-shadow: var(--kd-soft-shadow);
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 4px;
+  backdrop-filter: blur(14px);
 }
 
-.settings-rail button {
-  width: 100%;
+.settings-nav-group {
+  position: relative;
+  min-width: 0;
+}
+
+.settings-group-trigger {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border: none;
-  border-radius: 12px;
+  justify-content: space-between;
+  gap: 9px;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   background: transparent;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
 }
 
-.settings-rail button:hover {
+.settings-group-trigger:hover,
+.settings-nav-group.open .settings-group-trigger {
   background: var(--kd-bg);
   color: var(--kd-text);
 }
 
-.settings-rail button.active {
+.settings-group-trigger.active {
   background: #eff6ff;
   color: var(--kd-blue);
-  border: 1px solid #dbeafe;
+  border-color: #dbeafe;
 }
 
-html.dark .settings-rail button.active {
+html.dark .settings-group-trigger.active {
   background: rgba(37, 99, 235, 0.15);
   color: #60a5fa;
   border-color: rgba(37, 99, 235, 0.25);
 }
 
-.settings-rail button .menu-icon {
-  flex-shrink: 0;
-  opacity: 0.85;
+.settings-group-trigger svg {
+  transition: transform 0.2s;
 }
 
-.settings-rail button.active .menu-icon {
-  opacity: 1;
-  color: inherit;
+.settings-nav-group.open .settings-group-trigger svg {
+  transform: rotate(180deg);
 }
 
-.settings-rail button .menu-text {
+.settings-group-trigger:focus-visible,
+.settings-dropdown-item:focus-visible {
+  outline: 2px solid var(--kd-blue);
+  outline-offset: 2px;
+}
+
+.settings-dropdown {
+  position: absolute;
+  top: calc(100% + 9px);
+  left: 0;
+  z-index: 30;
+  width: min(330px, calc(100vw - 48px));
+  padding: 7px;
+  background: var(--kd-card);
+  border: 1px solid var(--kd-border);
+  border-radius: 13px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+  animation: settings-dropdown-in 0.16s ease-out;
+}
+
+.settings-nav-group:last-child .settings-dropdown {
+  right: 0;
+  left: auto;
+}
+
+@keyframes settings-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settings-dropdown-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--kd-muted);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.settings-dropdown-item:hover {
+  background: var(--kd-bg);
+  color: var(--kd-text);
+}
+
+.settings-dropdown-item.active {
+  background: #eff6ff;
+  color: var(--kd-blue);
+}
+
+html.dark .settings-dropdown-item.active {
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
+}
+
+.settings-dropdown-item .menu-icon {
+  justify-self: center;
+}
+
+.settings-dropdown-item > span {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.settings-rail button .menu-text strong {
-  font-size: 14px;
+.settings-dropdown-item strong {
+  color: inherit;
+  font-size: 13px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
-.settings-rail button .menu-text span {
-  font-size: 11px;
-  font-weight: 500;
+.settings-dropdown-item small {
   margin-top: 2px;
-  opacity: 0.85;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--kd-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .settings-main {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   min-width: 0;
+  width: 100%;
 }
 
 .settings-section-head {
-  background: var(--kd-card);
-  border: 1px solid var(--kd-border);
-  border-radius: 16px;
-  padding: 20px 24px;
-  box-shadow: var(--kd-soft-shadow);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.65fr);
+  align-items: end;
+  gap: 28px;
+  padding: 6px 4px 12px;
+  border-bottom: 1px solid var(--kd-border);
 }
 
 .settings-section-head span {
@@ -320,54 +399,359 @@ html.dark .settings-rail button.active {
 
 .settings-section-head h3 {
   margin: 6px 0 0;
-  font-size: 20px;
+  font-size: clamp(22px, 2vw, 30px);
   font-weight: 800;
+  letter-spacing: -0.035em;
   color: var(--kd-text);
 }
 
 .settings-section-head p {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: 13px;
   color: var(--kd-muted);
-  line-height: 1.5;
+  line-height: 1.6;
+  text-wrap: pretty;
 }
 
 .settings-content {
   display: grid;
-  gap: 20px;
+  gap: 18px;
   min-width: 0;
+  width: 100%;
 }
 
-@media (max-width: 900px) {
-  .settings-layout {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
+.settings-key-list {
+  max-height: 27rem;
+  overflow: auto;
+  padding-right: 4px;
+}
 
+.settings-advanced {
+  margin-top: 14px;
+  border-top: 1px solid var(--kd-border);
+}
+
+.settings-advanced summary {
+  padding: 16px 2px 4px;
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.settings-advanced summary:hover {
+  color: var(--kd-text);
+}
+
+.settings-advanced summary:focus-visible {
+  outline: 2px solid var(--kd-blue);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.settings-advanced-content {
+  display: grid;
+  gap: 16px;
+  padding-top: 14px;
+}
+
+.settings-restore-form {
+  padding-top: 16px;
+  border-top: 1px solid var(--kd-border);
+}
+
+@media (max-width: 760px) {
   .settings-rail {
     position: static;
-    flex-direction: row;
     overflow-x: auto;
-    padding: 12px;
-    gap: 8px;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE 10+ */
+    gap: 3px;
+    scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
 
   .settings-rail::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
-
-  .settings-rail button {
-    width: auto;
-    white-space: nowrap;
-    padding: 8px 16px;
-    flex-shrink: 0;
-  }
-
-  .settings-rail button .menu-text span {
     display: none;
+  }
+
+  .settings-nav-group {
+    flex: 0 0 auto;
+  }
+
+  .settings-dropdown {
+    position: fixed;
+    top: auto;
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    width: auto;
+    max-height: min(70dvh, 520px);
+    overflow-y: auto;
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  }
+
+  .settings-nav-group:last-child .settings-dropdown {
+    right: 14px;
+    left: 14px;
+  }
+
+  .settings-section-head {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+/* === Operations Tab: Toggle switches === */
+.settings-operations {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 78px;
+}
+
+.settings-subtabs {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 4px;
+  padding: 4px;
+  background: var(--kd-bg);
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+}
+
+.settings-subtabs button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.settings-subtabs button:hover {
+  color: var(--kd-text);
+}
+
+.settings-subtabs button.active {
+  background: var(--kd-card);
+  color: var(--kd-text);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.settings-subtabs button:focus-visible {
+  outline: 2px solid var(--kd-blue);
+  outline-offset: 2px;
+}
+
+.settings-operation-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.settings-switch-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--kd-card);
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  box-shadow: var(--kd-soft-shadow);
+  transition: border-color 0.2s;
+}
+
+.settings-switch-card > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.settings-switch-card > div strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--kd-text);
+}
+
+.settings-switch-card > div span {
+  font-size: 12px;
+  color: var(--kd-muted);
+  line-height: 1.5;
+  margin-left: 27px;
+}
+
+.settings-email-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.settings-email-wide {
+  grid-column: 1 / -1;
+}
+
+.settings-save-dock {
+  position: sticky;
+  bottom: 14px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 14px 12px 18px;
+  background: color-mix(in srgb, var(--kd-card) 92%, transparent);
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  box-shadow: 0 14px 35px rgba(30, 64, 175, 0.14);
+  backdrop-filter: blur(14px);
+}
+
+.settings-save-dock > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-save-dock strong {
+  color: var(--kd-text);
+  font-size: 13px;
+}
+
+.settings-save-dock > div span {
+  color: var(--kd-muted);
+  font-size: 11px;
+}
+
+/* Toggle switch */
+.settings-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.settings-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.settings-switch span {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--kd-border);
+  border-radius: 24px;
+  transition: background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-switch span::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.settings-switch input:checked + span {
+  background: var(--kd-blue, #2563eb);
+}
+
+.settings-switch input:checked + span::before {
+  transform: translateX(20px);
+}
+
+.settings-switch input:focus-visible + span {
+  outline: 2px solid var(--kd-blue, #2563eb);
+  outline-offset: 2px;
+}
+
+html.dark .settings-switch span {
+  background: #475569;
+}
+
+html.dark .settings-switch span::before {
+  background: #cbd5e1;
+}
+
+html.dark .settings-switch input:checked + span {
+  background: #3b82f6;
+}
+
+/* Save button */
+.settings-save-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 10px;
+  background: var(--kd-blue, #2563eb);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.settings-save-button:hover {
+  background: #1d4ed8;
+}
+
+.settings-save-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+html.dark .settings-save-button {
+  background: #3b82f6;
+}
+
+html.dark .settings-save-button:hover {
+  background: #2563eb;
+}
+
+@media (max-width: 700px) {
+  .settings-operation-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-email-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-email-wide {
+    grid-column: auto;
+  }
+
+  .settings-save-dock > div {
+    display: none;
+  }
+
+  .settings-save-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 

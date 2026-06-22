@@ -940,7 +940,15 @@ function SettingsView({
               <div className="settings-card-header">
                 <div>
                   <h3><KeyRound size={16} /> {t('settings.apikeysTitle', { defaultValue: 'API Keys' })}</h3>
-                  <div className="settings-card-header-desc">{t('settings.apikeysDesc', { defaultValue: 'Tạo khóa API dùng để xác thực hệ thống bên ngoài với tài khoản của bạn.' })}</div>
+                  <div className="settings-card-header-desc">
+                    {t('settings.apikeysDesc', { defaultValue: 'Tạo khóa API dùng để xác thực hệ thống bên ngoài (script, bot, tool) với tài khoản của bạn.' })}
+                    <br />
+                    <span style={{ fontSize: '12px', color: 'var(--kd-muted)', marginTop: '4px', display: 'block', lineHeight: '1.6' }}>
+                      <strong>Cách dùng:</strong> Gửi header <code style={{ background: '#1e293b', padding: '1px 6px', borderRadius: '4px', fontSize: '11px' }}>X-Api-Key: kdy_&lt;token&gt;</code> trong mọi request.
+                      Scopes giới hạn quyền (VD: <code>orders:read</code> = chỉ đọc đơn, <code>wallet:read</code> = chỉ xem ví).
+                      Key chỉ hiện <strong>1 lần</strong> duy nhất lúc tạo. Hãy sao chép và lưu an toàn.
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="settings-card-body">

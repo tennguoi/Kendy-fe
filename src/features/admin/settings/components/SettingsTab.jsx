@@ -84,7 +84,7 @@ function SettingsTab({
         <div className="admin-filters single-filter">
           <SearchField value={settingSearch} onChange={(event) => onSetSettingSearch(event.target.value)} placeholder={t('admin.settings.system.searchKey')} />
         </div>
-        <div className="admin-mini-list">
+        <div className="admin-mini-list settings-key-list">
           {settings.map((setting) => (
             <article key={setting.key}>
               <strong>{setting.key}</strong>
@@ -92,34 +92,39 @@ function SettingsTab({
             </article>
           ))}
         </div>
-        <form className="admin-form compact" onSubmit={loadSettingHistory}>
-          <div className="admin-panel-head compact-head">
-            <h3>Setting history</h3>
+        <details className="settings-advanced">
+          <summary>Lịch sử và khôi phục nâng cao</summary>
+          <div className="settings-advanced-content">
+            <form className="admin-form compact" onSubmit={loadSettingHistory}>
+              <div className="admin-panel-head compact-head">
+                <h3>Lịch sử thay đổi</h3>
+              </div>
+              <label>
+                <span>Setting key</span>
+                <input value={settingHistoryKey} onChange={(event) => onSetSettingHistoryKey(event.target.value)} placeholder={t('admin.settings.system.keyPlaceholder')} />
+              </label>
+              <button type="submit" disabled={submitting}>{t('admin.settings.system.loadHistory')}</button>
+            </form>
+            <div className="admin-mini-list">
+              {settingHistory.map((item) => (
+                <article key={item.id}>
+                  <strong>{item.key}</strong>
+                  <span>{item.oldValue || t('admin.settings.system.emptyValue')} {'->'} {item.newValue || t('admin.settings.system.emptyValue')} · {formatAdminDate(item.createdAt)}</span>
+                </article>
+              ))}
+            </div>
+            <form className="admin-form compact settings-restore-form" onSubmit={onRestoreSettingsFromText}>
+              <div className="admin-panel-head compact-head">
+                <h3>Khôi phục từ JSON</h3>
+              </div>
+              <label>
+                <span>JSON</span>
+                <textarea value={restoreText} onChange={(event) => onSetRestoreText(event.target.value)} rows="6" />
+              </label>
+              <button type="submit" className="admin-danger-button" disabled={submitting}>Khôi phục</button>
+            </form>
           </div>
-          <label>
-            <span>Setting key</span>
-            <input value={settingHistoryKey} onChange={(event) => onSetSettingHistoryKey(event.target.value)} placeholder={t('admin.settings.system.keyPlaceholder')} />
-          </label>
-          <button type="submit" disabled={submitting}>{t('admin.settings.system.loadHistory')}</button>
-        </form>
-        <div className="admin-mini-list">
-          {settingHistory.map((item) => (
-            <article key={item.id}>
-              <strong>{item.key}</strong>
-              <span>{item.oldValue || t('admin.settings.system.emptyValue')} {'->'} {item.newValue || t('admin.settings.system.emptyValue')} · {formatAdminDate(item.createdAt)}</span>
-            </article>
-          ))}
-        </div>
-        <form className="admin-form compact" onSubmit={onRestoreSettingsFromText}>
-          <div className="admin-panel-head compact-head">
-            <h3>Restore settings</h3>
-          </div>
-          <label>
-            <span>JSON</span>
-            <textarea value={restoreText} onChange={(event) => onSetRestoreText(event.target.value)} rows="6" />
-          </label>
-          <button type="submit" className="admin-danger-button" disabled={submitting}>Restore</button>
-        </form>
+        </details>
       </div>
     </div>
   )
