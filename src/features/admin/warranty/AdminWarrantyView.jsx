@@ -19,6 +19,18 @@ const WARRANTY_STATUS_COLORS = {
 
 const EMPTY_FORM = { status: 'OPEN', replacementCredentialId: '', adminNote: '' }
 
+function WarrantyStatusBadge({ labels, status }) {
+  return (
+    <span style={{
+      display: 'inline-block', padding: '2px 8px', borderRadius: '4px',
+      fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap',
+      background: WARRANTY_STATUS_COLORS[status] || '#6c757d', color: '#fff',
+    }}>
+      {labels[status] || status}
+    </span>
+  )
+}
+
 function AdminWarrantyView({ onSetError, onSetNotice, token }) {
   const { t } = useTranslation()
 
@@ -29,18 +41,6 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
     APPROVED_REFUND: t('admin.warranty.status.APPROVED_REFUND'),
     REJECTED: t('admin.warranty.status.REJECTED'),
     RESOLVED: t('admin.warranty.status.RESOLVED'),
-  }
-
-  function WarrantyStatusBadge({ status }) {
-    return (
-      <span style={{
-        display: 'inline-block', padding: '2px 8px', borderRadius: '4px',
-        fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap',
-        background: WARRANTY_STATUS_COLORS[status] || '#6c757d', color: '#fff',
-      }}>
-        {WARRANTY_STATUS_LABELS[status] || status}
-      </span>
-    )
   }
 
   const [allRequests, setAllRequests] = useState([])
@@ -180,7 +180,7 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
           >
             <strong>{request.orderCode}</strong>
             <span>
-              <WarrantyStatusBadge status={request.status} />
+              <WarrantyStatusBadge labels={WARRANTY_STATUS_LABELS} status={request.status} />
               {' · '}{request.serviceName}
               {' · '}{formatAdminDate(request.createdAt)}
             </span>
@@ -212,7 +212,7 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
               <div><dt>{t('admin.warranty.detail.orderCode')}</dt><dd>{selectedRequest.orderCode}</dd></div>
               <div><dt>{t('admin.warranty.detail.service')}</dt><dd>{selectedRequest.serviceName}</dd></div>
               <div><dt>{t('admin.warranty.detail.userId')}</dt><dd>#{selectedRequest.userId}</dd></div>
-              <div><dt>{t('admin.warranty.detail.status')}</dt><dd><WarrantyStatusBadge status={selectedRequest.status} /></dd></div>
+              <div><dt>{t('admin.warranty.detail.status')}</dt><dd><WarrantyStatusBadge labels={WARRANTY_STATUS_LABELS} status={selectedRequest.status} /></dd></div>
               <div><dt>{t('admin.warranty.detail.createdAt')}</dt><dd>{formatAdminDate(selectedRequest.createdAt)}</dd></div>
               {selectedRequest.resolvedAt && (
                 <div><dt>{t('admin.warranty.detail.resolvedAt')}</dt><dd>{formatAdminDate(selectedRequest.resolvedAt)}</dd></div>

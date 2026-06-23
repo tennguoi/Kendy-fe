@@ -84,5 +84,5 @@ export const adminServicesApi = {
     axiosClient.get('/api/admin/pricing?limit=200&sort=sort_order', { token }),
 
   searchPricing: (params = {}, token) =>
-    axiosClient.get(`/api/admin/pricing/search${queryString({ limit: 100, sort: 'sort_order', page: 0, ...params })}`, { token }),
+    axiosClient.get(`/api/admin/pricing${queryString({ limit: 100, sort: 'sort_order', page: 0, ...params })}`, { token }),
 };

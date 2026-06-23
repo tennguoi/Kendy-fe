@@ -59,19 +59,20 @@ function ServicesView({
     return visibleServices.slice(start, start + itemsPerPage)
   }, [visibleServices, currentPage])
 
-  // Reset to page 1 when filters change
-  const filterKey = `${activeTab}-${query}-${statusFilter}-${typeFilter}`
-  useMemo(() => { setCurrentPage(1) }, [filterKey])
+  const changeFilter = (setter) => (value) => {
+    setter(value)
+    setCurrentPage(1)
+  }
 
   return (
     <section className="services-catalog">
       <CatalogToolbar count={visibleServices.length} />
       <CatalogControls
         activeTab={activeTab}
-        onActiveTabChange={setActiveTab}
-        onQueryChange={setQuery}
-        onStatusFilterChange={setStatusFilter}
-        onTypeFilterChange={setTypeFilter}
+        onActiveTabChange={changeFilter(setActiveTab)}
+        onQueryChange={changeFilter(setQuery)}
+        onStatusFilterChange={changeFilter(setStatusFilter)}
+        onTypeFilterChange={changeFilter(setTypeFilter)}
         query={query}
         serviceStatuses={serviceStatuses}
         serviceTypes={serviceTypes}

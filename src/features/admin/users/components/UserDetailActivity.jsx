@@ -5,6 +5,7 @@ import { userDetailTabs } from '../users.constants'
 
 function UserDetailActivity({
   activeDetailTab,
+  detail,
   detailData,
   onActiveDetailTabChange,
   onRevokeApiKey,
@@ -85,7 +86,7 @@ function UserDetailActivity({
             API Key dùng để xác thực hệ thống bên ngoài (script, bot, tool) với tài khoản của user.
             Gửi key qua header <code style={{ background: '#1e293b', padding: '1px 6px', borderRadius: '4px', fontSize: '11px' }}>X-Api-Key: kdy_&lt;token&gt;</code>.
             {detail?.user?.role === 'ADMIN' || detail?.user?.role === 'SUPER_ADMIN' ? (
-              <span> User này có quyền <strong>ADMIN</strong> → API key của họ có thể truy cập <strong>toàn bộ API quản trị</strong> (/api/admin/...). Cẩn trọng khi xử lý.</span>
+              <span> API key không được phép truy cập <strong>API quản trị</strong> (/api/admin/...), kể cả khi tài khoản sở hữu key là admin.</span>
             ) : (
               <span> Key chỉ truy cập các API mà user được phép, giới hạn bởi <strong>scopes</strong> (VD: orders:read, wallet:read).</span>
             )}

@@ -37,6 +37,7 @@ function UserDetailPanel({
 
       <UserDetailActivity
         activeDetailTab={activeDetailTab}
+        detail={detail}
         detailData={detailData}
         onActiveDetailTabChange={onActiveDetailTabChange}
         onRevokeApiKey={onRevokeApiKey}
