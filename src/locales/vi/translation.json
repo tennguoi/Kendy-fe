@@ -59,7 +59,11 @@
     "details": "Chi tiết",
     "viewDetail": "Xem chi tiết",
     "processing": "Đang xử lý...",
-    "unknown": "Không xác định"
+    "unknown": "Không xác định",
+    "pagination": "Phân trang",
+    "prevPage": "Trang trước",
+    "nextPage": "Trang sau",
+    "pageNumber": "Trang {{page}}"
   },
   "topbar": {
     "subtitle": "Tài khoản & quảng cáo Facebook",
@@ -1032,8 +1036,10 @@
       "orderCode": "Mã đơn",
       "service": "Dịch vụ",
       "status": "Trạng thái",
-      "date": "Ngày"
+      "date": "Ngày",
+      "actions": "Hành động"
     },
+    "defaultEmptyHint": "Không có dữ liệu hoặc kiểm tra lại bộ lọc.",
     "settings": {
       "title": "Cài đặt hệ thống",
       "description": "Quản trị vận hành, bảo mật, audit và các cấu hình nền của hệ thống.",
@@ -1319,6 +1325,57 @@
         "actionReprocess": "Chạy lại"
       }
     },
+    "entitlements": {
+      "title": "Quyền truy cập khách hàng",
+      "description": "Cấp, gia hạn, tạm ngưng và thu hồi team seat hoặc tài nguyên nhà cung cấp.",
+      "eyebrow": "Access control",
+      "reload": "Tải lại",
+      "searchPlaceholder": "Tìm khách, dịch vụ, mã đơn, resource ID...",
+      "allStatus": "Tất cả trạng thái",
+      "count": "{{count}} quyền",
+      "empty": "Chưa có quyền truy cập.",
+      "loadError": "Không tải được quyền truy cập.",
+      "updateSuccess": "Đã cập nhật quyền truy cập #{{id}}.",
+      "updateError": "Không cập nhật được quyền truy cập.",
+      "noResource": "Chưa gắn resource",
+      "startsAt": "Bắt đầu:",
+      "table": {
+        "customer": "Khách hàng",
+        "service": "Dịch vụ",
+        "access": "Quyền cấp",
+        "expiry": "Thời hạn",
+        "status": "Trạng thái",
+        "actions": "Thao tác"
+      },
+      "status": {
+        "PENDING": "Chờ cấp quyền",
+        "ACTIVE": "Đang hoạt động",
+        "EXPIRING": "Sắp hết hạn",
+        "SUSPENDED": "Tạm ngưng",
+        "REVOKED": "Đã thu hồi",
+        "FAILED": "Thất bại"
+      },
+      "strategy": {
+        "DEDICATED_ACCOUNT": "Tài khoản riêng",
+        "TEAM_INVITE": "Team seat",
+        "PROVIDER_API": "Provider API",
+        "INTERNAL_ACCESS": "Nội bộ",
+        "MANUAL": "Thủ công"
+      },
+      "action": {
+        "activate": "Kích hoạt",
+        "extend": "Gia hạn",
+        "suspend": "Tạm ngưng",
+        "revoke": "Thu hồi"
+      },
+      "prompt": {
+        "resourceId": "Mã member/resource từ nhà cung cấp (có thể để trống nếu xử lý thủ công):",
+        "extendDays": "Số ngày gia hạn:",
+        "extendInvalid": "Số ngày gia hạn không hợp lệ.",
+        "suspendReason": "Lý do tạm ngưng:",
+        "revokeReason": "Lý do thu hồi:"
+      }
+    },
     "users": {
       "title": "Quản lý người dùng",
       "accounts": "tài khoản",
@@ -1363,7 +1420,10 @@
         "toolsLabel": "Công cụ quản trị user",
         "bulkPlaceholder": "VD: 1, 2, 3",
         "hidePassword": "Ẩn mật khẩu",
-        "showPassword": "Hiện mật khẩu"
+        "showPassword": "Hiện mật khẩu",
+        "lockReason": "Lý do khoá",
+        "unlockReason": "Lý do mở khoá",
+        "bulkReason": "Lý do cập nhật hàng loạt"
       }
     },
     "tickets": {
@@ -1424,17 +1484,18 @@
         "netRevenue": "Doanh thu ròng"
       },
       "bank": {
-        "detailTitle": "Chi tiết bank",
-        "empty": "Chọn giao dịch bank để xem chi tiết.",
-        "selectError": "Chọn bank transaction và nhập lý do xử lý.",
-        "processSuccess": "Đã xử lý bank transaction #{{id}}.",
-        "processError": "Không xử lý được bank transaction.",
-        "bulkCreditSuccess": "Đã manual credit {{count}} bank transaction.",
-        "bulkCreditError": "Không bulk manual credit được bank transaction.",
-        "queueLoadSuccess": "Đã tải {{count}} bank transaction.",
-        "queueLoadError": "Không tải được bank queue.",
+        "detailTitle": "Chi tiết giao dịch",
+        "empty": "Chọn một giao dịch ngân hàng để xem chi tiết.",
+        "selectError": "Chọn giao dịch và nhập lý do.",
+        "processSuccess": "Đã xử lý giao dịch #{{id}}.",
+        "processError": "Không thể xử lý giao dịch.",
+        "bulkCreditSuccess": "Đã credit thủ công {{count}} giao dịch.",
+        "bulkCreditError": "Không thể credit thủ công hàng loạt.",
+        "queueLoadSuccess": "Đã tải {{count}} giao dịch.",
+        "queueLoadError": "Không thể tải hàng chờ.",
         "noContent": "Không có nội dung",
-        "noReviewReason": "Không có"
+        "noReviewReason": "Không có",
+        "bulkCreditRequired": "Nhập lý do credit thủ công hàng loạt."
       },
       "deposit": {
         "detailTitle": "Chi tiết nạp",
@@ -1480,6 +1541,12 @@
         "bankDuplicate": "Bank duplicate",
         "depositManual": "Nạp manual review",
         "depositExpired": "Nạp hết hạn"
+      },
+      "error": {
+        "balanceCheck": "Kiểm tra toàn vẹn số dư thất bại.",
+        "reconciliation": "Đối soát giao dịch thất bại.",
+        "balanceIntegrity": "Lỗi toàn vẹn số dư tài chính.",
+        "exportFailed": "Không thể xuất dữ liệu tài chính."
       }
     },
     "services": {
@@ -1728,7 +1795,9 @@
         "fixedAmount": "Số tiền cố định",
         "value": "Giá trị",
         "maxDiscount": "Giảm tối đa",
+        "maxDiscountLabel": "Tối đa {{amount}}",
         "minOrder": "Đơn tối thiểu",
+        "minOrderLabel": "Tối thiểu {{amount}}",
         "totalUsage": "Tổng lượt",
         "perUser": "Mỗi user",
         "serviceApply": "Dịch vụ áp dụng",

@@ -59,7 +59,11 @@
     "details": "Details",
     "viewDetail": "View details",
     "processing": "Processing...",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "pagination": "Pagination",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "pageNumber": "Page {{page}}"
   },
   "topbar": {
     "subtitle": "Facebook Accounts & Advertising",
@@ -1032,8 +1036,10 @@
       "orderCode": "Order Code",
       "service": "Service",
       "status": "Status",
-      "date": "Date"
+      "date": "Date",
+      "actions": "Actions"
     },
+    "defaultEmptyHint": "No data available or check your search filters.",
     "settings": {
       "title": "System Settings",
       "description": "Manage operations, security, audit and system configurations.",
@@ -1319,6 +1325,57 @@
         "actionReprocess": "Reprocess"
       }
     },
+    "entitlements": {
+      "title": "Customer Access Rights",
+      "description": "Provision, extend, suspend and revoke team seats or provider resources.",
+      "eyebrow": "Access control",
+      "reload": "Reload",
+      "searchPlaceholder": "Search customer, service, order code, resource ID...",
+      "allStatus": "All Statuses",
+      "count": "{{count}} rights",
+      "empty": "No access rights yet.",
+      "loadError": "Could not load access rights.",
+      "updateSuccess": "Updated entitlement #{{id}}.",
+      "updateError": "Could not update entitlement.",
+      "noResource": "No resource linked",
+      "startsAt": "Starts:",
+      "table": {
+        "customer": "Customer",
+        "service": "Service",
+        "access": "Access Right",
+        "expiry": "Term",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "ACTIVE": "Active",
+        "EXPIRING": "Expiring",
+        "SUSPENDED": "Suspended",
+        "REVOKED": "Revoked",
+        "FAILED": "Failed"
+      },
+      "strategy": {
+        "DEDICATED_ACCOUNT": "Dedicated Account",
+        "TEAM_INVITE": "Team Seat",
+        "PROVIDER_API": "Provider API",
+        "INTERNAL_ACCESS": "Internal",
+        "MANUAL": "Manual"
+      },
+      "action": {
+        "activate": "Activate",
+        "extend": "Extend",
+        "suspend": "Suspend",
+        "revoke": "Revoke"
+      },
+      "prompt": {
+        "resourceId": "Member/resource ID from provider (leave blank for manual processing):",
+        "extendDays": "Days to extend:",
+        "extendInvalid": "Invalid number of days.",
+        "suspendReason": "Reason for suspending:",
+        "revokeReason": "Reason for revoking:"
+      }
+    },
     "users": {
       "title": "User Management",
       "accounts": "accounts",
@@ -1363,7 +1420,10 @@
         "toolsLabel": "User admin tools",
         "bulkPlaceholder": "e.g.: 1, 2, 3",
         "hidePassword": "Hide password",
-        "showPassword": "Show password"
+        "showPassword": "Show password",
+        "lockReason": "Lock reason",
+        "unlockReason": "Unlock reason",
+        "bulkReason": "Bulk status reason"
       }
     },
     "tickets": {
@@ -1434,7 +1494,8 @@
         "queueLoadSuccess": "Loaded {{count}} bank transactions.",
         "queueLoadError": "Could not load bank queue.",
         "noContent": "No content",
-        "noReviewReason": "None"
+        "noReviewReason": "None",
+        "bulkCreditRequired": "Enter reason for bulk manual credit."
       },
       "deposit": {
         "detailTitle": "Deposit Details",
@@ -1480,6 +1541,12 @@
         "bankDuplicate": "Bank duplicate",
         "depositManual": "Deposit manual review",
         "depositExpired": "Expired deposits"
+      },
+      "error": {
+        "balanceCheck": "Balance integrity check failed.",
+        "reconciliation": "Transaction reconciliation failed.",
+        "balanceIntegrity": "Financial balance integrity error.",
+        "exportFailed": "Could not export finance data."
       }
     },
     "services": {
@@ -1728,7 +1795,9 @@
         "fixedAmount": "Fixed Amount",
         "value": "Value",
         "maxDiscount": "Max Discount",
+        "maxDiscountLabel": "Max: {{amount}}",
         "minOrder": "Min Order",
+        "minOrderLabel": "Min: {{amount}}",
         "totalUsage": "Total Usage",
         "perUser": "Per User",
         "serviceApply": "Applicable Service",

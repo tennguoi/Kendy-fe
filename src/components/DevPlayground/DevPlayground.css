@@ -1,0 +1,96 @@
+.playground {
+  padding: 48px 32px;
+  max-width: 960px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #e2e8f0;
+  min-height: 100vh;
+  background: #0f1117;
+}
+
+.playground h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+  color: #f1f5f9;
+}
+
+.playground .sub {
+  color: #94a3b8;
+  margin-bottom: 40px;
+  font-size: 0.95rem;
+}
+
+.playground-section {
+  margin-bottom: 48px;
+}
+
+.playground-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.playground-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.playground-row.column {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.playground-card {
+  background: #1a1d27;
+  border: 1px solid #2a2e3a;
+  border-radius: 12px;
+  padding: 16px;
+  width: 100%;
+}
+
+.playground-card p {
+  margin: 0 0 8px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.playground-trigger-btn {
+  background: #2563eb;
+  border: 0;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.playground-trigger-btn:hover {
+  background: #1d4ed8;
+}
+
+.playground-trigger-btn.success {
+  background: #059669;
+}
+
+.playground-trigger-btn.success:hover {
+  background: #047857;
+}
+
+.playground-trigger-btn.error {
+  background: #dc2626;
+}
+
+.playground-trigger-btn.error:hover {
+  background: #b91c1c;
+}

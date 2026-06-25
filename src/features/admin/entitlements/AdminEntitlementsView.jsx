@@ -1,28 +1,30 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Clock3, PauseCircle, RefreshCw, ShieldOff } from 'lucide-react'
 import { adminApi } from '../../../api/admin.api'
 import Loading from '../../../components/Loading/Loading'
 import { AdminEmptyState } from '../AdminShared'
 import { formatAdminDate } from '../adminFormat'
 
-const statusLabels = {
-  PENDING: 'Chờ cấp quyền',
-  ACTIVE: 'Đang hoạt động',
-  EXPIRING: 'Sắp hết hạn',
-  SUSPENDED: 'Tạm ngưng',
-  REVOKED: 'Đã thu hồi',
-  FAILED: 'Thất bại',
+const statusKeys = {
+  PENDING: 'admin.entitlements.status.PENDING',
+  ACTIVE: 'admin.entitlements.status.ACTIVE',
+  EXPIRING: 'admin.entitlements.status.EXPIRING',
+  SUSPENDED: 'admin.entitlements.status.SUSPENDED',
+  REVOKED: 'admin.entitlements.status.REVOKED',
+  FAILED: 'admin.entitlements.status.FAILED',
 }
 
-const strategyLabels = {
-  DEDICATED_ACCOUNT: 'Tài khoản riêng',
-  TEAM_INVITE: 'Team seat',
-  PROVIDER_API: 'Provider API',
-  INTERNAL_ACCESS: 'Nội bộ',
-  MANUAL: 'Thủ công',
+const strategyKeys = {
+  DEDICATED_ACCOUNT: 'admin.entitlements.strategy.DEDICATED_ACCOUNT',
+  TEAM_INVITE: 'admin.entitlements.strategy.TEAM_INVITE',
+  PROVIDER_API: 'admin.entitlements.strategy.PROVIDER_API',
+  INTERNAL_ACCESS: 'admin.entitlements.strategy.INTERNAL_ACCESS',
+  MANUAL: 'admin.entitlements.strategy.MANUAL',
 }
 
 function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
+  const { t } = useTranslation()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
   const [busyId, setBusyId] = useState(null)
@@ -36,11 +38,11 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
       const data = await adminApi.getEntitlements(token)
       setItems(Array.isArray(data) ? data : data?.content || [])
     } catch (err) {
-      onSetError(err.message || 'Không tải được quyền truy cập.')
+      onSetError(err.message || t('admin.entitlements.loadError'))
     } finally {
       setLoading(false)
     }
-  }, [onSetError, token])
+  }, [onSetError, token, t])
 
   useEffect(() => {
     const timer = window.setTimeout(() => void load(), 0)
@@ -61,24 +63,24 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
     let payload = { action }
     if (action === 'ACTIVATE') {
       const externalResourceId = window.prompt(
-        'Mã member/resource từ nhà cung cấp (có thể để trống nếu xử lý thủ công):',
+        t('admin.entitlements.prompt.resourceId'),
         item.externalResourceId || '',
       )
       if (externalResourceId === null) return
       payload = { ...payload, externalResourceId, reason: 'Admin confirmed access provisioning' }
     }
     if (action === 'EXTEND') {
-      const raw = window.prompt('Số ngày gia hạn:', '30')
+      const raw = window.prompt(t('admin.entitlements.prompt.extendDays'), '30')
       if (raw === null) return
       const extendDays = Number(raw)
       if (!Number.isInteger(extendDays) || extendDays < 1) {
-        onSetError('Số ngày gia hạn không hợp lệ.')
+        onSetError(t('admin.entitlements.prompt.extendInvalid'))
         return
       }
       payload = { ...payload, extendDays, reason: 'Renewal payment/provisioning confirmed' }
     }
     if (['SUSPEND', 'REVOKE'].includes(action)) {
-      const reason = window.prompt(`Lý do ${action === 'SUSPEND' ? 'tạm ngưng' : 'thu hồi'}:`)
+      const reason = window.prompt(action === 'SUSPEND' ? t('admin.entitlements.prompt.suspendReason') : t('admin.entitlements.prompt.revokeReason'))
       if (!reason?.trim()) return
       payload = { ...payload, reason: reason.trim() }
     }
@@ -87,9 +89,9 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
     try {
       const saved = await adminApi.updateEntitlement(item.id, payload, token)
       setItems((current) => current.map((entry) => entry.id === saved.id ? saved : entry))
-      onSetNotice(`Đã cập nhật quyền truy cập #${item.id}.`)
+      onSetNotice(t('admin.entitlements.updateSuccess', { id: item.id }))
     } catch (err) {
-      onSetError(err.message || 'Không cập nhật được quyền truy cập.')
+      onSetError(err.message || t('admin.entitlements.updateError'))
     } finally {
       setBusyId(null)
     }
@@ -99,38 +101,38 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
     <div className="admin-view entitlements-view">
       <div className="admin-toolbar">
         <div>
-          <span className="entitlements-eyebrow">Access control</span>
-          <h2>Quyền truy cập khách hàng</h2>
-          <p>Cấp, gia hạn, tạm ngưng và thu hồi team seat hoặc tài nguyên nhà cung cấp.</p>
+          <span className="entitlements-eyebrow">{t('admin.entitlements.eyebrow')}</span>
+          <h2>{t('admin.entitlements.title')}</h2>
+          <p>{t('admin.entitlements.description')}</p>
         </div>
         <button type="button" className="admin-icon-button" onClick={load} disabled={loading}>
-          <RefreshCw size={17} /> Tải lại
+          <RefreshCw size={17} /> {t('admin.entitlements.reload')}
         </button>
       </div>
 
       <section className="admin-panel entitlement-filters">
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm khách, dịch vụ, mã đơn, resource ID..." />
+        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('admin.entitlements.searchPlaceholder')} />
         <select value={status} onChange={(event) => setStatus(event.target.value)}>
-          <option value="">Tất cả trạng thái</option>
-          {Object.entries(statusLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}
+          <option value="">{t('admin.entitlements.allStatus')}</option>
+          {Object.entries(statusKeys).map(([value, key]) => <option value={value} key={value}>{t(key)}</option>)}
         </select>
-        <strong>{filtered.length} quyền</strong>
+        <strong>{t('admin.entitlements.count', { count: filtered.length })}</strong>
       </section>
 
       <section className="admin-panel">
         {loading ? <Loading /> : filtered.length === 0 ? (
-          <AdminEmptyState message="Chưa có quyền truy cập." />
+          <AdminEmptyState message={t('admin.entitlements.empty')} />
         ) : (
           <div className="entitlement-table-wrap">
             <table className="entitlement-table">
               <thead>
                 <tr>
-                  <th>Khách hàng</th>
-                  <th>Dịch vụ</th>
-                  <th>Quyền cấp</th>
-                  <th>Thời hạn</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
+                  <th>{t('admin.entitlements.table.customer')}</th>
+                  <th>{t('admin.entitlements.table.service')}</th>
+                  <th>{t('admin.entitlements.table.access')}</th>
+                  <th>{t('admin.entitlements.table.expiry')}</th>
+                  <th>{t('admin.entitlements.table.status')}</th>
+                  <th>{t('admin.entitlements.table.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,17 +141,17 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
                     <td><strong>{item.userName}</strong><small>{item.userEmail}</small></td>
                     <td><strong>{item.serviceName}</strong><small>{item.orderCode}</small></td>
                     <td>
-                      <strong>{strategyLabels[item.accessStrategy] || item.accessStrategy}</strong>
-                      <small>{item.externalResourceId || item.accessIdentifier || 'Chưa gắn resource'}</small>
+                      <strong>{item.accessStrategy ? t(strategyKeys[item.accessStrategy] || item.accessStrategy) : ''}</strong>
+                      <small>{item.externalResourceId || item.accessIdentifier || t('admin.entitlements.noResource')}</small>
                     </td>
-                    <td><strong>{formatAdminDate(item.expiresAt)}</strong><small>Bắt đầu: {formatAdminDate(item.startsAt)}</small></td>
-                    <td><span className={`entitlement-status ${String(item.status).toLowerCase()}`}>{statusLabels[item.status] || item.status}</span></td>
+                    <td><strong>{formatAdminDate(item.expiresAt)}</strong><small>{t('admin.entitlements.startsAt')} {formatAdminDate(item.startsAt)}</small></td>
+                    <td><span className={`entitlement-status ${String(item.status).toLowerCase()}`}>{t(statusKeys[item.status] || item.status)}</span></td>
                     <td>
                       <div className="entitlement-actions">
-                        <button type="button" title="Kích hoạt" disabled={busyId === item.id} onClick={() => update(item, 'ACTIVATE')}><CheckCircle2 size={15} /></button>
-                        <button type="button" title="Gia hạn" disabled={busyId === item.id} onClick={() => update(item, 'EXTEND')}><Clock3 size={15} /></button>
-                        <button type="button" title="Tạm ngưng" disabled={busyId === item.id} onClick={() => update(item, 'SUSPEND')}><PauseCircle size={15} /></button>
-                        <button type="button" title="Thu hồi" className="danger" disabled={busyId === item.id} onClick={() => update(item, 'REVOKE')}><ShieldOff size={15} /></button>
+                        <button type="button" title={t('admin.entitlements.action.activate')} disabled={busyId === item.id} onClick={() => update(item, 'ACTIVATE')}><CheckCircle2 size={15} /></button>
+                        <button type="button" title={t('admin.entitlements.action.extend')} disabled={busyId === item.id} onClick={() => update(item, 'EXTEND')}><Clock3 size={15} /></button>
+                        <button type="button" title={t('admin.entitlements.action.suspend')} disabled={busyId === item.id} onClick={() => update(item, 'SUSPEND')}><PauseCircle size={15} /></button>
+                        <button type="button" title={t('admin.entitlements.action.revoke')} className="danger" disabled={busyId === item.id} onClick={() => update(item, 'REVOKE')}><ShieldOff size={15} /></button>
                       </div>
                     </td>
                   </tr>

@@ -243,7 +243,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
                 </span>
                 <span>
                   <strong>{coupon.type === 'PERCENT' ? `${coupon.value}%` : money.format(Number(coupon.value || 0))}</strong>
-                  <small>{coupon.maxDiscountAmount ? `Tối đa ${money.format(Number(coupon.maxDiscountAmount))}` : t('admin.coupons.form.noMaxDiscount')}</small>
+                  <small>{coupon.maxDiscountAmount ? t('admin.coupons.form.maxDiscountLabel', { amount: money.format(Number(coupon.maxDiscountAmount)) }) : t('admin.coupons.form.noMaxDiscount')}</small>
                 </span>
                 <span>
                   <strong>{coupon.usedCount || 0}/{coupon.usageLimit || '∞'}</strong>
@@ -251,7 +251,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
                 </span>
                 <span>
                   <strong>{coupon.serviceName || t('admin.coupons.form.allServices')}</strong>
-                  <small>{coupon.minOrderAmount ? `Tối thiểu ${money.format(Number(coupon.minOrderAmount))}` : t('admin.coupons.form.noMinOrder')}</small>
+                  <small>{coupon.minOrderAmount ? t('admin.coupons.form.minOrderLabel', { amount: money.format(Number(coupon.minOrderAmount)) }) : t('admin.coupons.form.noMinOrder')}</small>
                 </span>
                 <span><AdminStatusBadge status={coupon.status} /></span>
               </button>

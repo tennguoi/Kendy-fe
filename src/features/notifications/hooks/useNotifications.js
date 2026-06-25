@@ -92,6 +92,7 @@ export function useNotifications({
             payload.notification.message || payload.notification.title || 'Bạn có thông báo mới.',
             'info',
             payload.notification.title || 'Thông báo mới',
+            payload.notification.actionUrl,
           )
           onRealtimeNotification?.(payload.notification)
         }

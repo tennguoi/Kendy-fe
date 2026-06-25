@@ -8,6 +8,7 @@ import AdminRoutes from './features/admin/AdminRoutes'
 import AuthScreen from './features/auth/AuthScreen'
 import DashboardShell from './components/layout/DashboardShell'
 import UserRoutes from './features/user/UserRoutes'
+import DevPlayground from './components/DevPlayground/DevPlayground'
 import PublicHome from './features/public/PublicHome'
 import Catalog from './features/public/components/Catalog/Catalog'
 import ProductDetail from './features/public/components/ProductDetail/ProductDetail'
@@ -108,11 +109,12 @@ function App() {
   const adminActiveView = resolveAdminActiveView(normalizedPathname)
   const userActiveView = resolveUserActiveView(normalizedPathname)
 
-  const notify = useCallback((message, type = 'info', title = '') => {
+  const notify = useCallback((message, type = 'info', title = '', action = '') => {
     addToast({
       message,
       title: title || (type === 'error' ? t('common.error') : type === 'success' ? t('common.success') : t('common.info')),
       type,
+      action: action || undefined,
     })
   }, [addToast, t])
 
@@ -1015,6 +1017,7 @@ function App() {
             <ProductDetail onLoginClick={handleOpenAuth} />
           </PublicLayout>
         } />
+        <Route path="/playground" element={<DevPlayground />} />
         <Route path="*" element={
           <PublicHome notice={apiNotice} onLoginClick={handleOpenAuth} />
         } />
