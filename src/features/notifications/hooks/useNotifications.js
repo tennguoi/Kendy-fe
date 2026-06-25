@@ -73,6 +73,18 @@ export function useNotifications({
       path: '/ws/notifications',
       token: accessToken,
       onMessage: (payload) => {
+        if (payload.type === 'admin.notification.created' && payload.notification) {
+          const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
+          if (isAdmin) {
+            notify(
+              payload.notification.message || payload.notification.title || 'Có thông báo admin mới.',
+              'info',
+              payload.notification.title || 'Thông báo admin',
+            )
+          }
+          return
+        }
+
         if (payload.type !== 'notification.created') {
           return
         }

@@ -1,5 +1,5 @@
 import { RefreshCw } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../api/admin.api'
 import { normalizePaged } from '../../../utils/pagination'
@@ -9,6 +9,7 @@ import OrderFilterBar from './components/OrderFilterBar'
 import OrderListPanel from './components/OrderListPanel'
 import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
+import { manualQueueOptions } from './orders.constants'
 
 function toDateTimeInput(value) {
   if (!value) return ''
@@ -29,6 +30,8 @@ function formFromOrder(order) {
     adminNote: order?.adminNote || '',
     assignedAdminId: order?.assignedAdminId || '',
     manualChecklist: order?.manualChecklist || '',
+    manualTasks: Array.isArray(order?.manualTasks) ? order.manualTasks : [],
+    manualWorkflowStatus: order?.manualWorkflowStatus || 'NEW_REQUEST',
     minutes: '60',
     orderCode: order?.orderCode || '',
     processingDeadlineAt: toDateTimeInput(order?.processingDeadlineAt),
@@ -39,10 +42,12 @@ function formFromOrder(order) {
 }
 
 function AdminOrdersView({
+  currentUser,
   onSetError,
   onSetNotice,
   token,
 }) {
+  const [admins, setAdmins] = useState([])
   const [draft, setDraft] = useState(null)
   const [bulkRefundCodes, setBulkRefundCodes] = useState('')
   const [currentPage, setCurrentPage] = useState(0)
@@ -50,6 +55,7 @@ function AdminOrdersView({
   const [error, setError] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [manualQueue, setManualQueue] = useState('all')
   const [orders, setOrders] = useState([])
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState(null)
@@ -57,7 +63,26 @@ function AdminOrdersView({
   const [submitting, setSubmitting] = useState(false)
   const { t } = useTranslation()
 
-  const selectedOrder = orders.find((order) => order.id === selectedId) || orders[0]
+  const displayedOrders = useMemo(() => {
+    const now = Date.now()
+    return orders.filter((order) => {
+      const isManual = order.serviceType === 'MANUAL'
+      const deadline = order.processingDeadlineAt ? new Date(order.processingDeadlineAt).getTime() : null
+      const active = ['PENDING_PAYMENT', 'PROCESSING'].includes(order.status)
+      if (manualQueue === 'all') return true
+      if (manualQueue === 'manual') return isManual
+      if (!isManual) return false
+      if (manualQueue === 'unassigned') return !order.assignedAdminId
+      if (manualQueue === 'mine') return currentUser?.id && order.assignedAdminId === currentUser.id
+      if (manualQueue === 'due') return active && deadline && deadline > now && deadline <= now + 30 * 60_000
+      if (manualQueue === 'overdue') return active && deadline && deadline <= now
+      if (manualQueue === 'waiting_user') return order.manualWorkflowStatus === 'WAITING_USER'
+      if (manualQueue === 'waiting_payment') return order.manualWorkflowStatus === 'WAITING_PAYMENT'
+      return true
+    })
+  }, [currentUser?.id, manualQueue, orders])
+
+  const selectedOrder = displayedOrders.find((order) => order.id === selectedId) || displayedOrders[0]
   const orderForm = selectedOrder && draft?.orderCode === selectedOrder.orderCode
     ? draft
     : formFromOrder(selectedOrder)
@@ -78,9 +103,13 @@ function AdminOrdersView({
     setLoading(true)
     setViewError('')
     try {
-      const data = await adminApi.searchOrders({ query: query.trim(), status: statusFilter, page: targetPage }, token)
+      const [data, adminData] = await Promise.all([
+        adminApi.searchOrders({ query: query.trim(), status: statusFilter, page: targetPage }, token),
+        adminApi.getAdmins(token),
+      ])
       const { items, totalPages: pages } = normalizePaged(data, 50)
       setOrders(items)
+      setAdmins(adminData)
       setTotalPages(pages)
       setCurrentPage(targetPage)
       setSelectedId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
@@ -90,6 +119,12 @@ function AdminOrdersView({
       setLoading(false)
     }
   }, [currentPage, query, setViewError, statusFilter, token])
+
+  useEffect(() => {
+    setSelectedId((current) => (
+      current && displayedOrders.some((item) => item.id === current) ? current : displayedOrders[0]?.id || null
+    ))
+  }, [displayedOrders])
 
   useEffect(() => {
     setCurrentPage(0)
@@ -263,10 +298,35 @@ function AdminOrdersView({
         processingDeadlineAt: toInstant(draft?.processingDeadlineAt),
         manualChecklist: draft?.manualChecklist?.trim() || null,
         adminNote: draft?.adminNote?.trim() || null,
+        manualWorkflowStatus: draft?.manualWorkflowStatus || null,
+        tasks: (draft?.manualTasks || []).map((task, index) => ({
+          id: task.id || null,
+          title: task.title,
+          completed: Boolean(task.completed),
+          sortOrder: index + 1,
+        })),
       }, token)
       patchOrder(saved)
       setDraft(formFromOrder(saved))
       await loadOrders()
+      onSetNotice(t('admin.orders.workflowUpdateSuccess', { code: saved.orderCode }))
+    } catch (err) {
+      setViewError(err.message || t('admin.orders.workflowUpdateError'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const updateManualTask = async (orderCode, task, completed) => {
+    if (!orderCode || !task?.id) {
+      return
+    }
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = await adminApi.updateManualTask(orderCode, task.id, { completed }, token)
+      patchOrder(saved)
+      setDraft(formFromOrder(saved))
       onSetNotice(t('admin.orders.workflowUpdateSuccess', { code: saved.orderCode }))
     } catch (err) {
       setViewError(err.message || t('admin.orders.workflowUpdateError'))
@@ -325,15 +385,30 @@ function AdminOrdersView({
       {!error && loading && <Loading fullScreen={false} message={t('admin.orders.loading')} subMessage="" />}
 
       <OrderFilterBar
+        manualQueue={manualQueue}
         onQueryChange={setQuery}
+        onManualQueueChange={setManualQueue}
         onStatusFilterChange={setStatusFilter}
         query={query}
         statusFilter={statusFilter}
       />
 
+      <div className="admin-filter-tabs" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' }}>
+        {manualQueueOptions.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            className={manualQueue === option.id ? 'active' : ''}
+            onClick={() => setManualQueue(option.id)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
       <OrderListPanel
         onSelectOrder={selectOrder}
-        orders={orders}
+        orders={displayedOrders}
         selectedOrder={selectedOrder}
       />
 
@@ -351,6 +426,7 @@ function AdminOrdersView({
       >
         <OrderDetailPanel
           activeOrder={activeOrder}
+          admins={admins}
           bulkRefundCodes={bulkRefundCodes}
           onBulkRefundCodesChange={setBulkRefundCodes}
           onRunBulkRefund={runBulkRefund}
@@ -358,6 +434,7 @@ function AdminOrdersView({
           onSaveAdminNote={saveAdminNote}
           onSaveUserNote={saveUserNote}
           onUpdateDraft={updateDraft}
+          onUpdateManualTask={updateManualTask}
           onUpdateManualWorkflow={updateManualWorkflow}
           orderForm={orderForm}
           refundableOrder={refundableOrder}

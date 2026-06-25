@@ -5,9 +5,11 @@ import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { safeOrderBlock } from '../orders.utils'
 import { printOrderInvoice } from '../../../../utils/invoicePrint'
+import { manualWorkflowStatuses, getManualWorkflowStatusLabel } from '../orders.constants'
 
 function OrderDetailPanel({
   activeOrder,
+  admins = [],
   bulkRefundCodes,
   onBulkRefundCodesChange,
   onRunBulkRefund,
@@ -15,6 +17,7 @@ function OrderDetailPanel({
   onSaveAdminNote,
   onSaveUserNote,
   onUpdateDraft,
+  onUpdateManualTask,
   onUpdateManualWorkflow,
   orderForm,
   refundableOrder,
@@ -25,6 +28,24 @@ function OrderDetailPanel({
   const [activeTab, setActiveTab] = useState('info') // 'info' | 'process' | 'notes' | 'bulk' | 'manual'
   const [showActions, setShowActions] = useState(false)
   const isManualOrder = selectedOrder?.serviceType === 'MANUAL'
+  const manualTasks = Array.isArray(orderForm.manualTasks) ? orderForm.manualTasks : []
+
+  const updateManualTaskDraft = (index, patch) => {
+    onUpdateDraft('manualTasks', manualTasks.map((task, taskIndex) => (
+      taskIndex === index ? { ...task, ...patch } : task
+    )))
+  }
+
+  const addManualTaskDraft = () => {
+    onUpdateDraft('manualTasks', [
+      ...manualTasks,
+      { id: null, title: '', completed: false, sortOrder: manualTasks.length + 1 },
+    ])
+  }
+
+  const removeManualTaskDraft = (index) => {
+    onUpdateDraft('manualTasks', manualTasks.filter((_, taskIndex) => taskIndex !== index))
+  }
 
   if (!selectedOrder) {
     return (
@@ -103,6 +124,8 @@ function OrderDetailPanel({
               <div><dt>Dịch vụ</dt><dd>{selectedOrder.serviceName}</dd></div>
               <div><dt>User ID</dt><dd>#{selectedOrder.userId}</dd></div>
               <div><dt>Số tiền</dt><dd>{formatAdminMoney(selectedOrder.amount)}</dd></div>
+              {isManualOrder && <div><dt>Workflow</dt><dd>{getManualWorkflowStatusLabel(selectedOrder.manualWorkflowStatus)}</dd></div>}
+              {isManualOrder && <div><dt>Admin phụ trách</dt><dd>{selectedOrder.assignedAdminName || (selectedOrder.assignedAdminId ? `#${selectedOrder.assignedAdminId}` : 'Chưa gán')}</dd></div>}
               <div><dt>Tạo lúc</dt><dd>{formatAdminDate(selectedOrder.createdAt)}</dd></div>
               <div><dt>Hạn xử lý</dt><dd>{formatAdminDate(selectedOrder.processingDeadlineAt)}</dd></div>
               <div><dt>Hoàn thành</dt><dd>{formatAdminDate(selectedOrder.completedAt)}</dd></div>
@@ -292,13 +315,29 @@ function OrderDetailPanel({
               <ListTodo size={18} strokeWidth={2} aria-hidden="true" />
             </div>
             <label>
-              <span>Admin ID phụ trách</span>
-              <input
+              <span>Admin phụ trách</span>
+              <select
                 value={orderForm.assignedAdminId || ''}
                 onChange={(event) => onUpdateDraft('assignedAdminId', event.target.value)}
-                placeholder="Nhập ID admin"
-                inputMode="numeric"
-              />
+              >
+                <option value="">Chưa gán</option>
+                {admins.map((admin) => (
+                  <option key={admin.id} value={admin.id}>
+                    {admin.name || admin.email} #{admin.id}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Trạng thái workflow</span>
+              <select
+                value={orderForm.manualWorkflowStatus || 'NEW_REQUEST'}
+                onChange={(event) => onUpdateDraft('manualWorkflowStatus', event.target.value)}
+              >
+                {manualWorkflowStatuses.map((status) => (
+                  <option key={status} value={status}>{getManualWorkflowStatusLabel(status)}</option>
+                ))}
+              </select>
             </label>
             <label>
               <span>Hạn xử lý</span>
@@ -308,15 +347,39 @@ function OrderDetailPanel({
                 onChange={(event) => onUpdateDraft('processingDeadlineAt', event.target.value)}
               />
             </label>
-            <label>
-              <span>Checklist thao tác (mỗi dòng một bước)</span>
-              <textarea
-                value={orderForm.manualChecklist || ''}
-                onChange={(event) => onUpdateDraft('manualChecklist', event.target.value)}
-                placeholder={`1. Kiểm tra thông tin khách hàng\n2. Xác nhận thanh toán\n3. Thực hiện dịch vụ\n4. Báo cáo kết quả`}
-                rows="5"
-              />
-            </label>
+            <div className="admin-form-field">
+              <span>Checklist thao tác</span>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                {manualTasks.map((task, index) => (
+                  <div key={task.id || index} style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) auto', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(task.completed)}
+                      disabled={submitting}
+                      onChange={(event) => {
+                        updateManualTaskDraft(index, { completed: event.target.checked })
+                        if (task.id) {
+                          onUpdateManualTask(selectedOrder.orderCode, task, event.target.checked)
+                        }
+                      }}
+                      aria-label={`Hoàn thành ${task.title || `bước ${index + 1}`}`}
+                    />
+                    <input
+                      value={task.title || ''}
+                      onChange={(event) => updateManualTaskDraft(index, { title: event.target.value })}
+                      placeholder={`Bước ${index + 1}`}
+                    />
+                    <button type="button" className="admin-icon-button" onClick={() => removeManualTaskDraft(index)}>
+                      Xóa
+                    </button>
+                  </div>
+                ))}
+                {manualTasks.length === 0 && <small>Chưa có checklist. Bấm thêm bước để tạo quy trình.</small>}
+                <button type="button" className="admin-icon-button" onClick={addManualTaskDraft}>
+                  Thêm bước
+                </button>
+              </div>
+            </div>
             <label>
               <span>Ghi chú admin</span>
               <textarea
@@ -337,10 +400,16 @@ function OrderDetailPanel({
               <div className="admin-code-block" style={{ marginTop: '12px' }}>
                 <strong><UserCheck size={15} /> Admin đã phân công: #{selectedOrder.assignedAdminId}</strong>
                 {selectedOrder.processingDeadlineAt && <p>Hạn: {formatAdminDate(selectedOrder.processingDeadlineAt)}</p>}
-                {selectedOrder.manualChecklist && (
+                {Array.isArray(selectedOrder.manualTasks) && selectedOrder.manualTasks.length > 0 && (
                   <>
                     <p>Checklist:</p>
-                    <pre>{selectedOrder.manualChecklist}</pre>
+                    <ul style={{ display: 'grid', gap: '6px', paddingLeft: '18px' }}>
+                      {selectedOrder.manualTasks.map((task) => (
+                        <li key={task.id}>
+                          {task.completed ? '[x]' : '[ ]'} {task.title}
+                        </li>
+                      ))}
+                    </ul>
                   </>
                 )}
               </div>

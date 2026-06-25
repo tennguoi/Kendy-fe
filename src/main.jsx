@@ -1,4 +1,3 @@
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
@@ -20,13 +19,11 @@ const initialTheme = savedTheme === 'dark' || savedTheme === 'light'
 document.documentElement.classList.toggle('dark', initialTheme === 'dark')
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter>
-      <ThemeProvider>
-        <ToastProvider>
-          <App />
-        </ToastProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  </StrictMode>,
+  <BrowserRouter>
+    <ThemeProvider>
+      <ToastProvider>
+        <App />
+      </ToastProvider>
+    </ThemeProvider>
+  </BrowserRouter>,
 )

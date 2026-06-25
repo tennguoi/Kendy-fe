@@ -97,10 +97,10 @@ function EmailTextEditor({
             </label>
           </div>
 
-          <label>
+          <div className="admin-form-group">
             <span>{t('admin.content.email.introLabel')}</span>
             <RichEditor value={draft.intro} onChange={(value) => onChange({ intro: value, rawHtml: undefined })} minHeight={150} />
-          </label>
+          </div>
 
           {definition.type === 'code' && (
             <label>
@@ -132,15 +132,15 @@ function EmailTextEditor({
             <small>{t('admin.content.email.detailHint')}</small>
           </label>
 
-          <label>
+          <div className="admin-form-group">
             <span>{t('admin.content.email.securityNoteLabel')}</span>
             <RichEditor value={draft.securityNote} onChange={(value) => onChange({ securityNote: value, rawHtml: undefined })} minHeight={120} />
-          </label>
+          </div>
 
-          <label>
+          <div className="admin-form-group">
             <span>{t('admin.content.email.footerLabel')}</span>
             <RichEditor value={draft.footer} onChange={(value) => onChange({ footer: value, rawHtml: undefined })} minHeight={100} />
-          </label>
+          </div>
         </>
       )}
 

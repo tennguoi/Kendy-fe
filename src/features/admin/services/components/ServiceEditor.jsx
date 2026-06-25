@@ -364,26 +364,26 @@ function ServiceEditor({
               <span>{t('admin.services.editor.section.contentDesc')}</span>
             </div>
             <div className="admin-form-grid service-form-grid">
-              <label className="wide">
+              <div className="admin-form-group wide">
                 <span>{t('admin.services.editor.field.shortDescription')}</span>
                 <RichEditor value={serviceForm.shortDescription} onChange={(value) => onUpdateServiceForm('shortDescription', value)} minHeight={120} />
-              </label>
-              <label className="wide">
+              </div>
+              <div className="admin-form-group wide">
                 <span>{t('admin.services.editor.field.description')}</span>
                 <RichEditor value={serviceForm.description} onChange={(value) => onUpdateServiceForm('description', value)} minHeight={250} />
-              </label>
-              <label className="wide">
+              </div>
+              <div className="admin-form-group wide">
                 <span>{t('admin.services.editor.field.requirements')}</span>
                 <RichEditor value={serviceForm.requirements} onChange={(value) => onUpdateServiceForm('requirements', value)} minHeight={120} />
-              </label>
-              <label className="wide">
+              </div>
+              <div className="admin-form-group wide">
                 <span>{t('admin.services.editor.field.benefits')}</span>
                 <RichEditor value={serviceForm.benefits} onChange={(value) => onUpdateServiceForm('benefits', value)} minHeight={120} />
-              </label>
-              <label className="wide">
+              </div>
+              <div className="admin-form-group wide">
                 <span>{t('admin.services.editor.field.usageNotes')}</span>
                 <RichEditor value={serviceForm.usageNotes} onChange={(value) => onUpdateServiceForm('usageNotes', value)} minHeight={120} />
-              </label>
+              </div>
             </div>
           </section>
         )}

@@ -371,10 +371,10 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                   />
                 </label>
               </div>
-              <label>
+              <div className="admin-form-group">
                 <span>{t('admin.content.banner.description')}</span>
                 <RichEditor value={drafts.banner.description} onChange={(value) => updateDraft({ description: value })} minHeight={120} />
-              </label>
+              </div>
               <div className="admin-form-grid two-columns">
                 <label>
                   <span>{t('admin.content.banner.ctaLabel')}</span>
@@ -499,10 +499,10 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                         required
                       />
                     </label>
-                    <label>
+                    <div className="admin-form-group">
                       <span>{t('admin.content.faq.answerLabel')}</span>
                       <RichEditor value={item.answer} onChange={(value) => updateFaqItem(item.id, { answer: value })} minHeight={120} />
-                    </label>
+                    </div>
                   </article>
                 ))}
               </div>
@@ -553,10 +553,10 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 />
                 <small>{uploadingLogo ? 'Đang tải logo...' : 'Sau khi tải lên, nhấn lưu thay đổi để áp dụng.'}</small>
               </label>
-              <label>
+              <div className="admin-form-group">
                 <span>{t('admin.content.brand.footerDesc')}</span>
                 <RichEditor value={drafts.brand.description} onChange={(value) => updateDraft({ description: value })} minHeight={120} />
-              </label>
+              </div>
               <div className="admin-form-grid two-columns">
                 <label>
                   <span>{t('admin.content.brand.contactEmail')}</span>

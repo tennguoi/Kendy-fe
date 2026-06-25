@@ -40,4 +40,7 @@ export const adminOrdersApi = {
 
   updateManualWorkflow: (orderCode, data, token) =>
     axiosClient.post(`/api/admin/orders/${orderCode}/manual-workflow`, data, { token }),
+
+  updateManualTask: (orderCode, taskId, data, token) =>
+    axiosClient.post(`/api/admin/orders/${orderCode}/manual-tasks/${taskId}`, data, { token }),
 };

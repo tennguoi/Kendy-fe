@@ -90,10 +90,10 @@ function PricingEditor({
                 <span>Thời gian xử lý</span>
                 <input value={form.processingTime} onChange={(event) => onUpdateForm('processingTime', event.target.value)} placeholder={t('admin.pricing.form.processingPlaceholder')} />
               </label>
-              <label>
+              <div className="admin-form-group">
                 <span>Chính sách bảo hành</span>
                 <RichEditor value={form.warrantyPolicy} onChange={(value) => onUpdateForm('warrantyPolicy', value)} minHeight={120} />
-              </label>
+              </div>
             </div>
 
             <div className="admin-check-row" style={{ marginTop: '8px' }}>
@@ -112,14 +112,14 @@ function PricingEditor({
         {activeTab === 'content' && (
           <section className="service-editor-section" style={{ border: 'none', background: 'transparent', padding: 0, display: 'grid', gap: '12px' }}>
             <div className="admin-form-grid single">
-              <label>
+              <div className="admin-form-group">
                 <span>Điều kiện chuẩn bị / Cần có</span>
                 <RichEditor value={form.requirements} onChange={(value) => onUpdateForm('requirements', value)} minHeight={150} />
-              </label>
-              <label>
+              </div>
+              <div className="admin-form-group">
                 <span>{t('admin.pricing.form.usageNotesHeading')}</span>
                 <RichEditor value={form.usageNotes} onChange={(value) => onUpdateForm('usageNotes', value)} minHeight={150} />
-              </label>
+              </div>
             </div>
           </section>
         )}

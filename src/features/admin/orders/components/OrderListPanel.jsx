@@ -1,5 +1,18 @@
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
+import { getManualWorkflowStatusLabel } from '../orders.constants'
+
+function manualDeadlineLabel(order) {
+  if (order.serviceType !== 'MANUAL' || !order.processingDeadlineAt || !['PENDING_PAYMENT', 'PROCESSING'].includes(order.status)) {
+    return ''
+  }
+  const deadline = new Date(order.processingDeadlineAt).getTime()
+  if (Number.isNaN(deadline)) return ''
+  const remaining = deadline - Date.now()
+  if (remaining <= 0) return 'Quá hạn'
+  if (remaining <= 30 * 60_000) return 'Sắp quá hạn'
+  return `Hạn ${formatAdminDate(order.processingDeadlineAt)}`
+}
 
 function OrderListPanel({
   onSelectOrder,
@@ -30,11 +43,22 @@ function OrderListPanel({
             <span>
               <strong>{order.orderCode}</strong>
               <small>User #{order.userId}</small>
+              {order.serviceType === 'MANUAL' && (
+                <small>{order.assignedAdminName ? `Admin: ${order.assignedAdminName}` : 'Chưa gán admin'}</small>
+              )}
             </span>
-            <span>{order.serviceName}</span>
+            <span>
+              {order.serviceName}
+              {order.serviceType === 'MANUAL' && (
+                <small>{getManualWorkflowStatusLabel(order.manualWorkflowStatus)}</small>
+              )}
+            </span>
             <span>{formatAdminMoney(order.amount)}</span>
             <span><AdminStatusBadge status={order.status} /></span>
-            <span>{formatAdminDate(order.createdAt)}</span>
+            <span>
+              {formatAdminDate(order.createdAt)}
+              {manualDeadlineLabel(order) && <small>{manualDeadlineLabel(order)}</small>}
+            </span>
           </button>
         ))}
         {orders.length === 0 && <AdminEmptyState />}

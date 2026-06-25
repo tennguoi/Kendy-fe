@@ -129,10 +129,10 @@ function CategoryEditor({
             <span>{t('admin.services.categoryEditor.section.descriptionDesc')}</span>
           </div>
           <div className="admin-form-grid service-form-grid">
-            <label className="wide">
+            <div className="admin-form-group wide">
               <span>{t('admin.services.categoryEditor.field.description')}</span>
               <RichEditor value={categoryForm.description} onChange={(value) => onCategoryFormChange('description', value)} minHeight={150} />
-            </label>
+            </div>
           </div>
         </section>
 
@@ -182,10 +182,10 @@ function CategoryEditor({
                 placeholder="Ví dụ: Xem gói"
               />
             </label>
-            <label className="wide">
+            <div className="admin-form-group wide">
               <span>{t('admin.services.categoryEditor.field.requirements')}</span>
               <RichEditor value={categoryForm.requirements || ''} onChange={(value) => onCategoryFormChange('requirements', value)} minHeight={120} />
-            </label>
+            </div>
           </div>
         </section>
       </div>

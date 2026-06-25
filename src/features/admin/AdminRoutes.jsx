@@ -76,7 +76,7 @@ function AdminRoutes({
       ),
     },
     { path: '/admin/users', element: <AdminUsersView {...sharedProps} /> },
-    { path: '/admin/orders', element: <AdminOrdersView {...sharedProps} /> },
+    { path: '/admin/orders', element: <AdminOrdersView {...sharedProps} currentUser={currentUser} /> },
     { path: '/admin/finance', element: <AdminFinanceView {...sharedProps} /> },
     { path: '/admin/tickets', element: <AdminTicketsView {...sharedProps} /> },
     { path: '/admin/services', element: <AdminServicesView {...sharedProps} /> },

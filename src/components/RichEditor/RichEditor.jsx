@@ -1,3 +1,4 @@
+import { memo, useRef, useState, useEffect, useCallback } from 'react'
 import { CKEditor } from '@ckeditor/ckeditor5-react'
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 
@@ -38,21 +39,72 @@ const defaultConfig = {
   removePlugins: ['Title', 'Markdown'],
 }
 
+function focusEditor(editor) {
+  requestAnimationFrame(() => {
+    editor.editing.view.focus()
+  })
+}
+
 function RichEditor({ value, onChange, placeholder, minHeight = 200 }) {
+  const editorRef = useRef(null)
+  const timerRef = useRef(null)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    const editor = editorRef.current
+    if (!editor) {
+      console.log('RichEditor: useEffect run, editor is null')
+      return
+    }
+    console.log('RichEditor: useEffect run', {
+      value,
+      isFocused: editor.editing.view.document.isFocused,
+    })
+    if (value === undefined || value === null) return
+
+    if (editor.editing.view.document.isFocused) {
+      console.log('RichEditor: skipped sync because editor is focused')
+      return
+    }
+
+    const current = editor.getData()
+    console.log('RichEditor: comparing data', { current, value })
+    if (current !== value) {
+      console.log('RichEditor: data mismatch, calling setData')
+      editor.setData(value)
+    }
+  }, [value])
+
+  const debouncedOnChange = useCallback((data) => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      console.log('RichEditor: debouncedOnChange triggered', data)
+      onChange(data)
+    }, 300)
+  }, [onChange])
+
+  const handleChange = useCallback((_event, editor) => {
+    console.log('RichEditor: handleChange triggered')
+    debouncedOnChange(editor.getData())
+  }, [debouncedOnChange])
+
+  if (!hydrated) return null
+
   return (
     <div className="rich-editor-wrapper">
       <CKEditor
         editor={ClassicEditor}
-        data={value || ''}
         config={{
           ...defaultConfig,
           placeholder: placeholder || '',
         }}
-        onChange={(event, editor) => {
-          const data = editor.getData()
-          onChange(data)
-        }}
         onReady={(editor) => {
+          editorRef.current = editor
+          if (value) editor.setData(value)
           const style = document.createElement('style')
           style.textContent = `
             .ck-editor__editable_inline {
@@ -61,10 +113,12 @@ function RichEditor({ value, onChange, placeholder, minHeight = 200 }) {
             }
           `
           editor.ui.view.editable.element.parentElement.appendChild(style)
+          focusEditor(editor)
         }}
+        onChange={handleChange}
       />
     </div>
   )
 }
 
-export default RichEditor
+export default memo(RichEditor)
