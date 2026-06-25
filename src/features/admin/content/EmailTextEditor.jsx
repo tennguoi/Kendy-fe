@@ -60,21 +60,22 @@ function EmailTextEditor({
         <RichEditor value={draft.intro} onChange={(value) => onChange({ intro: value })} minHeight={150} />
       </label>
 
-      {definition.type === 'link' ? (
-        <label>
-          <span>{t('admin.content.email.actionLabel')}</span>
-          <input
-            value={draft.actionLabel}
-            onChange={(event) => onChange({ actionLabel: event.target.value })}
-            required
-          />
-        </label>
-      ) : (
+      {definition.type === 'code' && (
         <label>
           <span>{t('admin.content.email.codeLabel')}</span>
           <input
             value={draft.codeLabel}
             onChange={(event) => onChange({ codeLabel: event.target.value })}
+            required
+          />
+        </label>
+      )}
+      {(definition.type === 'link' || definition.slug === 'password_reset') && (
+        <label>
+          <span>{t('admin.content.email.actionLabel')}</span>
+          <input
+            value={draft.actionLabel}
+            onChange={(event) => onChange({ actionLabel: event.target.value })}
             required
           />
         </label>
@@ -103,8 +104,8 @@ function EmailTextEditor({
         <strong>{t('admin.content.email.allowedVariables')}</strong>
         <code>{'{{name}}'}</code>
         <code>{'{{email}}'}</code>
-        {definition.type === 'link' && <code>{'{{link}}'}</code>}
-        {definition.type === 'code' && <code>{'{{code}}'}</code>}
+        {(definition.type === 'link' || definition.slug === 'password_reset') && <code>{'{{link}}'}</code>}
+        {(definition.type === 'code' || definition.slug === 'password_reset') && <code>{'{{code}}'}</code>}
         <code>{'{{expiresAt}}'}</code>
       </div>
 

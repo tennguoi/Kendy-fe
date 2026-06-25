@@ -41,8 +41,12 @@ function App() {
   const location = useLocation()
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const initialAuthMode = location.pathname === '/reset-password' ? 'reset-verify' : 'login'
+  const initialResetCode = location.pathname === '/reset-password'
+    ? new URLSearchParams(location.search).get('token') || ''
+    : ''
   const [showAuthScreen, setShowAuthScreen] = useState(() => (
-    Boolean(initialOAuthCallback?.error || initialOAuthCallback?.oauthTwoFactorChallenge)
+    Boolean(initialOAuthCallback?.error || initialOAuthCallback?.oauthTwoFactorChallenge || location.pathname === '/reset-password')
   ))
   const [depositAmount, setDepositAmount] = useState('250000')
   const [checkoutService, setCheckoutService] = useState(null)
@@ -105,6 +109,7 @@ function App() {
   ) || 0
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
   const normalizedPathname = normalizePathname(location.pathname)
+  const isPasswordResetPath = normalizedPathname === '/reset-password'
   const isAdminPath = normalizedPathname === '/admin' || normalizedPathname.startsWith('/admin/')
   const adminActiveView = resolveAdminActiveView(normalizedPathname)
   const userActiveView = resolveUserActiveView(normalizedPathname)
@@ -404,6 +409,28 @@ function App() {
       setApiNotice('')
     }
   }
+
+  const handlePasswordResetComplete = useCallback(() => {
+    clearStoredAccessToken()
+    setAccessToken('')
+    setRememberSession(false)
+    setCurrentUser(null)
+    setWallet(null)
+    setApiOrders([])
+    setDetailOrderLoading(false)
+    setApiWalletTransactions([])
+    setApiDeposits([])
+    setApiTickets([])
+    setActiveCheckout(null)
+    setFavoriteServices([])
+    setRecentServices([])
+    setUserDashboard(null)
+    resetNotifications()
+    resetAdminOverview()
+    setAuthInit(true)
+    setShowAuthScreen(true)
+    navigate('/', { replace: true })
+  }, [navigate, resetAdminOverview, resetNotifications])
 
   const handleAdminViewChange = useCallback((viewId) => {
     if (viewId === 'admin-profile') {
@@ -978,10 +1005,25 @@ function App() {
     }
   }
 
+  if (isPasswordResetPath) {
+    return (
+      <AuthScreen
+        initialMode="reset-verify"
+        initialResetCode={initialResetCode}
+        notice={apiNotice}
+        onBack={() => navigate('/')}
+        onResetComplete={handlePasswordResetComplete}
+        onSuccess={handleAuthSuccess}
+      />
+    )
+  }
+
   if (!accessToken) {
     if (showAuthScreen) {
       return (
         <AuthScreen
+          initialMode={initialAuthMode}
+          initialResetCode={initialResetCode}
           notice={apiNotice}
           oauthChallenge={initialOAuthCallback?.oauthTwoFactorChallenge ? {
             challengeToken: initialOAuthCallback.oauthTwoFactorChallenge,
@@ -990,6 +1032,7 @@ function App() {
             provider: initialOAuthCallback.provider,
           } : null}
           onBack={() => setShowAuthScreen(false)}
+          onResetComplete={handlePasswordResetComplete}
           onSuccess={handleAuthSuccess}
         />
       )

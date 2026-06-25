@@ -63,13 +63,21 @@ function GithubIcon() {
   )
 }
 
-function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
+function AuthScreen({
+  initialMode = 'login',
+  initialResetCode = '',
+  notice,
+  oauthChallenge,
+  onBack,
+  onResetComplete,
+  onSuccess,
+}) {
   const { t } = useTranslation()
   const { settings: siteSettings } = usePublicSiteSettings()
   const brand = siteSettings.brand
   const brandName = brand.name || 'Kendy Digital'
   const brandLogo = brand.logoUrl || heroImg
-  const [mode, setMode] = useState('login')
+  const [mode, setMode] = useState(initialMode)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -93,9 +101,12 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
   const [oauthProviders, setOauthProviders] = useState(defaultOAuthProviders)
   const isRegister = mode === 'register'
   const isForgot = mode === 'forgot'
+  const isResetVerify = mode === 'reset-verify'
   const isReset = mode === 'reset'
   const isVerify = mode === 'verify'
   const [resetToken, setResetToken] = useState('')
+  const [resetCode, setResetCode] = useState(initialResetCode)
+  const [resetEmail, setResetEmail] = useState('')
   const [verifyEmail, setVerifyEmail] = useState('')
   const [verifyToken, setVerifyToken] = useState('')
   const { addToast } = useToast()
@@ -129,6 +140,8 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
     setMode((current) => target || (current === 'login' ? 'register' : 'login'))
     setTwoFactorStep(null)
     setResetToken('')
+    setResetCode('')
+    setResetEmail('')
     setError('')
   }
 
@@ -203,9 +216,12 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
 
       setBusy(true)
       try {
-        const result = await authApi.forgotPassword({ email: form.email.trim() })
-        setResetToken(result.token || result.securityToken)
-        setMode('reset')
+        const email = form.email.trim()
+        await authApi.forgotPassword({ email })
+        setResetEmail(email)
+        setResetCode('')
+        setResetToken('')
+        setMode('reset-verify')
         addToast({ type: 'success', title: t('auth.toast.forgotTitle'), message: t('auth.success.forgot') })
       } catch (err) {
         const msg = err.message || t('auth.error.forgotFailed')
@@ -217,7 +233,36 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
       return
     }
 
+    if (isResetVerify) {
+      if (!resetCode.trim()) {
+        setError(t('auth.error.enterResetCode'))
+        addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterResetCode') })
+        return
+      }
+
+      setBusy(true)
+      try {
+        const result = await authApi.verifyPasswordReset({ token: resetCode.trim() })
+        setResetToken(result.token || result.securityToken)
+        setMode('reset')
+        addToast({ type: 'success', title: t('auth.toast.resetTitle'), message: t('auth.success.resetCode') })
+      } catch (err) {
+        const msg = err.message || t('auth.error.invalidResetCode')
+        setError(msg)
+        addToast({ type: 'error', title: t('common.error'), message: msg })
+      } finally {
+        setBusy(false)
+      }
+      return
+    }
+
     if (isReset) {
+      if (!resetToken) {
+        setError(t('auth.error.enterResetCode'))
+        setMode('reset-verify')
+        return
+      }
+
       if (!form.password) {
         setError(t('auth.error.enterNewPassword'))
         addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterNewPassword') })
@@ -242,6 +287,14 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
         addToast({ type: 'success', title: t('auth.toast.resetTitle'), message: t('auth.success.reset') })
         setMode('login')
         setResetToken('')
+        setResetCode('')
+        setResetEmail('')
+        setForm((current) => ({
+          ...current,
+          password: '',
+          confirmPassword: '',
+        }))
+        onResetComplete?.()
       } catch (err) {
         const msg = err.message || t('auth.error.resetFailed')
         setError(msg)
@@ -380,14 +433,15 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
         <form key={mode + (twoFactorStep ? '-2fa' : '')} className="auth-card" onSubmit={submit}>
           <div className="auth-card-head">
             <span className="auth-mode-icon" aria-hidden="true">
-              {isVerify ? <ShieldCheck size={22} strokeWidth={2} /> : isForgot ? <Mail size={22} strokeWidth={2} /> : isReset ? <KeyRound size={22} strokeWidth={2} /> : isRegister ? <UserRound size={22} strokeWidth={2} /> : <LogIn size={22} strokeWidth={2} />}
+              {isVerify || isResetVerify ? <ShieldCheck size={22} strokeWidth={2} /> : isForgot ? <Mail size={22} strokeWidth={2} /> : isReset ? <KeyRound size={22} strokeWidth={2} /> : isRegister ? <UserRound size={22} strokeWidth={2} /> : <LogIn size={22} strokeWidth={2} />}
             </span>
             <div>
-              <span className="eyebrow">{twoFactorStep ? t('auth.twoFactorEyebrow') : isVerify ? t('auth.verifyEyebrow') : isForgot ? t('auth.forgotEyebrow') : isReset ? t('auth.resetEyebrow') : isRegister ? t('auth.registerEyebrow') : t('auth.loginEyebrow')}</span>
+              <span className="eyebrow">{twoFactorStep ? t('auth.twoFactorEyebrow') : isVerify ? t('auth.verifyEyebrow') : isResetVerify ? t('auth.resetVerifyEyebrow') : isForgot ? t('auth.forgotEyebrow') : isReset ? t('auth.resetEyebrow') : isRegister ? t('auth.registerEyebrow') : t('auth.loginEyebrow')}</span>
               <h2>
                 {twoFactorStep
                   ? t('auth.twoFactorTitle')
                   : isVerify ? t('auth.verifyTitle')
+                  : isResetVerify ? t('auth.resetVerifyTitle')
                   : isForgot ? t('auth.forgotTitle')
                   : isReset ? t('auth.resetTitle')
                   : isRegister
@@ -453,6 +507,29 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
               </label>
             )}
 
+            {isResetVerify && (
+              <>
+                <p className="auth-message">
+                  {resetEmail ? (
+                    <>{t('auth.resetCodeSent')} <strong>{resetEmail}</strong>.</>
+                  ) : t('auth.resetCodeFromEmail')}
+                </p>
+                <label className="auth-field">
+                  <span>{t('auth.verifyCodeLabel')}</span>
+                  <div className="auth-input">
+                    <ShieldCheck size={18} strokeWidth={2} aria-hidden="true" />
+                    <input
+                      value={resetCode}
+                      onChange={(event) => setResetCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder={t('auth.verifyPastePlaceholder')}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                    />
+                  </div>
+                </label>
+              </>
+            )}
+
             {isReset && (
               <>
                 <label className="auth-field">
@@ -505,7 +582,7 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
               </>
             )}
 
-            {!twoFactorStep && !isForgot && !isReset && (
+            {!twoFactorStep && !isForgot && !isResetVerify && !isReset && (
               <label className="auth-field">
                 <span>{t('auth.emailLabel')}</span>
                 <div className="auth-input">
@@ -552,7 +629,7 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
               </label>
             )}
 
-            {!twoFactorStep && !isForgot && !isReset && (
+            {!twoFactorStep && !isForgot && !isResetVerify && !isReset && (
               <label className="auth-field">
                 <span>{t('auth.passwordLabel')}</span>
                 <div className="auth-input">
@@ -651,13 +728,13 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
               </>
             ) : (
               <>
-                <span>{twoFactorStep ? t('auth.submitConfirmCode') : isVerify ? t('auth.submitVerify') : isForgot ? t('auth.submitForgot') : isReset ? t('auth.submitReset') : isRegister ? t('auth.submitRegister') : t('auth.submitLogin')}</span>
+                <span>{twoFactorStep ? t('auth.submitConfirmCode') : isVerify ? t('auth.submitVerify') : isResetVerify ? t('auth.submitResetVerify') : isForgot ? t('auth.submitForgot') : isReset ? t('auth.submitReset') : isRegister ? t('auth.submitRegister') : t('auth.submitLogin')}</span>
                 {isForgot ? <Send size={18} strokeWidth={2} aria-hidden="true" /> : <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />}
               </>
             )}
           </button>
 
-          {!twoFactorStep && !isForgot && !isReset && !isVerify && (
+          {!twoFactorStep && !isForgot && !isResetVerify && !isReset && !isVerify && (
             <>
               <div className="auth-divider">
                 <span>{t('auth.orLoginWith')}</span>
@@ -688,7 +765,7 @@ function AuthScreen({ notice, oauthChallenge, onBack, onSuccess }) {
                   <span>{t('auth.verifiedEmail')}</span>
                   <button type="button" onClick={() => switchMode('login')}>{t('auth.login')}</button>
                 </>
-              ) : isForgot || isReset ? (
+              ) : isForgot || isResetVerify || isReset ? (
                 <>
                   <span>{t('auth.rememberPassword')}</span>
                   <button type="button" onClick={() => switchMode('login')}>{t('auth.login')}</button>

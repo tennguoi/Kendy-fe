@@ -9,7 +9,7 @@ const defaultForm = {
   rateLimitEnabled: true,
   rateLimitFinance: 60,
   rateLimitWebhook: 120,
-  resetPasswordBody: 'Use this link to reset your password:\n{{link}}\n\nThis token expires at: {{expiresAt}}',
+  resetPasswordBody: 'Use this code to reset your password:\n{{code}}\n\nOpen the reset page: {{link}}\n\nThis code expires at: {{expiresAt}}',
   resetPasswordSubject: 'Reset your KendyDigital password',
   twoFactorBody: 'Your 2FA email code is: {{code}}\n\nThis code expires at: {{expiresAt}}\nIf you did not try to sign in, change your password immediately.',
   twoFactorSubject: 'Your KendyDigital 2FA code',

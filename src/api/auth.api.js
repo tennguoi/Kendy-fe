@@ -13,6 +13,8 @@ export const authApi = {
 
   forgotPassword: (data) => axiosClient.post('/api/auth/forgot-password', data),
 
+  verifyPasswordReset: (data) => axiosClient.post('/api/auth/verify-password-reset', data),
+
   resetPassword: (data) => axiosClient.post('/api/auth/reset-password', data),
 
   resendVerification: (data) => axiosClient.post('/api/auth/resend-verification', data),

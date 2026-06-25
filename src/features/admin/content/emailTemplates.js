@@ -18,13 +18,14 @@ export const EMAIL_TEMPLATE_DEFINITIONS = [
     slug: 'password_reset',
     label: 'Đặt lại mật khẩu',
     description: 'Gửi khi người dùng yêu cầu khôi phục mật khẩu.',
-    type: 'link',
+    type: 'code',
     defaults: {
       subject: 'Đặt lại mật khẩu Kendy Digital',
       heading: 'Đặt lại mật khẩu',
-      intro: 'Chào {{name}}, chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.',
+      intro: 'Chào {{name}}, chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Sử dụng mã xác nhận bên dưới để tiếp tục.',
+      codeLabel: 'Mã xác nhận',
       actionLabel: 'Đặt lại mật khẩu',
-      detail: 'Liên kết đặt lại mật khẩu sẽ hết hạn vào {{expiresAt}}.',
+      detail: 'Mã xác nhận sẽ hết hạn vào {{expiresAt}}.',
       securityNote: 'Nếu bạn không gửi yêu cầu này, hãy bỏ qua email và kiểm tra lại bảo mật tài khoản.',
       footer: 'Đây là email tự động từ Kendy Digital. Vui lòng không trả lời email này.',
     },
@@ -106,20 +107,22 @@ export function renderTransactionalEmail(definition, config, brand) {
   const brandName = escapeHtml(brand?.name || 'Kendy Digital')
   const logoUrl = text(brand?.logoUrl).trim()
   const safeLogoUrl = /^https?:\/\//i.test(logoUrl) ? escapeHtml(logoUrl) : ''
-  const actionBlock = definition.type === 'code'
-    ? `
+  const codeBlock = definition.type === 'code' ? `
       <tr>
         <td style="padding:8px 40px 24px;">
           <div style="font-size:12px;font-weight:600;color:#57606a;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">${textToHtml(config.codeLabel)}</div>
           <div style="padding:18px 20px;border:1px solid #d0d7de;border-radius:6px;background:#f6f8fa;color:#24292f;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:32px;font-weight:700;letter-spacing:8px;text-align:center;">{{code}}</div>
         </td>
-      </tr>`
-    : `
+      </tr>` : ''
+
+  const linkBlock = definition.type === 'link' || definition.slug === 'password_reset' ? `
       <tr>
         <td style="padding:8px 40px 24px;text-align:center;">
-          <a href="{{link}}" style="display:inline-block;padding:11px 22px;border:1px solid rgba(27,31,36,.15);border-radius:6px;color:#ffffff;background:#1f883d;font-size:14px;font-weight:600;line-height:20px;text-decoration:none;">${textToHtml(config.actionLabel)}</a>
+          <a href="{{link}}" style="display:inline-block;padding:11px 22px;border:1px solid rgba(27,31,36,.15);border-radius:6px;color:#ffffff;background:#1f883d;font-size:14px;font-weight:600;line-height:20px;text-decoration:none;">${textToHtml(config.actionLabel || '')}</a>
         </td>
-      </tr>`
+      </tr>` : ''
+
+  const actionBlock = codeBlock + linkBlock
 
   const logoBlock = safeLogoUrl
     ? `<img src="${safeLogoUrl}" width="44" height="44" alt="${brandName}" style="display:block;width:44px;height:44px;margin:0 auto 12px;border-radius:8px;object-fit:contain;">`
