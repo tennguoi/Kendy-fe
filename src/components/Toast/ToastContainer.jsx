@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Info, CheckCircle2, AlertTriangle, AlertCircle, X } from 'lucide-react';
+import { Info, CheckCircle2, AlertTriangle, AlertCircle, X, ChevronDown, ChevronUp } from 'lucide-react';
 import './Toast.css';
 
 const getIcon = (type) => {
@@ -21,14 +22,15 @@ const getIcon = (type) => {
 function ToastItem({ toast, onClose, onMouseEnter, onMouseLeave }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [showDetails, setShowDetails] = useState(false);
   const isClickable = !!(toast.onClick || toast.to);
+  const hasDetails = Array.isArray(toast.details) && toast.details.length > 0;
 
   const handleToastClick = (e) => {
-    // If user clicks the close button or action button, do not trigger general toast click
-    if (e.target.closest('.kd-toast-close') || e.target.closest('.kd-toast-action-btn')) {
+    if (e.target.closest('.kd-toast-close') || e.target.closest('.kd-toast-action-btn') || e.target.closest('.kd-toast-details-toggle')) {
       return;
     }
-    
+
     if (toast.onClick) {
       toast.onClick(e);
       onClose(toast.id);
@@ -36,6 +38,11 @@ function ToastItem({ toast, onClose, onMouseEnter, onMouseLeave }) {
       navigate(toast.to);
       onClose(toast.id);
     }
+  };
+
+  const handleToggleDetails = (e) => {
+    e.stopPropagation();
+    setShowDetails((prev) => !prev);
   };
 
   return (
@@ -54,7 +61,31 @@ function ToastItem({ toast, onClose, onMouseEnter, onMouseLeave }) {
           <div className="kd-toast-body">
             {toast.title && <div className="kd-toast-title">{toast.title}</div>}
             <div className="kd-toast-message">{toast.message}</div>
-            
+
+            {toast.code && (
+              <div className="kd-toast-code">{t('common.code', { defaultValue: 'Mã' })}: {toast.code}</div>
+            )}
+
+            {hasDetails && (
+              <button className="kd-toast-details-toggle" onClick={handleToggleDetails}>
+                {showDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                {showDetails
+                  ? t('common.hideDetails', { defaultValue: 'Ẩn chi tiết' })
+                  : t('common.showDetails', { defaultValue: 'Xem chi tiết', count: toast.details.length })}
+              </button>
+            )}
+
+            {hasDetails && showDetails && (
+              <div className="kd-toast-details">
+                {toast.details.map((detail, index) => (
+                  <div key={index} className="kd-toast-detail-item">
+                    <span className="kd-toast-detail-field">{detail.field}:</span>
+                    <span className="kd-toast-detail-msg">{detail.message}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {toast.action && (
               <button
                 className="kd-toast-action-btn"

@@ -228,6 +228,83 @@
   transform: translateY(-1px) scale(0.99);
 }
 
+/* Error code badge */
+.kd-toast-code {
+  font-size: 11px;
+  font-weight: 500;
+  color: #9e9d96;
+  margin: 4px 0 0;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  letter-spacing: 0.3px;
+}
+html.dark .kd-toast-code {
+  color: #64748b;
+}
+
+/* Details toggle button */
+.kd-toast-details-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  border: 0;
+  background: none;
+  font-size: 11px;
+  font-weight: 500;
+  color: #378add;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+.kd-toast-details-toggle:hover {
+  background: rgba(55, 138, 221, 0.08);
+}
+html.dark .kd-toast-details-toggle {
+  color: #60a5fa;
+}
+html.dark .kd-toast-details-toggle:hover {
+  background: rgba(96, 165, 250, 0.15);
+}
+
+/* Error details expandable section */
+.kd-toast-details {
+  margin-top: 8px;
+  border-top: 1px solid #efeee8;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+html.dark .kd-toast-details {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.kd-toast-detail-item {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.kd-toast-detail-field {
+  font-weight: 600;
+  color: #5f5e5a;
+  white-space: nowrap;
+  min-width: 80px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+html.dark .kd-toast-detail-field {
+  color: #94a3b8;
+}
+
+.kd-toast-detail-msg {
+  color: #6b6a64;
+}
+html.dark .kd-toast-detail-msg {
+  color: #cbd5e1;
+}
+
 /* Action button inside body */
 .kd-toast-action-btn {
   margin-top: 8px;

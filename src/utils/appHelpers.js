@@ -50,18 +50,13 @@ export function resolveServiceId(service) {
   return service?.id ?? service?.serviceId
 }
 
-export function purchaseErrorMessage(error) {
-  const message = error?.message || ''
-  if (message === 'Insufficient wallet balance') {
-    return 'Số dư ví không đủ để mua dịch vụ này. Vui lòng nạp thêm tiền.'
-  }
-  if (message === 'Service requires consultation before purchase') {
-    return 'Dịch vụ này cần tư vấn trước khi mua. Vui lòng tạo ticket hỗ trợ.'
-  }
-  if (message === 'Service price must be greater than zero') {
-    return 'Dịch vụ chưa có giá hợp lệ để tạo đơn.'
-  }
-  return message || 'Không tạo được đơn. Kiểm tra số dư ví hoặc trạng thái dịch vụ.'
+export function purchaseErrorMessage(error, t = (key) => key) {
+  if (!error) return t('orderPurchaseError', 'Không tạo được đơn.')
+  const code = error.code || ''
+  const codeKey = `errorCodes.${code}`
+  const translated = t(codeKey)
+  if (translated && translated !== codeKey) return translated
+  return error.message || t('orderPurchaseError', 'Không tạo được đơn.')
 }
 
 export function notificationRoute(actionUrl) {
@@ -80,43 +75,43 @@ export function notificationRoute(actionUrl) {
   return actionUrl
 }
 
-export function depositStatusNotice(depositCode, status) {
+export function depositStatusNotice(depositCode, status, t = (key) => key) {
   const normalizedStatus = String(status || '').toUpperCase()
   if (normalizedStatus === 'COMPLETED') {
     return {
-      message: `Yêu cầu nạp ${depositCode} đã hoàn tất. Số dư đã được cập nhật.`,
-      title: 'Đã nhận tiền',
+      message: t('depositNoticeCompleted', { defaultValue: `Yêu cầu nạp ${depositCode} đã hoàn tất.` }),
+      title: t('depositCompleted', { defaultValue: 'Đã nhận tiền' }),
       type: 'success',
     }
   }
 
   if (normalizedStatus === 'PENDING') {
     return {
-      message: `Yêu cầu nạp ${depositCode} vẫn đang chờ thanh toán/webhook SePay.`,
-      title: 'Đang chờ',
+      message: t('depositNoticePending', { defaultValue: `Yêu cầu nạp ${depositCode} vẫn đang chờ thanh toán.` }),
+      title: t('depositPending', { defaultValue: 'Đang chờ' }),
       type: 'info',
     }
   }
 
   if (normalizedStatus === 'MANUAL_REVIEW') {
     return {
-      message: `Yêu cầu nạp ${depositCode} cần admin kiểm tra thủ công.`,
-      title: 'Cần kiểm tra',
+      message: t('depositNoticeManualReview', { defaultValue: `Yêu cầu nạp ${depositCode} cần admin kiểm tra thủ công.` }),
+      title: t('depositManualReview', { defaultValue: 'Cần kiểm tra' }),
       type: 'error',
     }
   }
 
   if (normalizedStatus === 'CANCELLED') {
     return {
-      message: `Yêu cầu nạp ${depositCode} đã bị hủy.`,
-      title: 'Đã hủy',
+      message: t('depositNoticeCancelled', { defaultValue: `Yêu cầu nạp ${depositCode} đã bị hủy.` }),
+      title: t('depositCancelled', { defaultValue: 'Đã hủy' }),
       type: 'error',
     }
   }
 
   return {
-    message: `Trạng thái ${depositCode}: ${normalizedStatus || 'không xác định'}.`,
-    title: 'Đã cập nhật',
+    message: t('depositNoticeUpdated', { defaultValue: `Trạng thái ${depositCode}: ${normalizedStatus}.` }),
+    title: t('depositUpdated', { defaultValue: 'Đã cập nhật' }),
     type: 'info',
   }
 }
@@ -137,5 +132,3 @@ export function resolveUserActiveView(pathname) {
   }
   return navItems.find((item) => item.path === pathname)?.id || 'overview'
 }
-
-

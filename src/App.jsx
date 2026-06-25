@@ -114,14 +114,37 @@ function App() {
   const adminActiveView = resolveAdminActiveView(normalizedPathname)
   const userActiveView = resolveUserActiveView(normalizedPathname)
 
-  const notify = useCallback((message, type = 'info', title = '', action = '') => {
+  const resolveErrorMessage = useCallback((error, fallback) => {
+    if (!error || typeof error === 'string') return error || fallback
+    const code = error.code || ''
+    const codeKey = `errorCodes.${code}`
+    const translated = t(codeKey)
+    if (translated && translated !== codeKey) return translated
+    return error.message || fallback
+  }, [t])
+
+  const notify = useCallback((message, type = 'info', title = '', action = '', details = null, code = '') => {
+    if (message && typeof message === 'object') {
+      const apiErr = message
+      addToast({
+        message: resolveErrorMessage(apiErr, t('common.error')),
+        title: apiErr.title || title || (type === 'error' ? t('common.error') : type === 'success' ? t('common.success') : t('common.info')),
+        type,
+        code: apiErr.code || code,
+        details: apiErr.details || details,
+        action: action || undefined,
+      })
+      return
+    }
     addToast({
       message,
       title: title || (type === 'error' ? t('common.error') : type === 'success' ? t('common.success') : t('common.info')),
       type,
+      code,
+      details,
       action: action || undefined,
     })
-  }, [addToast, t])
+  }, [addToast, t, resolveErrorMessage])
 
   const handleRealtimeNotification = useCallback(async (notification) => {
     const type = String(notification?.type || '').toUpperCase()
@@ -235,8 +258,8 @@ function App() {
     persistAccessToken(accessToken, rememberSession)
     fetchUserBootstrap(accessToken)
       .then(applyBootstrapData)
-      .catch(() => {
-        const message = t('app.apiError')
+      .catch((err) => {
+        const message = resolveErrorMessage(err, t('app.apiError'))
         setApiNotice(message)
         notify(message, 'error')
         setAuthInit(true)
@@ -334,7 +357,7 @@ function App() {
         }
       } catch (err) {
         if (!cancelled) {
-          notify(err.message || t('app.loadPageError'), 'error')
+          notify(err, 'error', t('app.loadPageError'))
         }
       } finally {
         if (!cancelled) {
@@ -498,8 +521,8 @@ function App() {
       const message = t('app.depositCreated', { code: deposit.depositCode })
       setApiNotice(message)
       notify(message, 'success')
-    } catch {
-      const message = t('app.depositCreateError')
+    } catch (err) {
+      const message = resolveErrorMessage(err, t('app.depositCreateError'))
       setApiNotice(message)
       notify(message, 'error')
     }
@@ -529,7 +552,7 @@ function App() {
           await refreshBootstrapData()
           notify(t('app.transferPaymentDone', { code: checkout.order.orderCode }), 'success')
         } else {
-          const notice = depositStatusNotice(depositCode, checkout.deposit?.status || checkout.status)
+          const notice = depositStatusNotice(depositCode, checkout.deposit?.status || checkout.status, t)
           notify(notice.message, notice.type, notice.title)
         }
         return
@@ -545,7 +568,7 @@ function App() {
         setActiveDeposit(merged)
         setApiDeposits((items) => normalizeList(items).map((item) => (item.depositCode === depositCode ? merged : item)))
         setWallet(walletData)
-        const notice = depositStatusNotice(depositCode, merged.status)
+        const notice = depositStatusNotice(depositCode, merged.status, t)
         notify(notice.message, notice.type, notice.title)
       } else {
         const params = { size: 20, ...depositFilters }
@@ -570,7 +593,7 @@ function App() {
         notify(t('app.depositReloaded'), 'success')
       }
     } catch (err) {
-      notify(err.message || t('app.depositRefreshError'), 'error')
+      notify(err, 'error', t('app.depositRefreshError'))
     }
   }
 
@@ -585,7 +608,7 @@ function App() {
       setApiDeposits((items) => normalizeList(items).map((item) => (item.depositCode === saved.depositCode ? saved : item)))
       notify(t('app.depositCancelled', { code: saved.depositCode }), 'success')
     } catch (err) {
-      notify(err.message || t('app.depositCancelError'), 'error')
+      notify(err, 'error', t('app.depositCancelError'))
     }
   }
 
@@ -597,6 +620,51 @@ function App() {
       return
     }
     handlePurchase(service)
+  }
+
+  const createManualServiceTicket = async (service) => {
+    const serviceName = service?.name || t('common.service', { defaultValue: 'Dịch vụ' })
+    const priceText = service?.priceText || service?.pricingBadge || ''
+    const subject = t('app.manualServiceTicketSubject', {
+      name: serviceName,
+      defaultValue: 'Tư vấn dịch vụ {{name}}',
+    })
+    const message = [
+      t('app.manualServiceTicketIntro', {
+        name: serviceName,
+        defaultValue: 'Tôi muốn trao đổi với Kendy Digital về dịch vụ: {{name}}.',
+      }),
+      priceText
+        ? t('app.manualServiceTicketPrice', {
+            price: priceText,
+            defaultValue: 'Thông tin giá hiển thị: {{price}}.',
+          })
+        : '',
+      t('app.manualServiceTicketPrompt', {
+        defaultValue: 'Vui lòng tư vấn scope, thời gian xử lý và bước thanh toán phù hợp.',
+      }),
+    ].filter(Boolean).join('\n')
+
+    setSupportSubmitting(true)
+    try {
+      const saved = await userApi.createTicket({
+        category: 'SERVICE',
+        subject,
+        message,
+        priority: 'NORMAL',
+      }, accessToken)
+      setApiTickets((items) => [saved, ...normalizeList(items).filter((item) => item.ticketCode !== saved.ticketCode)])
+      setSupportSelectedCode(saved.ticketCode)
+      setTicketForm({ category: 'DEPOSIT', depositCode: '', message: '', orderCode: '', priority: 'NORMAL', subject: '' })
+      navigate('/support')
+      notify(t('app.manualServiceTicketCreated', {
+        code: saved.ticketCode,
+        defaultValue: 'Đã tạo ticket {{code}} để trao đổi dịch vụ.',
+      }), 'success')
+      return saved
+    } finally {
+      setSupportSubmitting(false)
+    }
   }
 
   const handlePurchase = async (service) => {
@@ -613,8 +681,9 @@ function App() {
         throw new Error(t('app.serviceInvalidId'))
       }
 
-      if (service.ctaType && service.ctaType !== 'BUY_NOW') {
-        throw new Error(t('app.serviceNeedConsult'))
+      if (service.type === 'MANUAL' || (service.ctaType && service.ctaType !== 'BUY_NOW')) {
+        await createManualServiceTicket(service)
+        return
       }
 
       const servicePrice = Number(service.price)
@@ -627,7 +696,7 @@ function App() {
       setCheckoutCouponQuote(null)
       setCheckoutService(service)
     } catch (err) {
-      const message = purchaseErrorMessage(err)
+      const message = purchaseErrorMessage(err, t)
       setApiNotice(message)
       notify(message, 'error')
     }
@@ -710,7 +779,7 @@ function App() {
       notify(message, 'success')
       closeCheckoutModal()
     } catch (err) {
-      const message = purchaseErrorMessage(err)
+      const message = purchaseErrorMessage(err, t)
       setApiNotice(message)
       notify(message, 'error')
     } finally {
@@ -748,7 +817,7 @@ function App() {
       closeCheckoutModal()
       notify(t('app.transferCheckoutCreated', { code: deposit.depositCode, name: checkout.serviceName || checkoutService.name }), 'success')
     } catch (err) {
-      const message = err.message || t('app.transferCheckoutError')
+      const message = resolveErrorMessage(err, t('app.transferCheckoutError'))
       setApiNotice(message)
       notify(message, 'error')
     } finally {
@@ -777,7 +846,7 @@ function App() {
         notify(t('app.favoriteAdded', { name: saved.name }), 'success')
       }
     } catch (err) {
-      notify(err.message || t('app.favoriteError'), 'error')
+      notify(err, 'error', t('app.favoriteError'))
     }
   }
 
@@ -792,7 +861,7 @@ function App() {
       await refreshBootstrapData()
       notify(t('app.orderCancelled', { code: saved.orderCode }), 'success')
     } catch (err) {
-      notify(err.message || t('app.orderCancelError'), 'error')
+      notify(err, 'error', t('app.orderCancelError'))
     }
   }
 
@@ -813,7 +882,7 @@ function App() {
       })
       return detail
     } catch (err) {
-      notify(err.message || t('app.orderDetailError'), 'error')
+      notify(err, 'error', t('app.orderDetailError'))
       return order || null
     } finally {
       setDetailOrderLoading(false)
@@ -843,7 +912,7 @@ function App() {
           : items[0]?.ticketCode || null
       ))
     } catch (err) {
-      notify(err.message || t('app.ticketLoadError'), 'error')
+      notify(err, 'error', t('app.ticketLoadError'))
     } finally {
       setSupportLoading(false)
     }
@@ -877,7 +946,7 @@ function App() {
       })
       setSupportAttachments(normalizeList(attachments))
     } catch (err) {
-      notify(err.message || t('app.ticketDetailError'), 'error')
+      notify(err, 'error', t('app.ticketDetailError'))
     }
   }
 
@@ -924,7 +993,7 @@ function App() {
       notify(t('app.ticketCreated', { code: saved.ticketCode }), 'success')
       return saved
     } catch (err) {
-      notify(err.message || t('app.ticketCreateError'), 'error')
+      notify(err, 'error', t('app.ticketCreateError'))
       return null
     } finally {
       setSupportSubmitting(false)
@@ -944,7 +1013,7 @@ function App() {
       setSupportMessage('')
       notify(t('app.ticketReply', { code: saved.ticketCode }), 'success')
     } catch (err) {
-      notify(err.message || t('app.ticketReplyError'), 'error')
+      notify(err, 'error', t('app.ticketReplyError'))
     } finally {
       setSupportSubmitting(false)
     }
@@ -963,7 +1032,7 @@ function App() {
       setApiTickets((items) => normalizeList(items).map((item) => (item.ticketCode === saved.ticketCode ? saved : item)))
       notify(t('app.ticketUpdated', { code: saved.ticketCode }), 'success')
     } catch (err) {
-      notify(err.message || t('app.ticketUpdateError'), 'error')
+      notify(err, 'error', t('app.ticketUpdateError'))
     } finally {
       setSupportSubmitting(false)
     }
@@ -982,7 +1051,7 @@ function App() {
       setSupportAttachments(normalizeList(await userApi.getTicketAttachments(selectedTicket.ticketCode, accessToken)))
       notify(t('app.attachmentUploaded'), 'success')
     } catch (err) {
-      notify(err.message || t('app.attachmentUploadError'), 'error')
+      notify(err, 'error', t('app.attachmentUploadError'))
     } finally {
       setSupportSubmitting(false)
     }
@@ -999,7 +1068,7 @@ function App() {
       setSupportAttachments(normalizeList(await userApi.getTicketAttachments(ticketCode, accessToken)))
       notify(t('app.attachmentDeleted', { id: attachmentId }), 'success')
     } catch (err) {
-      notify(err.message || t('app.attachmentDeleteError'), 'error')
+      notify(err, 'error', t('app.attachmentDeleteError'))
     } finally {
       setSupportSubmitting(false)
     }

@@ -35,7 +35,7 @@ export function useNotifications({
       setNotifications(normalizeList(items))
       setUnreadNotifications(Number(count?.unread || 0))
     } catch (err) {
-      notify(err.message || 'Không tải được thông báo.', 'error')
+      notify(err, 'error', 'Không tải được thông báo.')
     } finally {
       setNotificationsLoading(false)
     }
@@ -60,7 +60,7 @@ export function useNotifications({
       setNotifications((items) => normalizeList(items).map((item) => (item.id === saved.id ? saved : item)))
       setUnreadNotifications((count) => Math.max(0, count - 1))
     } catch (err) {
-      notify(err.message || 'Không cập nhật được thông báo.', 'error')
+      notify(err, 'error', 'Không cập nhật được thông báo.')
     }
   }, [accessToken, navigate, notify])
 

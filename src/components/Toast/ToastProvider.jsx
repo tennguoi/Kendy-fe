@@ -73,7 +73,7 @@ export function ToastProvider({ children }) {
   }, [clearTickInterval, removeToast]);
 
   const addToast = useCallback(
-    ({ type = 'info', title = '', message = '', timeout = 5000, onClick = null, to = null, action = null } = {}) => {
+    ({ type = 'info', title = '', message = '', code = '', details = null, timeout = 5000, onClick = null, to = null, action = null } = {}) => {
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
       const hasTimer = timeout > 0;
 
@@ -82,6 +82,8 @@ export function ToastProvider({ children }) {
         type,
         title,
         message,
+        code,
+        details,
         onClick,
         to,
         action,

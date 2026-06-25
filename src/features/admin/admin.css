@@ -795,6 +795,55 @@ button.admin-data-row.selected {
   line-height: 1.4;
 }
 
+.email-mode-toggle {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  padding: 3px;
+  background: var(--kd-bg);
+}
+.email-mode-toggle button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 8px;
+  color: var(--kd-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.email-mode-toggle button.active {
+  color: var(--kd-text);
+  background: var(--kd-card);
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.email-raw-textarea {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  color: var(--kd-text);
+  background: var(--kd-bg);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  tab-size: 2;
+}
+.email-raw-textarea:focus {
+  outline: none;
+  border-color: var(--kd-blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kd-blue) 20%, transparent);
+}
+
 .email-variable-note {
   display: flex;
   flex-wrap: wrap;

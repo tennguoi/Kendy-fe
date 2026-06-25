@@ -18,6 +18,16 @@ export function toWebSocketUrl(path) {
   return baseUrl.toString();
 }
 
+export class ApiError extends Error {
+  constructor({ code, message, details, status }) {
+    super(message || code || 'Lỗi không xác định');
+    this.name = 'ApiError';
+    this.code = code || 'UNEXPECTED';
+    this.details = details || null;
+    this.status = status || 0;
+  }
+}
+
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -41,15 +51,12 @@ function htmlErrorMessage(payload) {
   return '';
 }
 
-// Interceptor cho request (gắn token)
 axiosClient.interceptors.request.use(
   (config) => {
     config.meta = {
       ...config.meta,
       requestStartedAt: config.meta?.requestStartedAt ?? getMonotonicTimestamp(),
     };
-    // Nếu các API service truyền token vào config.token hoặc có token lưu ở localStorage
-    // Tạm thời mình sẽ để các service tự gắn token qua hàm nếu cần thiết, hoặc lấy từ localStorage sau.
     if (config.token) {
       config.headers.Authorization = `Bearer ${config.token}`;
     }
@@ -58,44 +65,65 @@ axiosClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor cho response (chuẩn hóa lỗi)
 axiosClient.interceptors.response.use(
   (response) => {
     if (!response.config?.meta?.skipTimeSync) {
       syncServerTime(response.headers?.['x-server-time'], response.config?.meta?.requestStartedAt);
     }
-    // Axios tự parse JSON nên ta chỉ trả về data
     return response.status === 204 ? null : response.data;
   },
   (error) => {
     if (error.response && !error.config?.meta?.skipTimeSync) {
       syncServerTime(error.response.headers?.['x-server-time'], error.config?.meta?.requestStartedAt);
     }
-    // Chuẩn hóa lỗi cho giống response cũ
-    let message;
+
     if (error.response) {
       const payload = error.response.data;
-      message = htmlErrorMessage(payload)
-        || payload?.message
-        || payload?.error
-        || payload?.detail
-        || `API ${error.config?.method?.toUpperCase() || 'REQUEST'} ${error.config?.url || ''} failed with ${error.response.status}`;
-    } else if (error.request) {
-      message = 'Không thể kết nối đến máy chủ.';
-    } else {
-      message = error.message;
+      const htmlMsg = htmlErrorMessage(payload);
+      if (htmlMsg) {
+        return Promise.reject(new ApiError({
+          code: 'HTML_ERROR',
+          message: htmlMsg,
+          status: error.response.status,
+        }));
+      }
+
+      if (payload && typeof payload === 'object') {
+        const { code, message, details } = payload;
+        return Promise.reject(new ApiError({
+          code: code || 'API_ERROR',
+          message: message || payload.error || `Yêu cầu thất bại (${error.response.status})`,
+          details: details || null,
+          status: error.response.status,
+        }));
+      }
+
+      return Promise.reject(new ApiError({
+        code: 'API_ERROR',
+        message: `Yêu cầu thất bại (${error.response.status})`,
+        status: error.response.status,
+      }));
     }
-    return Promise.reject(new Error(message || 'Lỗi không xác định'));
+
+    if (error.request) {
+      return Promise.reject(new ApiError({
+        code: 'NETWORK_ERROR',
+        message: 'Không thể kết nối đến máy chủ.',
+      }));
+    }
+
+    return Promise.reject(new ApiError({
+      code: 'UNEXPECTED',
+      message: error.message || 'Lỗi không xác định',
+    }));
   }
 );
 
-// Tạm thời giữ lại apiRequest để các file chưa migrate kịp không bị lỗi ngay lập tức
-// Nhưng sẽ chuyển về dùng axios.
 export async function apiRequest(path, { method = 'GET', token, body } = {}) {
   const config = {
     method,
     url: path,
-    token, // Được request interceptor xử lý
+    token,
   };
   if (body) {
     config.data = body;

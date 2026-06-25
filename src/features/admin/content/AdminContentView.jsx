@@ -106,9 +106,33 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
         adminApi.listContent({ type: 'EMAIL_TEMPLATE' }, token),
       ])
       const siteItems = Array.isArray(siteResult) ? siteResult : []
-      const emailItems = Array.isArray(emailResult) ? emailResult : []
+      let emailItems = Array.isArray(emailResult) ? emailResult : []
       setDrafts(buildSiteSettings(siteItems))
-      setEmailDrafts(buildEmailTemplateDrafts(emailItems))
+      const drafts = buildEmailTemplateDrafts(emailItems)
+      setEmailDrafts(drafts)
+
+      const existingSlugs = new Set(emailItems.map((item) => item.slug))
+      const missing = EMAIL_TEMPLATE_DEFINITIONS.filter((d) => !existingSlugs.has(d.slug))
+      if (missing.length > 0) {
+        const brand = siteItems.find((item) => item.slug === SITE_SETTING_SLUGS.brand)
+        const brandConfig = brand ? { name: brand.title, logoUrl: brand.imageUrl } : {}
+        for (const definition of missing) {
+          const draft = drafts[definition.slug]
+          const saved = await adminApi.createContent({
+            type: 'EMAIL_TEMPLATE',
+            slug: definition.slug,
+            title: draft.subject,
+            summary: JSON.stringify(draft),
+            content: renderTransactionalEmail(definition, draft, brandConfig),
+            imageUrl: null, ctaUrl: null,
+            seoTitle: null, seoDescription: null,
+            published: true, sortOrder: 0,
+          }, token)
+          emailItems = [...emailItems, saved]
+        }
+        setEmailDrafts(buildEmailTemplateDrafts(emailItems))
+      }
+
       setRecords(
         Object.fromEntries(
           [...siteItems, ...emailItems]
@@ -193,7 +217,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
             slug,
             title: currentDraft.subject,
             summary: JSON.stringify(currentDraft),
-            content: renderTransactionalEmail(emailDefinition, currentDraft, drafts.brand),
+            content: currentDraft.rawHtml || renderTransactionalEmail(emailDefinition, currentDraft, drafts.brand),
             imageUrl: null,
             ctaUrl: null,
             seoTitle: null,
