@@ -2111,7 +2111,12 @@
         "formMode": "Form Editor",
         "rawMode": "Raw HTML",
         "rawHtmlLabel": "HTML Content",
-        "rawHtmlHint": "Use {{name}}, {{email}}, {{link}}, {{code}}, {{brand}}, {{expiresAt}} as variables. The HTML will be used as-is."
+        "rawHtmlHint": "Use {{name}}, {{email}}, {{link}}, {{code}}, {{brand}}, {{expiresAt}} as variables. The HTML will be used as-is.",
+        "testLabel": "Send test email",
+        "testPlaceholder": "Enter recipient email...",
+        "sendTest": "Send test",
+        "sending": "Sending...",
+        "testSent": "Test email sent to {{email}}!"
       }
     }
   },

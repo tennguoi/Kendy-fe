@@ -636,9 +636,9 @@ function App() {
       }),
       priceText
         ? t('app.manualServiceTicketPrice', {
-            price: priceText,
-            defaultValue: 'Thông tin giá hiển thị: {{price}}.',
-          })
+          price: priceText,
+          defaultValue: 'Thông tin giá hiển thị: {{price}}.',
+        })
         : '',
       t('app.manualServiceTicketPrompt', {
         defaultValue: 'Vui lòng tư vấn scope, thời gian xử lý và bước thanh toán phù hợp.',

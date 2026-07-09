@@ -678,6 +678,9 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               drafts={emailDrafts}
               onActiveSlugChange={setActiveEmailSlug}
               onChange={updateEmailDraft}
+              token={token}
+              onSetError={onSetError}
+              onSetNotice={onSetNotice}
             />
           )}
 

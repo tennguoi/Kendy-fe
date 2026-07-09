@@ -1,4 +1,4 @@
-import { Code2, Mail, PenLine } from 'lucide-react'
+import { Code2, Mail, PenLine, Send } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -6,6 +6,7 @@ import {
   renderEmailPreview,
   renderTransactionalEmail,
 } from './emailTemplates'
+import { adminContentApi } from '../../../api/admin/content.api'
 import RichEditor from '../../../components/RichEditor/RichEditor'
 
 function EmailTextEditor({
@@ -14,12 +15,34 @@ function EmailTextEditor({
   drafts,
   onActiveSlugChange,
   onChange,
+  token,
+  onSetError,
+  onSetNotice,
 }) {
   const { t } = useTranslation()
   const definition = EMAIL_TEMPLATE_DEFINITIONS.find((item) => item.slug === activeSlug)
   const draft = drafts[activeSlug]
   const [rawMode, setRawMode] = useState(false)
+  const [testEmail, setTestEmail] = useState('')
+  const [sending, setSending] = useState(false)
   const rawContent = draft.rawHtml || renderTransactionalEmail(definition, draft, brand)
+
+  const handleSendTest = async () => {
+    if (!testEmail.trim()) return
+    setSending(true)
+    try {
+      await adminContentApi.sendTestEmail({
+        slug: activeSlug,
+        sendTo: testEmail.trim(),
+      }, token)
+      onSetNotice(t('admin.content.email.testSent', { email: testEmail.trim() }) || 'Email test đã gửi!')
+      setTestEmail('')
+    } catch (error) {
+      onSetError(error.message || 'Không thể gửi email test')
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <div className="admin-form compact email-text-settings">
@@ -162,6 +185,28 @@ function EmailTextEditor({
           srcDoc={rawMode ? rawContent : renderEmailPreview(definition, draft, brand)}
           sandbox=""
         />
+      </div>
+
+      <div className="email-test-section">
+        <strong>{t('admin.content.email.testLabel') || 'Gửi email test'}</strong>
+        <div className="email-test-row">
+          <input
+            type="email"
+            value={testEmail}
+            onChange={(event) => setTestEmail(event.target.value)}
+            placeholder={t('admin.content.email.testPlaceholder') || 'Nhập email nhận test...'}
+            disabled={sending}
+          />
+          <button
+            type="button"
+            className="admin-icon-button"
+            onClick={handleSendTest}
+            disabled={sending || !testEmail.trim()}
+          >
+            <Send size={15} aria-hidden="true" />
+            <span>{sending ? (t('admin.content.email.sending') || 'Đang gửi...') : (t('admin.content.email.sendTest') || 'Gửi test')}</span>
+          </button>
+        </div>
       </div>
     </div>
   )

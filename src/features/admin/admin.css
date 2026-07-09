@@ -893,6 +893,38 @@ button.admin-data-row.selected {
   background: #f6f8fa;
 }
 
+.email-test-section {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  background: var(--kd-card);
+}
+
+.email-test-section strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.email-test-row {
+  display: flex;
+  gap: 10px;
+}
+
+.email-test-row input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--kd-text);
+  background: var(--kd-bg);
+}
+
 /* Admin empty / action states */
 .admin-empty-state {
   margin: 0;

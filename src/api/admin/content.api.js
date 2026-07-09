@@ -13,4 +13,7 @@ export const adminContentApi = {
 
   deleteContent: (id, token) =>
     axiosClient.delete(`/api/admin/content/${id}`, { token }),
+
+  sendTestEmail: (data, token) =>
+    axiosClient.post('/api/admin/email/test', data, { token }),
 };

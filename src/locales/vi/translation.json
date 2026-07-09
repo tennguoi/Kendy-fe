@@ -2111,7 +2111,12 @@
         "formMode": "Form chỉnh sửa",
         "rawMode": "HTML gốc",
         "rawHtmlLabel": "Nội dung HTML",
-        "rawHtmlHint": "Dùng {{name}}, {{email}}, {{link}}, {{code}}, {{brand}}, {{expiresAt}} làm biến. HTML sẽ được dùng nguyên trạng."
+        "rawHtmlHint": "Dùng {{name}}, {{email}}, {{link}}, {{code}}, {{brand}}, {{expiresAt}} làm biến. HTML sẽ được dùng nguyên trạng.",
+        "testLabel": "Gửi email test",
+        "testPlaceholder": "Nhập email nhận test...",
+        "sendTest": "Gửi test",
+        "sending": "Đang gửi...",
+        "testSent": "Email test đã gửi tới {{email}}!"
       }
     }
   },
