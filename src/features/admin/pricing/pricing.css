@@ -109,6 +109,19 @@ button.admin-pricing-row.selected {
   }
 }
 
+@media (max-width: 480px) {
+  .admin-pricing-row > * {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .admin-pricing-row > *:first-child {
+    flex-direction: row;
+    width: 100%;
+  }
+}
+
 /* Dark Mode Overrides */
 html.dark button.admin-pricing-row:hover,
 html.dark button.admin-pricing-row.selected {

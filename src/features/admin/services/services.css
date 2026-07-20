@@ -407,6 +407,32 @@ html.dark .admin-service-editor .admin-close-button:hover {
   background: var(--kd-bg);
 }
 
+@media (max-width: 480px) {
+  .admin-services-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-services-summary div {
+    padding: 10px;
+  }
+
+  .admin-services-summary strong {
+    font-size: 18px;
+  }
+
+  .service-editor-mode {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .service-section-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
 .service-editor-mode.account-stock {
   border-color: color-mix(in srgb, var(--kd-blue) 45%, var(--kd-border));
   background: color-mix(in srgb, var(--kd-blue) 8%, var(--kd-card));

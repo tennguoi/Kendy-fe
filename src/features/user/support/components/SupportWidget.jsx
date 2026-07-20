@@ -42,7 +42,9 @@ function SupportWidget({
   return (
     <div className="support-widget">
       {isOpen && (
-        <section className="support-widget-panel" aria-label={t('support.helpRequestTitle', { defaultValue: 'Gửi yêu cầu trợ giúp' })}>
+        <>
+          <div className="support-widget-backdrop" onClick={() => setIsOpen(false)} aria-hidden="true" />
+          <section className="support-widget-panel" aria-label={t('support.helpRequestTitle', { defaultValue: 'Gửi yêu cầu trợ giúp' })}>
           <div className="support-widget-head">
             <h2>{t('support.helpRequestTitle', { defaultValue: 'Gửi yêu cầu trợ giúp' })}</h2>
             <button type="button" onClick={() => setIsOpen(false)} aria-label={t('support.closeHelp', { defaultValue: 'Đóng hỗ trợ' })}>
@@ -99,6 +101,7 @@ function SupportWidget({
             </button>
           </form>
         </section>
+        </>
       )}
 
       <button type="button" className="support-widget-trigger" onClick={() => setIsOpen((current) => !current)}>

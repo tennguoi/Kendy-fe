@@ -71,7 +71,6 @@ function PublicServiceDetail({ propSlug, notice, onLoginClick }) {
         }
       })
       .catch((err) => {
-        console.error('Error fetching service detail:', err)
         setError(err.message || t('services.noServicesMatch', { defaultValue: 'Không thể tìm thấy dịch vụ được yêu cầu.' }))
       })
       .finally(() => {

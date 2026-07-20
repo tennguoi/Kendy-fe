@@ -57,24 +57,16 @@ function RichEditor({ value, onChange, placeholder, minHeight = 200 }) {
   useEffect(() => {
     const editor = editorRef.current
     if (!editor) {
-      console.log('RichEditor: useEffect run, editor is null')
       return
     }
-    console.log('RichEditor: useEffect run', {
-      value,
-      isFocused: editor.editing.view.document.isFocused,
-    })
     if (value === undefined || value === null) return
 
     if (editor.editing.view.document.isFocused) {
-      console.log('RichEditor: skipped sync because editor is focused')
       return
     }
 
     const current = editor.getData()
-    console.log('RichEditor: comparing data', { current, value })
     if (current !== value) {
-      console.log('RichEditor: data mismatch, calling setData')
       editor.setData(value)
     }
   }, [value])
@@ -82,13 +74,11 @@ function RichEditor({ value, onChange, placeholder, minHeight = 200 }) {
   const debouncedOnChange = useCallback((data) => {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
-      console.log('RichEditor: debouncedOnChange triggered', data)
       onChange(data)
     }, 300)
   }, [onChange])
 
   const handleChange = useCallback((_event, editor) => {
-    console.log('RichEditor: handleChange triggered')
     debouncedOnChange(editor.getData())
   }, [debouncedOnChange])
 

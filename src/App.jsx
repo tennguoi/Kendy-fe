@@ -262,9 +262,16 @@ function App() {
         const message = resolveErrorMessage(err, t('app.apiError'))
         setApiNotice(message)
         notify(message, 'error')
+        if (err?.status === 401 || err?.status === 403) {
+          clearStoredAccessToken()
+          setAccessToken('')
+          setCurrentUser(null)
+          setWallet(null)
+          setUserDashboard(null)
+        }
         setAuthInit(true)
       })
-  }, [accessToken, applyBootstrapData, notify, rememberSession])
+  }, [accessToken, applyBootstrapData, notify, rememberSession, resolveErrorMessage, t])
 
   useEffect(() => {
     if (authInit && accessToken && currentUser && !isAdmin && isAdminPath) {
