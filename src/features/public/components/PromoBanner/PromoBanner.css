@@ -70,3 +70,9 @@
     gap: 5px;
   }
 }
+
+@media (max-width: 480px) {
+  .promo-banner {
+    padding: 12px 14px;
+  }
+}

@@ -44,7 +44,7 @@ function WarrantyView({ onSetNotice, token }) {
     if (!token) {
       return
     }
-    const targetPage = page ?? currentPage
+    const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
     setError('')
     try {

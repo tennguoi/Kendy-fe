@@ -38,7 +38,9 @@ body.kd-modal-open {
 }
 
 .kd-modal-dialog-editor {
+  height: calc(100vh - 48px);
   height: calc(100dvh - 48px);
+  max-height: calc(100vh - 48px);
   max-height: calc(100dvh - 48px);
 }
 
@@ -78,6 +80,8 @@ body.kd-modal-open {
   color: var(--kd-muted, #718096);
   cursor: pointer;
   padding: 6px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
   display: grid;
   place-items: center;

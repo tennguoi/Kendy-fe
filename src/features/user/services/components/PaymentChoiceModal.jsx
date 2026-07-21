@@ -117,10 +117,10 @@ function PaymentChoiceModal({
 
         {schemaObj && schemaObj.properties && (
           <div className="payment-inputs" style={{ padding: '0 20px 20px' }}>
-            <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: '#1e293b' }}>{t('checkout.inputRequirements', { defaultValue: 'Yêu cầu xử lý' })}</h4>
+            <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--kd-text)' }}>{t('checkout.inputRequirements', { defaultValue: 'Yêu cầu xử lý' })}</h4>
             {Object.entries(schemaObj.properties).map(([key, prop]) => (
               <div key={key} style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#475569' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: 'var(--kd-muted)' }}>
                   {prop.label || key} {requiredFields.includes(key) && <span style={{ color: '#ef4444' }}>*</span>}
                 </label>
                 <input
@@ -129,7 +129,7 @@ function PaymentChoiceModal({
                   onChange={(e) => setFormData(prev => ({ ...prev, [key]: e.target.value }))}
                   placeholder={prop.placeholder || t('checkout.inputPlaceholder', { label: prop.label || key, defaultValue: 'Nhập {{label}}...' })}
                   className="settings-input"
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '14px' }}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--kd-border)', borderRadius: '8px', fontSize: '14px', background: 'var(--kd-card)', color: 'var(--kd-text)' }}
                 />
               </div>
             ))}

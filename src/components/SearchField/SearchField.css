@@ -45,9 +45,11 @@
 }
 
 .search-field-clear {
-  width: 27px;
-  height: 27px;
-  flex: 0 0 27px;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -65,7 +67,7 @@
 }
 
 .search-field-compact {
-  min-height: 34px;
+  min-height: 44px;
   border-radius: 8px;
   padding-inline: 9px;
   font-size: 12px;

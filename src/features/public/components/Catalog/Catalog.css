@@ -310,9 +310,18 @@ html.dark .catalog-card:hover {
   width: 100%;
 }
 
+@media (max-width: 920px) {
+  .catalog-hero {
+    padding: 70px 20px 50px;
+  }
+  .catalog-hero-content h1 {
+    font-size: 34px;
+  }
+}
+
 @media (max-width: 680px) {
   .catalog-hero {
-    padding: 60px 16px 44px;
+    padding: 50px 16px 36px;
   }
   .catalog-hero-content h1 {
     font-size: 28px;

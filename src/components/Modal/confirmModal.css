@@ -25,10 +25,12 @@
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .confirm-modal-btn {
-  padding: 8px 22px;
+  padding: 10px 22px;
+  min-height: 44px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;

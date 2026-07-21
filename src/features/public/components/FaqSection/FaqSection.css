@@ -60,6 +60,10 @@
 }
 
 @media (max-width: 680px) {
+  .faq-section {
+    padding-bottom: 40px;
+  }
+
   .faq-group-grid {
     gap: 12px;
   }

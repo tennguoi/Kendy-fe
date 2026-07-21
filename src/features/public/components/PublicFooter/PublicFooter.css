@@ -81,6 +81,10 @@
 }
 
 @media (max-width: 680px) {
+  .public-footer {
+    padding: 28px 0 24px;
+  }
+
   .footer-bottom {
     align-items: flex-start;
     flex-direction: column;

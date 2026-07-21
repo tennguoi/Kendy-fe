@@ -210,7 +210,7 @@ function ServiceListPanel({
                     </button>
 
                     {openToolbarId === `service-${service.id}` && (
-                      <span className="admin-row-toolbar" style={{ right: '42px', top: '50%', transform: 'translateY(-50%)' }}>
+                      <span className="admin-row-toolbar">
                         <button type="button" onClick={() => handleSelectService(service)}>
                           {t('admin.common.viewDetails')}
                         </button>
@@ -287,7 +287,7 @@ function ServiceListPanel({
                       </button>
 
                       {openToolbarId === `category-${category.id}` && (
-                        <span className="admin-row-toolbar" style={{ right: '42px', top: '50%', transform: 'translateY(-50%)' }}>
+                        <span className="admin-row-toolbar">
                           <button type="button" onClick={() => handleSelectCategory(category)}>
                             {t('admin.common.viewDetails')}
                           </button>

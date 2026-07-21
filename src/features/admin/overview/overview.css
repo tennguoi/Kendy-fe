@@ -1134,6 +1134,11 @@
   .ov-area-chart {
     min-height: 210px;
   }
+
+  .ov-revenue-panel,
+  .ov-side-panel {
+    min-height: auto;
+  }
 }
 
 @media (max-width: 480px) {

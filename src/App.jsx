@@ -901,7 +901,7 @@ function App() {
       return
     }
 
-    const targetPage = page ?? supportPage
+    const targetPage = typeof page === 'number' ? page : supportPage
     setSupportLoading(true)
     try {
       const response = await userApi.searchTickets({

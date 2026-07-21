@@ -60,7 +60,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       setCredentials([])
       return
     }
-    const targetPage = page ?? currentPage
+    const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
     try {
       const data = await adminApi.getServiceCredentials(serviceId, token, {

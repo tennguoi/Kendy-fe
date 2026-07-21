@@ -96,8 +96,8 @@
 
 .entitlement-actions button {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   place-items: center;
   border: 1px solid var(--kd-border);
   border-radius: 8px;
@@ -113,5 +113,89 @@
 @media (max-width: 700px) {
   .entitlement-filters {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .entitlement-table thead {
+    display: none;
+  }
+
+  .entitlement-table tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  .entitlement-table tr {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid var(--kd-border);
+    border-radius: 12px;
+    background: var(--kd-card);
+  }
+
+  .entitlement-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 0;
+    padding: 0;
+  }
+
+  .entitlement-table td::before {
+    content: attr(data-label);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--kd-muted);
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .entitlement-actions {
+    justify-content: flex-end;
+  }
+}
+
+.entitlement-action-form {
+  gap: 16px;
+}
+
+.entitlement-action-summary {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  background: var(--kd-bg);
+}
+
+.entitlement-action-summary strong,
+.entitlement-action-summary span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.entitlement-action-summary span {
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.entitlement-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+@media (max-width: 560px) {
+  .entitlement-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .entitlement-modal-actions button {
+    width: 100%;
   }
 }

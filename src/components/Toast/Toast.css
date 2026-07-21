@@ -127,8 +127,10 @@
   border: 0;
   background: transparent;
   color: #a3a199;
-  width: 24px;
-  height: 24px;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
   border-radius: 8px;
   display: grid;
   place-items: center;

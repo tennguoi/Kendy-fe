@@ -60,7 +60,7 @@ function AdminPricingView({
       return
     }
 
-    const targetPage = page ?? currentPage
+    const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
     setViewError('')
     try {

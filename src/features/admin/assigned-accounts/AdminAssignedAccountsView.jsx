@@ -50,7 +50,7 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
 
   const loadAccounts = useCallback(async (page) => {
     if (!token) return
-    const targetPage = page ?? currentPage
+    const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
     setViewError('')
     try {
@@ -168,17 +168,17 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
                   const secret = revealed[account.id]
                   return (
                     <tr key={account.id}>
-                      <td>
+                      <td data-label={t('admin.assignedAccounts.table.customer')}>
                         <strong>{account.deliveredToName || t('admin.assignedAccounts.noName')}</strong>
                         <small>{account.deliveredToEmail || '-'}</small>
                         {account.deliveredToPhone && <small>{account.deliveredToPhone}</small>}
                       </td>
-                      <td><strong>{account.serviceName}</strong><small>{account.loginIdentifier}</small></td>
-                      <td><strong>{account.assignedOrderCode || '-'}</strong><small>#{account.assignedOrderId || '-'}</small></td>
-                      <td>{formatAdminDate(account.deliveredAt)}</td>
-                      <td>{formatAdminDate(account.expiresAt)}</td>
-                      <td><span className={`assigned-status ${String(account.status).toLowerCase()}`}>{statusLabels[account.status] || account.status}</span></td>
-                      <td>
+                      <td data-label={t('admin.assignedAccounts.table.serviceAccount')}><strong>{account.serviceName}</strong><small>{account.loginIdentifier}</small></td>
+                      <td data-label={t('admin.assignedAccounts.table.order')}><strong>{account.assignedOrderCode || '-'}</strong><small>#{account.assignedOrderId || '-'}</small></td>
+                      <td data-label={t('admin.assignedAccounts.table.deliveredDate')}>{formatAdminDate(account.deliveredAt)}</td>
+                      <td data-label={t('admin.assignedAccounts.table.expiresDate')}>{formatAdminDate(account.expiresAt)}</td>
+                      <td data-label={t('admin.assignedAccounts.table.status')}><span className={`assigned-status ${String(account.status).toLowerCase()}`}>{statusLabels[account.status] || account.status}</span></td>
+                      <td data-label={t('admin.assignedAccounts.table.info')}>
                         <button type="button" className="assigned-reveal" onClick={() => toggleReveal(account)} disabled={revealingId === account.id}>
                           {secret ? <EyeOff size={16} /> : <Eye size={16} />}
                           {secret ? t('admin.assignedAccounts.table.hide') : revealingId === account.id ? t('admin.assignedAccounts.table.loading') : t('admin.assignedAccounts.table.view')}

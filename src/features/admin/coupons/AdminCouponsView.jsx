@@ -96,7 +96,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
 
   const loadData = async (page) => {
     if (!token) return
-    const targetPage = page ?? currentPage
+    const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
     try {
       const [couponData, serviceData] = await Promise.all([

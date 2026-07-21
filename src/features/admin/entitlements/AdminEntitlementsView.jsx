@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Clock3, PauseCircle, RefreshCw, ShieldOff } from 'lucide-react'
 import { adminApi } from '../../../api/admin.api'
 import Loading from '../../../components/Loading/Loading'
+import Modal from '../../../components/Modal/Modal'
 import { AdminEmptyState } from '../AdminShared'
 import { formatAdminDate } from '../adminFormat'
 
@@ -30,6 +31,7 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
   const [busyId, setBusyId] = useState(null)
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('')
+  const [actionDraft, setActionDraft] = useState(null)
 
   const load = useCallback(async () => {
     if (!token) return
@@ -59,20 +61,33 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
     })
   }, [items, query, status])
 
-  const update = async (item, action) => {
+  const openActionModal = (item, action) => {
+    setActionDraft({
+      action,
+      item,
+      extendDays: '30',
+      externalResourceId: item.externalResourceId || '',
+      reason: '',
+    })
+  }
+
+  const closeActionModal = () => {
+    if (!busyId) {
+      setActionDraft(null)
+    }
+  }
+
+  const update = async (item, action, values = {}) => {
     let payload = { action }
     if (action === 'ACTIVATE') {
-      const externalResourceId = window.prompt(
-        t('admin.entitlements.prompt.resourceId'),
-        item.externalResourceId || '',
-      )
-      if (externalResourceId === null) return
-      payload = { ...payload, externalResourceId, reason: 'Admin confirmed access provisioning' }
+      payload = {
+        ...payload,
+        externalResourceId: values.externalResourceId || '',
+        reason: 'Admin confirmed access provisioning',
+      }
     }
     if (action === 'EXTEND') {
-      const raw = window.prompt(t('admin.entitlements.prompt.extendDays'), '30')
-      if (raw === null) return
-      const extendDays = Number(raw)
+      const extendDays = Number(values.extendDays)
       if (!Number.isInteger(extendDays) || extendDays < 1) {
         onSetError(t('admin.entitlements.prompt.extendInvalid'))
         return
@@ -80,8 +95,10 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
       payload = { ...payload, extendDays, reason: 'Renewal payment/provisioning confirmed' }
     }
     if (['SUSPEND', 'REVOKE'].includes(action)) {
-      const reason = window.prompt(action === 'SUSPEND' ? t('admin.entitlements.prompt.suspendReason') : t('admin.entitlements.prompt.revokeReason'))
-      if (!reason?.trim()) return
+      const reason = values.reason
+      if (!reason?.trim()) {
+        return
+      }
       payload = { ...payload, reason: reason.trim() }
     }
 
@@ -89,6 +106,7 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
     try {
       const saved = await adminApi.updateEntitlement(item.id, payload, token)
       setItems((current) => current.map((entry) => entry.id === saved.id ? saved : entry))
+      setActionDraft(null)
       onSetNotice(t('admin.entitlements.updateSuccess', { id: item.id }))
     } catch (err) {
       onSetError(err.message || t('admin.entitlements.updateError'))
@@ -96,6 +114,22 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
       setBusyId(null)
     }
   }
+
+  const submitActionModal = (event) => {
+    event.preventDefault()
+    if (!actionDraft) return
+    void update(actionDraft.item, actionDraft.action, actionDraft)
+  }
+
+  const actionTitle = actionDraft
+    ? actionDraft.action === 'ACTIVATE'
+      ? t('admin.entitlements.action.activate')
+      : actionDraft.action === 'EXTEND'
+        ? t('admin.entitlements.action.extend')
+        : actionDraft.action === 'SUSPEND'
+          ? t('admin.entitlements.action.suspend')
+          : t('admin.entitlements.action.revoke')
+    : ''
 
   return (
     <div className="admin-view entitlements-view">
@@ -138,20 +172,20 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
               <tbody>
                 {filtered.map((item) => (
                   <tr key={item.id}>
-                    <td><strong>{item.userName}</strong><small>{item.userEmail}</small></td>
-                    <td><strong>{item.serviceName}</strong><small>{item.orderCode}</small></td>
-                    <td>
+                    <td data-label={t('admin.entitlements.table.customer')}><strong>{item.userName}</strong><small>{item.userEmail}</small></td>
+                    <td data-label={t('admin.entitlements.table.service')}><strong>{item.serviceName}</strong><small>{item.orderCode}</small></td>
+                    <td data-label={t('admin.entitlements.table.access')}>
                       <strong>{item.accessStrategy ? t(strategyKeys[item.accessStrategy] || item.accessStrategy) : ''}</strong>
                       <small>{item.externalResourceId || item.accessIdentifier || t('admin.entitlements.noResource')}</small>
                     </td>
-                    <td><strong>{formatAdminDate(item.expiresAt)}</strong><small>{t('admin.entitlements.startsAt')} {formatAdminDate(item.startsAt)}</small></td>
-                    <td><span className={`entitlement-status ${String(item.status).toLowerCase()}`}>{t(statusKeys[item.status] || item.status)}</span></td>
-                    <td>
+                    <td data-label={t('admin.entitlements.table.expiry')}><strong>{formatAdminDate(item.expiresAt)}</strong><small>{t('admin.entitlements.startsAt')} {formatAdminDate(item.startsAt)}</small></td>
+                    <td data-label={t('admin.entitlements.table.status')}><span className={`entitlement-status ${String(item.status).toLowerCase()}`}>{t(statusKeys[item.status] || item.status)}</span></td>
+                    <td data-label={t('admin.entitlements.table.actions')}>
                       <div className="entitlement-actions">
-                        <button type="button" title={t('admin.entitlements.action.activate')} disabled={busyId === item.id} onClick={() => update(item, 'ACTIVATE')}><CheckCircle2 size={15} /></button>
-                        <button type="button" title={t('admin.entitlements.action.extend')} disabled={busyId === item.id} onClick={() => update(item, 'EXTEND')}><Clock3 size={15} /></button>
-                        <button type="button" title={t('admin.entitlements.action.suspend')} disabled={busyId === item.id} onClick={() => update(item, 'SUSPEND')}><PauseCircle size={15} /></button>
-                        <button type="button" title={t('admin.entitlements.action.revoke')} className="danger" disabled={busyId === item.id} onClick={() => update(item, 'REVOKE')}><ShieldOff size={15} /></button>
+                        <button type="button" title={t('admin.entitlements.action.activate')} disabled={busyId === item.id} onClick={() => openActionModal(item, 'ACTIVATE')}><CheckCircle2 size={15} /></button>
+                        <button type="button" title={t('admin.entitlements.action.extend')} disabled={busyId === item.id} onClick={() => openActionModal(item, 'EXTEND')}><Clock3 size={15} /></button>
+                        <button type="button" title={t('admin.entitlements.action.suspend')} disabled={busyId === item.id} onClick={() => openActionModal(item, 'SUSPEND')}><PauseCircle size={15} /></button>
+                        <button type="button" title={t('admin.entitlements.action.revoke')} className="danger" disabled={busyId === item.id} onClick={() => openActionModal(item, 'REVOKE')}><ShieldOff size={15} /></button>
                       </div>
                     </td>
                   </tr>
@@ -161,6 +195,67 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
           </div>
         )}
       </section>
+
+      <Modal
+        isOpen={Boolean(actionDraft)}
+        maxWidth="520px"
+        onClose={closeActionModal}
+        title={actionTitle}
+      >
+        {actionDraft && (
+          <form className="admin-form compact entitlement-action-form" onSubmit={submitActionModal}>
+            <div className="entitlement-action-summary">
+              <strong>{actionDraft.item.serviceName}</strong>
+              <span>{actionDraft.item.userName} · {actionDraft.item.orderCode}</span>
+            </div>
+
+            {actionDraft.action === 'ACTIVATE' && (
+              <label>
+                <span>{t('admin.entitlements.prompt.resourceId')}</span>
+                <input
+                  value={actionDraft.externalResourceId}
+                  onChange={(event) => setActionDraft((current) => ({ ...current, externalResourceId: event.target.value }))}
+                  autoFocus
+                />
+              </label>
+            )}
+
+            {actionDraft.action === 'EXTEND' && (
+              <label>
+                <span>{t('admin.entitlements.prompt.extendDays')}</span>
+                <input
+                  value={actionDraft.extendDays}
+                  onChange={(event) => setActionDraft((current) => ({ ...current, extendDays: event.target.value.replace(/\D/g, '') }))}
+                  inputMode="numeric"
+                  autoFocus
+                />
+              </label>
+            )}
+
+            {['SUSPEND', 'REVOKE'].includes(actionDraft.action) && (
+              <label>
+                <span>{actionDraft.action === 'SUSPEND' ? t('admin.entitlements.prompt.suspendReason') : t('admin.entitlements.prompt.revokeReason')}</span>
+                <textarea
+                  value={actionDraft.reason}
+                  onChange={(event) => setActionDraft((current) => ({ ...current, reason: event.target.value }))}
+                  rows={4}
+                  autoFocus
+                  required
+                />
+              </label>
+            )}
+
+            <div className="entitlement-modal-actions">
+              <button type="button" className="admin-icon-button" onClick={closeActionModal} disabled={Boolean(busyId)}>
+                {t('common.cancel', { defaultValue: 'Hủy' })}
+              </button>
+              <button type="submit" className={actionDraft.action === 'REVOKE' ? 'admin-danger-button' : 'admin-primary-button'} disabled={Boolean(busyId)}>
+                {actionTitle}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   )
 }

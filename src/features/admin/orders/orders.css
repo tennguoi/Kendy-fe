@@ -1,0 +1,69 @@
+/* ================================================
+ * orders.css — CSS riêng cho Admin Orders (Quản lý Đơn hàng)
+ * ================================================ */
+
+.admin-filter-tabs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 18px;
+  padding: 6px;
+  background: var(--kd-card, #ffffff);
+  border: 1px solid var(--kd-border, #e2e8f0);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.admin-filter-tabs button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--kd-muted, #64748b);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.admin-filter-tabs button:hover {
+  color: var(--kd-text, #0f172a);
+  background: var(--kd-hover, #f1f5f9);
+}
+
+.admin-filter-tabs button.active {
+  color: #2563eb;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+}
+
+/* Dark mode overrides */
+html.dark .admin-filter-tabs {
+  background: var(--kd-card);
+  border-color: var(--kd-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+html.dark .admin-filter-tabs button {
+  color: var(--kd-muted);
+}
+
+html.dark .admin-filter-tabs button:hover {
+  color: var(--kd-text);
+  background: var(--kd-hover);
+}
+
+html.dark .admin-filter-tabs button.active {
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(96, 165, 250, 0.35);
+}

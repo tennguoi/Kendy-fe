@@ -10,6 +10,7 @@ import OrderListPanel from './components/OrderListPanel'
 import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
 import { manualQueueOptions } from './orders.constants'
+import './orders.css'
 
 function toDateTimeInput(value) {
   if (!value) return ''
@@ -99,7 +100,7 @@ function AdminOrdersView({
       return
     }
 
-    const targetPage = page ?? currentPage
+    const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
     setViewError('')
     try {
@@ -393,7 +394,7 @@ function AdminOrdersView({
         statusFilter={statusFilter}
       />
 
-      <div className="admin-filter-tabs" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '12px 0' }}>
+      <div className="admin-filter-tabs">
         {manualQueueOptions.map((option) => (
           <button
             key={option.id}

@@ -48,7 +48,7 @@ function AdminUsersView({
       return
     }
 
-    const targetPage = page ?? currentPage
+    const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
     setHasLoadedUsers(false)
     setViewError('')

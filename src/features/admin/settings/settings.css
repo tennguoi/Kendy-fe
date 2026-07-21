@@ -421,7 +421,7 @@ html.dark .settings-dropdown-item.active {
 }
 
 .settings-key-list {
-  max-height: 27rem;
+  max-height: min(27rem, 50vh);
   overflow: auto;
   padding-right: 4px;
 }

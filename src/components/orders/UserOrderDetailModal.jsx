@@ -64,7 +64,7 @@ function UserOrderDetailModal({
       type="button"
       className="admin-icon-button"
       onClick={() => printOrderInvoice(order, { customer: currentUser })}
-      style={{ height: '34px', minHeight: '34px', fontSize: '13px' }}
+      style={{ height: '44px', minHeight: '44px', fontSize: '13px' }}
     >
       <Download size={16} />
       <span>{t('orders.exportInvoice', { defaultValue: 'Xuất hóa đơn' })}</span>
@@ -178,7 +178,7 @@ function UserOrderDetailModal({
                       type="submit"
                       disabled={warrantySubmitting || !warrantyReason.trim()}
                       style={{
-                        padding: '8px 16px', background: 'var(--kd-danger, #dc3545)', color: '#fff',
+                        padding: '10px 16px', minHeight: '44px', background: 'var(--kd-danger, #dc3545)', color: '#fff',
                         border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500,
                       }}
                     >
@@ -188,7 +188,7 @@ function UserOrderDetailModal({
                       type="button"
                       onClick={() => setShowWarrantyForm(false)}
                       style={{
-                        padding: '8px 16px', background: 'transparent', color: 'var(--kd-muted)',
+                        padding: '10px 16px', minHeight: '44px', background: 'transparent', color: 'var(--kd-muted)',
                         border: '1px solid var(--kd-border)', borderRadius: '6px', cursor: 'pointer',
                       }}
                     >

@@ -208,3 +208,10 @@
     display: none;
   }
 }
+
+.admin-report-grid strong {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

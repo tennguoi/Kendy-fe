@@ -26,6 +26,7 @@ import './warranty/warranty.css'
 import './assigned-accounts/assigned-accounts.css'
 import './account-inventory/account-inventory.css'
 import './entitlements/entitlements.css'
+import './orders/orders.css'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')

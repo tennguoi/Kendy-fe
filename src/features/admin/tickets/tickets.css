@@ -48,7 +48,7 @@
 }
 
 .admin-conversation {
-  max-height: 360px;
+  max-height: min(360px, 50vh);
   display: grid;
   gap: 10px;
   overflow: auto;

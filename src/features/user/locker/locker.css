@@ -35,7 +35,7 @@
 .locker-header h2 {
   margin-top: 5px;
   color: var(--kd-text);
-  font-size: 28px;
+  font-size: clamp(20px, 3vw, 28px);
 }
 
 .locker-header p,
@@ -94,11 +94,14 @@
 }
 
 .locker-toolbar {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   padding: 12px;
   border: 1px solid var(--kd-border);
   border-radius: 12px;
   background: var(--kd-card);
+  gap: 8px;
 }
 
 .locker-toolbar label {
