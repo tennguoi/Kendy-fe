@@ -29,6 +29,7 @@ function SupportView({
   ticketForm,
   tickets = [],
   totalPages,
+  token,
 }) {
   const selectedCode = selectedTicket?.ticketCode || ''
 
@@ -69,6 +70,7 @@ function SupportView({
           onUploadAttachment={onUploadAttachment}
           selectedTicket={selectedTicket}
           submitting={submitting}
+          token={token}
         />
       </article>
     </section>

@@ -44,6 +44,12 @@ export const adminTicketsApi = {
   deleteTicketAttachment: (ticketCode, attachmentId, token) =>
     axiosClient.delete(`/api/admin/tickets/${ticketCode}/attachments/${attachmentId}`, { token }),
 
+  getTicketAttachmentDownloadUrl: (ticketCode, attachmentId) =>
+    `/api/admin/tickets/${ticketCode}/attachments/${attachmentId}/download`,
+
+  getTicketAttachmentPreviewUrl: (ticketCode, attachmentId) =>
+    `/api/admin/tickets/${ticketCode}/attachments/${attachmentId}/preview`,
+
   getTicketResolutionTime: (token) =>
     axiosClient.get('/api/admin/tickets/resolution-time', { token }),
 };

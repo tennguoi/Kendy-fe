@@ -1,6 +1,9 @@
-import { MessageSquare, Paperclip, Send, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Download, Eye, MessageSquare, Paperclip, Send, Trash2 } from 'lucide-react'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
+import { toApiUrl } from '../../../../lib/api'
+import { adminTicketsApi } from '../../../../api/admin/tickets.api'
 import { ticketCategories, ticketPriorities, ticketStatuses, getTicketCategoryLabel, getTicketPriorityLabel, ticketCategoryLabels, ticketPriorityLabels, ticketStatusLabels } from '../tickets.constants'
 
 function TicketDetailPanel({
@@ -18,7 +21,41 @@ function TicketDetailPanel({
   onMessageChange,
   selectedTicket,
   submitting,
+  token,
 }) {
+  const [previewUrls, setPreviewUrls] = useState({})
+  const objectUrls = useRef({})
+
+  useEffect(() => {
+    const urls = Object.values(objectUrls.current)
+    urls.forEach((url) => URL.revokeObjectURL(url))
+    objectUrls.current = {}
+    setPreviewUrls({})
+
+    if (!token || !selectedTicket) return
+
+    attachments.forEach((att) => {
+      if (!att.contentType?.startsWith('image/')) return
+      const previewPath = adminTicketsApi.getTicketAttachmentPreviewUrl(selectedTicket.ticketCode, att.id)
+      fetch(toApiUrl(previewPath), { headers: { Authorization: `Bearer ${token}` } })
+        .then((res) => {
+          if (!res.ok) return null
+          return res.blob()
+        })
+        .then((blob) => {
+          if (!blob) return
+          const url = URL.createObjectURL(blob)
+          objectUrls.current[att.id] = url
+          setPreviewUrls((prev) => ({ ...prev, [att.id]: url }))
+        })
+        .catch(() => {})
+    })
+
+    return () => {
+      Object.values(objectUrls.current).forEach((url) => URL.revokeObjectURL(url))
+      objectUrls.current = {}
+    }
+  }, [attachments, selectedTicket, token])
   return (
     <aside className="admin-panel admin-detail-panel">
       <div className="admin-panel-head">
@@ -118,16 +155,33 @@ function TicketDetailPanel({
           </form>
 
           <div className="admin-mini-list">
-            {attachments.map((attachment) => (
-              <article key={attachment.id}>
-                <strong>{attachment.fileName}</strong>
-                <span>{attachment.contentType || 'file'} · {attachment.sizeBytes || 0} bytes</span>
-                <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={() => onDeleteAttachment(attachment.id)}>
-                  <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
-                  <span>Xóa</span>
-                </button>
-              </article>
-            ))}
+            {attachments.map((attachment) => {
+              const isImage = attachment.contentType?.startsWith('image/')
+              const previewUrl = previewUrls[attachment.id]
+              const downloadPath = adminTicketsApi.getTicketAttachmentDownloadUrl(selectedTicket.ticketCode, attachment.id)
+              return (
+                <article key={attachment.id} className={isImage ? 'attachment-image-item' : ''}>
+                  {isImage && previewUrl && (
+                    <a href={toApiUrl(downloadPath)} target="_blank" rel="noopener noreferrer">
+                      <img src={previewUrl} alt={attachment.fileName} className="attachment-thumb" />
+                    </a>
+                  )}
+                  <div className="attachment-info">
+                    <strong>{attachment.fileName}</strong>
+                    <span>{attachment.contentType || 'file'} · {attachment.sizeBytes || 0} bytes</span>
+                  </div>
+                  <div className="attachment-actions">
+                    <a href={toApiUrl(downloadPath)} target="_blank" rel="noopener noreferrer" className="admin-icon-button slim" title="Tải xuống">
+                      <Download size={14} strokeWidth={2} aria-hidden="true" />
+                    </a>
+                    <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={() => onDeleteAttachment(attachment.id)}>
+                      <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
+                      <span>Xóa</span>
+                    </button>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </>
       ) : (

@@ -1,7 +1,10 @@
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Paperclip, Send, Trash2 } from 'lucide-react'
+import { Download, Paperclip, Send, Trash2 } from 'lucide-react'
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { formatSupportDate } from '../supportFormat'
+import { toApiUrl } from '../../../../lib/api'
+import { userTicketsApi } from '../../../../api/user/tickets.api'
 
 function TicketDetailPanel({
   attachments = [],
@@ -16,7 +19,41 @@ function TicketDetailPanel({
   onUploadAttachment,
   selectedTicket,
   submitting,
+  token,
 }) {
+  const [previewUrls, setPreviewUrls] = useState({})
+  const objectUrls = useRef({})
+
+  useEffect(() => {
+    const urls = Object.values(objectUrls.current)
+    urls.forEach((url) => URL.revokeObjectURL(url))
+    objectUrls.current = {}
+    setPreviewUrls({})
+
+    if (!token || !selectedTicket) return
+
+    attachments.forEach((att) => {
+      if (!att.contentType?.startsWith('image/')) return
+      const previewPath = userTicketsApi.getTicketAttachmentPreviewUrl(selectedTicket.ticketCode, att.id)
+      fetch(toApiUrl(previewPath), { headers: { Authorization: `Bearer ${token}` } })
+        .then((res) => {
+          if (!res.ok) return null
+          return res.blob()
+        })
+        .then((blob) => {
+          if (!blob) return
+          const url = URL.createObjectURL(blob)
+          objectUrls.current[att.id] = url
+          setPreviewUrls((prev) => ({ ...prev, [att.id]: url }))
+        })
+        .catch(() => {})
+    })
+
+    return () => {
+      Object.values(objectUrls.current).forEach((url) => URL.revokeObjectURL(url))
+      objectUrls.current = {}
+    }
+  }, [attachments, selectedTicket, token])
   const { t } = useTranslation()
 
   if (!selectedTicket) {
@@ -76,16 +113,33 @@ function TicketDetailPanel({
         <button type="submit" disabled={submitting || !file}>{t('support.uploadBtn', { defaultValue: 'Upload' })}</button>
       </form>
       <div className="admin-mini-list">
-        {attachments.map((attachment) => (
-          <article key={attachment.id}>
-            <strong>{attachment.fileName}</strong>
-            <span>{attachment.contentType || 'file'} · {attachment.sizeBytes || 0} bytes</span>
-            <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={() => onDeleteAttachment(selectedTicket.ticketCode, attachment.id)}>
-              <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
-              <span>{t('support.deleteBtn', { defaultValue: 'Xóa' })}</span>
-            </button>
-          </article>
-        ))}
+        {attachments.map((attachment) => {
+          const isImage = attachment.contentType?.startsWith('image/')
+          const previewUrl = previewUrls[attachment.id]
+          const downloadPath = userTicketsApi.getTicketAttachmentDownloadUrl(selectedTicket.ticketCode, attachment.id)
+          return (
+            <article key={attachment.id} className={isImage ? 'attachment-image-item' : ''}>
+              {isImage && previewUrl && (
+                <a href={toApiUrl(downloadPath)} target="_blank" rel="noopener noreferrer">
+                  <img src={previewUrl} alt={attachment.fileName} className="attachment-thumb" />
+                </a>
+              )}
+              <div className="attachment-info">
+                <strong>{attachment.fileName}</strong>
+                <span>{attachment.contentType || 'file'} · {attachment.sizeBytes || 0} bytes</span>
+              </div>
+              <div className="attachment-actions">
+                <a href={toApiUrl(downloadPath)} target="_blank" rel="noopener noreferrer" className="admin-icon-button slim" title={t('support.downloadBtn', { defaultValue: 'Tải xuống' })}>
+                  <Download size={14} strokeWidth={2} aria-hidden="true" />
+                </a>
+                <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={() => onDeleteAttachment(selectedTicket.ticketCode, attachment.id)}>
+                  <Trash2 size={14} strokeWidth={2} aria-hidden="true" />
+                  <span>{t('support.deleteBtn', { defaultValue: 'Xóa' })}</span>
+                </button>
+              </div>
+            </article>
+          )
+        })}
       </div>
     </div>
   )

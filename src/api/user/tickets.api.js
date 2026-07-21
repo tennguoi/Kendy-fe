@@ -37,4 +37,10 @@ export const userTicketsApi = {
 
   deleteTicketAttachment: (ticketCode, attachmentId, token) =>
     axiosClient.delete(`/api/tickets/${ticketCode}/attachments/${attachmentId}`, { token }),
+
+  getTicketAttachmentDownloadUrl: (ticketCode, attachmentId) =>
+    `/api/tickets/${ticketCode}/attachments/${attachmentId}/download`,
+
+  getTicketAttachmentPreviewUrl: (ticketCode, attachmentId) =>
+    `/api/tickets/${ticketCode}/attachments/${attachmentId}/preview`,
 };

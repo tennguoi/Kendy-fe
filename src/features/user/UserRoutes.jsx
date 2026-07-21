@@ -196,6 +196,7 @@ function UserRoutes({
           tickets={apiTickets}
           totalPages={supportTotalPages}
           currentPage={supportPage + 1}
+          token={token}
         />
       ),
     },

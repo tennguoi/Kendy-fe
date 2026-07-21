@@ -738,10 +738,14 @@ function AdminServicesView({
     setSubmitting(true)
     setViewError('')
     try {
-      const currentForm = serviceToForm(service)
-      const updatedForm = { ...currentForm, ...patch }
-      const payload = buildServicePayload(updatedForm, true)
-      const saved = await adminApi.updateService(serviceId, payload, token)
+      let saved
+      if (Object.prototype.hasOwnProperty.call(patch, 'status')) {
+        saved = await adminApi.updateServiceStatus(serviceId, { status: patch.status }, token)
+      } else if (Object.prototype.hasOwnProperty.call(patch, 'publicVisible')) {
+        saved = await adminApi.updateService(serviceId, { publicVisible: patch.publicVisible }, token)
+      } else {
+        saved = await adminApi.updateService(serviceId, patch, token)
+      }
       setServices((items) => items.map((item) => (item.id === saved.id ? saved : item)))
       if (selectedServiceId === serviceId) {
         setServiceForm(serviceToForm(saved))

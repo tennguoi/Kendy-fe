@@ -313,6 +313,7 @@ function AdminTicketsView({
           onUploadAttachment={uploadAttachment}
           selectedTicket={selectedTicket}
           submitting={submitting}
+          token={token}
         />
       </AdminDrawer>
     </section>
