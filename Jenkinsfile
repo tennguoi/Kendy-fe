@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  options {
+    disableConcurrentBuilds()
+  }
+
   environment {
     REGISTRY              = 'docker.io'
     IMAGE_NAME            = 'tennguoi2/kendy-frontend'
@@ -9,7 +13,6 @@ pipeline {
     VITE_API_BASE_URL     = 'http://localhost:8080'
     APP_DIR_LINUX         = '/Kendy-deploy'
     APP_DIR_WIN           = 'C:/Kendy-deploy'
-    // Cache riêng cho Trivy để tránh xung đột
     TRIVY_CACHE_DIR       = "${WORKSPACE}/.trivy-cache"
   }
 
@@ -21,11 +24,11 @@ pipeline {
           env.FRONTEND_IMAGE = "${env.REGISTRY}/${env.IMAGE_NAME}:${env.IMAGE_TAG}"
           env.APP_DIR = isUnix() ? env.APP_DIR_LINUX : env.APP_DIR_WIN
           echo "Đang chạy trên: ${isUnix() ? 'Linux' : 'Windows'} | APP_DIR = ${env.APP_DIR}"
-          // Tạo thư mục cache nếu chưa có
+          // Tạo thư mục cache - dùng PowerShell cho Windows
           if (isUnix()) {
             sh "mkdir -p ${env.TRIVY_CACHE_DIR}"
           } else {
-            bat "if not exist ${env.TRIVY_CACHE_DIR} mkdir ${env.TRIVY_CACHE_DIR}"
+            powershell "New-Item -ItemType Directory -Force -Path ${env.TRIVY_CACHE_DIR}"
           }
         }
       }
@@ -82,7 +85,6 @@ pipeline {
     stage('Scan Image') {
       steps {
         script {
-          // Sử dụng cache riêng và tăng timeout lên 20 phút
           if (isUnix()) {
             sh """
               TRIVY_CACHE_DIR="${TRIVY_CACHE_DIR}" trivy image \
