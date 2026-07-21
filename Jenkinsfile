@@ -7,9 +7,10 @@ pipeline {
     IMAGE_TAG             = "dev-${env.BUILD_NUMBER}"
     DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
     VITE_API_BASE_URL     = 'http://localhost:8080'
-    // Đường dẫn thư mục deploy trên Máy Jenkins/Deploy
     APP_DIR_LINUX         = '/Kendy-deploy'
     APP_DIR_WIN           = 'C:/Kendy-deploy'
+    // Cache riêng cho Trivy để tránh xung đột
+    TRIVY_CACHE_DIR       = "${WORKSPACE}/.trivy-cache"
   }
 
   stages {
@@ -18,9 +19,14 @@ pipeline {
         checkout scm
         script {
           env.FRONTEND_IMAGE = "${env.REGISTRY}/${env.IMAGE_NAME}:${env.IMAGE_TAG}"
-          // Tự detect OS, set APP_DIR phù hợp
           env.APP_DIR = isUnix() ? env.APP_DIR_LINUX : env.APP_DIR_WIN
           echo "Đang chạy trên: ${isUnix() ? 'Linux' : 'Windows'} | APP_DIR = ${env.APP_DIR}"
+          // Tạo thư mục cache nếu chưa có
+          if (isUnix()) {
+            sh "mkdir -p ${env.TRIVY_CACHE_DIR}"
+          } else {
+            bat "if not exist ${env.TRIVY_CACHE_DIR} mkdir ${env.TRIVY_CACHE_DIR}"
+          }
         }
       }
     }
@@ -76,10 +82,21 @@ pipeline {
     stage('Scan Image') {
       steps {
         script {
+          // Sử dụng cache riêng và tăng timeout lên 10 phút
           if (isUnix()) {
-            sh 'trivy image --exit-code 1 --severity HIGH,CRITICAL "$FRONTEND_IMAGE"'
+            sh """
+              TRIVY_CACHE_DIR="${TRIVY_CACHE_DIR}" trivy image \
+                --exit-code 1 \
+                --severity HIGH,CRITICAL \
+                --timeout 10m \
+                --scanners vuln \
+                "$FRONTEND_IMAGE"
+            """
           } else {
-            bat 'trivy image --exit-code 1 --severity HIGH,CRITICAL %FRONTEND_IMAGE%'
+            bat """
+              set TRIVY_CACHE_DIR=${TRIVY_CACHE_DIR}
+              trivy image --exit-code 1 --severity HIGH,CRITICAL --timeout 10m --scanners vuln %FRONTEND_IMAGE%
+            """
           }
         }
       }
@@ -109,7 +126,6 @@ pipeline {
               FRONTEND_IMAGE="\${FRONTEND_IMAGE}" APP_DIR="\${APP_DIR}" "\${APP_DIR}/deploy.sh"
             """
           } else {
-            // Windows: gọi PowerShell script deploy
             bat """
               set FRONTEND_IMAGE=%FRONTEND_IMAGE%
               set APP_DIR=%APP_DIR%
