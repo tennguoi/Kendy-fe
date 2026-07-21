@@ -29,9 +29,9 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            sh 'npm ci'
+            sh 'npm ci --legacy-peer-deps'
           } else {
-            bat 'npm ci'
+            bat 'npm ci --legacy-peer-deps'
           }
         }
       }
