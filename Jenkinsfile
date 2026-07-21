@@ -82,20 +82,20 @@ pipeline {
     stage('Scan Image') {
       steps {
         script {
-          // Sử dụng cache riêng và tăng timeout lên 10 phút
+          // Sử dụng cache riêng và tăng timeout lên 20 phút
           if (isUnix()) {
             sh """
               TRIVY_CACHE_DIR="${TRIVY_CACHE_DIR}" trivy image \
                 --exit-code 1 \
                 --severity HIGH,CRITICAL \
-                --timeout 10m \
+                --timeout 20m \
                 --scanners vuln \
                 "$FRONTEND_IMAGE"
             """
           } else {
             bat """
               set TRIVY_CACHE_DIR=${TRIVY_CACHE_DIR}
-              trivy image --exit-code 1 --severity HIGH,CRITICAL --timeout 10m --scanners vuln %FRONTEND_IMAGE%
+              trivy image --exit-code 1 --severity HIGH,CRITICAL --timeout 20m --scanners vuln %FRONTEND_IMAGE%
             """
           }
         }
