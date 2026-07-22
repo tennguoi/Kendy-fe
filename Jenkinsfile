@@ -74,9 +74,9 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            sh 'docker build -f Dockerfile.prod --build-arg VITE_API_BASE_URL="$VITE_API_BASE_URL" -t "$FRONTEND_IMAGE" .'
+            sh 'docker buildx build --load -f Dockerfile.prod --build-arg VITE_API_BASE_URL="$VITE_API_BASE_URL" -t "$FRONTEND_IMAGE" .'
           } else {
-            bat "docker build -f Dockerfile.prod --build-arg VITE_API_BASE_URL=%VITE_API_BASE_URL% -t %FRONTEND_IMAGE% ."
+            bat "docker buildx build --load -f Dockerfile.prod --build-arg VITE_API_BASE_URL=%VITE_API_BASE_URL% -t %FRONTEND_IMAGE% ."
           }
         }
       }
@@ -109,10 +109,10 @@ pipeline {
         withCredentials([usernamePassword(credentialsId: env.DOCKERHUB_CREDENTIALS, usernameVariable: 'REGISTRY_USER', passwordVariable: 'REGISTRY_PASSWORD')]) {
           script {
             if (isUnix()) {
-              sh 'echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USER" --password-stdin'
+              sh 'printf "%s" "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USER" --password-stdin'
               sh 'docker push "$FRONTEND_IMAGE"'
             } else {
-              bat "echo %REGISTRY_PASSWORD% | docker login %REGISTRY% -u %REGISTRY_USER% --password-stdin"
+              powershell '$env:REGISTRY_PASSWORD | docker login $env:REGISTRY -u $env:REGISTRY_USER --password-stdin'
               bat "docker push %FRONTEND_IMAGE%"
             }
           }
