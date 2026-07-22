@@ -9,7 +9,7 @@ pipeline {
     REGISTRY              = 'docker.io'
     IMAGE_NAME            = 'tennguoi2/kendy-frontend'
     IMAGE_TAG             = "dev-${env.BUILD_NUMBER}"
-    DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
+    DOCKERHUB_CREDENTIALS = 'dockerhub-push-credentials'
     DOCKERHUB_USER        = 'tennguoi2'
     VITE_API_BASE_URL     = 'http://localhost:8080'
     APP_DIR_LINUX         = '/Kendy-deploy'
