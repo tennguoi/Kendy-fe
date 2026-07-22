@@ -10,6 +10,7 @@ pipeline {
     IMAGE_NAME            = 'tennguoi2/kendy-frontend'
     IMAGE_TAG             = "dev-${env.BUILD_NUMBER}"
     DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
+    DOCKERHUB_USER        = 'tennguoi2'
     VITE_API_BASE_URL     = 'http://localhost:8080'
     APP_DIR_LINUX         = '/Kendy-deploy'
     APP_DIR_WIN           = 'C:/Kendy-deploy'
@@ -109,10 +110,15 @@ pipeline {
         withCredentials([usernamePassword(credentialsId: env.DOCKERHUB_CREDENTIALS, usernameVariable: 'REGISTRY_USER', passwordVariable: 'REGISTRY_PASSWORD')]) {
           script {
             if (isUnix()) {
-              sh 'printf "%s" "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$REGISTRY_USER" --password-stdin'
+              sh 'printf "%s" "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$DOCKERHUB_USER" --password-stdin'
               sh 'docker push "$FRONTEND_IMAGE"'
             } else {
-              powershell '$env:REGISTRY_PASSWORD | docker login $env:REGISTRY -u $env:REGISTRY_USER --password-stdin'
+              bat '''
+                @echo off
+                echo Docker credential user from Jenkins: %REGISTRY_USER%
+                echo Docker login forced user: %DOCKERHUB_USER%
+                <nul set /p docker_password=%REGISTRY_PASSWORD%| docker login %REGISTRY% -u %DOCKERHUB_USER% --password-stdin
+              '''
               bat "docker push %FRONTEND_IMAGE%"
             }
           }
