@@ -3,33 +3,68 @@ pipeline {
 
   options {
     disableConcurrentBuilds()
+    skipDefaultCheckout(true)
+    timestamps()
+
+    buildDiscarder(
+      logRotator(
+        numToKeepStr: '10',
+        artifactNumToKeepStr: '5'
+      )
+    )
   }
 
   environment {
-    REGISTRY              = 'docker.io'
-    IMAGE_NAME            = 'tennguoi2/kendy-frontend'
-    IMAGE_TAG             = "dev-${env.BUILD_NUMBER}"
+    REGISTRY = 'docker.io'
+    IMAGE_NAME = 'tennguoi2/kendy-frontend'
+
     DOCKERHUB_CREDENTIALS = 'dockerhub-push-credentials'
-    DOCKERHUB_USER        = 'tennguoi2'
-    VITE_API_BASE_URL     = 'http://localhost:8080'
-    APP_DIR_LINUX         = '/Kendy-deploy'
-    APP_DIR_WIN           = 'C:/Kendy-deploy'
-    TRIVY_CACHE_DIR       = "${WORKSPACE}/.trivy-cache"
+
+    VITE_API_BASE_URL = 'http://localhost:8080'
+
+    APP_DIR_LINUX = '/opt/kendy'
+    APP_DIR_WIN = 'C:/Kendy-deploy'
   }
 
   stages {
     stage('Checkout') {
       steps {
         checkout scm
+
         script {
-          env.FRONTEND_IMAGE = "${env.REGISTRY}/${env.IMAGE_NAME}:${env.IMAGE_TAG}"
-          env.APP_DIR = isUnix() ? env.APP_DIR_LINUX : env.APP_DIR_WIN
-          echo "Đang chạy trên: ${isUnix() ? 'Linux' : 'Windows'} | APP_DIR = ${env.APP_DIR}"
-          // Tạo thư mục cache - dùng PowerShell cho Windows
+          env.IMAGE_TAG = "dev-${env.BUILD_NUMBER}"
+
+          env.FRONTEND_IMAGE =
+            "${env.REGISTRY}/${env.IMAGE_NAME}:${env.IMAGE_TAG}"
+
+          env.APP_DIR = isUnix()
+            ? env.APP_DIR_LINUX
+            : env.APP_DIR_WIN
+
+          env.TRIVY_CACHE_DIR =
+            "${env.WORKSPACE}/.trivy-cache"
+
+          echo """
+Hệ điều hành : ${isUnix() ? 'Linux' : 'Windows'}
+Frontend image: ${env.FRONTEND_IMAGE}
+API URL       : ${env.VITE_API_BASE_URL}
+Deploy folder : ${env.APP_DIR}
+""".stripIndent()
+
           if (isUnix()) {
-            sh "mkdir -p ${env.TRIVY_CACHE_DIR}"
+            sh '''
+              mkdir -p "$TRIVY_CACHE_DIR"
+            '''
           } else {
-            powershell "New-Item -ItemType Directory -Force -Path ${env.TRIVY_CACHE_DIR}"
+            powershell '''
+              $ErrorActionPreference = 'Stop'
+
+              New-Item `
+                -ItemType Directory `
+                -Force `
+                -Path $env:TRIVY_CACHE_DIR |
+                Out-Null
+            '''
           }
         }
       }
@@ -39,9 +74,14 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            sh 'npm ci --legacy-peer-deps'
+            sh '''
+              npm ci --legacy-peer-deps
+            '''
           } else {
-            bat 'npm ci --legacy-peer-deps'
+            bat '''
+              @echo off
+              call npm ci --legacy-peer-deps
+            '''
           }
         }
       }
@@ -50,10 +90,29 @@ pipeline {
     stage('Lint') {
       steps {
         script {
+          int lintStatus
+
           if (isUnix()) {
-            sh 'npm run lint || true'
+            lintStatus = sh(
+              returnStatus: true,
+              script: '''
+                npm run lint
+              '''
+            )
           } else {
-            bat 'cmd /c "npm run lint || exit 0"'
+            lintStatus = bat(
+              returnStatus: true,
+              script: '''
+                @echo off
+                call npm run lint
+              '''
+            )
+          }
+
+          if (lintStatus != 0) {
+            echo '⚠️ Lint có lỗi nhưng pipeline vẫn tiếp tục.'
+          } else {
+            echo '✅ Lint thành công.'
           }
         }
       }
@@ -63,9 +122,14 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            sh 'npm run build'
+            sh '''
+              npm run build
+            '''
           } else {
-            bat 'npm run build'
+            bat '''
+              @echo off
+              call npm run build
+            '''
           }
         }
       }
@@ -75,9 +139,25 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            sh 'docker buildx build --load -f Dockerfile.prod --build-arg VITE_API_BASE_URL="$VITE_API_BASE_URL" -t "$FRONTEND_IMAGE" .'
+            sh '''
+              docker buildx build \
+                --load \
+                --file Dockerfile.prod \
+                --build-arg "VITE_API_BASE_URL=$VITE_API_BASE_URL" \
+                --tag "$FRONTEND_IMAGE" \
+                .
+            '''
           } else {
-            bat "docker buildx build --load -f Dockerfile.prod --build-arg VITE_API_BASE_URL=%VITE_API_BASE_URL% -t %FRONTEND_IMAGE% ."
+            bat '''
+              @echo off
+
+              docker buildx build ^
+                --load ^
+                --file Dockerfile.prod ^
+                --build-arg "VITE_API_BASE_URL=%VITE_API_BASE_URL%" ^
+                --tag "%FRONTEND_IMAGE%" ^
+                .
+            '''
           }
         }
       }
@@ -87,19 +167,27 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            sh """
-              TRIVY_CACHE_DIR="${TRIVY_CACHE_DIR}" trivy image \
+            sh '''
+              trivy image \
+                --cache-dir "$TRIVY_CACHE_DIR" \
                 --exit-code 1 \
                 --severity HIGH,CRITICAL \
                 --timeout 20m \
                 --scanners vuln \
                 "$FRONTEND_IMAGE"
-            """
+            '''
           } else {
-            bat """
-              set TRIVY_CACHE_DIR=${TRIVY_CACHE_DIR}
-              trivy image --exit-code 1 --severity HIGH,CRITICAL --timeout 20m --scanners vuln %FRONTEND_IMAGE%
-            """
+            bat '''
+              @echo off
+
+              trivy image ^
+                --cache-dir "%TRIVY_CACHE_DIR%" ^
+                --exit-code 1 ^
+                --severity HIGH,CRITICAL ^
+                --timeout 20m ^
+                --scanners vuln ^
+                "%FRONTEND_IMAGE%"
+            '''
           }
         }
       }
@@ -107,45 +195,49 @@ pipeline {
 
     stage('Push Image') {
       steps {
-        withCredentials([usernamePassword(credentialsId: env.DOCKERHUB_CREDENTIALS, usernameVariable: 'REGISTRY_USER', passwordVariable: 'REGISTRY_PASSWORD')]) {
+        withCredentials([
+          usernamePassword(
+            credentialsId: env.DOCKERHUB_CREDENTIALS,
+            usernameVariable: 'REGISTRY_USER',
+            passwordVariable: 'REGISTRY_PASSWORD'
+          )
+        ]) {
           script {
             if (isUnix()) {
-              sh 'printf "%s" "$REGISTRY_PASSWORD" | docker login "$REGISTRY" -u "$DOCKERHUB_USER" --password-stdin'
-              sh 'docker push "$FRONTEND_IMAGE"'
-            } else {
-              powershell '''
-                $ErrorActionPreference = 'Stop'
-                $dockerPassword = $env:REGISTRY_PASSWORD.Trim()
-                if ([string]::IsNullOrWhiteSpace($dockerPassword)) {
-                  throw 'Docker Hub credential password is empty.'
-                }
+              sh '''
+                set -eu
 
-                Write-Host "Docker credential user from Jenkins: $env:REGISTRY_USER"
-                Write-Host "Docker login forced user: $env:DOCKERHUB_USER"
-                Write-Host "Docker token length after trim: $($dockerPassword.Length)"
+                printf '%s' "$REGISTRY_PASSWORD" |
+                  docker login "$REGISTRY" \
+                    --username "$REGISTRY_USER" \
+                    --password-stdin
 
-                $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-                $startInfo.FileName = 'docker.exe'
-                $startInfo.Arguments = "login $env:REGISTRY --username $env:DOCKERHUB_USER --password-stdin"
-                $startInfo.UseShellExecute = $false
-                $startInfo.RedirectStandardInput = $true
-                $startInfo.RedirectStandardOutput = $true
-                $startInfo.RedirectStandardError = $true
-
-                $dockerProcess = New-Object System.Diagnostics.Process
-                $dockerProcess.StartInfo = $startInfo
-                $null = $dockerProcess.Start()
-                $dockerProcess.StandardInput.Write($dockerPassword)
-                $dockerProcess.StandardInput.Close()
-                $standardOutput = $dockerProcess.StandardOutput.ReadToEnd()
-                $standardError = $dockerProcess.StandardError.ReadToEnd()
-                $dockerProcess.WaitForExit()
-
-                if ($standardOutput) { Write-Host $standardOutput.TrimEnd() }
-                if ($standardError) { Write-Host $standardError.TrimEnd() }
-                if ($dockerProcess.ExitCode -ne 0) { exit $dockerProcess.ExitCode }
+                docker push "$FRONTEND_IMAGE"
               '''
-              bat "docker push %FRONTEND_IMAGE%"
+            } else {
+              bat '''
+                @echo off
+
+                echo Dang dang nhap Docker Hub voi user %REGISTRY_USER%...
+
+                <nul set /p "=%REGISTRY_PASSWORD%" | docker login "%REGISTRY%" ^
+                  --username "%REGISTRY_USER%" ^
+                  --password-stdin
+
+                if errorlevel 1 (
+                  echo Docker Hub login that bai.
+                  exit /b 1
+                )
+
+                echo Dang push image %FRONTEND_IMAGE%...
+
+                docker push "%FRONTEND_IMAGE%"
+
+                if errorlevel 1 (
+                  echo Docker push that bai.
+                  exit /b 1
+                )
+              '''
             }
           }
         }
@@ -156,15 +248,43 @@ pipeline {
       steps {
         script {
           if (isUnix()) {
-            sh """
-              FRONTEND_IMAGE="\${FRONTEND_IMAGE}" APP_DIR="\${APP_DIR}" "\${APP_DIR}/deploy.sh"
-            """
+            sh '''
+              set -eu
+
+              DEPLOY_FILE="$APP_DIR/deploy.sh"
+
+              if [ ! -f "$DEPLOY_FILE" ]; then
+                echo "Không tìm thấy file: $DEPLOY_FILE"
+                exit 1
+              fi
+
+              echo "Deploy frontend image: $FRONTEND_IMAGE"
+              echo "Deploy folder: $APP_DIR"
+
+              FRONTEND_IMAGE="$FRONTEND_IMAGE" \
+              APP_DIR="$APP_DIR" \
+              sh "$DEPLOY_FILE"
+            '''
           } else {
-            bat """
-              set FRONTEND_IMAGE=%FRONTEND_IMAGE%
-              set APP_DIR=%APP_DIR%
-              powershell -ExecutionPolicy Bypass -File "%APP_DIR%\\deploy.ps1"
-            """
+            powershell '''
+              $ErrorActionPreference = 'Stop'
+
+              $deployFile =
+                Join-Path $env:APP_DIR 'deploy.ps1'
+
+              if (-not (Test-Path $deployFile)) {
+                throw "Không tìm thấy file: $deployFile"
+              }
+
+              Write-Host "Deploy frontend image: $env:FRONTEND_IMAGE"
+              Write-Host "Deploy folder: $env:APP_DIR"
+
+              & $deployFile
+
+              if ($LASTEXITCODE -ne 0) {
+                throw "Deploy frontend thất bại, exit code: $LASTEXITCODE"
+              }
+            '''
           }
         }
       }
@@ -175,13 +295,31 @@ pipeline {
     always {
       script {
         if (isUnix()) {
-          sh 'docker logout || true'
+          sh(
+            returnStatus: true,
+            script: '''
+              docker logout docker.io >/dev/null 2>&1 || true
+            '''
+          )
         } else {
-          bat 'docker logout'
+          bat(
+            returnStatus: true,
+            script: '''
+              @echo off
+              docker logout docker.io >nul 2>&1
+              exit /b 0
+            '''
+          )
         }
       }
     }
-    success { echo '✅ Pipeline hoàn thành thành công!' }
-    failure { echo '❌ Pipeline thất bại. Kiểm tra Console Output để biết thêm chi tiết.' }
+
+    success {
+      echo '✅ Frontend pipeline hoàn thành thành công!'
+    }
+
+    failure {
+      echo '❌ Frontend pipeline thất bại. Kiểm tra stage màu đỏ.'
+    }
   }
 }
