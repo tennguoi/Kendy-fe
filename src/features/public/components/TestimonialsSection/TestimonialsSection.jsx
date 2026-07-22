@@ -7,11 +7,8 @@ import {
   Eye,
   EyeOff,
   Copy,
-  MessageSquare,
-  ChevronRight,
   Terminal,
   ShieldAlert,
-  HelpCircle,
 } from 'lucide-react'
 import Button from '../../../../components/Button/Button'
 import './TestimonialsSection.css'
@@ -23,7 +20,6 @@ function TestimonialsSection() {
   const [copiedText, setCopiedText] = useState(false)
   const [warrantySimulated, setWarrantySimulated] = useState(false)
   const [customOrderCode, setCustomOrderCode] = useState('')
-  const [searchResult, setSearchResult] = useState(null)
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text)
@@ -38,10 +34,8 @@ function TestimonialsSection() {
     const query = customOrderCode.trim().toUpperCase()
     // Simulate lookup
     if (query.includes('FB') || query.includes('ADS') || query.includes('PAGE') || query.includes('BM')) {
-      setSearchResult('manual')
       setActiveTab('manual')
     } else {
-      setSearchResult('auto')
       setActiveTab('auto')
     }
   }
@@ -89,7 +83,6 @@ function TestimonialsSection() {
               className={`tab-btn ${activeTab === 'auto' ? 'active' : ''}`}
               onClick={() => {
                 setActiveTab('auto')
-                setSearchResult(null)
               }}
             >
               <span>{t('public.proof.tabAuto', { defaultValue: '1. Đơn hàng tài khoản tự động (CapCut, ChatGPT...)' })}</span>
@@ -99,7 +92,6 @@ function TestimonialsSection() {
               className={`tab-btn ${activeTab === 'manual' ? 'active' : ''}`}
               onClick={() => {
                 setActiveTab('manual')
-                setSearchResult(null)
               }}
             >
               <span>{t('public.proof.tabManual', { defaultValue: '2. Dịch vụ setup quảng cáo (Facebook Ads, BM...)' })}</span>

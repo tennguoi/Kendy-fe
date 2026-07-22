@@ -5,7 +5,7 @@ import { ShoppingCart, Eye, Sparkles, ArrowRight } from 'lucide-react'
 import Button from '../../../../components/Button/Button'
 import './ServiceCatalog.css'
 
-function ServiceCatalog({ categories = [], services = [], onPurchaseClick }) {
+function ServiceCatalog({ services = [], onPurchaseClick }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
 

@@ -25,22 +25,21 @@ function Pagination({
   const showLeftEllipsis = leftSiblingIndex > 2
   const showRightEllipsis = rightSiblingIndex < totalPages - 1
 
-  let pages = []
-
-  if (totalPageNumbers >= totalPages) {
-    pages = range(1, totalPages)
-  } else {
+  const pages = (() => {
+    if (totalPageNumbers >= totalPages) {
+      return range(1, totalPages)
+    }
     if (!showLeftEllipsis && showRightEllipsis) {
       const leftRange = range(1, 3 + siblingCount * 2)
-      pages = [...leftRange, '...', totalPages]
-    } else if (showLeftEllipsis && !showRightEllipsis) {
-      const rightRange = range(totalPages - (3 + siblingCount * 2) + 1, totalPages)
-      pages = [1, '...', ...rightRange]
-    } else {
-      const middleRange = range(leftSiblingIndex, rightSiblingIndex)
-      pages = [1, '...', ...middleRange, '...', totalPages]
+      return [...leftRange, '...', totalPages]
     }
-  }
+    if (showLeftEllipsis && !showRightEllipsis) {
+      const rightRange = range(totalPages - (3 + siblingCount * 2) + 1, totalPages)
+      return [1, '...', ...rightRange]
+    }
+    const middleRange = range(leftSiblingIndex, rightSiblingIndex)
+    return [1, '...', ...middleRange, '...', totalPages]
+  })()
 
   return (
     <nav className="pagination" role="navigation" aria-label={t('common.pagination', { defaultValue: 'Phân trang' })}>

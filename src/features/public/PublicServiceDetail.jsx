@@ -12,7 +12,6 @@ import {
   HelpCircle,
   ChevronRight,
   ShoppingCart,
-  Sparkles,
 } from 'lucide-react'
 import heroImg from '../../assets/hero.png'
 import { publicApi } from '../../api/public.api'
@@ -38,7 +37,7 @@ function renderBulletPoints(text) {
     ))
 }
 
-function PublicServiceDetail({ propSlug, notice, onLoginClick }) {
+function PublicServiceDetail({ propSlug, onLoginClick }) {
   const { slug: paramSlug } = useParams()
   const slug = propSlug || paramSlug
   const navigate = useNavigate()
@@ -275,7 +274,6 @@ function PublicServiceDetail({ propSlug, notice, onLoginClick }) {
               <h2 className="related-title">{t('services.relatedTitle', { defaultValue: 'Sản phẩm tương tự' })}</h2>
               <div className="related-grid">
                 {relatedServices.map((item, idx) => {
-                  const itemOutOfStock = item.status === 'Hết hàng' || item.stockStatus === 'OUT_OF_STOCK'
                   const itemPrice = typeof item.price === 'number'
                     ? `${Number(item.price).toLocaleString('vi-VN')}đ`
                     : item.priceText || t('services.buyNow', { defaultValue: 'Báo giá' })

@@ -123,7 +123,6 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
   useEffect(() => {
     const timer = window.setTimeout(() => loadData(), 0)
     return () => window.clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, status])
 
   const updateForm = (field, value) => {

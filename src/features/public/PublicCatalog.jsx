@@ -33,7 +33,7 @@ function buildServiceCategories(apiCategories) {
   })
 }
 
-function PublicCatalog({ notice, onLoginClick }) {
+function PublicCatalog({ onLoginClick }) {
   const [apiServices, setApiServices] = useState([])
   const [apiCategories, setApiCategories] = useState([])
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Download, Eye, MessageSquare, Paperclip, Send, Trash2 } from 'lucide-react'
+import { Download, MessageSquare, Paperclip, Send, Trash2 } from 'lucide-react'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
 import { toApiUrl } from '../../../../lib/api'

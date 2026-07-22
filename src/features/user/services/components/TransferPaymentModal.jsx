@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Copy, X, Loader2, CheckCircle2, AlertCircle, RefreshCw, Trash2 } from 'lucide-react'
 import { money } from '../../../../utils/currency'

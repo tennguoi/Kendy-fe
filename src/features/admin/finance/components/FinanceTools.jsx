@@ -12,6 +12,7 @@ function FinanceTools({
   bankBulkForm,
   depositActionForm,
   onActiveToolTabChange,
+  runBulkBankCredit,
   selectedBank,
   selectedDeposit,
   setBankActionForm,
@@ -73,7 +74,7 @@ function FinanceTools({
                 <span>Xử lý nhiều bank transaction cùng lúc</span>
               </div>
             </div>
-            <form className="admin-form compact" id="finance-bank-bulk-form">
+            <form className="admin-form compact" id="finance-bank-bulk-form" onSubmit={runBulkBankCredit}>
               <label>
                 <span>Bank transaction IDs</span>
                 <textarea value={bankBulkForm.ids} onChange={(event) => setBankBulkForm((current) => ({ ...current, ids: event.target.value }))} rows="2" placeholder="VD: 101, 102, 103" />
@@ -92,6 +93,9 @@ function FinanceTools({
               </label>
               <button type="button" className="admin-icon-button finance-inline-button" onClick={() => setBankBulkForm((current) => ({ ...current, ids: selectedBank ? String(selectedBank.id) : current.ids }))}>
                 Dùng giao dịch đang chọn
+              </button>
+              <button type="submit" className="admin-primary-button finance-inline-button">
+                Chạy bulk credit
               </button>
             </form>
           </section>

@@ -645,6 +645,7 @@ function AdminFinanceView({
           depositActionForm={depositActionForm}
           loadBalanceIntegrityReport={loadBalanceIntegrityReport}
           onActiveToolTabChange={setActiveToolTab}
+          runBulkBankCredit={runBulkBankCredit}
           runBalanceCheck={runBalanceCheck}
           runReconciliation={runReconciliation}
           selectedBank={selectedBank}

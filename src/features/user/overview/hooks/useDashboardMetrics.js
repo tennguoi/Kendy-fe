@@ -6,7 +6,6 @@ export function useDashboardMetrics({
   displayBalance,
   orderList,
   ticketList,
-  unreadNotifications,
   userDashboard,
 }) {
   const { t } = useTranslation()

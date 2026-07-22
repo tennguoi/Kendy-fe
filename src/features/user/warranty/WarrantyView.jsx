@@ -20,17 +20,6 @@ function statusClass(status) {
   return `warranty-status warranty-status-${String(status || '').toLowerCase().replaceAll('_', '-')}`
 }
 
-function normalizeWarrantyList(value) {
-  if (Array.isArray(value)) {
-    return value
-  }
-  if (!value || typeof value !== 'object') {
-    return []
-  }
-  const keys = ['content', 'items', 'data', 'records', 'results']
-  return keys.map((key) => value[key]).find(Array.isArray) || []
-}
-
 function WarrantyView({ onSetNotice, token }) {
   const { t } = useTranslation()
   const [currentPage, setCurrentPage] = useState(0)

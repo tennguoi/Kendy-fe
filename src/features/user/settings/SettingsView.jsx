@@ -6,11 +6,9 @@ import {
   Download,
   FileText,
   Globe2,
-  HelpCircle,
   ImageUp,
   KeyRound,
   Lock,
-  LogOut,
   Plus,
   RefreshCw,
   Save,
@@ -21,7 +19,6 @@ import {
   Sun,
   Trash2,
   User,
-  XCircle,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -70,7 +67,7 @@ function SettingsView({
   const [dashboard, setDashboard] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [notifications, setNotifications] = useState([])
+  const [, setNotifications] = useState([])
   const [passwordForm, setPasswordForm] = useState({ confirmPassword: '', currentPassword: '', newPassword: '' })
   const [profileForm, setProfileForm] = useState(() => profileToForm(currentUser))
   const [security, setSecurity] = useState(null)

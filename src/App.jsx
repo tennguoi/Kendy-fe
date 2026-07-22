@@ -76,7 +76,7 @@ function App() {
   const [supportLoading, setSupportLoading] = useState(false)
   const [supportMessage, setSupportMessage] = useState('')
   const [supportPage, setSupportPage] = useState(0)
-  const [supportTotalPages, setSupportTotalPages] = useState(0)
+  const [, setSupportTotalPages] = useState(0)
   const [supportQuery, setSupportQuery] = useState('')
   const [supportSelectedCode, setSupportSelectedCode] = useState(null)
   const [supportStatus, setSupportStatus] = useState('')
@@ -967,7 +967,6 @@ function App() {
     }, 0)
 
     return () => window.clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTicket?.ticketCode, userActiveView])
 
   const updateTicketForm = (field, value) => {
