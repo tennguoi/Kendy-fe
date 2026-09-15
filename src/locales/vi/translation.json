@@ -614,7 +614,31 @@
       "mockupRecentOrder": "Đơn gần đây",
       "mockupService": "Nâng cấp CapCut Pro 12 tháng",
       "mockupProcessing": "Đang xử lý",
-      "mockupLoginLink": "Đã có tài khoản? Đăng nhập để theo dõi đơn"
+      "mockupLoginLink": "Đã có tài khoản? Đăng nhập để theo dõi đơn",
+      "mockupLive": "Thời gian thực",
+      "mockupActive": "Hoạt động",
+      "mockupAvailable": "Còn hàng",
+      "float": {
+        "security": "Bảo mật SSL 256-bit",
+        "uptime": "Uptime 99.99%",
+        "users": "50.000+ khách hàng"
+      },
+      "search": {
+        "placeholder": "Tìm kiếm dịch vụ CapCut, Facebook, quảng cáo...",
+        "submit": "Tìm kiếm",
+        "hint": "Nhấn Enter để tìm kiếm hoặc chọn gợi ý",
+        "noResults": "Không tìm thấy gợi ý phù hợp",
+        "capcut": "CapCut Pro 12 tháng",
+        "facebook": "Tài khoản Facebook Ads",
+        "upgrade": "Nâng cấp Fanpage/BM",
+        "ads": "Chạy quảng cáo Facebook"
+      },
+      "stats": {
+        "orders": "Đơn hàng đã xử lý",
+        "success": "Tỷ lệ thành công",
+        "speed": "Thời gian xử lý TB",
+        "support": "Hỗ trợ khách hàng"
+      }
     },
     "trust": {
       "stats": {
@@ -695,6 +719,7 @@
       "eyebrow": "Tại sao chọn chúng tôi",
       "title": "Mua tài khoản và dịch vụ Facebook cần rõ điều kiện ngay từ đầu",
       "description": "Khách không chỉ cần giá. Khách cần biết tài khoản dùng cho việc gì, bảo hành ra sao, đơn đang xử lý tới đâu và nếu lỗi thì liên hệ ở đâu.",
+      "policiesTitle": "Chính sách bảo vệ người mua",
       "reputation": {
         "title": "Uy tín tài chính",
         "text": "Ví tiền có lịch sử cộng, trừ và hoàn tiền để người dùng kiểm tra lại khi cần."
@@ -785,6 +810,23 @@
       "chatSend": "Gửi",
       "copiedToast": "✓ Đã copy vào bộ nhớ tạm!"
     },
+    "testimonials": {
+      "eyebrow": "Khách hàng nói về Kendy Digital",
+      "title": "Được tin dùng bởi 50.000+ khách hàng",
+      "description": "Những phản hồi thực tế từ người dùng dịch vụ CapCut, Facebook, quảng cáo và nâng cấp tài khoản.",
+      "prev": "Đánh giá trước",
+      "next": "Đánh giá sau",
+      "dotLabel": "Đánh giá {{index}}",
+      "item1": "Mua CapCut Pro 12 tháng, nạp ví xong 5 phút là xong. Đơn hàng có mã theo dõi rõ ràng, không phải lo chờ tin nhắn thủ công như chỗ khác.",
+      "item2": "Chạy quảng cáo Facebook qua Kendy gần 1 năm. BM luôn ổn định, khi có vấn đề tạo ticket gắn đơn được hỗ trợ rất nhanh. Uy tín thực sự.",
+      "item3": "Nâng cấp Fanpage từ cá nhân sang doanh nghiệp. Quy trình minh bạch, có hợp đồng, bảo hành rõ ràng. Ví tiền nạp vào dễ dàng quản lý chi tiêu quảng cáo.",
+      "item4": "Mua tài khoản Facebook Ads cá nhân giá tốt. Giao dịch qua ví Kendy rất tiện, nạp xong tự động cộng tiền. Hỗ trợ 24/7 qua ticket, team phản hồi nhiệt tình.",
+      "stats": {
+        "rating": "Đánh giá trung bình",
+        "customers": "Khách hàng tin dùng",
+        "satisfaction": "Hài lòng"
+      }
+    },
     "policies": {
       "service": {
         "title": "Dịch vụ",
@@ -840,7 +882,15 @@
       "title": "Cần tài khoản Facebook, CapCut Pro hoặc dịch vụ quảng cáo?",
       "description": "Đăng nhập để xem dịch vụ, điều kiện mua, thời gian xử lý và gửi yêu cầu hỗ trợ sau khi đặt đơn.",
       "primaryCta": "Đăng ký / Đăng nhập",
-      "secondaryCta": "Xem dịch vụ"
+      "secondaryCta": "Xem dịch vụ",
+      "eyebrow": "Sẵn sàng bắt đầu?",
+      "newTitle": "Bắt đầu mua dịch vụ ngay hôm nay",
+      "newDescription": "Tham gia 50.000+ khách hàng đã tin dùng Kendy Digital. Mua tài khoản, nâng cấp, nạp ví và chạy quảng cáo chỉ trong vài phút.",
+      "benefit1": "Kích hoạt tức thì sau thanh toán",
+      "benefit2": "Bảo hành rõ ràng, minh bạch",
+      "benefit3": "Hỗ trợ 24/7 qua ticket",
+      "primaryAction": "Xem dịch vụ ngay",
+      "secondaryAction": "Đăng nhập / Đăng ký"
     },
     "faqs": {
       "group1": {
@@ -930,7 +980,12 @@
       "viewDetail": "Xem chi tiết",
       "defaultProcessing": "Theo quy trình",
       "defaultWarranty": "Theo điều kiện",
-      "defaultCategory": "Dịch vụ"
+      "defaultCategory": "Dịch vụ",
+      "allCategories": "Tất cả",
+      "featureSupport": "Hỗ trợ sau mua",
+      "featureGenuine": "Chính hãng",
+      "featureWarranty": "Bảo hành",
+      "featureFast": "Nhanh chóng"
     },
     "productDetail": {
       "backToCatalog": "Quay lại danh mục",
@@ -1012,6 +1067,37 @@
     "warrantyInstruction": "Yêu cầu bảo hành được tạo từ chi tiết đơn hàng đã hoàn thành.",
     "loadedNotice": "Đã tải lại yêu cầu bảo hành.",
     "loadError": "Không tải được danh sách bảo hành."
+  },
+  "footer": {
+    "dichVu": "Dịch vụ",
+    "hoTro": "Hỗ trợ",
+    "congTy": "Công ty",
+    "phapLy": "Pháp lý",
+    "capcut": "Tài khoản CapCut",
+    "facebook": "Tài khoản Facebook",
+    "upgrade": "Nâng cấp tài khoản",
+    "ads": "Chạy quảng cáo",
+    "lienHe": "Liên hệ tư vấn",
+    "faq": "Câu hỏi thường gặp",
+    "chinhSach": "Chính sách bảo hành",
+    "huongDan": "Hướng dẫn mua hàng",
+    "gioiThieu": "Giới thiệu",
+    "tuyenDung": "Tuyển dụng",
+    "press": "Báo chí",
+    "lienHeCTy": "Liên hệ công ty",
+    "dieuKhoan": "Điều khoản sử dụng",
+    "baoMat": "Chính sách bảo mật",
+    "hoanTien": "Chính sách hoàn tiền",
+    "cookie": "Chính sách Cookie",
+    "lienHe": "Liên hệ",
+    "description": "Kendy Digital - Nền tảng mua bán tài khoản, nâng cấp gói và dịch vụ quảng cáo Facebook uy tín, minh bạch, hỗ trợ 24/7.",
+    "address": "123 Đường ABC, Quận 1, TP. Hồ Chí Minh",
+    "phone": "0909 123 456",
+    "email": "support@kendydigital.vn",
+    "allRights": "All rights reserved.",
+    "secure": "Thanh toán an toàn",
+    "fast": "Kích hoạt nhanh",
+    "support247": "Hỗ trợ 24/7"
   },
   "admin": {
     "common": {

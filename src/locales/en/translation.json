@@ -614,7 +614,31 @@
       "mockupRecentOrder": "Recent Order",
       "mockupService": "CapCut Pro 12-Month Upgrade",
       "mockupProcessing": "Processing",
-      "mockupLoginLink": "Already have an account? Log in to track orders"
+      "mockupLoginLink": "Already have an account? Log in to track orders",
+      "mockupLive": "Live",
+      "mockupActive": "Active",
+      "mockupAvailable": "In stock",
+      "float": {
+        "security": "SSL 256-bit Security",
+        "uptime": "99.99% Uptime",
+        "users": "50,000+ Customers"
+      },
+      "search": {
+        "placeholder": "Search CapCut, Facebook, advertising services...",
+        "submit": "Search",
+        "hint": "Press Enter to search or select suggestion",
+        "noResults": "No matching suggestions found",
+        "capcut": "CapCut Pro 12 Month",
+        "facebook": "Facebook Ads Account",
+        "upgrade": "Upgrade Fanpage/BM",
+        "ads": "Facebook Advertising"
+      },
+      "stats": {
+        "orders": "Orders Processed",
+        "success": "Success Rate",
+        "speed": "Avg Processing Time",
+        "support": "Customer Support"
+      }
     },
     "trust": {
       "stats": {
@@ -695,6 +719,7 @@
       "eyebrow": "Why Choose Us",
       "title": "Buying accounts & Facebook services requires clear terms from the start",
       "description": "Customers need more than just price. They need to know what the account is used for, what the warranty is, where the order stands, and how to get help if there's an issue.",
+      "policiesTitle": "Buyer Protection Policies",
       "reputation": {
         "title": "Financial Integrity",
         "text": "The wallet has deposit, purchase, and refund logs so users can verify them."
@@ -785,6 +810,23 @@
       "chatSend": "Send",
       "copiedToast": "✓ Copied to clipboard!"
     },
+    "testimonials": {
+      "eyebrow": "What customers say about Kendy Digital",
+      "title": "Trusted by 50,000+ customers",
+      "description": "Real feedback from users of CapCut, Facebook, advertising and account upgrade services.",
+      "prev": "Previous review",
+      "next": "Next review",
+      "dotLabel": "Review {{index}}",
+      "item1": "Bought CapCut Pro 12 months, wallet topped up and done in 5 minutes. Orders have clear tracking codes, no more waiting for manual messages like other places.",
+      "item2": "Running Facebook ads through Kendy for almost a year. BM always stable, when issues arise, creating a ticket linked to the order gets fast support. Truly trustworthy.",
+      "item3": "Upgraded Fanpage from personal to business. Transparent process, clear contract, warranty terms. Wallet deposits make ad spending easy to manage.",
+      "item4": "Bought personal Facebook Ads account at a good price. Kendy wallet is super convenient, auto-credits after deposit. 24/7 ticket support, team responds enthusiastically.",
+      "stats": {
+        "rating": "Average rating",
+        "customers": "Trusted customers",
+        "satisfaction": "Satisfaction"
+      }
+    },
     "policies": {
       "service": {
         "title": "Services",
@@ -840,7 +882,15 @@
       "title": "Need Facebook accounts, CapCut Pro or advertising services?",
       "description": "Log in to view services, purchase terms, processing times and submit support tickets.",
       "primaryCta": "Register / Log in",
-      "secondaryCta": "View services"
+      "secondaryCta": "View services",
+      "eyebrow": "Ready to start?",
+      "newTitle": "Start buying services today",
+      "newDescription": "Join 50,000+ customers who trust Kendy Digital. Buy accounts, upgrade, top up wallet, and run ads in minutes.",
+      "benefit1": "Instant activation after payment",
+      "benefit2": "Clear, transparent warranty",
+      "benefit3": "24/7 ticket support",
+      "primaryAction": "View services now",
+      "secondaryAction": "Log in / Register"
     },
     "faqs": {
       "group1": {
@@ -930,7 +980,12 @@
       "viewDetail": "View details",
       "defaultProcessing": "Per process",
       "defaultWarranty": "Per terms",
-      "defaultCategory": "Service"
+      "defaultCategory": "Service",
+      "allCategories": "All",
+      "featureSupport": "Post-purchase support",
+      "featureGenuine": "Genuine",
+      "featureWarranty": "Warranty",
+      "featureFast": "Fast"
     },
     "productDetail": {
       "backToCatalog": "Back to catalog",
@@ -1012,6 +1067,37 @@
     "warrantyInstruction": "Warranty requests can be created from completed order details.",
     "loadedNotice": "Warranty requests reloaded.",
     "loadError": "Unable to load warranty list."
+  },
+  "footer": {
+    "dichVu": "Services",
+    "hoTro": "Support",
+    "congTy": "Company",
+    "phapLy": "Legal",
+    "capcut": "CapCut Account",
+    "facebook": "Facebook Account",
+    "upgrade": "Account Upgrade",
+    "ads": "Advertising",
+    "lienHe": "Contact",
+    "faq": "FAQ",
+    "chinhSach": "Warranty Policy",
+    "huongDan": "How to Buy",
+    "gioiThieu": "About",
+    "tuyenDung": "Careers",
+    "press": "Press",
+    "lienHeCTy": "Contact Us",
+    "dieuKhoan": "Terms of Service",
+    "baoMat": "Privacy Policy",
+    "hoanTien": "Refund Policy",
+    "cookie": "Cookie Policy",
+    "lienHe": "Contact",
+    "description": "Kendy Digital - Trusted platform for buying accounts, upgrading plans, and Facebook advertising services. Transparent, secure, 24/7 support.",
+    "address": "123 ABC Street, District 1, Ho Chi Minh City",
+    "phone": "0909 123 456",
+    "email": "support@kendydigital.vn",
+    "allRights": "All rights reserved.",
+    "secure": "Secure Payment",
+    "fast": "Fast Activation",
+    "support247": "24/7 Support"
   },
   "admin": {
     "common": {

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Clapperboard, Megaphone, PackageCheck, ShieldCheck, Users } from 'lucide-react'
 import heroImg from '../../assets/hero.png'
 import { publicApi } from '../../api/public.api'
-import ScrollReveal from '../../components/ScrollReveal/ScrollReveal'
 import AutoDepositSection from './components/AutoDepositSection/AutoDepositSection'
 import ConsultSection from './components/ConsultSection/ConsultSection'
 import FaqSection from './components/FaqSection/FaqSection'
@@ -31,7 +30,7 @@ import {
   serviceCategories as staticCategories,
 } from './data/services.public'
 import { usePublicSiteSettings } from './hooks/usePublicSiteSettings'
-import './components/ServiceCatalog/ServiceCatalog.css'
+import './design-system.css'
 import './PublicHome.css'
 
 const categoryIcons = {
@@ -96,7 +95,7 @@ function PublicHome({ notice, onLoginClick }) {
 
   useEffect(() => {
     Promise.allSettled([
-      publicApi.getServices({ limit: 4, sort: 'popular' }),
+      publicApi.getServices({ limit: 6, sort: 'popular' }),
       publicApi.getCategories(),
     ]).then((results) => {
       if (results[0].status === 'fulfilled') {
@@ -115,7 +114,7 @@ function PublicHome({ notice, onLoginClick }) {
 
   const mergedFeaturedServices = useMemo(
     () => apiServices.length > 0
-      ? apiServices.slice(0, 4).map(mapApiServiceToFeaturedRow)
+      ? apiServices.slice(0, 6).map(mapApiServiceToFeaturedRow)
       : staticFeaturedServices,
     [apiServices],
   )
@@ -136,37 +135,29 @@ function PublicHome({ notice, onLoginClick }) {
       <PromoBanner config={settings.banner} />
 
       <main>
-        <ScrollReveal delay={100}>
-          <HeroSection
-            logo={logo}
-            notice={notice}
-            onLoginClick={onLoginClick}
-            serviceSignals={serviceSignals}
-          />
-        </ScrollReveal>
-        <ScrollReveal delay={200}><TrustStrip items={trustStats} /></ScrollReveal>
-        <ScrollReveal delay={100}>
-          <ServiceCatalog
-            categories={mergedCategories}
-            services={mergedFeaturedServices}
-            onPurchaseClick={onLoginClick}
-          />
-        </ScrollReveal>
-        <ScrollReveal delay={100}><WorkflowSection steps={workflowSteps} /></ScrollReveal>
-        <ScrollReveal delay={100}><AutoDepositSection flow={depositFlow} /></ScrollReveal>
-        <ScrollReveal delay={100}>
-          <WhyChooseSection items={whyChooseUs} policies={policyHighlights} />
-        </ScrollReveal>
-        <ScrollReveal delay={100}><TestimonialsSection items={proofItems} /></ScrollReveal>
-        <ScrollReveal delay={100}>
-          <FaqSection
-            eyebrow={settings.faq.eyebrow}
-            items={settings.faq.items}
-            title={settings.faq.title}
-          />
-        </ScrollReveal>
-        <ScrollReveal delay={100}><ConsultSection onSubmit={handleConsultSubmit} /></ScrollReveal>
-        <ScrollReveal delay={100}><FinalCta onLoginClick={onLoginClick} /></ScrollReveal>
+        <HeroSection
+          logo={logo}
+          notice={notice}
+          onLoginClick={onLoginClick}
+          serviceSignals={serviceSignals}
+        />
+        <TrustStrip items={trustStats} />
+        <ServiceCatalog
+          categories={mergedCategories}
+          services={mergedFeaturedServices}
+          onPurchaseClick={onLoginClick}
+        />
+        <WorkflowSection steps={workflowSteps} />
+        <AutoDepositSection flow={depositFlow} />
+        <WhyChooseSection items={whyChooseUs} policies={policyHighlights} />
+        <TestimonialsSection items={proofItems} />
+        <FaqSection
+          eyebrow={settings.faq.eyebrow}
+          items={settings.faq.items}
+          title={settings.faq.title}
+        />
+        <ConsultSection onSubmit={handleConsultSubmit} />
+        <FinalCta onLoginClick={onLoginClick} />
       </main>
 
       <PublicFooter brand={settings.brand} footerGroups={footerGroups} logo={logo} />

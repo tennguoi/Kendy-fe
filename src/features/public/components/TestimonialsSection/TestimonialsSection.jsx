@@ -1,345 +1,210 @@
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { ChevronLeft, ChevronRight, Star, MessageSquare, Verified } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import {
-  CheckCircle2,
-  Clock,
-  ShieldCheck,
-  Eye,
-  EyeOff,
-  Copy,
-  Terminal,
-  ShieldAlert,
-} from 'lucide-react'
-import Button from '../../../../components/Button/Button'
 import './TestimonialsSection.css'
 
-function TestimonialsSection() {
+function TestimonialsSection({ items = [], autoPlay = true, interval = 5000 }) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState('auto') // 'auto' | 'manual'
-  const [showPassword, setShowPassword] = useState(false)
-  const [copiedText, setCopiedText] = useState(false)
-  const [warrantySimulated, setWarrantySimulated] = useState(false)
-  const [customOrderCode, setCustomOrderCode] = useState('')
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [touchStart, setTouchStart] = useState(null)
 
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text)
-    setCopiedText(true)
-    setTimeout(() => setCopiedText(false), 2000)
+  const defaultItems = [
+    {
+      author: 'Minh Anh',
+      role: 'Content Creator',
+      avatar: 'MA',
+      rating: 5,
+      content: t('public.testimonials.item1', { defaultValue: 'Mua CapCut Pro 12 tháng, nạp ví xong 5 phút là xong. Đơn hàng có mã theo dõi rõ ràng, không phải lo chờ tin nhắn thủ công như chỗ khác.' }),
+      service: 'CapCut Pro 12 tháng',
+      verified: true,
+    },
+    {
+      author: 'Hùng Nguyễn',
+      role: 'Digital Marketer',
+      avatar: 'HN',
+      rating: 5,
+      content: t('public.testimonials.item2', { defaultValue: 'Chạy quảng cáo Facebook qua Kendy gần 1 năm. BM luôn ổn định, khi có vấn đề tạo ticket gắn đơn được hỗ trợ rất nhanh. Uy tín thực sự.' }),
+      service: 'Facebook Ads - BM Agency',
+      verified: true,
+    },
+    {
+      author: 'Lan Chi',
+      role: 'Small Business Owner',
+      avatar: 'LC',
+      rating: 5,
+      content: t('public.testimonials.item3', { defaultValue: 'Nâng cấp Fanpage từ cá nhân sang doanh nghiệp. Quy trình minh bạch, có hợp đồng, bảo hành rõ ràng. Ví tiền nạp vào dễ dàng quản lý chi tiêu quảng cáo.' }),
+      service: 'Nâng cấp Fanpage',
+      verified: true,
+    },
+    {
+      author: 'Tuấn Kiệt',
+      role: 'Freelancer',
+      avatar: 'TK',
+      rating: 4,
+      content: t('public.testimonials.item4', { defaultValue: 'Mua tài khoản Facebook Ads cá nhân giá tốt. Giao dịch qua ví Kendy rất tiện, nạp xong tự động cộng tiền. Hỗ trợ 24/7 qua ticket, team phản hồi nhiệt tình.' }),
+      service: 'Tài khoản FB Ads cá nhân',
+      verified: true,
+    },
+  ]
+
+  const displayItems = items.length > 0 ? items : defaultItems
+  const totalItems = displayItems.length
+
+  // Auto-play carousel
+  useEffect(() => {
+    if (!autoPlay || totalItems <= 1) return
+
+    const timer = setInterval(() => {
+      if (!isAnimating) {
+        goToNext()
+      }
+    }, interval)
+
+    return () => clearInterval(timer)
+  }, [autoPlay, totalItems, interval, isAnimating])
+
+  const goToSlide = useCallback((index) => {
+    if (isAnimating) return
+    setIsAnimating(true)
+    setCurrentIndex(index)
+    setTimeout(() => setIsAnimating(false), 400)
+  }, [isAnimating])
+
+  const goToNext = useCallback(() => {
+    goToSlide((currentIndex + 1) % totalItems)
+  }, [currentIndex, totalItems, goToSlide])
+
+  const goToPrev = useCallback(() => {
+    goToSlide((currentIndex - 1 + totalItems) % totalItems)
+  }, [currentIndex, totalItems, goToSlide])
+
+  const handleTouchStart = (e) => {
+    setTouchStart(e.touches[0].clientX)
   }
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-    if (!customOrderCode.trim()) return
-
-    const query = customOrderCode.trim().toUpperCase()
-    // Simulate lookup
-    if (query.includes('FB') || query.includes('ADS') || query.includes('PAGE') || query.includes('BM')) {
-      setActiveTab('manual')
-    } else {
-      setActiveTab('auto')
+  const handleTouchEnd = (e) => {
+    if (touchStart === null) return
+    const touchEnd = e.changedTouches[0].clientX
+    const diff = touchStart - touchEnd
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? goToNext() : goToPrev()
     }
+    setTouchStart(null)
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowLeft') goToPrev()
+    if (e.key === 'ArrowRight') goToNext()
   }
 
   return (
-    <section className="public-section proof-section" id="proof">
-      <div className="section-heading split">
-        <div>
-          <span className="eyebrow">{t('public.proof.eyebrow', { defaultValue: 'Trải nghiệm minh bạch' })}</span>
-          <h2>{t('public.proof.title', { defaultValue: 'Theo dõi & Nhận bàn giao đơn hàng thời gian thực' })}</h2>
-        </div>
-        <p>
-          {t('public.proof.description', { defaultValue: 'Để đảm bảo tuyệt đối bảo mật, hệ thống không hiển thị đơn hàng thật từ database lên public site. Dưới đây là mô phỏng cách bạn quản lý, theo dõi tiến độ và nhận kết quả đơn hàng ngay sau khi thanh toán.' })}
-        </p>
-      </div>
-
-      <div className="simulator-container">
-        {/* Search simulation */}
-        <div className="simulator-search-bar">
-          <form onSubmit={handleSearch}>
-            <div className="search-input-wrapper">
-              <Terminal size={18} className="terminal-icon" />
-              <input
-                type="text"
-                placeholder={t('public.proof.searchPlaceholder', { defaultValue: 'Nhập mã đơn hàng bất kỳ để tra cứu thử (Ví dụ: OD-CAPCUT-12M, OD-FBADS-99)...' })}
-                value={customOrderCode}
-                onChange={(e) => setCustomOrderCode(e.target.value)}
-              />
-              <Button type="submit" variant="dark" className="slim">
-                <span>{t('public.proof.searchBtn', { defaultValue: 'Tra cứu thử' })}</span>
-              </Button>
-            </div>
-          </form>
-          <p className="search-tip">
-            {t('public.proof.searchTip', { defaultValue: "💡 Gợi ý: Các mã chứa 'FB' hoặc 'ADS' sẽ mô phỏng dịch vụ Setup thủ công; các mã khác sẽ mô phỏng Gói tài khoản giao tự động." })}
+    <section className="testimonials" id="testimonials" aria-labelledby="testimonials-title" onKeyDown={handleKeyDown}>
+      <div className="container">
+        <header className="testimonials__header">
+          <span className="eyebrow">{t('public.testimonials.eyebrow', { defaultValue: 'Khách hàng nói về Kendy Digital' })}</span>
+          <h2 id="testimonials-title" className="testimonials__title text-heading-1">
+            {t('public.testimonials.title', { defaultValue: 'Được tin dùng bởi 50.000+ khách hàng' })}
+          </h2>
+          <p className="testimonials__description text-body-lg">
+            {t('public.testimonials.description', { defaultValue: 'Những phản hồi thực tế từ người dùng dịch vụ CapCut, Facebook, quảng cáo và nâng cấp tài khoản.' })}
           </p>
-        </div>
+        </header>
 
-        {/* Simulator Content Area */}
-        <div className="simulator-box">
-          {/* Tabs header */}
-          <div className="simulator-tabs">
-            <button
-              type="button"
-              className={`tab-btn ${activeTab === 'auto' ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab('auto')
-              }}
-            >
-              <span>{t('public.proof.tabAuto', { defaultValue: '1. Đơn hàng tài khoản tự động (CapCut, ChatGPT...)' })}</span>
-            </button>
-            <button
-              type="button"
-              className={`tab-btn ${activeTab === 'manual' ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab('manual')
-              }}
-            >
-              <span>{t('public.proof.tabManual', { defaultValue: '2. Dịch vụ setup quảng cáo (Facebook Ads, BM...)' })}</span>
-            </button>
-          </div>
-
-          <div className="simulator-body">
-            {activeTab === 'auto' ? (
-              <div className="sim-panel auto-panel">
-                <div className="sim-order-header">
-                  <div>
-                    <span className="sim-badge success">{t('status.COMPLETED', { defaultValue: 'HOÀN THÀNH' })}</span>
-                    <h3>{t('public.proof.orderTitle', { defaultValue: 'Đơn hàng:' })} {customOrderCode ? customOrderCode.toUpperCase() : 'OD-CAPCUT-MOCK77'}</h3>
-                  </div>
-                  <div className="sim-order-meta">
-                    <span>{t('public.proof.timeAuto', { defaultValue: 'Thời gian hoàn thành: 2 phút trước' })}</span>
-                    <span>{t('public.proof.serviceLabel', { defaultValue: 'Dịch vụ:' })} <b>{t('public.proof.serviceAuto', { defaultValue: 'CapCut Pro 12 Tháng' })}</b></span>
-                  </div>
+        <div className="testimonials__carousel" role="region" aria-label="Carousel đánh giá khách hàng">
+          <div className="testimonials__track" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
+            {displayItems.map((item, index) => (
+              <article key={index} className="testimonials__card">
+                <div className="testimonials__rating">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <Star
+                      key={i}
+                      size={18}
+                      strokeWidth={2}
+                      fill={i < item.rating ? 'currentColor' : 'none'}
+                      className={i < item.rating ? 'filled' : ''}
+                      aria-hidden="true"
+                    />
+                  ))}
                 </div>
 
-                <div className="sim-grid">
-                  {/* Timeline */}
-                  <div className="sim-timeline">
-                    <h4>{t('public.proof.flowTitle', { defaultValue: 'Hành trình đơn hàng' })}</h4>
-                    <div className="timeline-steps">
-                      <div className="step done">
-                        <div className="step-circle"><CheckCircle2 size={16} /></div>
-                        <div className="step-content">
-                          <strong>{t('public.proof.stepInit', { defaultValue: 'Khởi tạo đơn hàng' })}</strong>
-                          <span>{t('public.proof.stepInitDesc', { defaultValue: 'Hệ thống ghi nhận yêu cầu nạp gói' })}</span>
-                        </div>
-                      </div>
-                      <div className="step done">
-                        <div className="step-circle"><CheckCircle2 size={16} /></div>
-                        <div className="step-content">
-                          <strong>{t('public.proof.stepPaid', { defaultValue: 'Thanh toán thành công' })}</strong>
-                          <span>{t('public.proof.stepPaidDesc', { defaultValue: 'Ví điện tử / QR chuyển khoản được đối soát' })}</span>
-                        </div>
-                      </div>
-                      <div className="step active">
-                        <div className="step-circle"><ShieldCheck size={16} /></div>
-                        <div className="step-content">
-                          <strong>{t('public.proof.stepDelivered', { defaultValue: 'Đã giao tài khoản tự động' })}</strong>
-                          <span>{t('public.proof.stepDeliveredDesc', { defaultValue: 'Thông tin tài khoản được trích xuất từ kho' })}</span>
-                        </div>
-                      </div>
-                    </div>
+                <blockquote className="testimonials__content">
+                  <p className="testimonials__text">"{item.content}"</p>
+                </blockquote>
+
+                <footer className="testimonials__footer">
+                  <div className="testimonials__avatar" aria-hidden="true">
+                    {item.avatar}
                   </div>
-
-                  {/* Credentials / Delivery box */}
-                  <div className="sim-delivery-box">
-                    <div className="box-header">
-                      <h4>{t('public.proof.deliveryTitle', { defaultValue: 'Thông tin tài khoản bàn giao' })}</h4>
-                      <span className="secure-badge">{t('public.proof.deliverySecure', { defaultValue: 'Mã hóa AES-GCM' })}</span>
-                    </div>
-
-                    <div className="cred-fields">
-                      <div className="cred-row">
-                        <span className="label">{t('public.proof.labelUsername', { defaultValue: 'Tài khoản (Email)' })}</span>
-                        <div className="value-copy">
-                          <code>kendy_customer_vip@gmail.com</code>
-                          <button type="button" onClick={() => handleCopy('kendy_customer_vip@gmail.com')} title="Copy">
-                            <Copy size={14} />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="cred-row">
-                        <span className="label">{t('public.proof.labelPassword', { defaultValue: 'Mật khẩu' })}</span>
-                        <div className="value-copy">
-                          <code>{showPassword ? 'KendySecurePass999!' : '••••••••••••'}</code>
-                          <div className="cred-actions">
-                            <button type="button" onClick={() => setShowPassword(!showPassword)} title={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}>
-                              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                            </button>
-                            <button type="button" onClick={() => handleCopy('KendySecurePass999!')} title="Copy">
-                              <Copy size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="cred-row">
-                        <span className="label">{t('public.proof.labelRecovery', { defaultValue: 'Mã khôi phục (Recovery)' })}</span>
-                        <div className="value-copy">
-                          <code>RC-9988-7766-5544</code>
-                          <button type="button" onClick={() => handleCopy('RC-9988-7766-5544')} title="Copy">
-                            <Copy size={14} />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="cred-row">
-                        <span className="label">{t('public.proof.label2FA', { defaultValue: 'Mã bảo mật (2FA Code)' })}</span>
-                        <div className="value-copy">
-                          <code>JBSWY3DPEHPK3PXP</code>
-                          <button type="button" onClick={() => handleCopy('JBSWY3DPEHPK3PXP')} title="Copy Key">
-                            <Copy size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="sim-warranty-notes">
-                      <div>
-                        <span>{t('public.proof.expiresAt', { date: '16/06/2027', defaultValue: 'Hạn tài khoản: 16/06/2027' })}</span>
-                        <span>{t('public.proof.warrantyUntil', { date: '23/06/2026', defaultValue: 'Bảo hành đến: 23/06/2026 (Còn 7 ngày)' })}</span>
-                      </div>
-                    </div>
-
-                    {/* Warranty Simulation Button */}
-                    <div className="warranty-sim-btn-wrapper">
-                      {!warrantySimulated ? (
-                        <button
-                          type="button"
-                          className="order-warranty-button"
-                          onClick={() => setWarrantySimulated(true)}
-                        >
-                          <ShieldAlert size={16} />
-                          <span>{t('public.proof.warrantyBtn', { defaultValue: 'Yêu cầu bảo hành / Đổi tài khoản (Thử nghiệm)' })}</span>
-                        </button>
-                      ) : (
-                        <div className="warranty-feedback success animate-fade-in">
-                          <CheckCircle2 size={16} />
-                          <span>{t('public.proof.warrantyFeedback', { defaultValue: '<b>Hệ thống tự động:</b> Yêu cầu đã nhận! Một tài khoản CapCut mới sẽ được xuất kho và đổi trực tiếp cho bạn trên giao diện này trong vòng 5 giây.' })}</span>
-                        </div>
+                  <div className="testimonials__author">
+                    <div className="testimonials__author-name">
+                      {item.author}
+                      {item.verified && (
+                        <Verified size={16} strokeWidth={2.5} className="testimonials__verified" aria-label="Khách hàng đã xác thực" />
                       )}
                     </div>
+                    <div className="testimonials__author-role">{item.role}</div>
                   </div>
-                </div>
-              </div>
-            ) : (
-              <div className="sim-panel manual-panel">
-                <div className="sim-order-header">
-                  <div>
-                    <span className="sim-badge warning">{t('status.PROCESSING', { defaultValue: 'ĐANG XỬ LÝ' })}</span>
-                    <h3>{t('public.proof.orderTitle', { defaultValue: 'Đơn hàng:' })} {customOrderCode ? customOrderCode.toUpperCase() : 'OD-FBADS-MOCK88'}</h3>
+                  <div className="testimonials__service">
+                    <MessageSquare size={14} strokeWidth={2} aria-hidden="true" />
+                    <span>{item.service}</span>
                   </div>
-                  <div className="sim-order-meta">
-                    <span>{t('public.proof.timeManual', { defaultValue: 'Thời hạn cam kết xử lý: Trước 18:00 hôm nay' })}</span>
-                    <span>{t('public.proof.serviceLabel', { defaultValue: 'Dịch vụ:' })} <b>{t('public.proof.serviceManual', { defaultValue: 'Setup chiến dịch Facebook Ads' })}</b></span>
-                  </div>
-                </div>
-
-                <div className="sim-grid">
-                  {/* Timeline & Checklist */}
-                  <div className="sim-timeline">
-                    <h4>{t('public.proof.flowManualTitle', { defaultValue: 'Quy trình xử lý thủ công của Admin' })}</h4>
-                    <div className="timeline-steps">
-                      <div className="step done">
-                        <div className="step-circle"><CheckCircle2 size={16} /></div>
-                        <div className="step-content">
-                          <strong>{t('public.proof.stepAdminBrief', { defaultValue: 'Admin tiếp nhận Brief (Hôm qua)' })}</strong>
-                          <span>{t('public.proof.stepAdminBriefDesc', { defaultValue: 'Xác minh fanpage và ngân sách khách hàng' })}</span>
-                        </div>
-                      </div>
-                      <div className="step done">
-                        <div className="step-circle"><CheckCircle2 size={16} /></div>
-                        <div className="step-content">
-                          <strong>{t('public.proof.stepAdminSetup', { defaultValue: 'Cài đặt tài khoản & Share pixel (Sáng nay)' })}</strong>
-                          <span>{t('public.proof.stepAdminSetupDesc', { defaultValue: 'Hoàn thành liên kết tài khoản quảng cáo BM' })}</span>
-                        </div>
-                      </div>
-                      <div className="step active">
-                        <div className="step-circle"><Clock size={16} /></div>
-                        <div className="step-content">
-                          <strong>{t('public.proof.stepAdminCamp', { defaultValue: 'Đang setup chiến dịch (Đang xử lý)' })}</strong>
-                          <span>{t('public.proof.stepAdminCampDesc', { defaultValue: 'Thiết lập nhóm đối tượng mục tiêu và tối ưu bài viết' })}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="checklist-box">
-                      <h5>{t('public.proof.checklistTitle', { defaultValue: 'Checklist tiến độ xử lý đơn' })}</h5>
-                      <ul>
-                        <li className="done">
-                          <span className="check-box">[✓]</span> {t('public.proof.checkBrief', { defaultValue: 'Nhận thông tin fanpage & ngân sách' })}
-                        </li>
-                        <li className="done">
-                          <span className="check-box">[✓]</span> {t('public.proof.checkPixel', { defaultValue: 'Cấu hình pixel & chia sẻ tài nguyên quảng cáo' })}
-                        </li>
-                        <li className="doing">
-                          <span className="check-box">[▸]</span> {t('public.proof.checkTarget', { defaultValue: 'Tải nội dung & setup nhóm đối tượng mục tiêu' })}
-                        </li>
-                        <li className="pending">
-                          <span className="check-box">[ ]</span> {t('public.proof.checkPolicy', { defaultValue: 'Kiểm tra chính sách & bật quảng cáo chính thức' })}
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Chat / Ticket box simulation */}
-                  <div className="sim-chat-box">
-                    <div className="box-header">
-                      <h4>{t('public.proof.ticketTitle', { defaultValue: 'Trao đổi trực tiếp (Ticket hỗ trợ đơn hàng)' })}</h4>
-                      <span className="ticket-badge">{t('public.proof.ticketCode', { defaultValue: 'Ticket #TK-FBADS-99' })}</span>
-                    </div>
-
-                    <div className="chat-messages">
-                      <div className="msg admin">
-                        <div className="msg-meta">
-                          <strong>{t('public.proof.adminRole', { defaultValue: 'Admin Hỗ trợ' })}</strong>
-                          <span>Hôm qua, 15:30</span>
-                        </div>
-                        <div className="msg-text">
-                          {t('public.proof.adminMsg1', { defaultValue: 'Chào anh/chị, em đã tiếp nhận brief chiến dịch Facebook Ads. Em đã kiểm tra fanpage của mình hoàn toàn đủ điều kiện chạy. Anh/chị vui lòng xác nhận giúp em ngân sách chạy hàng ngày là 500k đúng không ạ?' })}
-                        </div>
-                      </div>
-
-                      <div className="msg user">
-                        <div className="msg-meta">
-                          <strong>{t('public.proof.userRole', { defaultValue: 'Bạn (Khách hàng)' })}</strong>
-                          <span>Hôm qua, 15:42</span>
-                        </div>
-                        <div className="msg-text">
-                          {t('public.proof.userMsg1', { defaultValue: 'Đúng rồi em nhé, ngân sách là 500k/ngày. Nhóm target nhớ loại trừ các đơn vị vận chuyển hoặc clone ra giúp anh nhé để tối ưu tệp.' })}
-                        </div>
-                      </div>
-
-                      <div className="msg admin">
-                        <div className="msg-meta">
-                          <strong>{t('public.proof.adminRole', { defaultValue: 'Admin Hỗ trợ' })}</strong>
-                          <span>Hôm qua, 16:00</span>
-                        </div>
-                        <div className="msg-text">
-                          {t('public.proof.adminMsg2', { defaultValue: 'Dạ vâng, em đã ghi chú và loại trừ tệp clone cũng như các đơn vị vận chuyển rồi ạ. Em bắt đầu setup chiến dịch, khi nào lên camp xong em báo trên tiến độ này nhé!' })}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="chat-input-simulation">
-                      <input type="text" placeholder={t('public.proof.chatPlaceholder', { defaultValue: 'Nhập tin nhắn phản hồi admin (Mô phỏng)...' })} disabled />
-                      <Button type="button" variant="dark" className="slim" disabled>
-                        <span>{t('public.proof.chatSend', { defaultValue: 'Gửi' })}</span>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+                </footer>
+              </article>
+            ))}
           </div>
+
+          {/* Navigation Arrows */}
+          <button
+            type="button"
+            className="testimonials__nav testimonials__nav--prev"
+            onClick={goToPrev}
+            aria-label={t('public.testimonials.prev', { defaultValue: 'Đánh giá trước' })}
+            disabled={isAnimating}
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            className="testimonials__nav testimonials__nav--next"
+            onClick={goToNext}
+            aria-label={t('public.testimonials.next', { defaultValue: 'Đánh giá sau' })}
+            disabled={isAnimating}
+          >
+            <ChevronRight size={20} strokeWidth={2.5} aria-hidden="true" />
+          </button>
         </div>
 
-        {copiedText && (
-          <div className="toast-notification animate-slide-up">
-            <span>{t('public.proof.copiedToast', { defaultValue: '✓ Đã copy vào bộ nhớ tạm!' })}</span>
+        {/* Dots Indicator */}
+        <div className="testimonials__dots" role="tablist" aria-label="Chọn đánh giá">
+          {displayItems.map((_, index) => (
+            <button
+              key={index}
+              role="tab"
+              aria-selected={index === currentIndex}
+              aria-label={t('public.testimonials.dotLabel', { defaultValue: 'Đánh giá {index}', index: index + 1 })}
+              className={`testimonials__dot ${index === currentIndex ? 'active' : ''}`}
+              onClick={() => goToSlide(index)}
+            />
+          ))}
+        </div>
+
+        {/* Stats Summary */}
+        <div className="testimonials__stats">
+          <div className="testimonials__stat">
+            <span className="testimonials__stat-value">4.9</span>
+            <span className="testimonials__stat-label">{t('public.testimonials.stats.rating', { defaultValue: 'Đánh giá trung bình' })}</span>
           </div>
-        )}
+          <div className="testimonials__stat">
+            <span className="testimonials__stat-value">50,000+</span>
+            <span className="testimonials__stat-label">{t('public.testimonials.stats.customers', { defaultValue: 'Khách hàng tin dùng' })}</span>
+          </div>
+          <div className="testimonials__stat">
+            <span className="testimonials__stat-value">99%</span>
+            <span className="testimonials__stat-label">{t('public.testimonials.stats.satisfaction', { defaultValue: 'Hài lòng' })}</span>
+          </div>
+        </div>
       </div>
     </section>
   )

@@ -1,75 +1,84 @@
+/* ==========================================================================
+   PUBLIC HOME - Layout Styles (Works with Design System v2.0)
+   ========================================================================== */
+
 .public-home {
   min-height: 100svh;
   overflow-x: clip;
-  color: var(--kd-text);
-  background: linear-gradient(180deg, var(--kd-card) 0%, var(--kd-bg) 34%, var(--kd-bg) 100%);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
   scroll-padding-top: 80px;
 }
 
-html.dark .public-home {
-  background: linear-gradient(180deg, #0f172a 0%, #172033 34%, #0f172a 100%);
+/* Ensure container widths work with design system */
+.public-home main > * {
+  width: 100%;
 }
 
-.public-home *,
-.public-home *::before,
-.public-home *::after {
-  box-sizing: border-box;
-}
-
+/* Fix for sections that still use old container classes */
 .public-section,
 .final-cta,
 .public-footer {
-  width: min(1180px, calc(100% - 48px));
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
 }
 
 .public-section {
-  padding: 62px 0 10px;
+  padding: 0;
 }
 
+/* Legacy support for old section heading classes */
 .section-heading {
   max-width: 760px;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .section-heading.split {
-  max-width: none;
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.65fr);
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.65fr);
+  gap: var(--space-6);
   align-items: end;
+  max-width: none;
 }
 
 .section-heading h2 {
   margin: 0;
-  color: var(--kd-text);
-  font-size: 34px;
-  line-height: 1.15;
+  color: var(--color-text-primary);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
 }
 
 .section-heading p {
-  margin: 12px 0 0;
-  color: var(--kd-muted);
-  line-height: 1.64;
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
 }
 
+/* Eyebrow - now from design system */
 .eyebrow {
   display: inline-flex;
-  margin-bottom: 8px;
-  color: var(--kd-blue);
-  font-size: 12px;
-  font-weight: 950;
-  letter-spacing: 0;
+  margin-bottom: var(--space-2);
+  color: var(--color-primary-600);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.public-nav a:focus-visible,
-.category-card a:focus-visible,
-.footer-links a:focus-visible {
-  outline: 3px solid rgba(24, 196, 199, 0.34);
-  outline-offset: 3px;
+html.dark .eyebrow {
+  color: var(--color-primary-400);
 }
 
+/* Focus styles */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-500);
+  border-radius: var(--radius-sm);
+}
+
+/* Responsive adjustments */
 @media (max-width: 920px) {
   .section-heading.split {
     grid-template-columns: 1fr;
@@ -77,48 +86,86 @@ html.dark .public-home {
 }
 
 @media (max-width: 680px) {
-  .public-section,
-  .final-cta,
-  .public-footer {
-    width: calc(100% - 36px);
-  }
-
   .public-section {
-    padding-top: 58px;
+    padding: 0;
   }
 
   .section-heading,
   .section-heading.split {
-    margin-bottom: 18px;
+    margin-bottom: var(--space-4);
   }
 
   .section-heading h2 {
-    font-size: 28px;
+    font-size: var(--text-2xl);
+  }
+
+  .section-heading p {
+    font-size: var(--text-sm);
   }
 }
 
 @media (max-width: 520px) {
-  .public-section,
-  .final-cta,
-  .public-footer {
-    width: calc(100% - 28px);
-  }
-
-  .public-section {
-    padding-top: 46px;
-  }
-
   .section-heading h2 {
-    font-size: 25px;
-  }
-
-  .section-heading p {
-    font-size: 14px;
-    line-height: 1.62;
+    font-size: var(--text-xl);
   }
 }
 
-/* Scroll Reveal Animations */
+/* Legacy featured products home - kept for compatibility */
+.featured-products-home {
+  padding: var(--space-12) 0 var(--space-4);
+  width: 100%;
+}
+
+.home-section-header {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto var(--space-10);
+}
+
+.home-section-title {
+  margin: var(--space-3) 0 var(--space-3);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.home-section-desc {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+
+.featured-grid-home {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.view-all-container {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 600px) {
+  .featured-products-home {
+    padding: var(--space-8) 0 var(--space-2);
+  }
+
+  .home-section-title {
+    font-size: var(--text-2xl);
+  }
+
+  .featured-grid-home {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}
+
+/* Scroll Reveal Animations - Legacy support */
 .reveal-on-scroll {
   opacity: 0;
   transform: translateY(30px);
@@ -130,64 +177,10 @@ html.dark .public-home {
   transform: translateY(0);
 }
 
-/* Homepage Featured Products Section */
-.featured-products-home {
-  padding: 60px 0 20px;
-  width: min(1180px, calc(100% - 48px));
-  margin: 0 auto;
-}
-
-.home-section-header {
-  text-align: center;
-  max-width: 700px;
-  margin: 0 auto 40px;
-}
-
-.home-section-title {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--kd-text);
-  margin: 8px 0 12px;
-  letter-spacing: -0.02em;
-}
-
-.home-section-desc {
-  color: var(--kd-muted);
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.featured-grid-home {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-  margin-bottom: 40px;
-}
-
-.view-all-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-}
-
-.view-all-container .public-btn {
-  padding: 0 28px;
-  height: 48px;
-}
-
-@media (max-width: 600px) {
-  .featured-products-home {
-    padding: 40px 0 10px;
-    width: calc(100% - 32px);
-  }
-
-  .home-section-title {
-    font-size: 26px;
-  }
-
-  .featured-grid-home {
-    grid-template-columns: 1fr;
-    gap: 16px;
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

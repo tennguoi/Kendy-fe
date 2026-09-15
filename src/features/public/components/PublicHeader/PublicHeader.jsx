@@ -1,8 +1,7 @@
-import { ArrowRight, LogIn, Menu, Moon, Sun, X } from 'lucide-react'
+import { LogIn, Menu, Moon, Sun, X, ShoppingCart, User } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import Button from '../../../../components/Button/Button'
 import { useTheme } from '../../../../contexts/ThemeContext'
 import LanguageSwitcher from '../../../../components/LanguageSwitcher/LanguageSwitcher'
 import './PublicHeader.css'
@@ -47,79 +46,134 @@ function PublicHeader({
     }
   }
 
+  const isHome = location.pathname === '/' || location.pathname === ''
+
   return (
-    <header className="public-site-header">
-      <Link className="public-brand" to="/" aria-label={brand.name}>
-        <img src={logo} alt={`Logo ${brand.name}`} />
-        <span>
-          <strong>{brand.name}</strong>
-          <small>{brand.tagline}</small>
-        </span>
-      </Link>
+    <header className={`public-header ${isHome ? 'public-header--home' : ''}`} role="banner">
+      <div className="public-header__container container">
+        <Link className="public-header__brand" to="/" aria-label={brand.name}>
+          <img src={logo} alt={`Logo ${brand.name}`} className="public-header__logo" />
+          <span className="public-header__brand-text">
+            <strong>{brand.name}</strong>
+            <small>{brand.tagline}</small>
+          </span>
+        </Link>
 
-      <nav className="public-nav" aria-label="Điều hướng chính">
-        {navItems.map((item) =>
-          item.href.startsWith('/') ? (
-            <Link to={item.href} key={item.href} onClick={(e) => handleNavClick(e, item.href)}>
-              {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
-            </Link>
-          ) : (
-            <a href={item.href} key={item.href} onClick={(e) => handleNavClick(e, item.href)}>
-              {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
-            </a>
-          )
-        )}
-      </nav>
-
-      <div className="public-header-actions">
-        <LanguageSwitcher />
-        <button
-          type="button"
-          className="public-theme-toggle"
-          onClick={toggleTheme}
-          title={theme === 'dark' ? t('auth.switchToLight') : t('auth.switchToDark')}
-          aria-label={theme === 'dark' ? t('auth.switchToLight') : t('auth.switchToDark')}
-        >
-          {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
-        </button>
-        <Button variant="ghost" onClick={openAuth}>
-          <LogIn size={17} strokeWidth={2} aria-hidden="true" />
-          <span>{t('public.header.login')}</span>
-        </Button>
-        <Button variant="primary" to="/catalog">
-          <span>{t('public.header.services')}</span>
-          <ArrowRight size={17} strokeWidth={2} aria-hidden="true" />
-        </Button>
-        <button
-          type="button"
-          className="mobile-menu-button"
-          onClick={() => setIsMenuOpen((current) => !current)}
-          aria-expanded={isMenuOpen}
-          aria-label={isMenuOpen ? t('sidebar.closeMenu') : t('topbar.openMenu')}
-        >
-          {isMenuOpen ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
-        </button>
-      </div>
-
-      {isMenuOpen && (
-        <div className="mobile-nav-drawer">
+        <nav className="public-header__nav" aria-label="Điều hướng chính">
           {navItems.map((item) =>
             item.href.startsWith('/') ? (
-              <Link to={item.href} key={item.href} onClick={(e) => { closeMenu(); handleNavClick(e, item.href); }}>
+              <Link
+                to={item.href}
+                key={item.href}
+                className="public-header__nav-link"
+                onClick={(e) => handleNavClick(e, item.href)}
+              >
                 {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
               </Link>
             ) : (
-              <a href={item.href} key={item.href} onClick={(e) => { closeMenu(); handleNavClick(e, item.href); }}>
+              <a
+                href={item.href}
+                key={item.href}
+                className="public-header__nav-link"
+                onClick={(e) => handleNavClick(e, item.href)}
+              >
                 {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
               </a>
             )
           )}
-          <button type="button" onClick={openAuth}>
-            {t('public.header.loginOrRegister')}
+        </nav>
+
+        <div className="public-header__actions">
+          <LanguageSwitcher />
+
+          <button
+            type="button"
+            className="public-header__theme-toggle btn btn-ghost btn-sm"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? t('auth.switchToLight') : t('auth.switchToDark')}
+            aria-label={theme === 'dark' ? t('auth.switchToLight') : t('auth.switchToDark')}
+          >
+            {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
           </button>
+
+          <Button variant="ghost" className="public-header__btn-login" onClick={openAuth}>
+            <LogIn size={17} strokeWidth={2} aria-hidden="true" />
+            <span>{t('public.header.login')}</span>
+          </Button>
+
+          <Button variant="primary" className="public-header__btn-services" to="/catalog">
+            <ShoppingCart size={17} strokeWidth={2} aria-hidden="true" />
+            <span>{t('public.header.services')}</span>
+          </Button>
+
+          <button
+            type="button"
+            className="public-header__mobile-toggle"
+            onClick={() => setIsMenuOpen((current) => !current)}
+            aria-expanded={isMenuOpen}
+            aria-label={isMenuOpen ? t('sidebar.closeMenu') : t('topbar.openMenu')}
+          >
+            {isMenuOpen ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
+          </button>
+        </div>
+      </div>
+
+      {isMenuOpen && (
+        <div className="public-header__mobile-drawer" role="dialog" aria-modal="true" aria-label="Menu điều hướng">
+          <nav className="public-header__mobile-nav">
+            {navItems.map((item) =>
+              item.href.startsWith('/') ? (
+                <Link
+                  to={item.href}
+                  key={item.href}
+                  className="public-header__mobile-nav-link"
+                  onClick={(e) => { closeMenu(); handleNavClick(e, item.href); }}
+                >
+                  {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
+                </Link>
+              ) : (
+                <a
+                  href={item.href}
+                  key={item.href}
+                  className="public-header__mobile-nav-link"
+                  onClick={(e) => { closeMenu(); handleNavClick(e, item.href); }}
+                >
+                  {item.labelKey ? t(item.labelKey, { defaultValue: item.label }) : item.label}
+                </a>
+              )
+            )}
+            <Button variant="primary" className="public-header__mobile-cta" onClick={openAuth}>
+              <User size={18} strokeWidth={2} aria-hidden="true" />
+              {t('public.header.loginOrRegister')}
+            </Button>
+          </nav>
         </div>
       )}
     </header>
+  )
+}
+
+function Button({ variant = 'primary', className = '', to, onClick, children, ...props }) {
+  const isLink = !!to
+  const Component = isLink ? Link : 'button'
+
+  const variantClasses = {
+    primary: 'btn btn-primary',
+    secondary: 'btn btn-secondary',
+    accent: 'btn btn-accent',
+    ghost: 'btn btn-ghost',
+    outline: 'btn btn-outline',
+  }
+
+  return (
+    <Component
+      className={`${variantClasses[variant]} ${className}`}
+      to={to}
+      onClick={onClick}
+      {...props}
+    >
+      {children}
+    </Component>
   )
 }
 

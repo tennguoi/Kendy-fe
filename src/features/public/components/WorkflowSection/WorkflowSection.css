@@ -1,140 +1,151 @@
-.workflow-section {
-  padding-bottom: 30px;
+/* ==========================================================================
+   WORKFLOW SECTION - Modern Design System v2.0
+   ========================================================================== */
+
+.workflow {
+  padding: var(--space-16) 0;
+  background: var(--color-bg-secondary);
 }
 
-.workflow-list {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
-  align-items: stretch;
+@media (max-width: 768px) {
+  .workflow {
+    padding: var(--space-12) 0;
+  }
 }
 
-/* Hủy bỏ rule chiếm cột cũ */
-.workflow-list > .workflow-step:last-child:nth-child(odd) {
-  grid-column: auto;
+.workflow__header {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto var(--space-12);
 }
 
-.workflow-step {
-  position: relative;
-  min-width: 0;
+.workflow__title {
+  margin: var(--space-3) 0 var(--space-4);
+  color: var(--color-text-primary);
+}
+
+.workflow__description {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+/* Steps */
+.workflow__steps {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 24px 20px;
-  border: 1px solid var(--kd-border);
-  border-radius: 20px;
-  background: var(--kd-card);
-  box-shadow: var(--kd-soft-shadow);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  gap: var(--space-0);
 }
 
-.workflow-step:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--kd-shadow);
-  border-color: rgba(37, 99, 235, 0.25);
-}
-
-/* Vẽ đường đứt nét nối giữa các bước trên Desktop */
-@media (min-width: 921px) {
-  .workflow-step:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    top: 40px; /* Canh giữa icon theo chiều dọc */
-    left: calc(100% + 4px);
-    width: 12px;
-    height: 2px;
-    border-top: 2px dashed var(--kd-border-strong);
-    opacity: 0.5;
-    z-index: 1;
-  }
-}
-
-.workflow-step svg {
-  color: var(--kd-blue);
-  background: rgba(37, 99, 235, 0.08);
-  padding: 8px;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1);
-  border-radius: 12px;
-  width: 38px;
-  height: 38px;
-  box-sizing: border-box;
-}
-
-.step-index {
-  position: absolute;
-  top: 16px;
-  right: 20px;
-  color: var(--kd-blue);
-  font-size: 18px;
-  font-weight: 850;
-  opacity: 0.2;
-}
-
-.workflow-step h3 {
-  margin: 0;
-  color: var(--kd-text);
-  font-size: 16px;
-  font-weight: 750;
-  line-height: 1.35;
-}
-
-.workflow-step p {
-  margin: 0;
-  color: var(--kd-muted);
-  font-size: 13px;
-  line-height: 1.55;
-}
-
-.workflow-cta {
-  margin-top: 32px;
+.workflow__step {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  transition: all var(--transition-normal);
 }
 
-.workflow-cta .public-btn {
-  padding: 12px 28px;
-  border-radius: 999px;
-  box-shadow: 0 10px 20px rgba(20, 124, 255, 0.15);
-  font-size: 15px;
-  font-weight: 700;
+.workflow__step:hover {
+  border-color: var(--color-border-default);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Dành cho Mobile & Tablet: Trình bày dạng timeline dọc */
-@media (max-width: 920px) {
-  .workflow-list {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .workflow-step {
-    flex-direction: row;
+@media (max-width: 768px) {
+  .workflow__step {
+    flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
-    min-height: auto;
-  }
-
-  .step-index {
-    position: static;
-    opacity: 1;
-    font-size: 20px;
-    font-weight: 900;
-    margin-right: 4px;
-    flex-shrink: 0;
-  }
-
-  .workflow-step p {
-    margin-top: 4px;
+    text-align: center;
+    gap: var(--space-4);
+    padding: var(--space-6) var(--space-4);
   }
 }
 
-@media (max-width: 520px) {
-  .workflow-step {
-    padding: 14px 16px;
-  }
-  .workflow-step h3 {
-    font-size: 15px;
+/* Step Number */
+.workflow__step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
+  color: #FFFFFF;
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--font-extrabold);
+  line-height: 1;
+  box-shadow: var(--shadow-md);
+}
+
+/* Connector */
+.workflow__step-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  color: var(--color-border-default);
+}
+
+@media (max-width: 768px) {
+  .workflow__step-connector {
+    display: none;
   }
 }
 
+/* Step Content */
+.workflow__step-content {
+  display: flex;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .workflow__step-content {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.workflow__step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-100);
+  color: var(--color-primary-600);
+}
+
+html.dark .workflow__step-icon {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--color-primary-400);
+}
+
+.workflow__step-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  line-height: var(--leading-snug);
+}
+
+.workflow__step-description {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .workflow__step {
+    transition: none !important;
+  }
+}
