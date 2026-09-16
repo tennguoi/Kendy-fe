@@ -54,7 +54,7 @@
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  padding: 6px 12px;
+  padding: 6px 8px 6px 14px;
   transition: border-color 0.2s, background-color 0.25s ease;
 }
 
@@ -64,6 +64,7 @@
 
 .search-input-wrapper input {
   flex: 1;
+  min-width: 0;
   background: transparent;
   border: none;
   outline: none;
@@ -71,6 +72,18 @@
   font-size: 15px;
   color: #ffffff;
   padding: 8px 0;
+}
+
+.search-input-wrapper .public-btn,
+.search-input-wrapper button {
+  width: auto;
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 18px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: 10px;
+  white-space: nowrap;
 }
 
 .terminal-icon {
@@ -584,6 +597,12 @@
   outline: none;
   font-size: 13.5px;
   color: #ffffff;
+}
+
+.chat-input-simulation .public-btn,
+.chat-input-simulation button {
+  width: auto;
+  flex: 0 0 auto;
 }
 
 /* Toast Notification */

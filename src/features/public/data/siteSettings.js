@@ -7,10 +7,14 @@ export const SITE_SETTING_SLUGS = {
   theme: 'theme-settings',
 }
 
-const defaultFaqItems = faqGroups.flatMap((group) =>
+const defaultFaqItems = faqGroups.flatMap((group, groupIdx) =>
   group.items.map((item, index) => ({
-    id: `${group.title}-${index}`,
+    id: `faq-${groupIdx}-${index}`,
+    groupKey: group.titleKey,
+    groupTitle: group.title,
+    questionKey: item.questionKey,
     question: item.question,
+    answerKey: item.answerKey,
     answer: item.answer,
   })),
 )
@@ -30,7 +34,9 @@ export const defaultSiteSettings = {
   },
   faq: {
     eyebrow: 'FAQ',
+    eyebrowKey: 'public.faqs.eyebrow',
     title: 'Các câu hỏi thường gặp',
+    titleKey: 'public.faqs.title',
     items: defaultFaqItems,
   },
   brand: {

@@ -50,11 +50,17 @@
 }
 
 .public-btn.dark {
-  width: 100%;
   border: 0;
   color: #ffffff;
   background: #0f172a;
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+}
+
+.public-btn.slim {
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: 13.5px;
+  border-radius: 10px;
 }
 
 .public-btn:focus-visible {

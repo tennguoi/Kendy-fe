@@ -843,6 +843,14 @@
       "secondaryCta": "View services"
     },
     "faqs": {
+      "eyebrow": "FAQ",
+      "title": "Frequently Asked Questions",
+      "subtitle": "Quick answers to common questions about accounts, upgrades, payments, and warranty policies.",
+      "allTab": "All Questions",
+      "searchPlaceholder": "Search questions (e.g. CapCut, warranty, deposit...)",
+      "noResults": "No questions found matching your search.",
+      "stillHaveQuestions": "Still have unanswered questions?",
+      "contactSupport": "Contact 24/7 Support",
       "group1": {
         "title": "General Questions",
         "q1": {

@@ -843,6 +843,14 @@
       "secondaryCta": "Xem dịch vụ"
     },
     "faqs": {
+      "eyebrow": "FAQ",
+      "title": "Các câu hỏi thường gặp",
+      "subtitle": "Giải đáp nhanh những thắc mắc phổ biến về tài khoản, nâng cấp, thanh toán và bảo hành.",
+      "allTab": "Tất cả câu hỏi",
+      "searchPlaceholder": "Tìm câu hỏi (vd: CapCut, bảo hành, nạp tiền...)",
+      "noResults": "Không tìm thấy câu hỏi phù hợp với từ khóa.",
+      "stillHaveQuestions": "Bạn vẫn còn câu hỏi chưa được giải đáp?",
+      "contactSupport": "Liên hệ hỗ trợ 24/7",
       "group1": {
         "title": "Câu hỏi chung",
         "q1": {
