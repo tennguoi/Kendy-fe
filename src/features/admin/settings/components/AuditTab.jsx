@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 const actionOptions = [
   ['', 'Tất cả hành động'],
@@ -99,7 +101,7 @@ function AuditTab({
           <div className="admin-form-grid single">
             <label>
               <span>Tìm kiếm nhanh (không bắt buộc)</span>
-              <input
+              <BaseInput
                 value={auditFilter.query}
                 onChange={(event) => onSetAuditFilter((current) => ({ ...current, query: event.target.value }))}
                 placeholder="Email, mã đơn, tên dịch vụ..."
@@ -107,13 +109,19 @@ function AuditTab({
             </label>
             <label>
               <span>Hành động</span>
-              <select value={auditFilter.action} onChange={(event) => onSetAuditFilter((current) => ({ ...current, action: event.target.value }))}>
-                {actionOptions.map(([value, label]) => <option value={value} key={value || 'all'}>{label}</option>)}
-              </select>
+              <BaseSelect
+                value={auditFilter.action}
+                onChange={(value) => onSetAuditFilter((current) => ({ ...current, action: value }))}
+                options={actionOptions.map(([value, label]) => ({
+                  value: value,
+                  label: label
+                }))}
+                placeholder={actionOptions[0][1]}
+              />
             </label>
             <label>
               <span>ID người thực hiện (nâng cao)</span>
-              <input
+              <BaseInput
                 value={auditFilter.adminId}
                 onChange={(event) => onSetAuditFilter((current) => ({ ...current, adminId: event.target.value.replace(/\D/g, '') }))}
                 inputMode="numeric"
@@ -122,13 +130,19 @@ function AuditTab({
             </label>
             <label>
               <span>Đối tượng bị thay đổi</span>
-              <select value={auditFilter.targetType} onChange={(event) => onSetAuditFilter((current) => ({ ...current, targetType: event.target.value }))}>
-                {targetOptions.map(([value, label]) => <option value={value} key={value || 'all'}>{label}</option>)}
-              </select>
+              <BaseSelect
+                value={auditFilter.targetType}
+                onChange={(value) => onSetAuditFilter((current) => ({ ...current, targetType: value }))}
+                options={targetOptions.map(([value, label]) => ({
+                  value: value,
+                  label: label
+                }))}
+                placeholder={targetOptions[0][1]}
+              />
             </label>
             <label>
               <span>ID đối tượng (nâng cao)</span>
-              <input
+              <BaseInput
                 value={auditFilter.targetId}
                 onChange={(event) => onSetAuditFilter((current) => ({ ...current, targetId: event.target.value.replace(/\D/g, '') }))}
                 inputMode="numeric"

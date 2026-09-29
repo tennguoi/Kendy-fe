@@ -1,5 +1,6 @@
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
 
 function NotificationsTab({
   notifications,
@@ -19,7 +20,11 @@ function NotificationsTab({
         </div>
         <label className="admin-form">
           <span>JSON value</span>
-          <textarea value={notificationSetting?.value || '{}'} onChange={(event) => onSetNotificationSetting((current) => ({ ...(current || {}), value: event.target.value }))} rows="10" />
+          <BaseTextarea
+            value={notificationSetting?.value || '{}'}
+            onChange={(event) => onSetNotificationSetting((current) => ({ ...(current || {}), value: event.target.value }))}
+            rows="10"
+          />
         </label>
       </div>
       <div className="admin-panel">

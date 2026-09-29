@@ -8,6 +8,8 @@ import { formatAdminDate } from '../adminFormat'
 import Pagination from '../../../components/Pagination/Pagination'
 import SearchField from '../../../components/SearchField/SearchField'
 import { useTranslation } from 'react-i18next'
+import BaseInput from '../../../components/ui/BaseInput'
+import BaseSelect from '../../../components/ui/BaseSelect'
 
 function toInstant(value, endOfDay = false) {
   if (!value) return undefined
@@ -140,11 +142,24 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
             onChange={(event) => setFilters((current) => ({ ...current, query: event.target.value }))}
             placeholder={t('admin.assignedAccounts.filter.searchPlaceholder')}
           />
-          <select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}>
-            {statusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-          </select>
-          <input type="date" title={t('admin.assignedAccounts.filter.fromDate')} value={filters.deliveredFrom} onChange={(event) => setFilters((current) => ({ ...current, deliveredFrom: event.target.value }))} />
-          <input type="date" title={t('admin.assignedAccounts.filter.toDate')} value={filters.deliveredTo} onChange={(event) => setFilters((current) => ({ ...current, deliveredTo: event.target.value }))} />
+          <BaseSelect
+            value={filters.status}
+            onChange={(value) => setFilters((current) => ({ ...current, status: value }))}
+            options={statusOptions.map(([value, label]) => ({ value: value, label: label }))}
+            placeholder={t('admin.assignedAccounts.filter.allStatus')}
+          />
+          <BaseInput
+            type="date"
+            title={t('admin.assignedAccounts.filter.fromDate')}
+            value={filters.deliveredFrom}
+            onChange={(event) => setFilters((current) => ({ ...current, deliveredFrom: event.target.value }))}
+          />
+          <BaseInput
+            type="date"
+            title={t('admin.assignedAccounts.filter.toDate')}
+            value={filters.deliveredTo}
+            onChange={(event) => setFilters((current) => ({ ...current, deliveredTo: event.target.value }))}
+          />
         </div>
       </section>
 
@@ -206,5 +221,5 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
       </div>
     )
   }
-  
+
   export default AdminAssignedAccountsView

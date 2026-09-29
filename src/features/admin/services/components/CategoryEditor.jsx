@@ -1,6 +1,9 @@
 import { Plus, Trash2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import RichEditor from '../../../../components/RichEditor/RichEditor'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
 
 function CategoryEditor({
   categories = [],
@@ -82,41 +85,42 @@ function CategoryEditor({
           <div className="admin-form-grid service-form-grid">
             <label className="wide">
               <span>{t('admin.services.categoryEditor.field.name')}</span>
-              <input
+              <BaseInput
                 value={categoryForm.name}
-                onChange={(event) => onCategoryFormChange('name', event.target.value)}
+                onChange={(value) => onCategoryFormChange('name', value)}
                 required
               />
             </label>
             <label className="wide">
               <span>{t('admin.services.categoryEditor.field.slug')}</span>
-              <input
+              <BaseInput
                 value={categoryForm.slug}
-                onChange={(event) => onCategoryFormChange('slug', event.target.value)}
+                onChange={(value) => onCategoryFormChange('slug', value)}
                 required
               />
             </label>
             <label>
               <span>{t('admin.services.categoryEditor.field.parent')}</span>
-              <select
+              <BaseSelect
                 value={categoryForm.parentId}
-                onChange={(event) => onCategoryFormChange('parentId', event.target.value)}
-              >
-                <option value="">{t('admin.services.noParent')}</option>
-                {categories
-                  .filter((cat) => cat.id !== selectedCategoryId)
-                  .map((cat) => (
-                    <option value={cat.id} key={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-              </select>
+                onChange={(value) => onCategoryFormChange('parentId', value)}
+                options={[
+                  { value: '', label: t('admin.services.noParent') },
+                  ...categories
+                    .filter((cat) => cat.id !== selectedCategoryId)
+                    .map((cat) => ({
+                      value: cat.id,
+                      label: cat.name,
+                    })),
+                ]}
+                placeholder={t('admin.services.noParent')}
+              />
             </label>
             <label>
               <span>{t('admin.services.categoryEditor.field.sortOrder')}</span>
-              <input
+              <BaseInput
                 value={categoryForm.sortOrder}
-                onChange={(event) => onCategoryFormChange('sortOrder', event.target.value)}
+                onChange={(value) => onCategoryFormChange('sortOrder', value)}
                 inputMode="numeric"
               />
             </label>
@@ -144,47 +148,52 @@ function CategoryEditor({
           <div className="admin-form-grid service-form-grid">
             <label className="wide">
               <span>{t('admin.services.categoryEditor.field.microcopy')}</span>
-              <input
+              <BaseInput
                 value={categoryForm.microcopy || ''}
-                onChange={(event) => onCategoryFormChange('microcopy', event.target.value)}
+                onChange={(value) => onCategoryFormChange('microcopy', value)}
                 placeholder="Ví dụ: Phù hợp editor, TikToker và shop cần chỉnh video nhanh..."
               />
             </label>
             <label>
               <span>{t('admin.services.categoryEditor.field.priceFrom')}</span>
-              <input
+              <BaseInput
                 value={categoryForm.priceFrom || ''}
-                onChange={(event) => onCategoryFormChange('priceFrom', event.target.value)}
+                onChange={(value) => onCategoryFormChange('priceFrom', value)}
                 placeholder="Ví dụ: Từ 89.000đ"
               />
             </label>
             <label>
               <span>{t('admin.services.categoryEditor.field.processingTime')}</span>
-              <input
+              <BaseInput
                 value={categoryForm.processingTime || ''}
-                onChange={(event) => onCategoryFormChange('processingTime', event.target.value)}
+                onChange={(value) => onCategoryFormChange('processingTime', value)}
                 placeholder="Ví dụ: 5-30 phút"
               />
             </label>
             <label>
               <span>{t('admin.services.categoryEditor.field.warranty')}</span>
-              <input
+              <BaseInput
                 value={categoryForm.warranty || ''}
-                onChange={(event) => onCategoryFormChange('warranty', event.target.value)}
+                onChange={(value) => onCategoryFormChange('warranty', value)}
                 placeholder="Ví dụ: Hỗ trợ 7 ngày"
               />
             </label>
             <label>
               <span>{t('admin.services.categoryEditor.field.cta')}</span>
-              <input
+              <BaseInput
                 value={categoryForm.cta || ''}
-                onChange={(event) => onCategoryFormChange('cta', event.target.value)}
+                onChange={(value) => onCategoryFormChange('cta', value)}
                 placeholder="Ví dụ: Xem gói"
               />
             </label>
             <div className="admin-form-group wide">
               <span>{t('admin.services.categoryEditor.field.requirements')}</span>
-              <RichEditor value={categoryForm.requirements || ''} onChange={(value) => onCategoryFormChange('requirements', value)} minHeight={120} />
+              <BaseTextarea
+                value={categoryForm.requirements || ''}
+                onChange={(value) => onCategoryFormChange('requirements', value)}
+                rows="3"
+                placeholder="Nhập yêu cầu hoặc lưu ý..."
+              />
             </div>
           </div>
         </section>

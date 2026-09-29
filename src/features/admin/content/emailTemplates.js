@@ -3,13 +3,14 @@ export const EMAIL_TEMPLATE_DEFINITIONS = [
     slug: 'email_verification',
     label: 'Xác minh email',
     description: 'Gửi sau khi người dùng đăng ký tài khoản.',
-    type: 'link',
+    type: 'both',
     defaults: {
       subject: 'Xác minh địa chỉ email Kendy Digital',
       heading: 'Xác minh địa chỉ email',
-      intro: 'Chào {{name}}, cảm ơn bạn đã đăng ký tài khoản. Hãy xác minh địa chỉ email để hoàn tất thiết lập tài khoản.',
+      intro: 'Chào {{name}}, cảm ơn bạn đã đăng ký tài khoản. Sử dụng mã xác thực bên dưới hoặc bấm nút để hoàn tất xác minh tài khoản.',
+      codeLabel: 'Mã xác thực',
       actionLabel: 'Xác minh email',
-      detail: 'Liên kết xác minh sẽ hết hạn vào {{expiresAt}}.',
+      detail: 'Mã xác thực và liên kết sẽ hết hạn vào {{expiresAt}}.',
       securityNote: 'Nếu bạn không tạo tài khoản này, bạn có thể bỏ qua email.',
       footer: 'Đây là email tự động từ Kendy Digital. Vui lòng không trả lời email này.',
     },
@@ -182,15 +183,15 @@ export function renderTransactionalEmail(definition, config, brand) {
   const brandName = escapeHtml(brand?.name || 'Kendy Digital')
   const logoUrl = text(brand?.logoUrl).trim()
   const safeLogoUrl = /^https?:\/\//i.test(logoUrl) ? escapeHtml(logoUrl) : ''
-  const codeBlock = definition.type === 'code' ? `
+  const codeBlock = (definition.type === 'code' || definition.type === 'both' || definition.slug === 'email_verification') ? `
       <tr>
         <td style="padding:8px 40px 24px;">
-          <div style="font-size:12px;font-weight:600;color:#57606a;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">${textToHtml(config.codeLabel)}</div>
+          <div style="font-size:12px;font-weight:600;color:#57606a;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">${textToHtml(config.codeLabel || 'Mã xác thực')}</div>
           <div style="padding:18px 20px;border:1px solid #d0d7de;border-radius:6px;background:#f6f8fa;color:#24292f;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:32px;font-weight:700;letter-spacing:8px;text-align:center;">{{code}}</div>
         </td>
       </tr>` : ''
 
-  const linkBlock = definition.type === 'link' || definition.slug === 'password_reset' ? `
+  const linkBlock = (definition.type === 'link' || definition.type === 'both' || definition.slug === 'email_verification' || definition.slug === 'password_reset') ? `
       <tr>
         <td style="padding:8px 40px 24px;text-align:center;">
           <a href="{{link}}" style="display:inline-block;padding:11px 22px;border:1px solid rgba(27,31,36,.15);border-radius:6px;color:#ffffff;background:#1f883d;font-size:14px;font-weight:600;line-height:20px;text-decoration:none;">${textToHtml(config.actionLabel || '')}</a>

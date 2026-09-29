@@ -5,6 +5,8 @@ import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminMoney } from '../../adminFormat'
 import { getServiceStatusLabel, serviceStatuses } from '../services.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function ServiceListPanel({
   activeTab = 'services',
@@ -123,14 +125,19 @@ function ServiceListPanel({
         />
 
         {activeTab === 'services' && (
-          <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>
-            <option value="">{t('admin.common.allStatus')}</option>
-            {serviceStatuses.map((status) => (
-              <option value={status} key={status}>
-                {getServiceStatusLabel(status)}
-              </option>
-            ))}
-          </select>
+          <BaseSelect
+            value={statusFilter}
+            onChange={(value) => onStatusFilterChange(value)}
+            options={[
+              { value: '', label: t('admin.common.allStatus') },
+              ...serviceStatuses.map((status) => ({
+                value: status,
+                label: getServiceStatusLabel(status)
+              }))
+            ]}
+            validators={[]} // Status filter is optional
+            placeholder={t('admin.common.allStatus')}
+          />
         )}
       </div>
 
@@ -178,12 +185,11 @@ function ServiceListPanel({
                   style={{ cursor: 'pointer' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                    <input
+                    <BaseInput
+                      type="checkbox"
                       checked={selectedIds.includes(service.id)}
                       onChange={() => onToggleSelected(service.id)}
                       onClick={(event) => event.stopPropagation()}
-                      type="checkbox"
-                      style={{ cursor: 'pointer' }}
                     />
                     <div className="admin-row-user">
                       <strong>{service.name}</strong>

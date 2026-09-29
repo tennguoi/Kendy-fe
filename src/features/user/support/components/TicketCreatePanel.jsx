@@ -1,6 +1,10 @@
 import { RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { supportCategories, supportPriorities, supportCategoryLabels, supportPriorityLabels } from '../support.constants'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
+import { isRequired, composeValidators } from '../../../../utils/validation'
 
 function TicketCreatePanel({
   loading,
@@ -11,6 +15,10 @@ function TicketCreatePanel({
   ticketForm,
 }) {
   const { t } = useTranslation()
+
+  // Validators
+  const validateRequired = composeValidators(isRequired)
+  const validateOptional = () => ({ isValid: true }) // Always valid for optional fields
 
   return (
     <article className="ticket-form">
@@ -25,42 +33,64 @@ function TicketCreatePanel({
       </div>
 
       <form className="admin-form compact" onSubmit={onCreateTicket}>
-        <label>
-          <span>{t('support.subject', { defaultValue: 'Chủ đề' })}</span>
-          <input value={ticketForm.subject} onChange={(event) => onTicketFormChange('subject', event.target.value)} required />
-        </label>
-        <label>
-          <span>{t('support.category', { defaultValue: 'Danh mục' })}</span>
-          <select value={ticketForm.category} onChange={(event) => onTicketFormChange('category', event.target.value)}>
-            {supportCategories.map((category) => (
-              <option value={category} key={category}>
-                {t('status.' + category, { defaultValue: supportCategoryLabels[category] })}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>{t('support.priority', { defaultValue: 'Ưu tiên' })}</span>
-          <select value={ticketForm.priority} onChange={(event) => onTicketFormChange('priority', event.target.value)}>
-            {supportPriorities.map((priority) => (
-              <option value={priority} key={priority}>
-                {t('status.' + priority, { defaultValue: supportPriorityLabels[priority] })}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>{t('support.orderCode', { defaultValue: 'Mã đơn' })}</span>
-          <input value={ticketForm.orderCode} onChange={(event) => onTicketFormChange('orderCode', event.target.value)} />
-        </label>
-        <label>
-          <span>{t('support.depositCode', { defaultValue: 'Mã nạp' })}</span>
-          <input value={ticketForm.depositCode} onChange={(event) => onTicketFormChange('depositCode', event.target.value)} />
-        </label>
-        <label>
-          <span>{t('support.content', { defaultValue: 'Nội dung' })}</span>
-          <textarea value={ticketForm.message} onChange={(event) => onTicketFormChange('message', event.target.value)} required />
-        </label>
+        <BaseInput
+          label={t('support.subject', { defaultValue: 'Chủ đề' })}
+          value={ticketForm.subject}
+          onChange={(value) => onTicketFormChange('subject', value)}
+          validators={[validateRequired]}
+          errorMessage={t('support.subjectRequired', { defaultValue: 'Vui lòng nhập chủ đề' })}
+          required
+        />
+        <div className="ticket-form-row">
+          <BaseSelect
+            label={t('support.category', { defaultValue: 'Danh mục' })}
+            value={ticketForm.category}
+            onChange={(value) => onTicketFormChange('category', value)}
+            options={supportCategories.map((category) => ({
+              value: category,
+              label: t('status.' + category, { defaultValue: supportCategoryLabels[category] })
+            }))}
+            validators={[validateRequired]}
+            errorMessage={t('support.categoryRequired', { defaultValue: 'Vui lòng chọn danh mục' })}
+            placeholder={t('support.selectCategory', { defaultValue: 'Chọn danh mục' })}
+          />
+          <BaseSelect
+            label={t('support.priority', { defaultValue: 'Ưu tiên' })}
+            value={ticketForm.priority}
+            onChange={(value) => onTicketFormChange('priority', value)}
+            options={supportPriorities.map((priority) => ({
+              value: priority,
+              label: t('status.' + priority, { defaultValue: supportPriorityLabels[priority] })
+            }))}
+            validators={[validateRequired]}
+            errorMessage={t('support.priorityRequired', { defaultValue: 'Vui lòng chọn mức ưu tiên' })}
+            placeholder={t('support.selectPriority', { defaultValue: 'Chọn mức ưu tiên' })}
+          />
+        </div>
+        <div className="ticket-form-row">
+          <BaseInput
+            label={t('support.orderCode', { defaultValue: 'Mã đơn' })}
+            value={ticketForm.orderCode}
+            onChange={(value) => onTicketFormChange('orderCode', value)}
+            validators={[validateOptional]}
+            errorMessage={t('support.orderCodeInvalid', { defaultValue: 'Mã đơn không hợp lệ' })}
+          />
+          <BaseInput
+            label={t('support.depositCode', { defaultValue: 'Mã nạp' })}
+            value={ticketForm.depositCode}
+            onChange={(value) => onTicketFormChange('depositCode', value)}
+            validators={[validateOptional]}
+            errorMessage={t('support.depositCodeInvalid', { defaultValue: 'Mã nạp không hợp lệ' })}
+          />
+        </div>
+        <BaseTextarea
+          label={t('support.content', { defaultValue: 'Nội dung' })}
+          value={ticketForm.message}
+          onChange={(value) => onTicketFormChange('message', value)}
+          validators={[validateRequired]}
+          errorMessage={t('support.contentRequired', { defaultValue: 'Vui lòng nhập nội dung' })}
+          rows={3}
+        />
         <button className="primary-button" type="submit" disabled={submitting}>
           {t('support.submitBtn', { defaultValue: 'Gửi ticket' })}
         </button>

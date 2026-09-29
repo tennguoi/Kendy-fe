@@ -41,12 +41,17 @@ function App() {
   const location = useLocation()
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const initialAuthMode = location.pathname === '/reset-password' ? 'reset-verify' : 'login'
+  const isVerifyEmailPathInitial = location.pathname === '/verify-email'
+  const isPasswordResetPathInitial = location.pathname === '/reset-password'
+  const initialAuthMode = isPasswordResetPathInitial ? 'reset-verify' : (isVerifyEmailPathInitial ? 'verify' : 'login')
   const initialResetCode = location.pathname === '/reset-password'
     ? new URLSearchParams(location.search).get('token') || ''
     : ''
+  const initialVerifyToken = isVerifyEmailPathInitial
+    ? new URLSearchParams(location.search).get('token') || ''
+    : ''
   const [showAuthScreen, setShowAuthScreen] = useState(() => (
-    Boolean(initialOAuthCallback?.error || initialOAuthCallback?.oauthTwoFactorChallenge || location.pathname === '/reset-password')
+    Boolean(initialOAuthCallback?.error || initialOAuthCallback?.oauthTwoFactorChallenge || isPasswordResetPathInitial || isVerifyEmailPathInitial)
   ))
   const [depositAmount, setDepositAmount] = useState('250000')
   const [checkoutService, setCheckoutService] = useState(null)
@@ -93,7 +98,7 @@ function App() {
   const [activeDeposit, setActiveDeposit] = useState(null)
   const [apiNotice, setApiNotice] = useState('')
   const { copied, copyText } = useClipboard()
-  const { addToast } = useToast()
+  const { addToast, clearToasts } = useToast()
   const { settings: siteSettings } = usePublicSiteSettings()
 
   const amountNumber = Number(depositAmount) || 0
@@ -110,6 +115,7 @@ function App() {
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'
   const normalizedPathname = normalizePathname(location.pathname)
   const isPasswordResetPath = normalizedPathname === '/reset-password'
+  const isVerifyEmailPath = normalizedPathname === '/verify-email'
   const isAdminPath = normalizedPathname === '/admin' || normalizedPathname.startsWith('/admin/')
   const adminActiveView = resolveAdminActiveView(normalizedPathname)
   const userActiveView = resolveUserActiveView(normalizedPathname)
@@ -388,7 +394,7 @@ function App() {
     setShowAuthScreen(false)
     const message = t('app.loginSuccess')
     setApiNotice(message)
-    notify(message, 'success')
+
   }
 
   const handleLogout = async () => {
@@ -1093,12 +1099,26 @@ function App() {
     )
   }
 
+  if (isVerifyEmailPath) {
+    return (
+      <AuthScreen
+        initialMode="verify"
+        initialVerifyToken={initialVerifyToken}
+        notice={apiNotice}
+        onBack={() => navigate('/')}
+        onResetComplete={handlePasswordResetComplete}
+        onSuccess={handleAuthSuccess}
+      />
+    )
+  }
+
   if (!accessToken) {
     if (showAuthScreen) {
       return (
         <AuthScreen
           initialMode={initialAuthMode}
           initialResetCode={initialResetCode}
+          initialVerifyToken={initialVerifyToken}
           notice={apiNotice}
           oauthChallenge={initialOAuthCallback?.oauthTwoFactorChallenge ? {
             challengeToken: initialOAuthCallback.oauthTwoFactorChallenge,

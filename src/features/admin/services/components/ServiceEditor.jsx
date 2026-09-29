@@ -7,6 +7,8 @@ import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { accessStrategies, accessStrategyLabels, getCtaTypeLabel, getCredentialStatusLabel, getServiceStatusLabel, getServiceTypeLabel, getStockStatusLabel, getOrderStatusLabel, ctaTypes, serviceStatuses, serviceTypes, stockStatuses } from '../services.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
 import RichEditor from '../../../../components/RichEditor/RichEditor'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function ServiceEditor({
   categories = [],
@@ -151,20 +153,23 @@ function ServiceEditor({
             </small>
           </span>
         </div>
-        <select
+        <BaseSelect
           value={serviceForm.type}
-          onChange={(event) => {
-            const nextType = event.target.value
-            if (activeTab === 'credentials' && nextType !== 'ACCOUNT_STOCK') {
+          onChange={(value) => {
+            if (activeTab === 'credentials' && value !== 'ACCOUNT_STOCK') {
               setActiveTab('basic')
             }
-            onUpdateServiceForm('type', nextType)
-            onUpdateServiceForm('accessStrategy', nextType === 'ACCOUNT_STOCK' ? 'DEDICATED_ACCOUNT' : 'MANUAL')
+            onUpdateServiceForm('type', value)
+            onUpdateServiceForm('accessStrategy', value === 'ACCOUNT_STOCK' ? 'DEDICATED_ACCOUNT' : 'MANUAL')
           }}
           aria-label={t('admin.services.editor.selectMode')}
         >
-          {serviceTypes.map((type) => <option value={type} key={type}>{getServiceTypeLabel(type)}</option>)}
-        </select>
+          {serviceTypes.map((type) => (
+            <option key={type} value={type}>
+              {getServiceTypeLabel(type)}
+            </option>
+          ))}
+        </BaseSelect>
       </div>
 
       <div className="admin-tabs" style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '6px', borderBottom: '1px solid var(--kd-border)', paddingBottom: '12px' }}>
@@ -205,70 +210,113 @@ function ServiceEditor({
             <div className="admin-form-grid service-form-grid">
               <label className="wide">
                 <span>{t('admin.services.editor.field.serviceName')}</span>
-                <input value={serviceForm.name} onChange={(event) => onUpdateServiceForm('name', event.target.value)} required />
+                <BaseInput
+                  value={serviceForm.name}
+                  onChange={(value) => onUpdateServiceForm('name', value)}
+                  required
+                />
               </label>
               <label className="wide">
                 <span>{t('admin.services.editor.field.slug')}</span>
-                <input value={serviceForm.slug} onChange={(event) => onUpdateServiceForm('slug', event.target.value)} required />
+                <BaseInput
+                  value={serviceForm.slug}
+                  onChange={(value) => onUpdateServiceForm('slug', value)}
+                  required
+                />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.category')}</span>
-                <select value={serviceForm.categoryId} onChange={(event) => onUpdateServiceForm('categoryId', event.target.value)}>
-                  <option value="">{t('admin.services.summary.ungrouped')}</option>
-                  {categories.map((category) => (
-                    <option value={category.id} key={category.id}>{category.name}</option>
-                  ))}
-                </select>
+                <BaseSelect
+                  value={serviceForm.categoryId}
+                  onChange={(value) => onUpdateServiceForm('categoryId', value)}
+                  placeholder={t('admin.services.summary.ungrouped')}
+                  options={[
+                    { value: '', label: t('admin.services.summary.ungrouped') },
+                    ...categories.map((category) => ({
+                      value: category.id,
+                      label: category.name,
+                    })),
+                  ]}
+                />
               </label>
               <label>
                 <span>{t('admin.common.status')}</span>
-                <select value={serviceForm.status} onChange={(event) => onUpdateServiceForm('status', event.target.value)}>
-                  {serviceStatuses.map((status) => <option value={status} key={status}>{getServiceStatusLabel(status)}</option>)}
-                </select>
+                <BaseSelect
+                  value={serviceForm.status}
+                  onChange={(value) => onUpdateServiceForm('status', value)}
+                  placeholder={t('admin.common.selectStatus')}
+                  options={serviceStatuses.map((status) => ({
+                    value: status,
+                    label: getServiceStatusLabel(status),
+                  }))}
+                />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.stockStatus')}</span>
-                <select value={serviceForm.stockStatus} onChange={(event) => onUpdateServiceForm('stockStatus', event.target.value)}>
-                  {stockStatuses.map((status) => <option value={status} key={status}>{getStockStatusLabel(status)}</option>)}
-                </select>
+                <BaseSelect
+                  value={serviceForm.stockStatus}
+                  onChange={(value) => onUpdateServiceForm('stockStatus', value)}
+                  placeholder={t('admin.common.selectStockStatus')}
+                  options={stockStatuses.map((status) => ({
+                    value: status,
+                    label: getStockStatusLabel(status),
+                  }))}
+                />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.cta')}</span>
-                <select value={serviceForm.ctaType} onChange={(event) => onUpdateServiceForm('ctaType', event.target.value)}>
-                  {ctaTypes.map((type) => <option value={type} key={type}>{getCtaTypeLabel(type)}</option>)}
-                </select>
+                <BaseSelect
+                  value={serviceForm.ctaType}
+                  onChange={(value) => onUpdateServiceForm('ctaType', value)}
+                  placeholder={t('admin.common.selectCtaType')}
+                  options={ctaTypes.map((type) => ({
+                    value: type,
+                    label: getCtaTypeLabel(type),
+                  }))}
+                />
               </label>
               <label>
                 <span>Cách cấp quyền</span>
-                <select
+                <BaseSelect
                   value={serviceForm.accessStrategy}
-                  onChange={(event) => onUpdateServiceForm('accessStrategy', event.target.value)}
+                  onChange={(value) => onUpdateServiceForm('accessStrategy', value)}
                   disabled={isAccountStock}
-                >
-                  {accessStrategies
-                    .filter((strategy) => !isAccountStock || strategy === 'DEDICATED_ACCOUNT')
-                    .map((strategy) => (
-                      <option value={strategy} key={strategy}>{accessStrategyLabels[strategy]}</option>
-                    ))}
-                </select>
+                  placeholder={t('admin.common.selectAccessStrategy')}
+                  options={[
+                    ...accessStrategies
+                      .filter((strategy) => !isAccountStock || strategy === 'DEDICATED_ACCOUNT')
+                      .map((strategy) => ({
+                        value: strategy,
+                        label: accessStrategyLabels[strategy],
+                      })),
+                  ]}
+                />
               </label>
               <label>
                 <span>Thời hạn truy cập (ngày)</span>
-                <input
+                <BaseInput
                   type="number"
                   min="1"
                   value={serviceForm.accessDurationDays}
-                  onChange={(event) => onUpdateServiceForm('accessDurationDays', event.target.value)}
+                  onChange={(value) => onUpdateServiceForm('accessDurationDays', value)}
                   placeholder="30"
                 />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.sortOrder')}</span>
-                <input value={serviceForm.sortOrder} onChange={(event) => onUpdateServiceForm('sortOrder', event.target.value)} inputMode="numeric" />
+                <BaseInput
+                  value={serviceForm.sortOrder}
+                  onChange={(value) => onUpdateServiceForm('sortOrder', value)}
+                  inputMode="numeric"
+                />
               </label>
               <label className="wide">
                 <span>{t('admin.services.editor.field.iconUrl')}</span>
-                <input value={serviceForm.iconUrl} onChange={(event) => onUpdateServiceForm('iconUrl', event.target.value)} placeholder="Đường dẫn ảnh sản phẩm (ví dụ: https://example.com/image.png hoặc /assets/...)" />
+                <BaseInput
+                  value={serviceForm.iconUrl}
+                  onChange={(value) => onUpdateServiceForm('iconUrl', value)}
+                  placeholder="Đường dẫn ảnh sản phẩm (ví dụ: https://example.com/image.png hoặc /assets/...)"
+                />
               </label>
               <div className="wide service-image-upload">
                 <label className="service-image-upload-button">
@@ -295,11 +343,19 @@ function ServiceEditor({
             </div>
             <div className="admin-check-row">
               <label style={{ cursor: 'pointer' }}>
-                <input checked={serviceForm.featured} onChange={(event) => onUpdateServiceForm('featured', event.target.checked)} type="checkbox" />
+                <BaseInput
+                  type="checkbox"
+                  checked={serviceForm.featured}
+                  onChange={(value) => onUpdateServiceForm('featured', value)}
+                />
                 <span>{t('admin.services.editor.field.featured')}</span>
               </label>
               <label style={{ cursor: 'pointer' }}>
-                <input checked={serviceForm.publicVisible} onChange={(event) => onUpdateServiceForm('publicVisible', event.target.checked)} type="checkbox" />
+                <BaseInput
+                  type="checkbox"
+                  checked={serviceForm.publicVisible}
+                  onChange={(value) => onUpdateServiceForm('publicVisible', value)}
+                />
                 <span>{t('admin.services.editor.field.publicVisible')}</span>
               </label>
             </div>
@@ -331,27 +387,54 @@ function ServiceEditor({
             <div className="admin-form-grid service-form-grid">
               <label>
                 <span>{t('admin.services.editor.field.price')}</span>
-                <input value={serviceForm.price} onChange={(event) => onUpdateServiceForm('price', event.target.value)} inputMode="text" placeholder="390k, 1tr..." required />
+                <BaseInput
+                  value={serviceForm.price}
+                  onChange={(value) => onUpdateServiceForm('price', value)}
+                  inputMode="text"
+                  placeholder="390k, 1tr..."
+                  required
+                />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.priceText')}</span>
-                <input value={serviceForm.priceText} onChange={(event) => onUpdateServiceForm('priceText', event.target.value)} placeholder="Từ 390.000đ" />
+                <BaseInput
+                  value={serviceForm.priceText}
+                  onChange={(value) => onUpdateServiceForm('priceText', value)}
+                  placeholder="Từ 390.000đ"
+                />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.costPrice')}</span>
-                <input value={serviceForm.costPrice} onChange={(event) => onUpdateServiceForm('costPrice', event.target.value)} inputMode="text" placeholder="250k, 500k..." />
+                <BaseInput
+                  value={serviceForm.costPrice}
+                  onChange={(value) => onUpdateServiceForm('costPrice', value)}
+                  inputMode="text"
+                  placeholder="250k, 500k..."
+                />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.pricingBadge')}</span>
-                <input value={serviceForm.pricingBadge} onChange={(event) => onUpdateServiceForm('pricingBadge', event.target.value)} placeholder="Phổ biến, Bán chạy..." />
+                <BaseInput
+                  value={serviceForm.pricingBadge}
+                  onChange={(value) => onUpdateServiceForm('pricingBadge', value)}
+                  placeholder="Phổ biến, Bán chạy..."
+                />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.processingTime')}</span>
-                <input value={serviceForm.processingTime} onChange={(event) => onUpdateServiceForm('processingTime', event.target.value)} placeholder="Trong 24h" />
+                <BaseInput
+                  value={serviceForm.processingTime}
+                  onChange={(value) => onUpdateServiceForm('processingTime', value)}
+                  placeholder="Trong 24h"
+                />
               </label>
               <label>
                 <span>{t('admin.services.editor.field.warrantyPolicy')}</span>
-                <input value={serviceForm.warrantyPolicy} onChange={(event) => onUpdateServiceForm('warrantyPolicy', event.target.value)} placeholder="Bảo hành 7 ngày" />
+                <BaseInput
+                  value={serviceForm.warrantyPolicy}
+                  onChange={(value) => onUpdateServiceForm('warrantyPolicy', value)}
+                  placeholder="Bảo hành 7 ngày"
+                />
               </label>
             </div>
           </section>
@@ -397,11 +480,17 @@ function ServiceEditor({
             <div className="admin-form-grid service-form-grid">
               <label className="wide">
                 <span>{t('admin.services.editor.field.metaTitle')}</span>
-                <input value={serviceForm.metaTitle} onChange={(event) => onUpdateServiceForm('metaTitle', event.target.value)} />
+                <BaseInput
+                  value={serviceForm.metaTitle}
+                  onChange={(value) => onUpdateServiceForm('metaTitle', value)}
+                />
               </label>
               <label className="wide">
                 <span>{t('admin.services.editor.field.metaDescription')}</span>
-                <input value={serviceForm.metaDescription} onChange={(event) => onUpdateServiceForm('metaDescription', event.target.value)} />
+                <BaseInput
+                  value={serviceForm.metaDescription}
+                  onChange={(value) => onUpdateServiceForm('metaDescription', value)}
+                />
               </label>
             </div>
           </section>
@@ -443,14 +532,17 @@ function ServiceEditor({
                 onChange={(event) => onUpdateCredentialFilter('query', event.target.value)}
                 placeholder={t('admin.services.editor.searchCredential')}
               />
-              <select value={selectedCredentialId} onChange={(event) => setSelectedCredentialId(event.target.value)}>
-                <option value="">{t('admin.services.editor.selectCredential')}</option>
-                {filteredCredentials.map((credential) => (
-                  <option key={credential.id} value={credential.id}>
-                    {credential.loginIdentifier} — {getCredentialStatusLabel(credential.status)}
-                  </option>
-                ))}
-              </select>
+              <BaseSelect
+              value={selectedCredentialId}
+              onChange={(value) => setSelectedCredentialId(value)}
+              placeholder={t('admin.services.editor.selectCredential')}
+            >
+              {filteredCredentials.map((credential) => (
+                <option key={credential.id} value={credential.id}>
+                  {credential.loginIdentifier} — {getCredentialStatusLabel(credential.status)}
+                </option>
+              ))}
+            </BaseSelect>
               <button type="button" className="admin-icon-button" onClick={() => navigate('/admin/account-inventory')}>
                 <KeyRound size={16} /> {t('admin.services.editor.openInventory')}
               </button>
@@ -477,12 +569,12 @@ function ServiceEditor({
 
             {/* Filter bar */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
-              <select
+              <BaseSelect
                 value={credentialFilters.status}
-                onChange={(event) => onUpdateCredentialFilter('status', event.target.value)}
+                onChange={(value) => onUpdateCredentialFilter('status', value)}
+                placeholder={t('admin.common.allStatus')}
                 style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--kd-border)', fontSize: '12px', background: 'var(--kd-card-bg)' }}
               >
-                <option value="">{t('admin.common.allStatus')}</option>
                 <option value="AVAILABLE">{t('status.AVAILABLE')}</option>
                 <option value="RESERVED">{t('status.RESERVED')}</option>
                 <option value="DELIVERED">{t('status.DELIVERED')}</option>
@@ -490,7 +582,7 @@ function ServiceEditor({
                 <option value="REFUNDED">{t('status.REFUNDED')}</option>
                 <option value="DISABLED">{t('status.DISABLED')}</option>
                 <option value="EXPIRED">{t('status.EXPIRED')}</option>
-              </select>
+              </BaseSelect>
               <SearchField
                 size="compact"
                 value={credentialFilters.query}
@@ -500,28 +592,28 @@ function ServiceEditor({
               />
               <label style={{ display: 'grid', gap: '3px', fontSize: '11px', color: 'var(--kd-muted)' }}>
                 {t('admin.services.editor.legacyCredentials.createdFrom')}
-                <input
+                <BaseInput
                   type="datetime-local"
                   value={credentialFilters.createdFrom}
-                  onChange={(event) => onUpdateCredentialFilter('createdFrom', event.target.value)}
+                  onChange={(value) => onUpdateCredentialFilter('createdFrom', value)}
                   style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--kd-border)', fontSize: '12px', background: 'var(--kd-card-bg)' }}
                 />
               </label>
               <label style={{ display: 'grid', gap: '3px', fontSize: '11px', color: 'var(--kd-muted)' }}>
                 {t('admin.services.editor.legacyCredentials.createdTo')}
-                <input
+                <BaseInput
                   type="datetime-local"
                   value={credentialFilters.createdTo}
-                  onChange={(event) => onUpdateCredentialFilter('createdTo', event.target.value)}
+                  onChange={(value) => onUpdateCredentialFilter('createdTo', value)}
                   style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--kd-border)', fontSize: '12px', background: 'var(--kd-card-bg)' }}
                 />
               </label>
               <label style={{ display: 'grid', gap: '3px', fontSize: '11px', color: 'var(--kd-muted)' }}>
                 {t('admin.services.editor.legacyCredentials.deliveredFrom')}
-                <input
+                <BaseInput
                   type="datetime-local"
                   value={credentialFilters.deliveredFrom}
-                  onChange={(event) => onUpdateCredentialFilter('deliveredFrom', event.target.value)}
+                  onChange={(value) => onUpdateCredentialFilter('deliveredFrom', value)}
                   style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--kd-border)', fontSize: '12px', background: 'var(--kd-card-bg)' }}
                 />
               </label>

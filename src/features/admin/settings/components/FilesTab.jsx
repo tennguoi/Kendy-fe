@@ -1,4 +1,5 @@
 import { AdminEmptyState } from '../../AdminShared'
+import BaseInput from '../../../../components/ui/BaseInput'
 
 function FilesTab({
   fileIdInput,
@@ -20,7 +21,10 @@ function FilesTab({
         <form className="admin-form compact" onSubmit={onUploadAdminFile}>
           <label>
             <span>File</span>
-            <input onChange={(event) => onSetFileToUpload(event.target.files?.[0] || null)} type="file" />
+            <BaseInput
+              type="file"
+              onChange={(event) => onSetFileToUpload(event.target.files?.[0] || null)}
+            />
           </label>
           <button type="submit" disabled={submitting || !fileToUpload}>Upload</button>
         </form>
@@ -46,7 +50,12 @@ function FilesTab({
         <div className="admin-form compact">
           <label>
             <span>File ID</span>
-            <input value={fileIdInput} onChange={(event) => onSetFileIdInput(event.target.value.replace(/\D/g, ''))} inputMode="numeric" />
+            <BaseInput
+              value={fileIdInput}
+              onChange={(value) => onSetFileIdInput(value.replace(/\D/g, ''))}
+              inputMode="numeric"
+              placeholder="Nhập ID file"
+            />
           </label>
           <div className="admin-action-row">
             <button type="button" className="admin-icon-button" disabled={submitting} onClick={() => onDownloadAdminFile('preview')}>Preview</button>

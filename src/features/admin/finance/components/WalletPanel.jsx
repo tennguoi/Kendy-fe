@@ -1,6 +1,7 @@
 import { AdminEmptyState } from '../../AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { statusLabel } from '../../../../data/statusLabels'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function WalletPanel({
   balanceIssues,
@@ -13,9 +14,15 @@ function WalletPanel({
   return (
     <>
       <div className="admin-filters single-filter">
-        <select value={walletType} onChange={(event) => setWalletType(event.target.value)}>
-          {walletTypes.map((type) => <option value={type} key={type || 'all'}>{statusLabel[type] || type || 'Tất cả loại ví'}</option>)}
-        </select>
+        <BaseSelect
+          value={walletType}
+          onChange={(value) => setWalletType(value)}
+          options={walletTypes.map((type) => ({
+            value: type,
+            label: statusLabel[type] || type || 'Tất cả loại ví'
+          }))}
+          placeholder="Tất cả loại ví"
+        />
       </div>
       <div className="admin-action-row">
         <button type="button" className="admin-primary-button" onClick={onOpenTools}>Công cụ đối soát</button>

@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
 import SearchField from '../../../../components/SearchField/SearchField'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
 
 function SettingsTab({
   currentUser,
@@ -52,7 +54,7 @@ function SettingsTab({
               {twoFactorEmailSent && (
                 <label>
                   <span>{t('admin.settings.twoFactor.emailCode')}</span>
-                  <input
+                  <BaseInput
                     value={twoFactorCode}
                     onChange={(event) => onSetTwoFactorCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
                     inputMode="numeric"
@@ -71,7 +73,12 @@ function SettingsTab({
         </div>
         <div className="admin-check-row settings-row">
           <label>
-            <input checked={twoFactorRequired} disabled={submitting} onChange={onToggleTwoFactor} type="checkbox" />
+            <BaseInput
+              type="checkbox"
+              checked={twoFactorRequired}
+              disabled={submitting}
+              onChange={onToggleTwoFactor}
+            />
             <span>{t('admin.settings.twoFactor.require2FA')}</span>
           </label>
         </div>
@@ -101,7 +108,11 @@ function SettingsTab({
               </div>
               <label>
                 <span>Setting key</span>
-                <input value={settingHistoryKey} onChange={(event) => onSetSettingHistoryKey(event.target.value)} placeholder={t('admin.settings.system.keyPlaceholder')} />
+                <BaseInput
+                  value={settingHistoryKey}
+                  onChange={(event) => onSetSettingHistoryKey(event.target.value)}
+                  placeholder={t('admin.settings.system.keyPlaceholder')}
+                />
               </label>
               <button type="submit" disabled={submitting}>{t('admin.settings.system.loadHistory')}</button>
             </form>
@@ -119,7 +130,11 @@ function SettingsTab({
               </div>
               <label>
                 <span>JSON</span>
-                <textarea value={restoreText} onChange={(event) => onSetRestoreText(event.target.value)} rows="6" />
+                <BaseTextarea
+                  value={restoreText}
+                  onChange={(event) => onSetRestoreText(event.target.value)}
+                  rows="6"
+                />
               </label>
               <button type="submit" className="admin-danger-button" disabled={submitting}>Khôi phục</button>
             </form>

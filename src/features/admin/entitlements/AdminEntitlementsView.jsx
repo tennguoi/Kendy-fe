@@ -6,6 +6,10 @@ import Loading from '../../../components/Loading/Loading'
 import Modal from '../../../components/Modal/Modal'
 import { AdminEmptyState } from '../AdminShared'
 import { formatAdminDate } from '../adminFormat'
+import BaseInput from '../../../components/ui/BaseInput'
+import BaseSelect from '../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../components/ui/BaseTextarea'
+import { isRequired, composeValidators } from '../../../utils/validation'
 
 const statusKeys = {
   PENDING: 'admin.entitlements.status.PENDING',
@@ -145,11 +149,25 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
       </div>
 
       <section className="admin-panel entitlement-filters">
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('admin.entitlements.searchPlaceholder')} />
-        <select value={status} onChange={(event) => setStatus(event.target.value)}>
-          <option value="">{t('admin.entitlements.allStatus')}</option>
-          {Object.entries(statusKeys).map(([value, key]) => <option value={value} key={value}>{t(key)}</option>)}
-        </select>
+        <BaseInput
+          value={query}
+          onChange={(value) => setQuery(value)}
+          placeholder={t('admin.entitlements.searchPlaceholder')}
+          validators={[]} // Search is optional
+        />
+        <BaseSelect
+          value={status}
+          onChange={(value) => setStatus(value)}
+          options={[
+            { value: '', label: t('admin.entitlements.allStatus') },
+            ...Object.entries(statusKeys).map(([value, key]) => ({
+              value: value,
+              label: t(key)
+            }))
+          ]}
+          validators={[]} // Status filter is optional
+          placeholder={t('admin.entitlements.allStatus')}
+        />
         <strong>{t('admin.entitlements.count', { count: filtered.length })}</strong>
       </section>
 
@@ -210,39 +228,39 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
             </div>
 
             {actionDraft.action === 'ACTIVATE' && (
-              <label>
-                <span>{t('admin.entitlements.prompt.resourceId')}</span>
-                <input
-                  value={actionDraft.externalResourceId}
-                  onChange={(event) => setActionDraft((current) => ({ ...current, externalResourceId: event.target.value }))}
-                  autoFocus
-                />
-              </label>
+              <BaseInput
+                label={t('admin.entitlements.prompt.resourceId')}
+                value={actionDraft.externalResourceId}
+                onChange={(value) => setActionDraft((current) => ({ ...current, externalResourceId: value }))}
+                autoFocus
+                validators={[]} // Resource ID is optional for activation
+              />
             )}
 
             {actionDraft.action === 'EXTEND' && (
-              <label>
-                <span>{t('admin.entitlements.prompt.extendDays')}</span>
-                <input
-                  value={actionDraft.extendDays}
-                  onChange={(event) => setActionDraft((current) => ({ ...current, extendDays: event.target.value.replace(/\D/g, '') }))}
-                  inputMode="numeric"
-                  autoFocus
-                />
-              </label>
+              <BaseInput
+                label={t('admin.entitlements.prompt.extendDays')}
+                value={actionDraft.extendDays}
+                onChange={(value) => setActionDraft((current) => ({ ...current, extendDays: value.replace(/\D/g, '') }))}
+                inputMode="numeric"
+                autoFocus
+                validators={[composeValidators(isRequired)]}
+                errorMessage={t('admin.entitlements.prompt.extendInvalid')}
+                min="1"
+              />
             )}
 
             {['SUSPEND', 'REVOKE'].includes(actionDraft.action) && (
-              <label>
-                <span>{actionDraft.action === 'SUSPEND' ? t('admin.entitlements.prompt.suspendReason') : t('admin.entitlements.prompt.revokeReason')}</span>
-                <textarea
-                  value={actionDraft.reason}
-                  onChange={(event) => setActionDraft((current) => ({ ...current, reason: event.target.value }))}
-                  rows={4}
-                  autoFocus
-                  required
-                />
-              </label>
+              <BaseTextarea
+                label={actionDraft.action === 'SUSPEND' ? t('admin.entitlements.prompt.suspendReason') : t('admin.entitlements.prompt.revokeReason')}
+                value={actionDraft.reason}
+                onChange={(value) => setActionDraft((current) => ({ ...current, reason: value }))}
+                rows={4}
+                autoFocus
+                required
+                validators={[composeValidators(isRequired)]}
+                errorMessage={actionDraft.action === 'SUSPEND' ? t('admin.entitlements.prompt.suspendRequired') : t('admin.entitlements.prompt.revokeRequired')}
+              />
             )}
 
             <div className="entitlement-modal-actions">

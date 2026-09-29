@@ -4,6 +4,8 @@ import StatusBadge from '../../../../components/status/StatusBadge'
 import { money } from '../../../../utils/currency'
 import { formatDepositDate } from '../depositFormat'
 import Pagination from '../../../../components/Pagination/Pagination'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 const statusOptions = [
   { value: '', label: 'Tất cả' },
@@ -60,15 +62,29 @@ function DepositHistoryTable({
         <button type="button" onClick={() => onRefreshDeposit?.()}>{t('deposit.reload', { defaultValue: 'Tải lại' })}</button>
       </div>
       <div className="deposit-filters">
-        <select value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)}>
-          {statusOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {getStatusLabel(option.value, option.label)}
-            </option>
-          ))}
-        </select>
-        <input type="date" value={filterFromDate} onChange={(event) => setFilterFromDate(event.target.value)} placeholder={t('deposit.fromDate', { defaultValue: 'Từ ngày' })} aria-label={t('deposit.fromDate', { defaultValue: 'Từ ngày' })} />
-        <input type="date" value={filterToDate} onChange={(event) => setFilterToDate(event.target.value)} placeholder={t('deposit.toDate', { defaultValue: 'Đến ngày' })} aria-label={t('deposit.toDate', { defaultValue: 'Đến ngày' })} />
+        <BaseSelect
+          value={filterStatus}
+          onChange={(value) => setFilterStatus(value)}
+          options={statusOptions.map((option) => ({
+            value: option.value,
+            label: getStatusLabel(option.value, option.label)
+          }))}
+          placeholder={t('deposit.statusAll', { defaultValue: 'Tất cả' })}
+        />
+        <BaseInput
+          type="date"
+          value={filterFromDate}
+          onChange={(event) => setFilterFromDate(event.target.value)}
+          placeholder={t('deposit.fromDate', { defaultValue: 'Từ ngày' })}
+          aria-label={t('deposit.fromDate', { defaultValue: 'Từ ngày' })}
+        />
+        <BaseInput
+          type="date"
+          value={filterToDate}
+          onChange={(event) => setFilterToDate(event.target.value)}
+          placeholder={t('deposit.toDate', { defaultValue: 'Đến ngày' })}
+          aria-label={t('deposit.toDate', { defaultValue: 'Đến ngày' })}
+        />
         <button type="button" className="primary-button" onClick={() => onFiltersChange?.({ status: filterStatus, ...(filterFromDate ? { fromDate: filterFromDate } : {}), ...(filterToDate ? { toDate: filterToDate } : {}) })}>{t('common.filter', { defaultValue: 'Lọc' })}</button>
         {(filterStatus || filterFromDate || filterToDate) && (
           <button type="button" className="admin-danger-button" onClick={clearFilters}>{t('common.clearFilter', { defaultValue: 'Xóa lọc' })}</button>

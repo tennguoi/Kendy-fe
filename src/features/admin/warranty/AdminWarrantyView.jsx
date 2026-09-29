@@ -6,7 +6,11 @@ import { normalizePaged } from '../../../utils/pagination'
 import AdminDrawer from '../AdminDrawer'
 import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
+import BaseInput from '../../../components/ui/BaseInput'
+import BaseSelect from '../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../components/ui/BaseTextarea'
 import { formatAdminDate } from '../adminFormat'
+import { isRequired, composeValidators } from '../../../utils/validation'
 
 const WARRANTY_STATUS_COLORS = {
   OPEN: '#ffc107',
@@ -59,6 +63,18 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
     onSetError(message)
   }, [onSetError])
 
+  // Validation for review form
+  const validateStatus = composeValidators(isRequired)
+  const validateAdminNoteWhenRequired = (value) => {
+    // Only required for REJECTED and APPROVED_REFUND statuses
+    if (reviewForm.status === 'REJECTED' || reviewForm.status === 'APPROVED_REFUND') {
+      if (!value || !value.trim()) {
+        return { isValid: false, error: t('admin.warranty.review.requiredNote') }
+      }
+    }
+    return { isValid: true }
+  }
+
   const loadRequests = useCallback(async (page) => {
     if (!token) return
     const targetPage = typeof page === 'number' ? page : currentPage
@@ -94,11 +110,22 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
 
   const handleReview = async (event) => {
     event.preventDefault()
-    if (!selectedRequest || !reviewForm.status) return
-    if ((reviewForm.status === 'REJECTED' || reviewForm.status === 'APPROVED_REFUND') && !reviewForm.adminNote.trim()) {
-      setViewError(t('admin.warranty.review.requiredNote'))
+
+    // Validate form
+    const statusValidation = validateStatus(reviewForm.status)
+    const adminNoteValidation = validateAdminNoteWhenRequired(reviewForm.adminNote)
+
+    if (!statusValidation.isValid) {
+      setViewError(statusValidation.error || t('admin.warranty.review.requiredStatus'))
       return
     }
+
+    if (!adminNoteValidation.isValid) {
+      setViewError(adminNoteValidation.error)
+      return
+    }
+
+    if (!selectedRequest) return
     setSubmitting(true)
     setViewError('')
     try {
@@ -147,19 +174,22 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
 
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
         <Search size={16} style={{ color: 'var(--kd-muted)' }} />
-        <select
+        <BaseSelect
           value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value)}
+          onChange={(value) => setStatusFilter(value)}
+          options={[
+            { value: '', label: t('admin.warranty.filter.allStatus') },
+            ...Object.entries(WARRANTY_STATUS_LABELS).map(([value, label]) => ({
+              value: value,
+              label: label
+            }))
+          ]}
+          validators={[]} // Status filter is optional
+          placeholder={t('admin.warranty.filter.allStatus')}
           style={{
-            padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--kd-border)',
-            fontSize: '13px', background: 'var(--kd-card-bg)',
+            minWidth: '150px'
           }}
-        >
-          <option value="">{t('admin.warranty.filter.allStatus')}</option>
-          {Object.entries(WARRANTY_STATUS_LABELS).map(([value, label]) => (
-            <option value={value} key={value}>{label}</option>
-          ))}
-        </select>
+        />
         <span style={{ fontSize: '13px', color: 'var(--kd-muted)' }}>
           {filteredRequests.length} {t('admin.warranty.filter.requests')}
         </span>
@@ -260,40 +290,42 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
                   <div className="admin-panel-head compact-head" style={{ marginTop: 0 }}>
                     <h3>{t('admin.warranty.review.title')}</h3>
                   </div>
-                  <label>
-                    <span>{t('admin.warranty.review.actionLabel')}</span>
-                    <select
-                      value={reviewForm.status}
-                      onChange={(event) => setReviewForm((f) => ({ ...f, status: event.target.value }))}
-                      required
-                    >
-                      <option value="">{t('admin.warranty.review.selectAction')}</option>
-                      <option value="REVIEWING">{t('admin.warranty.review.actionReviewing')}</option>
-                      <option value="APPROVED_REPLACE">{t('admin.warranty.review.actionReplace')}</option>
-                      <option value="APPROVED_REFUND">{t('admin.warranty.review.actionRefund')}</option>
-                      <option value="REJECTED">{t('admin.warranty.review.actionReject')}</option>
-                    </select>
-                  </label>
+                  <BaseSelect
+                    label={t('admin.warranty.review.actionLabel')}
+                    value={reviewForm.status}
+                    onChange={(value) => setReviewForm((f) => ({ ...f, status: value }))}
+                    options={[
+                      { value: '', label: t('admin.warranty.review.selectAction') },
+                      { value: 'REVIEWING', label: t('admin.warranty.review.actionReviewing') },
+                      { value: 'APPROVED_REPLACE', label: t('admin.warranty.review.actionReplace') },
+                      { value: 'APPROVED_REFUND', label: t('admin.warranty.review.actionRefund') },
+                      { value: 'REJECTED', label: t('admin.warranty.review.actionReject') }
+                    ]}
+                    validators={[validateStatus]}
+                    errorMessage={t('admin.warranty.review.requiredStatus')}
+                    required
+                  />
                   {reviewForm.status === 'APPROVED_REPLACE' && (
-                    <label>
-                      <span>{t('admin.warranty.review.credentialIdLabel')}</span>
-                      <input
-                        value={reviewForm.replacementCredentialId}
-                        onChange={(event) => setReviewForm((f) => ({ ...f, replacementCredentialId: event.target.value }))}
-                        placeholder={t('admin.warranty.review.credentialIdPlaceholder')}
-                        inputMode="numeric"
-                      />
-                    </label>
-                  )}
-                  <label>
-                    <span>{t('admin.warranty.detail.adminNote')}</span>
-                    <textarea
-                      value={reviewForm.adminNote}
-                      onChange={(event) => setReviewForm((f) => ({ ...f, adminNote: event.target.value }))}
-                      rows="3"
-                      placeholder={t('admin.warranty.review.adminNotePlaceholder')}
+                    <BaseInput
+                      label={t('admin.warranty.review.credentialIdLabel')}
+                      value={reviewForm.replacementCredentialId}
+                      onChange={(value) => setReviewForm((f) => ({ ...f, replacementCredentialId: value }))}
+                      placeholder={t('admin.warranty.review.credentialIdPlaceholder')}
+                      inputMode="numeric"
+                      validators={[]} // Credential ID is optional
                     />
-                  </label>
+                  )}
+                  <BaseTextarea
+                    label={t('admin.warranty.detail.adminNote')}
+                    value={reviewForm.adminNote}
+                    onChange={(value) => setReviewForm((f) => ({ ...f, adminNote: value }))}
+                    rows="3"
+                    placeholder={t('admin.warranty.review.adminNotePlaceholder')}
+                    validators={[validateAdminNoteWhenRequired]}
+                    errorMessage={reviewForm.status === 'REJECTED' || reviewForm.status === 'APPROVED_REFUND'
+                      ? t('admin.warranty.review.requiredNote')
+                      : ''}
+                  />
                   <button type="submit" disabled={submitting} className="admin-primary-button" style={{ height: '34px', minHeight: '34px', fontSize: '13px' }}>
                     {submitting ? t('admin.warranty.review.submitting') : t('admin.warranty.review.submit')}
                   </button>

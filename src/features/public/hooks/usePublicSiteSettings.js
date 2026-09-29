@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { publicApi } from '../../../api/public.api'
 import {
+  applySiteFavicon,
   applySiteTheme,
   buildSiteSettings,
   defaultSiteSettings,
@@ -45,8 +46,9 @@ export function usePublicSiteSettings() {
   useEffect(() => {
     applySiteTheme(settings.theme)
     document.title = settings.brand?.name || 'Kendy Digital'
+    applySiteFavicon(settings.brand?.faviconUrl, settings.brand?.logoUrl)
     return resetSiteTheme
-  }, [settings.brand?.name, settings.theme])
+  }, [settings.brand?.name, settings.brand?.faviconUrl, settings.brand?.logoUrl, settings.theme])
 
   useEffect(() => {
     const handleSettingsUpdate = () => load()

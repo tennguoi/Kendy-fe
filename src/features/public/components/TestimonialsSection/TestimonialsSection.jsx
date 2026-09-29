@@ -11,6 +11,7 @@ import {
   ShieldAlert,
 } from 'lucide-react'
 import Button from '../../../../components/Button/Button'
+import BaseInput from '../../../../components/ui/BaseInput'
 import './TestimonialsSection.css'
 
 function TestimonialsSection() {
@@ -58,11 +59,10 @@ function TestimonialsSection() {
           <form onSubmit={handleSearch}>
             <div className="search-input-wrapper">
               <Terminal size={18} className="terminal-icon" />
-              <input
-                type="text"
+              <BaseInput
                 placeholder={t('public.proof.searchPlaceholder', { defaultValue: 'Nhập mã đơn hàng bất kỳ để tra cứu thử (Ví dụ: OD-CAPCUT-12M, OD-FBADS-99)...' })}
                 value={customOrderCode}
-                onChange={(e) => setCustomOrderCode(e.target.value)}
+                onChange={setCustomOrderCode}
               />
               <Button type="submit" variant="dark" className="slim">
                 <span>{t('public.proof.searchBtn', { defaultValue: 'Tra cứu thử' })}</span>

@@ -28,6 +28,10 @@ import { formatAdminDate, formatAdminMoney } from '../../admin/adminFormat'
 import LanguageSwitcher from '../../../components/LanguageSwitcher/LanguageSwitcher'
 import { useTheme } from '../../../contexts/ThemeContext'
 
+// Import base components and validation utilities
+import BaseInput from '../../../components/ui/BaseInput';
+import { isValidEmail, isRequired, minLength, composeValidators, isValidPhoneVn } from '../../../utils/validation';
+
 function profileToForm(user) {
   const avatarUrl = user?.avatarUrl || user?.avatar || user?.picture || user?.imageUrl || user?.photoUrl || ''
   return {
@@ -125,10 +129,25 @@ function SettingsView({
     return () => window.clearTimeout(timer)
   }, [loadSettings])
 
+  // Validation functions
+  const validateEmail = composeValidators(isRequired, isValidEmail);
+  const validatePassword = composeValidators(isRequired, minLength(8));
+  const validateConfirmPassword = (value) => {
+    if (!value) return { isValid: false, error: t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' }) };
+    if (value !== passwordForm.newPassword) return { isValid: false, error: t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' }) };
+    return { isValid: true };
+  };
+  const validateName = composeValidators(isRequired);
+  const validatePhone = isValidPhoneVn;
+  const validateTwoFactorCode = composeValidators(isRequired, minLength(6));
+  const validateTotpCode = composeValidators(isRequired, minLength(6));
+  const validateApiKeyName = composeValidators(isRequired);
+
   const updateProfile = async (event) => {
     event.preventDefault()
-    if (!profileForm.name.trim()) {
-      setViewError(t('settings.nameRequired', { defaultValue: 'Tên hiển thị không được để trống.' }))
+    const nameValidation = validateName(profileForm.name);
+    if (!nameValidation.isValid) {
+      setViewError(nameValidation.error || t('settings.nameRequired', { defaultValue: 'Tên hiển thị không được để trống.' }))
       return
     }
 
@@ -172,11 +191,26 @@ function SettingsView({
   const avatarUrl = profileForm.avatarUrl || currentUser?.avatarUrl || currentUser?.avatar || currentUser?.picture || currentUser?.imageUrl || currentUser?.photoUrl
   const profileInitial = (profileForm.name || profileForm.email || currentUser?.name || currentUser?.email || 'U').charAt(0).toUpperCase()
   const oauthProvider = currentUser?.oauthProvider || currentUser?.provider || currentUser?.loginProvider
+  const hasPassword = currentUser?.hasPassword ?? security?.hasPassword ?? true
 
   const changePassword = async (event) => {
     event.preventDefault()
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setViewError(t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' }))
+    const currentPasswordValidation = validatePassword(passwordForm.currentPassword);
+    const newPasswordValidation = validatePassword(passwordForm.newPassword);
+    const confirmPasswordValidation = validateConfirmPassword(passwordForm.confirmPassword);
+
+    if (!currentPasswordValidation.isValid) {
+      setViewError(currentPasswordValidation.error || t('settings.currentPasswordRequired', { defaultValue: 'Mật khẩu hiện tại không được để trống.' }))
+      return
+    }
+
+    if (!newPasswordValidation.isValid) {
+      setViewError(newPasswordValidation.error || t('settings.newPasswordRequired', { defaultValue: 'Mật khẩu mới không được để trống.' }))
+      return
+    }
+
+    if (!confirmPasswordValidation.isValid) {
+      setViewError(confirmPasswordValidation.error || t('settings.confirmPasswordRequired', { defaultValue: 'Vui lòng xác nhận mật khẩu mới.' }))
       return
     }
 
@@ -198,6 +232,38 @@ function SettingsView({
     }
   }
 
+  const setNewPassword = async (event) => {
+    event.preventDefault()
+    const newPasswordValidation = validatePassword(passwordForm.newPassword);
+    const confirmPasswordValidation = validateConfirmPassword(passwordForm.confirmPassword);
+
+    if (!newPasswordValidation.isValid) {
+      setViewError(newPasswordValidation.error || t('settings.newPasswordRequired', { defaultValue: 'Mật khẩu mới không được để trống.' }))
+      return
+    }
+
+    if (!confirmPasswordValidation.isValid) {
+      setViewError(confirmPasswordValidation.error || t('settings.confirmPasswordRequired', { defaultValue: 'Vui lòng xác nhận mật khẩu mới.' }))
+      return
+    }
+
+    setSubmitting(true)
+    setViewError('')
+    try {
+      const saved = await userApi.setPassword({
+        newPassword: passwordForm.newPassword,
+      }, token)
+      onCurrentUserChange(saved)
+      setPasswordForm({ confirmPassword: '', currentPassword: '', newPassword: '' })
+      await loadSettings()
+      onSetNotice(t('settings.passwordSet', { defaultValue: 'Đã thiết lập mật khẩu. Bạn có thể đăng nhập bằng email/mật khẩu.' }))
+    } catch (err) {
+      setViewError(err.message || t('settings.passwordSetError', { defaultValue: 'Không thiết lập được mật khẩu.' }))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const sendEmailTwoFactorCode = async () => {
     setSubmitting(true)
     setViewError('')
@@ -214,6 +280,12 @@ function SettingsView({
 
   const enableEmailTwoFactor = async (event) => {
     event.preventDefault()
+    const codeValidation = validateTwoFactorCode(twoFactorForm.code);
+    if (!codeValidation.isValid) {
+      setViewError(codeValidation.error || t('settings.twoFACodeRequired', { defaultValue: 'Mã xác thực 2FA không được để trống.' }))
+      return
+    }
+
     setSubmitting(true)
     setViewError('')
     try {
@@ -245,6 +317,12 @@ function SettingsView({
 
   const enableTotp = async (event) => {
     event.preventDefault()
+    const codeValidation = validateTotpCode(totpCode);
+    if (!codeValidation.isValid) {
+      setViewError(codeValidation.error || t('settings.totpCodeInvalid', { defaultValue: 'Mã TOTP không hợp lệ.' }))
+      return
+    }
+
     setSubmitting(true)
     setViewError('')
     try {
@@ -262,7 +340,8 @@ function SettingsView({
   }
 
   const runTwoFactorProtectedAction = async (action) => {
-    if (!twoFactorForm.password.trim()) {
+    // OAuth-only accounts don't have a password; backend skips the check too
+    if (hasPassword && !twoFactorForm.password.trim()) {
       setViewError(t('settings.twoFAPasswordRequired', { defaultValue: 'Nhập mật khẩu hiện tại để xử lý 2FA.' }))
       return
     }
@@ -322,8 +401,9 @@ function SettingsView({
 
   const createApiKey = async (event) => {
     event.preventDefault()
-    if (!apiKeyForm.name.trim()) {
-      setViewError(t('settings.apiKeyNameRequired', { defaultValue: 'Tên API key không được để trống.' }))
+    const nameValidation = validateApiKeyName(apiKeyForm.name);
+    if (!nameValidation.isValid) {
+      setViewError(nameValidation.error || t('settings.apiKeyNameRequired', { defaultValue: 'Tên API key không được để trống.' }))
       return
     }
 
@@ -563,19 +643,24 @@ function SettingsView({
                   <div className="settings-card-body">
                     <form className="settings-form-grid" onSubmit={updateProfile}>
                       <div className="settings-input-group">
-                        <label>{t('settings.displayName', { defaultValue: 'Tên hiển thị' })}</label>
-                        <input
+                        <BaseInput
+                          label={t('settings.displayName', { defaultValue: 'Tên hiển thị' })}
                           value={profileForm.name}
-                          onChange={(event) => setProfileForm((current) => ({ ...current, name: event.target.value }))}
+                          onChange={(value) => setProfileForm((current) => ({ ...current, name: value }))}
+                          validators={[validateName]}
+                          errorMessage={t('settings.nameRequired', { defaultValue: 'Tên hiển thị không được để trống.' })}
                           required
                         />
                       </div>
                       <div className="settings-input-group">
-                        <label>{t('settings.emailAddress', { defaultValue: 'Địa chỉ Email' })}</label>
-                        <input
+                        <BaseInput
+                          label={t('settings.emailAddress', { defaultValue: 'Địa chỉ Email' })}
                           value={profileForm.email}
-                          onChange={(event) => setProfileForm((current) => ({ ...current, email: event.target.value }))}
+                          onChange={(value) => setProfileForm((current) => ({ ...current, email: value }))}
+                          validators={[validateEmail]}
+                          errorMessage={t('settings.emailInvalid', { defaultValue: 'Email không hợp lệ.' })}
                           type="email"
+                          autoComplete="email"
                           required
                         />
                       </div>
@@ -602,11 +687,15 @@ function SettingsView({
                         <small>JPG, PNG, GIF hoặc WEBP; tối đa 10 MB.</small>
                       </div>
                       <div className="settings-input-group full-width">
-                        <label>{t('settings.phone', { defaultValue: 'Số điện thoại' })}</label>
-                        <input
+                        <BaseInput
+                          label={t('settings.phone', { defaultValue: 'Số điện thoại' })}
                           value={profileForm.phone}
-                          onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))}
+                          onChange={(value) => setProfileForm((current) => ({ ...current, phone: value }))}
+                          validators={[validatePhone]}
+                          errorMessage={t('settings.phoneInvalid', { defaultValue: 'Số điện thoại không hợp lệ.' })}
                           placeholder={t('settings.phonePlaceholder', { defaultValue: 'Nhập số điện thoại' })}
+                          inputMode="tel"
+                          autoComplete="tel"
                         />
                       </div>
                       <div className="full-width" style={{ marginTop: '8px' }}>
@@ -690,51 +779,115 @@ function SettingsView({
           {activeSettingsTab === 'security' && (
             <div style={{ display: 'grid', gap: '24px' }}>
               <div className="settings-form-grid">
-                {/* Password Change Card */}
+                {/* Password Card */}
                 <div className="settings-card">
                   <div className="settings-card-header">
                     <div>
-                      <h3><Lock size={16} /> {t('settings.changePassword', { defaultValue: 'Đổi mật khẩu' })}</h3>
-                      <div className="settings-card-header-desc">{t('settings.passwordDesc', { defaultValue: 'Mật khẩu nên chứa tối thiểu 8 ký tự kèm chữ hoa, chữ số.' })}</div>
+                      <h3><Lock size={16} /> {hasPassword
+                        ? t('settings.changePassword', { defaultValue: 'Đổi mật khẩu' })
+                        : t('settings.setPassword', { defaultValue: 'Thiết lập mật khẩu' })}
+                      </h3>
+                      <div className="settings-card-header-desc">
+                        {hasPassword
+                          ? t('settings.passwordDesc', { defaultValue: 'Mật khẩu nên chứa tối thiểu 8 ký tự kèm chữ hoa, chữ số.' })
+                          : t('settings.setPasswordDesc', {
+                              defaultValue: `Tài khoản này được tạo qua ${oauthProvider ? oauthProvider.charAt(0).toUpperCase() + oauthProvider.slice(1) : 'OAuth'}. Thiết lập mật khẩu để có thể đăng nhập bằng email/mật khẩu.`
+                            })}
+                      </div>
                     </div>
                   </div>
                   <div className="settings-card-body">
-                    <form className="settings-form-grid" onSubmit={changePassword}>
-                      <div className="settings-input-group full-width">
-                        <label>{t('settings.currentPassword', { defaultValue: 'Mật khẩu hiện tại' })}</label>
-                        <input
-                          value={passwordForm.currentPassword}
-                          onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))}
-                          type="password"
-                          required
-                        />
-                      </div>
-                      <div className="settings-input-group full-width">
-                        <label>{t('settings.newPassword', { defaultValue: 'Mật khẩu mới' })}</label>
-                        <input
-                          value={passwordForm.newPassword}
-                          onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
-                          minLength="8"
-                          type="password"
-                          required
-                        />
-                      </div>
-                      <div className="settings-input-group full-width">
-                        <label>{t('settings.confirmNewPassword', { defaultValue: 'Xác nhận mật khẩu mới' })}</label>
-                        <input
-                          value={passwordForm.confirmPassword}
-                          onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
-                          minLength="8"
-                          type="password"
-                          required
-                        />
-                      </div>
-                      <div className="full-width" style={{ marginTop: '8px' }}>
-                        <button type="submit" className="settings-btn-save" disabled={submitting}>
-                          {t('settings.changePassword', { defaultValue: 'Đổi mật khẩu' })}
-                        </button>
-                      </div>
-                    </form>
+                    {hasPassword ? (
+                      <form className="settings-form-grid" onSubmit={changePassword}>
+                        <div className="settings-input-group full-width">
+                          <BaseInput
+                            label={t('settings.currentPassword', { defaultValue: 'Mật khẩu hiện tại' })}
+                            value={passwordForm.currentPassword}
+                            onChange={(value) => setPasswordForm((current) => ({ ...current, currentPassword: value }))}
+                            validators={[validatePassword]}
+                            errorMessage={t('settings.currentPasswordRequired', { defaultValue: 'Mật khẩu hiện tại không được để trống.' })}
+                            type="password"
+                            autoComplete="current-password"
+                            required
+                          />
+                        </div>
+                        <div className="settings-input-group full-width">
+                          <BaseInput
+                            label={t('settings.newPassword', { defaultValue: 'Mật khẩu mới' })}
+                            value={passwordForm.newPassword}
+                            onChange={(value) => setPasswordForm((current) => ({ ...current, newPassword: value }))}
+                            validators={[validatePassword]}
+                            errorMessage={t('settings.newPasswordValidation', { defaultValue: 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.' })}
+                            minLength="8"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                          />
+                        </div>
+                        <div className="settings-input-group full-width">
+                          <BaseInput
+                            label={t('settings.confirmNewPassword', { defaultValue: 'Xác nhận mật khẩu mới' })}
+                            value={passwordForm.confirmPassword}
+                            onChange={(value) => setPasswordForm((current) => ({ ...current, confirmPassword: value }))}
+                            validators={[validateConfirmPassword]}
+                            errorMessage={t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' })}
+                            minLength="8"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                          />
+                        </div>
+                        <div className="full-width" style={{ marginTop: '8px' }}>
+                          <button type="submit" className="settings-btn-save" disabled={submitting}>
+                            {t('settings.changePassword', { defaultValue: 'Đổi mật khẩu' })}
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <form className="settings-form-grid" onSubmit={setNewPassword}>
+                        {oauthProvider && (
+                          <div className="full-width" style={{ marginBottom: '4px' }}>
+                            <AdminStatusBadge status="info">
+                              {t('settings.oauthLinked', {
+                                provider: oauthProvider.charAt(0).toUpperCase() + oauthProvider.slice(1),
+                                defaultValue: `Liên kết với ${oauthProvider.charAt(0).toUpperCase() + oauthProvider.slice(1)}`
+                              })}
+                            </AdminStatusBadge>
+                          </div>
+                        )}
+                        <div className="settings-input-group full-width">
+                          <BaseInput
+                            label={t('settings.newPassword', { defaultValue: 'Mật khẩu mới' })}
+                            value={passwordForm.newPassword}
+                            onChange={(value) => setPasswordForm((current) => ({ ...current, newPassword: value }))}
+                            validators={[validatePassword]}
+                            errorMessage={t('settings.newPasswordValidation', { defaultValue: 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.' })}
+                            minLength="8"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                          />
+                        </div>
+                        <div className="settings-input-group full-width">
+                          <BaseInput
+                            label={t('settings.confirmNewPassword', { defaultValue: 'Xác nhận mật khẩu mới' })}
+                            value={passwordForm.confirmPassword}
+                            onChange={(value) => setPasswordForm((current) => ({ ...current, confirmPassword: value }))}
+                            validators={[validateConfirmPassword]}
+                            errorMessage={t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' })}
+                            minLength="8"
+                            type="password"
+                            autoComplete="new-password"
+                            required
+                          />
+                        </div>
+                        <div className="full-width" style={{ marginTop: '8px' }}>
+                          <button type="submit" className="settings-btn-save" disabled={submitting}>
+                            {t('settings.setPassword', { defaultValue: 'Thiết lập mật khẩu' })}
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
                 </div>
 
@@ -790,10 +943,12 @@ function SettingsView({
                         {twoFactorEmailSent && (
                           <form className="admin-form compact" onSubmit={enableEmailTwoFactor} style={{ borderTop: '1px solid var(--kd-border)', paddingTop: '16px', marginTop: '8px' }}>
                             <div className="settings-input-group">
-                              <label>{t('settings.emailCodeLabel', { defaultValue: 'Mã xác minh Email (6 chữ số)' })}</label>
-                              <input
+                              <BaseInput
+                                label={t('settings.emailCodeLabel', { defaultValue: 'Mã xác minh Email (6 chữ số)' })}
                                 value={twoFactorForm.code}
-                                onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                                onChange={(value) => setTwoFactorForm((current) => ({ ...current, code: value.replace(/\D/g, '').slice(0, 6) }))}
+                                validators={[validateTwoFactorCode]}
+                                errorMessage={t('settings.twoFACodeRequired', { defaultValue: 'Mã xác thực 2FA không được để trống.' })}
                                 inputMode="numeric"
                                 placeholder={t('settings.emailCodePlaceholder', { defaultValue: 'Nhập mã OTP nhận được từ email' })}
                               />
@@ -806,21 +961,28 @@ function SettingsView({
                       </div>
                     ) : (
                       <form className="settings-form-grid" onSubmit={(event) => event.preventDefault()}>
+                        {hasPassword && (
+                          <div className="settings-input-group full-width">
+                            <BaseInput
+                              label={t('settings.passwordAuthLabel', { defaultValue: 'Nhập mật khẩu xác thực hành động' })}
+                              value={twoFactorForm.password}
+                              onChange={(value) => setTwoFactorForm((current) => ({ ...current, password: value }))}
+                              validators={[isRequired]}
+                              errorMessage={t('settings.twoFAPasswordRequired', { defaultValue: 'Nhập mật khẩu hiện tại để xử lý 2FA.' })}
+                              type="password"
+                              placeholder={t('settings.passwordAuthPlaceholder', { defaultValue: 'Nhập mật khẩu hiện tại của bạn' })}
+                            />
+                          </div>
+                        )}
                         <div className="settings-input-group full-width">
-                          <label>{t('settings.passwordAuthLabel', { defaultValue: 'Nhập mật khẩu xác thực hành động' })}</label>
-                          <input
-                            value={twoFactorForm.password}
-                            onChange={(event) => setTwoFactorForm((current) => ({ ...current, password: event.target.value }))}
-                            type="password"
-                            placeholder={t('settings.passwordAuthPlaceholder', { defaultValue: 'Nhập mật khẩu hiện tại của bạn' })}
-                          />
-                        </div>
-                        <div className="settings-input-group full-width">
-                          <label>{t('settings.twoFACodeLabel', { defaultValue: 'Nhập mã 2FA / Backup Code (nếu tắt)' })}</label>
-                          <input
+                          <BaseInput
+                            label={t('settings.twoFACodeLabel', { defaultValue: 'Nhập mã 2FA / Backup Code (nếu tắt)' })}
                             value={twoFactorForm.code}
-                            onChange={(event) => setTwoFactorForm((current) => ({ ...current, code: event.target.value.trim() }))}
+                            onChange={(value) => setTwoFactorForm((current) => ({ ...current, code: value.trim() }))}
+                            validators={[validateTwoFactorCode]}
+                            errorMessage={t('settings.twoFACodeInvalid', { defaultValue: 'Mã 2FA không hợp lệ.' })}
                             placeholder={t('settings.twoFACodePlaceholder', { defaultValue: 'Mã xác thực 6 số' })}
+                            autoComplete="one-time-code"
                           />
                         </div>
                         <div className="full-width" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px' }}>
@@ -863,11 +1025,14 @@ function SettingsView({
                     {totpSetup && (
                       <form className="admin-form compact" onSubmit={enableTotp} style={{ marginTop: '14px' }}>
                         <div className="settings-input-group">
-                          <label>{t('settings.enterTOTPCode', { defaultValue: 'Nhập mã xác thực 6 số trên App' })}</label>
-                          <input
+                          <BaseInput
+                            label={t('settings.enterTOTPCode', { defaultValue: 'Nhập mã xác thực 6 số trên App' })}
                             value={totpCode}
-                            onChange={(event) => setTotpCode(event.target.value.trim())}
+                            onChange={(value) => setTotpCode(value.trim())}
+                            validators={[validateTotpCode]}
+                            errorMessage={t('settings.totpCodeInvalid', { defaultValue: 'Mã TOTP không hợp lệ.' })}
                             placeholder={t('settings.totpPlaceholder', { defaultValue: 'Mã hiển thị trên ứng dụng Authenticator' })}
+                            autoComplete="one-time-code"
                           />
                         </div>
                         <button type="submit" className="settings-btn-save" disabled={submitting || !totpCode} style={{ marginTop: '8px' }}>
@@ -877,55 +1042,55 @@ function SettingsView({
                     )}
                   </div>
                 </div>
-              </div>
 
-              {/* Sessions Management Card */}
-              <div className="settings-card">
-                <div className="settings-card-header">
-                  <div>
-                    <h3><Smartphone size={16} /> {t('settings.sessionsTitle', { defaultValue: 'Các phiên đăng nhập đang hoạt động' })}</h3>
-                    <div className="settings-card-header-desc">{t('settings.sessionsDesc', { defaultValue: 'Danh sách các trình duyệt và thiết bị đã đăng nhập gần đây.' })}</div>
+                {/* Sessions Management Card */}
+                <div className="settings-card">
+                  <div className="settings-card-header">
+                    <div>
+                      <h3><Smartphone size={16} /> {t('settings.sessionsTitle', { defaultValue: 'Các phiên đăng nhập đang hoạt động' })}</h3>
+                      <div className="settings-card-header-desc">{t('settings.sessionsDesc', { defaultValue: 'Danh sách các trình duyệt và thiết bị đã đăng nhập gần đây.' })}</div>
+                    </div>
+                    <button
+                      type="button"
+                      className="admin-danger-button slim"
+                      disabled={submitting || sessionList.length === 0}
+                      onClick={revokeAllSessions}
+                      style={{ borderRadius: '10px', minHeight: '34px', fontSize: '12px' }}
+                    >
+                      {t('settings.revokeAll', { defaultValue: 'Đăng xuất tất cả thiết bị khác' })}
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    className="admin-danger-button slim"
-                    disabled={submitting || sessionList.length === 0}
-                    onClick={revokeAllSessions}
-                    style={{ borderRadius: '10px', minHeight: '34px', fontSize: '12px' }}
-                  >
-                    {t('settings.revokeAll', { defaultValue: 'Đăng xuất tất cả thiết bị khác' })}
-                  </button>
-                </div>
-                <div className="settings-card-body" style={{ padding: '20px' }}>
-                  <div className="session-list">
-                    {sessionList.map((session) => (
-                      <div className="session-item" key={session.id}>
-                        <div className="session-info">
-                          <Smartphone size={22} style={{ color: 'var(--kd-muted)' }} />
-                          <div className="session-details">
-                            <strong>
-                              {t('settings.sessionItem', { id: session.id, defaultValue: 'Phiên đăng nhập #{{id}}' })}
-                              {session.isCurrent && <span className="session-badge">{t('settings.currentDevice', { defaultValue: 'Thiết bị hiện tại' })}</span>}
-                            </strong>
-                            <span>
-                              {t('settings.sessionTime', { created: formatAdminDate(session.createdAt), lastUsed: formatAdminDate(session.lastUsedAt), defaultValue: 'Tạo ngày: {{created}} · Dùng cuối: {{lastUsed}}' })}
-                            </span>
+                  <div className="settings-card-body" style={{ padding: '20px' }}>
+                    <div className="session-list">
+                      {sessionList.map((session) => (
+                        <div className="session-item" key={session.id}>
+                          <div className="session-info">
+                            <Smartphone size={22} style={{ color: 'var(--kd-muted)' }} />
+                            <div className="session-details">
+                              <strong>
+                                {t('settings.sessionItem', { id: session.id, defaultValue: 'Phiên đăng nhập #{{id}}' })}
+                                {session.isCurrent && <span className="session-badge">{t('settings.currentDevice', { defaultValue: 'Thiết bị hiện tại' })}</span>}
+                              </strong>
+                              <span>
+                                {t('settings.sessionTime', { created: formatAdminDate(session.createdAt), lastUsed: formatAdminDate(session.lastUsedAt), defaultValue: 'Tạo ngày: {{created}} · Dùng cuối: {{lastUsed}}' })}
+                              </span>
+                            </div>
                           </div>
+                          {!session.isCurrent && (
+                            <button
+                              type="button"
+                              className="admin-danger-button slim"
+                              disabled={submitting || session.revokedAt}
+                              onClick={() => revokeSession(session.id)}
+                              style={{ borderRadius: '8px', minHeight: '30px', fontSize: '11px', padding: '0 10px' }}
+                            >
+                              {t('settings.revoke', { defaultValue: 'Thu hồi' })}
+                            </button>
+                          )}
                         </div>
-                        {!session.isCurrent && (
-                          <button
-                            type="button"
-                            className="admin-danger-button slim"
-                            disabled={submitting || session.revokedAt}
-                            onClick={() => revokeSession(session.id)}
-                            style={{ borderRadius: '8px', minHeight: '30px', fontSize: '11px', padding: '0 10px' }}
-                          >
-                            {t('settings.revoke', { defaultValue: 'Thu hồi' })}
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    {sessionList.length === 0 && <AdminEmptyState message={t('settings.noSessions', { defaultValue: 'Không tìm thấy lịch sử phiên hoạt động.' })} />}
+                      ))}
+                      {sessionList.length === 0 && <AdminEmptyState message={t('settings.noSessions', { defaultValue: 'Không tìm thấy lịch sử phiên hoạt động.' })} />}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -951,19 +1116,21 @@ function SettingsView({
               <div className="settings-card-body">
                 <form className="settings-form-grid" onSubmit={createApiKey} style={{ borderBottom: '1px solid var(--kd-border)', paddingBottom: '24px', marginBottom: '24px' }}>
                   <div className="settings-input-group">
-                    <label>{t('settings.apiKeyNameLabel', { defaultValue: 'Tên định danh API Key' })}</label>
-                    <input
+                    <BaseInput
+                      label={t('settings.apiKeyNameLabel', { defaultValue: 'Tên định danh API Key' })}
                       value={apiKeyForm.name}
-                      onChange={(event) => setApiKeyForm((current) => ({ ...current, name: event.target.value }))}
+                      onChange={(value) => setApiKeyForm((current) => ({ ...current, name: value }))}
+                      validators={[validateApiKeyName]}
+                      errorMessage={t('settings.apiKeyNameRequired', { defaultValue: 'Tên API key không được để trống.' })}
                       placeholder={t('settings.apiKeyNamePlaceholder', { defaultValue: 'Ví dụ: Tool Auto Deposit' })}
                       required
                     />
                   </div>
                   <div className="settings-input-group">
-                    <label>{t('settings.apiKeyScopesLabel', { defaultValue: 'Scopes (Phân quyền API - phân tách bằng dấu phẩy)' })}</label>
-                    <input
+                    <BaseInput
+                      label={t('settings.apiKeyScopesLabel', { defaultValue: 'Scopes (Phân quyền API - phân tách bằng dấu phẩy)' })}
                       value={apiKeyForm.scopes}
-                      onChange={(event) => setApiKeyForm((current) => ({ ...current, scopes: event.target.value }))}
+                      onChange={(value) => setApiKeyForm((current) => ({ ...current, scopes: value }))}
                       placeholder={t('settings.apiKeyScopesPlaceholder', { defaultValue: 'orders:read,wallet:read' })}
                     />
                   </div>
@@ -1111,4 +1278,4 @@ function SettingsView({
   )
 }
 
-export default SettingsView
+export default SettingsView;

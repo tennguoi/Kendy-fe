@@ -1,5 +1,7 @@
 import { pricingSortOptions } from '../pricing.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function PricingFilterBar({
   categories = [],
@@ -15,19 +17,30 @@ function PricingFilterBar({
   return (
     <div className="admin-filters pricing-filters">
       <SearchField value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm gói dịch vụ" />
-      <select value={categorySlug} onChange={(event) => onCategorySlugChange(event.target.value)}>
-        <option value="">Tất cả nhóm</option>
-        {categories.map((category) => (
-          <option value={category.slug} key={category.id}>{category.name}</option>
-        ))}
-      </select>
-      <select value={sort} onChange={(event) => onSortChange(event.target.value)}>
-        {pricingSortOptions.map((option) => (
-          <option value={option.value} key={option.value}>{option.label}</option>
-        ))}
-      </select>
+      <BaseSelect
+        value={categorySlug}
+        onChange={(value) => onCategorySlugChange(value)}
+        options={[
+          { value: '', label: 'Tất cả nhóm' },
+          ...categories.map((category) => ({ value: category.slug, label: category.name }))
+        ]}
+        placeholder="Tất cả nhóm"
+      />
+      <BaseSelect
+        value={sort}
+        onChange={(value) => onSortChange(value)}
+        options={pricingSortOptions.map((option) => ({
+          value: option.value,
+          label: option.label
+        }))}
+        placeholder="Sắp xếp theo"
+      />
       <label className="inline-check">
-        <input checked={featuredOnly} onChange={(event) => onFeaturedOnlyChange(event.target.checked)} type="checkbox" />
+        <BaseInput
+          type="checkbox"
+          checked={featuredOnly}
+          onChange={(event) => onFeaturedOnlyChange(event.target.checked)}
+        />
         <span>Chỉ nổi bật</span>
       </label>
     </div>

@@ -6,7 +6,9 @@ import { printOrderInvoice } from '../../utils/invoicePrint'
 import { userApi } from '../../api/user.api'
 import Modal from '../Modal/Modal'
 import StatusBadge from '../status/StatusBadge'
+import BaseTextarea from '../ui/BaseTextarea'
 import { formatDate } from '../../utils/date'
+import { isRequired, composeValidators } from '../../utils/validation'
 
 function safeBlock(value, t) {
   if (!value) return t('common.noData', { defaultValue: 'Không có' })
@@ -39,9 +41,19 @@ function UserOrderDetailModal({
   const canRequestWarranty = order.status === 'COMPLETED' && delivery?.warrantyUntil
     && new Date(delivery.warrantyUntil) > new Date()
 
+  // Validation for warranty form
+  const validateWarrantyReason = composeValidators(isRequired)
+
   const handleSubmitWarranty = async (event) => {
     event.preventDefault()
-    if (!warrantyReason.trim()) return
+
+    // Validate form
+    const reasonValidation = validateWarrantyReason(warrantyReason)
+    if (!reasonValidation.isValid) {
+      setWarrantyError(reasonValidation.error || t('app.ticketCreateError'))
+      return
+    }
+
     setWarrantySubmitting(true)
     setWarrantyError('')
     try {
@@ -154,20 +166,21 @@ function UserOrderDetailModal({
                   )}
                   <label style={{ display: 'grid', gap: '4px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 500 }}>{t('warranty.reason', { defaultValue: 'Lý do *' })}</span>
-                    <textarea
+                    <BaseTextarea
                       value={warrantyReason}
-                      onChange={(event) => setWarrantyReason(event.target.value)}
+                      onChange={(value) => setWarrantyReason(value)}
                       placeholder="Mô tả vấn đề: không đăng nhập được, hết hạn, sai thông tin..."
                       rows="3"
+                      validators={[validateWarrantyReason]}
+                      errorMessage={t('warranty.reasonRequired', { defaultValue: 'Vui lòng nhập lý do bảo hành' })}
                       required
-                      style={{ padding: '8px', borderRadius: '6px', border: '1px solid var(--kd-border)', fontSize: '14px' }}
                     />
                   </label>
                   <label style={{ display: 'grid', gap: '4px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 500 }}>{t('warranty.evidence', { defaultValue: 'Bằng chứng (tuỳ chọn)' })}</span>
-                    <textarea
+                    <BaseTextarea
                       value={warrantyEvidence}
-                      onChange={(event) => setWarrantyEvidence(event.target.value)}
+                      onChange={(value) => setWarrantyEvidence(value)}
                       placeholder="Link ảnh chụp lỗi, video, mô tả chi tiết..."
                       rows="2"
                       style={{ padding: '8px', borderRadius: '6px', border: '1px solid var(--kd-border)', fontSize: '14px' }}
@@ -179,7 +192,7 @@ function UserOrderDetailModal({
                       disabled={warrantySubmitting || !warrantyReason.trim()}
                       style={{
                         padding: '10px 16px', minHeight: '44px', background: 'var(--kd-danger, #dc3545)', color: '#fff',
-                        border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500,
+                        border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500',
                       }}
                     >
                       {warrantySubmitting ? t('common.processing', { defaultValue: 'Đang gửi...' }) : t('public.proof.chatSend', { defaultValue: 'Gửi yêu cầu' })}

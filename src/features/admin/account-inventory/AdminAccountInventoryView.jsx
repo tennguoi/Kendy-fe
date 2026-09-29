@@ -9,6 +9,9 @@ import { AdminEmptyState } from '../AdminShared'
 import Pagination from '../../../components/Pagination/Pagination'
 import { formatAdminDate } from '../adminFormat'
 import Modal from '../../../components/Modal/Modal'
+import BaseInput from '../../../components/ui/BaseInput'
+import BaseSelect from '../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../components/ui/BaseTextarea'
 
 const emptyForm = {
   expiresAt: '', internalNote: '', loginIdentifier: '', passwordSecret: '',
@@ -207,9 +210,21 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       </div>
 
       <section className="admin-panel inventory-service-picker">
-        <label><span>{t('admin.accountInventory.form.selectService')}</span><select value={serviceId} onChange={(event) => { setServiceId(event.target.value); resetForm() }}><option value="">{t('admin.accountInventory.form.selectService')}</option>{services.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+        <label><span>{t('admin.accountInventory.form.selectService')}</span>
+          <BaseSelect
+            value={serviceId}
+            onChange={(value) => { setServiceId(value); resetForm() }}
+            options={[{ value: '', label: t('admin.accountInventory.form.selectService') }, ...services.map((item) => ({ value: item.id, label: item.name }))]}
+            placeholder={t('admin.accountInventory.form.selectService')}
+          />
+        </label>
         <SearchField value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('admin.accountInventory.form.searchPlaceholder')} />
-        <select value={status} onChange={(event) => setStatus(event.target.value)}><option value="">{t('admin.accountInventory.form.allStatus')}</option>{statusKeys.map((value) => <option key={value} value={value}>{getStatusLabel(value)}</option>)}</select>
+        <BaseSelect
+          value={status}
+          onChange={(value) => setStatus(value)}
+          options={[{ value: '', label: t('admin.accountInventory.form.allStatus') }, ...statusKeys.map((value) => ({ value: value, label: getStatusLabel(value) }))]}
+          placeholder={t('admin.accountInventory.form.allStatus')}
+        />
       </section>
 
       {!services.length ? <AdminEmptyState message={t('admin.accountInventory.form.noServiceYet')} hint={t('admin.accountInventory.form.noServiceHint')} /> : (
@@ -249,22 +264,71 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
             </div>
             <button type="button" onClick={resetForm}><X size={16} /> {t('admin.accountInventory.form.close')}</button>
           </div>
-          {createMode === 'single' && <form className="admin-form inventory-form" onSubmit={saveCredential}>
-            <label><span>{t('admin.accountInventory.form.loginLabel')}</span><input value={form.loginIdentifier} onChange={(e) => updateForm('loginIdentifier', e.target.value)} required /></label>
-            <label><span>{t('admin.accountInventory.form.passwordField')}</span><input value={form.passwordSecret} onChange={(e) => updateForm('passwordSecret', e.target.value)} placeholder={editingId ? t('admin.accountInventory.form.passwordPlaceholder') : ''} required={!editingId} /></label>
-            <label><span>{t('admin.accountInventory.form.recoveryInfo')}</span><input value={form.recoveryInfo} onChange={(e) => updateForm('recoveryInfo', e.target.value)} /></label>
-            <label><span>{t('admin.accountInventory.form.twoFASecret')}</span><input value={form.twoFactorSecret} onChange={(e) => updateForm('twoFactorSecret', e.target.value)} /></label>
-            <label><span>{t('admin.accountInventory.form.expiresAt')}</span><input type="datetime-local" value={form.expiresAt} onChange={(e) => updateForm('expiresAt', e.target.value)} /></label>
-            <label><span>{t('admin.accountInventory.form.warrantyUntil')}</span><input type="datetime-local" value={form.warrantyUntil} onChange={(e) => updateForm('warrantyUntil', e.target.value)} /></label>
-            <label className="wide"><span>{t('admin.accountInventory.form.usageNote')}</span><textarea rows="2" value={form.usageNote} onChange={(e) => updateForm('usageNote', e.target.value)} /></label>
-            <label className="wide"><span>{t('admin.accountInventory.form.internalNote')}</span><textarea rows="2" value={form.internalNote} onChange={(e) => updateForm('internalNote', e.target.value)} /></label>
-            <button type="submit" disabled={submitting || !serviceId}><Plus size={16} /> {editingId ? t('admin.accountInventory.form.save') : t('admin.accountInventory.form.addToInventory')}</button>
+          {createMode === 'single' && <form className="admin-panel inventory-form" onSubmit={saveCredential}>
+            <BaseInput
+              label={t('admin.accountInventory.form.loginLabel')}
+              value={form.loginIdentifier}
+              onChange={(value) => updateForm('loginIdentifier', value)}
+              required
+              maxLength={255}
+            />
+            <BaseInput
+              label={t('admin.accountInventory.form.passwordField')}
+              value={form.passwordSecret}
+              onChange={(value) => updateForm('passwordSecret', value)}
+              placeholder={editingId ? t('admin.accountInventory.form.passwordPlaceholder') : ''}
+              required={!editingId}
+            />
+            <BaseInput
+              label={t('admin.accountInventory.form.recoveryInfo')}
+              value={form.recoveryInfo}
+              onChange={(value) => updateForm('recoveryInfo', value)}
+            />
+            <BaseInput
+              label={t('admin.accountInventory.form.twoFASecret')}
+              value={form.twoFactorSecret}
+              onChange={(value) => updateForm('twoFactorSecret', value)}
+            />
+            <BaseInput
+              label={t('admin.accountInventory.form.expiresAt')}
+              type="datetime-local"
+              value={form.expiresAt}
+              onChange={(value) => updateForm('expiresAt', value)}
+            />
+            <BaseInput
+              label={t('admin.accountInventory.form.warrantyUntil')}
+              type="datetime-local"
+              value={form.warrantyUntil}
+              onChange={(value) => updateForm('warrantyUntil', value)}
+            />
+            <BaseTextarea
+              label={t('admin.accountInventory.form.usageNote')}
+              value={form.usageNote}
+              onChange={(value) => updateForm('usageNote', value)}
+              rows="2"
+            />
+            <BaseTextarea
+              label={t('admin.accountInventory.form.internalNote')}
+              value={form.internalNote}
+              onChange={(value) => updateForm('internalNote', value)}
+              rows="2"
+            />
+            <button type="submit" disabled={submitting || !serviceId}>
+              <Plus size={16} /> {editingId ? t('admin.accountInventory.form.save') : t('admin.accountInventory.form.addToInventory')}
+            </button>
           </form>}
           {createMode === 'import' && <div className="inventory-import standalone">
             <h3><FileUp size={17} /> {t('admin.accountInventory.form.importCsv')}</h3>
             <p>{t('admin.accountInventory.form.csvFormat')}</p>
-            <textarea rows="5" value={csv} onChange={(e) => setCsv(e.target.value)} placeholder={t('admin.accountInventory.form.csvPlaceholder')} />
-            <button type="button" className="admin-icon-button" disabled={submitting || !csv.trim() || !serviceId} onClick={importCsv}><FileUp size={16} /> {t('admin.accountInventory.form.csvImportBtn')}</button>
+            <BaseTextarea
+              rows="5"
+              value={csv}
+              onChange={(value) => setCsv(value)}
+              placeholder={t('admin.accountInventory.form.csvPlaceholder')}
+            />
+            <button type="button" className="admin-icon-button" disabled={submitting || !csv.trim() || !serviceId} onClick={importCsv}>
+              <FileUp size={16} /> {t('admin.accountInventory.form.csvImportBtn')}
+            </button>
           </div>}
         </section>
       </Modal>

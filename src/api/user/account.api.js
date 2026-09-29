@@ -19,6 +19,9 @@ export const userAccountApi = {
   changePassword: (data, token) =>
     axiosClient.post('/api/me/change-password', data, { token }),
 
+  setPassword: (data, token) =>
+    axiosClient.post('/api/me/set-password', data, { token }),
+
   getDashboard: (token) =>
     axiosClient.get('/api/me/dashboard', { token }),
 

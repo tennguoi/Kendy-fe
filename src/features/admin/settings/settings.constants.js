@@ -5,6 +5,7 @@ import {
   FileArchive,
   HeartPulse,
   History,
+  Image,
   Languages,
   ShieldCheck,
   SlidersHorizontal,
@@ -14,6 +15,7 @@ import {
 
 export const settingsTabs = [
   { id: 'settings', group: 'system', label: 'Bảo mật', title: 'Bảo mật & system keys', kicker: 'Security', description: '2FA admin, backup/restore setting và lịch sử thay đổi cấu hình.', icon: ShieldCheck },
+  { id: 'brand', group: 'tools', label: 'Logo & Brand', title: 'Logo & Thương hiệu', kicker: 'Branding', description: 'Thay đổi Logo website và Icon trên tab trình duyệt (Favicon).', icon: Image },
   { id: 'operations', group: 'system', label: 'Vận hành', title: 'Vận hành hệ thống', kicker: 'Operations', description: 'Maintenance mode, giới hạn API và nội dung email bảo mật.', icon: SlidersHorizontal },
   { id: 'webhooks', group: 'system', label: 'Webhook', title: 'Webhook & SePay', kicker: 'Integration', description: 'Theo dõi trạng thái webhook, cấu hình SePay và retry giao dịch cần xử lý.', icon: Webhook },
   { id: 'admins', group: 'security', label: 'Quản trị viên', title: 'Quyền quản trị', kicker: 'Access', description: 'Role, permission, trạng thái admin, 2FA và session của quản trị viên.', icon: UserCog },

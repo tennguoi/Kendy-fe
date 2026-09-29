@@ -1,8 +1,4 @@
-/* ================================================
- * overview.css — Admin Overview Dashboard Rewrite
- * Dùng bởi: features/admin/overview/AdminOverviewView.jsx
- * Không cần tách thêm file CSS nhỏ.
- * ================================================ */
+
 
 .ov-dashboard {
   --ov-bg: var(--kd-bg);

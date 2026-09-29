@@ -13,6 +13,7 @@ import {
   Megaphone,
   X,
 } from 'lucide-react'
+import BaseInput from '../../../../components/ui/BaseInput'
 import { faqGroups } from '../../data/faqs.public'
 import './FaqSection.css'
 
@@ -156,24 +157,23 @@ function FaqSection({ eyebrow, items, title }) {
           {/* Search Box */}
           <div className="faq-search-wrapper">
             <Search size={18} className="faq-search-icon" aria-hidden="true" />
-            <input
-              type="text"
-              className="faq-search-input"
-              placeholder={t('public.faqs.searchPlaceholder', { defaultValue: 'Tìm câu hỏi (vd: CapCut, bảo hành, nạp tiền...)' })}
+            <BaseInput
+              label={t('public.faqs.searchPlaceholder', { defaultValue: 'Tìm câu hỏi (vd: CapCut, bảo hành, nạp tiền...)' })}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={setSearchQuery}
+              placeholder={t('public.faqs.searchPlaceholder', { defaultValue: 'Tìm câu hỏi (vd: CapCut, bảo hành, nạp tiền...)' })}
               aria-label={t('public.faqs.searchPlaceholder', { defaultValue: 'Tìm kiếm câu hỏi' })}
+              helperText={searchQuery && (
+                <button
+                  type="button"
+                  className="faq-search-clear"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Xóa tìm kiếm"
+                >
+                  <X size={15} />
+                </button>
+              )}
             />
-            {searchQuery && (
-              <button
-                type="button"
-                className="faq-search-clear"
-                onClick={() => setSearchQuery('')}
-                aria-label="Xóa tìm kiếm"
-              >
-                <X size={15} />
-              </button>
-            )}
           </div>
 
           {/* Category Filter Pills */}

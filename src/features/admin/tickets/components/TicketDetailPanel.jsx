@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Download, MessageSquare, Paperclip, Send, Trash2 } from 'lucide-react'
+import { Download, MessageSquare, Paperclip, Trash2 } from 'lucide-react'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
 import { toApiUrl } from '../../../../lib/api'
 import { adminTicketsApi } from '../../../../api/admin/tickets.api'
 import { ticketCategories, ticketPriorities, ticketStatuses, getTicketCategoryLabel, getTicketPriorityLabel, ticketCategoryLabels, ticketPriorityLabels, ticketStatusLabels } from '../tickets.constants'
+import BaseSelect from '../../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
 
 function TicketDetailPanel({
   admins = [],
@@ -91,31 +93,49 @@ function TicketDetailPanel({
 
           <form className="admin-form compact" onSubmit={(event) => { event.preventDefault(); onUpdateTicketFields() }}>
             <div className="admin-form-grid single">
-              <label>
-                <span>Assign admin</span>
-                <select value={editor.assignedAdminId} onChange={(event) => onEditorChange((current) => ({ ...current, assignedAdminId: event.target.value }))}>
-                  <option value="">Chưa assign</option>
-                  {admins.map((admin) => <option value={admin.id} key={admin.id}>{admin.name || admin.email}</option>)}
-                </select>
-              </label>
-              <label>
-                <span>Priority</span>
-                <select value={editor.priority} onChange={(event) => onEditorChange((current) => ({ ...current, priority: event.target.value }))}>
-                  {ticketPriorities.filter(Boolean).map((priority) => <option value={priority} key={priority}>{ticketPriorityLabels[priority] || priority}</option>)}
-                </select>
-              </label>
-              <label>
-                <span>Category</span>
-                <select value={editor.category} onChange={(event) => onEditorChange((current) => ({ ...current, category: event.target.value }))}>
-                  {ticketCategories.filter(Boolean).map((category) => <option value={category} key={category}>{ticketCategoryLabels[category] || category}</option>)}
-                </select>
-              </label>
-              <label>
-                <span>Status</span>
-                <select value={editor.status} onChange={(event) => onEditorChange((current) => ({ ...current, status: event.target.value }))}>
-                  {ticketStatuses.filter(Boolean).map((status) => <option value={status} key={status}>{ticketStatusLabels[status] || status}</option>)}
-                </select>
-              </label>
+              <BaseSelect
+                label="Assign admin"
+                value={editor.assignedAdminId}
+                onChange={(value) => onEditorChange((current) => ({ ...current, assignedAdminId: value }))}
+                options={[
+                  { value: '', label: 'Chưa assign' },
+                  ...admins.map((admin) => ({
+                    value: admin.id,
+                    label: admin.name || admin.email
+                  }))
+                ]}
+                validators={[]}
+              />
+              <BaseSelect
+                label="Priority"
+                value={editor.priority}
+                onChange={(value) => onEditorChange((current) => ({ ...current, priority: value }))}
+                options={ticketPriorities.filter(Boolean).map((priority) => ({
+                  value: priority,
+                  label: ticketPriorityLabels[priority] || priority
+                }))}
+                validators={[]}
+              />
+              <BaseSelect
+                label="Category"
+                value={editor.category}
+                onChange={(value) => onEditorChange((current) => ({ ...current, category: value }))}
+                options={ticketCategories.filter(Boolean).map((category) => ({
+                  value: category,
+                  label: ticketCategoryLabels[category] || category
+                }))}
+                validators={[]}
+              />
+              <BaseSelect
+                label="Status"
+                value={editor.status}
+                onChange={(value) => onEditorChange((current) => ({ ...current, status: value }))}
+                options={ticketStatuses.filter(Boolean).map((status) => ({
+                  value: status,
+                  label: ticketStatusLabels[status] || status
+                }))}
+                validators={[]}
+              />
             </div>
             <button type="submit" disabled={submitting}>Lưu phân công</button>
           </form>
@@ -132,13 +152,15 @@ function TicketDetailPanel({
           </div>
 
           <form className="admin-form compact" onSubmit={onSendMessage}>
-            <label>
-              <span>Phản hồi khách</span>
-              <textarea value={message} onChange={(event) => onMessageChange(event.target.value)} rows="4" required />
-            </label>
-            <button type="submit" disabled={submitting}>
-              <Send size={17} strokeWidth={2} aria-hidden="true" />
-              <span>Gửi phản hồi</span>
+            <BaseTextarea
+              label="Phản hồi khách"
+              value={message}
+              onChange={(value) => onMessageChange(value)}
+              rows="4"
+              required
+            />
+            <button type="submit" className="admin-button primary" disabled={submitting || !message?.trim()}>
+              Gửi phản hồi
             </button>
           </form>
 

@@ -1,7 +1,8 @@
-import { CreditCard, Tag, Wallet, X } from 'lucide-react'
+import { CreditCard, Wallet, X } from 'lucide-react'
 import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { money } from '../../../../utils/currency'
+import BaseInput from '../../../../components/ui/BaseInput'
 
 function PaymentChoiceModal({
   balance,
@@ -91,23 +92,19 @@ function PaymentChoiceModal({
         </div>
 
         <div className="payment-coupon">
-          <label htmlFor="payment-coupon-code">{t('checkout.discountCode', { defaultValue: 'Mã giảm giá' })}</label>
-          <div>
-            <span aria-hidden="true"><Tag size={16} strokeWidth={2.1} /></span>
-            <input
-              id="payment-coupon-code"
-              value={couponCode}
-              onChange={(event) => onCouponChange(event.target.value)}
-              placeholder={t('checkout.couponPlaceholder', { defaultValue: 'Nhập coupon' })}
-            />
-            <button
-              type="button"
-              disabled={couponSubmitting || submitting || !couponCode?.trim()}
-              onClick={onApplyCoupon}
-            >
-              {t('checkout.couponApply', { defaultValue: 'Áp dụng' })}
-            </button>
-          </div>
+          <BaseInput
+            label={t('checkout.discountCode', { defaultValue: 'Mã giảm giá' })}
+            value={couponCode}
+            onChange={onCouponChange}
+            placeholder={t('checkout.couponPlaceholder', { defaultValue: 'Nhập coupon' })}
+          />
+          <button
+            type="button"
+            disabled={couponSubmitting || submitting || !couponCode?.trim()}
+            onClick={onApplyCoupon}
+          >
+            {t('checkout.couponApply', { defaultValue: 'Áp dụng' })}
+          </button>
           {(couponQuote?.valid || couponError) && (
             <small className={couponQuote?.valid ? 'success' : 'error'}>
               {couponQuote?.valid ? t('checkout.couponApplied', { code: couponQuote.couponCode, defaultValue: 'Đã áp dụng {{code}}.' }) : couponError}
@@ -123,13 +120,11 @@ function PaymentChoiceModal({
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: 'var(--kd-muted)' }}>
                   {prop.label || key} {requiredFields.includes(key) && <span style={{ color: '#ef4444' }}>*</span>}
                 </label>
-                <input
+                <BaseInput
                   type={prop.type === 'number' ? 'number' : 'text'}
                   value={formData[key] || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, [key]: e.target.value }))}
+                  onChange={(value) => setFormData(prev => ({ ...prev, [key]: value }))}
                   placeholder={prop.placeholder || t('checkout.inputPlaceholder', { label: prop.label || key, defaultValue: 'Nhập {{label}}...' })}
-                  className="settings-input"
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--kd-border)', borderRadius: '8px', fontSize: '14px', background: 'var(--kd-card)', color: 'var(--kd-text)' }}
                 />
               </div>
             ))}

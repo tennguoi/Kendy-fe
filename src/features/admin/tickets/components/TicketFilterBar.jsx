@@ -1,5 +1,6 @@
 import { ticketCategories, ticketPriorities, ticketStatuses, ticketCategoryLabels, ticketPriorityLabels, ticketStatusLabels } from '../tickets.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function TicketFilterBar({
   categoryFilter,
@@ -15,27 +16,44 @@ function TicketFilterBar({
 }) {
   return (
     <div className="admin-filters support-filters">
-      <select value={ticketQueue} onChange={(event) => onTicketQueueChange(event.target.value)}>
-        <option value="all">Tất cả ticket</option>
-        <option value="unassigned">Chưa assign</option>
-        <option value="mine">Assigned to me</option>
-      </select>
+      <BaseSelect
+        value={ticketQueue}
+        onChange={(value) => onTicketQueueChange(value)}
+        options={[
+          { value: 'all', label: 'Tất cả ticket' },
+          { value: 'unassigned', label: 'Chưa assign' },
+          { value: 'mine', label: 'Assigned to me' }
+        ]}
+        placeholder="All tickets"
+      />
       <SearchField value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm ticket, user, chủ đề" />
-      <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>
-        {ticketStatuses.map((status) => (
-          <option value={status} key={status || 'all'}>{ticketStatusLabels[status] || status || 'Tất cả trạng thái'}</option>
-        ))}
-      </select>
-      <select value={priorityFilter} onChange={(event) => onPriorityFilterChange(event.target.value)}>
-        {ticketPriorities.map((priority) => (
-          <option value={priority} key={priority || 'all'}>{ticketPriorityLabels[priority] || priority || 'Tất cả ưu tiên'}</option>
-        ))}
-      </select>
-      <select value={categoryFilter} onChange={(event) => onCategoryFilterChange(event.target.value)}>
-        {ticketCategories.map((category) => (
-          <option value={category} key={category || 'all'}>{ticketCategoryLabels[category] || category || 'Tất cả danh mục'}</option>
-        ))}
-      </select>
+      <BaseSelect
+        value={statusFilter}
+        onChange={(value) => onStatusFilterChange(value)}
+        options={ticketStatuses.map((status) => ({
+          value: status,
+          label: ticketStatusLabels[status] || status || 'Tất cả trạng thái'
+        }))}
+        placeholder="Tất cả trạng thái"
+      />
+      <BaseSelect
+        value={priorityFilter}
+        onChange={(value) => onPriorityFilterChange(value)}
+        options={ticketPriorities.map((priority) => ({
+          value: priority,
+          label: ticketPriorityLabels[priority] || priority || 'Tất cả ưu tiên'
+        }))}
+        placeholder="Tất cả ưu tiên"
+      />
+      <BaseSelect
+        value={categoryFilter}
+        onChange={(value) => onCategoryFilterChange(value)}
+        options={ticketCategories.map((category) => ({
+          value: category,
+          label: ticketCategoryLabels[category] || category || 'Tất cả danh mục'
+        }))}
+        placeholder="Tất cả danh mục"
+      />
     </div>
   )
 }

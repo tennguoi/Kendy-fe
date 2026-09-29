@@ -21,4 +21,7 @@ export const publicApi = {
 
   getAllSiteSections: () =>
     axiosClient.get('/api/content?type=SITE_SECTION'),
+
+  submitConsult: (data) =>
+    axiosClient.post('/api/public/consult', data),
 };

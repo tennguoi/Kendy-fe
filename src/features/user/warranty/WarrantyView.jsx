@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { userApi } from '../../../api/user.api'
 import { normalizePaged } from '../../../utils/pagination'
 import Pagination from '../../../components/Pagination/Pagination'
+import BaseSelect from '../../../components/ui/BaseSelect'
 import { formatDate } from '../../../utils/date'
 
 const WARRANTY_STATUS_LABELS = {
@@ -85,12 +86,18 @@ function WarrantyView({ onSetNotice, token }) {
 
       <div className="warranty-filter-row">
         <ShieldCheck size={18} strokeWidth={2} aria-hidden="true" />
-        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-          <option value="">{t('warranty.statusAll', { defaultValue: 'Tất cả trạng thái' })}</option>
-          {Object.entries(WARRANTY_STATUS_LABELS).map(([value, label]) => (
-            <option value={value} key={value}>{t(`status.${value}`, { defaultValue: label })}</option>
-          ))}
-        </select>
+        <BaseSelect
+          value={statusFilter}
+          onChange={(value) => setStatusFilter(value)}
+          placeholder={t('warranty.statusAll', { defaultValue: 'Tất cả trạng thái' })}
+          options={[
+            { value: '', label: t('warranty.statusAll', { defaultValue: 'Tất cả trạng thái' }) },
+            ...Object.entries(WARRANTY_STATUS_LABELS).map(([value, label]) => ({
+              value: value,
+              label: t(`status.${value}`, { defaultValue: label }),
+            })),
+          ]}
+        />
         <span>{t('warranty.requestCount', { count: filteredRequests.length, defaultValue: '{{count}} yêu cầu' })}</span>
       </div>
 

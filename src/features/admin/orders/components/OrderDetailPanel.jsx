@@ -6,6 +6,9 @@ import { formatAdminDate, formatAdminMoney } from '../../adminFormat'
 import { safeOrderBlock } from '../orders.utils'
 import { printOrderInvoice } from '../../../../utils/invoicePrint'
 import { manualWorkflowStatuses, getManualWorkflowStatusLabel } from '../orders.constants'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
 
 function OrderDetailPanel({
   activeOrder,
@@ -174,27 +177,27 @@ function OrderDetailPanel({
             </div>
             <label>
               <span>Kết quả hoặc lý do lỗi</span>
-              <textarea
+              <BaseTextarea
                 value={orderForm.resultData}
-                onChange={(event) => onUpdateDraft('resultData', event.target.value)}
+                onChange={(value) => onUpdateDraft('resultData', value)}
                 placeholder="Nhập kết quả trả khách hoặc mô tả lỗi xử lý"
                 rows="4"
               />
             </label>
             <label>
               <span>Lý do hủy/refund</span>
-              <textarea
+              <BaseTextarea
                 value={orderForm.reason}
-                onChange={(event) => onUpdateDraft('reason', event.target.value)}
+                onChange={(value) => onUpdateDraft('reason', value)}
                 placeholder="Bắt buộc khi hủy đơn hoặc refund"
                 rows="3"
               />
             </label>
             <label>
               <span>Số phút gia hạn</span>
-              <input
+              <BaseInput
                 value={orderForm.minutes}
-                onChange={(event) => onUpdateDraft('minutes', event.target.value)}
+                onChange={(value) => onUpdateDraft('minutes', value)}
                 inputMode="numeric"
                 placeholder="60"
               />
@@ -244,9 +247,9 @@ function OrderDetailPanel({
               </div>
               <label>
                 <span>Note admin (chỉ admin thấy)</span>
-                <textarea
+                <BaseTextarea
                   value={orderForm.adminNote}
-                  onChange={(event) => onUpdateDraft('adminNote', event.target.value)}
+                  onChange={(value) => onUpdateDraft('adminNote', value)}
                   placeholder="Ghi chú chỉ dành cho quản trị"
                   rows="3"
                   required
@@ -265,9 +268,9 @@ function OrderDetailPanel({
               </div>
               <label>
                 <span>User note (khách sẽ thấy)</span>
-                <textarea
+                <BaseTextarea
                   value={orderForm.userNote}
-                  onChange={(event) => onUpdateDraft('userNote', event.target.value)}
+                  onChange={(value) => onUpdateDraft('userNote', value)}
                   placeholder="Ghi chú hiển thị cho khách"
                   rows="3"
                   required
@@ -289,9 +292,9 @@ function OrderDetailPanel({
             </div>
             <label>
               <span>Danh sách mã đơn</span>
-              <textarea
+              <BaseTextarea
                 value={bulkRefundCodes}
-                onChange={(event) => onBulkRefundCodesChange(event.target.value)}
+                onChange={(value) => onBulkRefundCodesChange(value)}
                 placeholder="Nhập nhiều mã đơn, cách nhau bằng dấu phẩy hoặc xuống dòng"
                 rows="4"
                 required
@@ -316,35 +319,35 @@ function OrderDetailPanel({
             </div>
             <label>
               <span>Admin phụ trách</span>
-              <select
+              <BaseSelect
                 value={orderForm.assignedAdminId || ''}
-                onChange={(event) => onUpdateDraft('assignedAdminId', event.target.value)}
-              >
-                <option value="">Chưa gán</option>
-                {admins.map((admin) => (
-                  <option key={admin.id} value={admin.id}>
-                    {admin.name || admin.email} #{admin.id}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) => onUpdateDraft('assignedAdminId', value)}
+                options={[
+                  { value: '', label: 'Chưa gán' },
+                  ...admins.map((admin) => ({
+                    value: admin.id,
+                    label: `${admin.name || admin.email} #${admin.id}`,
+                  })),
+                ]}
+              />
             </label>
             <label>
               <span>Trạng thái workflow</span>
-              <select
+              <BaseSelect
                 value={orderForm.manualWorkflowStatus || 'NEW_REQUEST'}
-                onChange={(event) => onUpdateDraft('manualWorkflowStatus', event.target.value)}
-              >
-                {manualWorkflowStatuses.map((status) => (
-                  <option key={status} value={status}>{getManualWorkflowStatusLabel(status)}</option>
-                ))}
-              </select>
+                onChange={(value) => onUpdateDraft('manualWorkflowStatus', value)}
+                options={manualWorkflowStatuses.map((status) => ({
+                  value: status,
+                  label: getManualWorkflowStatusLabel(status),
+                }))}
+              />
             </label>
             <label>
               <span>Hạn xử lý</span>
-              <input
+              <BaseInput
                 type="datetime-local"
                 value={orderForm.processingDeadlineAt || ''}
-                onChange={(event) => onUpdateDraft('processingDeadlineAt', event.target.value)}
+                onChange={(value) => onUpdateDraft('processingDeadlineAt', value)}
               />
             </label>
             <div className="admin-form-field">
@@ -352,21 +355,21 @@ function OrderDetailPanel({
               <div style={{ display: 'grid', gap: '8px' }}>
                 {manualTasks.map((task, index) => (
                   <div key={task.id || index} style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) auto', gap: '8px', alignItems: 'center' }}>
-                    <input
+                    <BaseInput
                       type="checkbox"
                       checked={Boolean(task.completed)}
                       disabled={submitting}
-                      onChange={(event) => {
-                        updateManualTaskDraft(index, { completed: event.target.checked })
+                      onChange={(value) => {
+                        updateManualTaskDraft(index, { completed: value })
                         if (task.id) {
-                          onUpdateManualTask(selectedOrder.orderCode, task, event.target.checked)
+                          onUpdateManualTask(selectedOrder.orderCode, task, value)
                         }
                       }}
                       aria-label={`Hoàn thành ${task.title || `bước ${index + 1}`}`}
                     />
-                    <input
+                    <BaseInput
                       value={task.title || ''}
-                      onChange={(event) => updateManualTaskDraft(index, { title: event.target.value })}
+                      onChange={(value) => updateManualTaskDraft(index, { title: value })}
                       placeholder={`Bước ${index + 1}`}
                     />
                     <button type="button" className="admin-icon-button" onClick={() => removeManualTaskDraft(index)}>
@@ -382,9 +385,9 @@ function OrderDetailPanel({
             </div>
             <label>
               <span>Ghi chú admin</span>
-              <textarea
+              <BaseTextarea
                 value={orderForm.adminNote || ''}
-                onChange={(event) => onUpdateDraft('adminNote', event.target.value)}
+                onChange={(value) => onUpdateDraft('adminNote', value)}
                 placeholder="Ghi chú nội bộ về tiến trình xử lý"
                 rows="3"
               />

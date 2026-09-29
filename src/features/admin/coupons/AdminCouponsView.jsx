@@ -7,6 +7,10 @@ import { money } from '../../../utils/currency'
 import { AdminEmptyState, AdminStatusBadge } from '../AdminShared'
 import Modal from '../../../components/Modal/Modal'
 import Pagination from '../../../components/Pagination/Pagination'
+import BaseInput from '../../../components/ui/BaseInput'
+import BaseSelect from '../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../components/ui/BaseTextarea'
+import { isRequired, composeValidators } from '../../../utils/validation'
 
 const blankForm = {
   adminNote: '',
@@ -79,6 +83,28 @@ function payloadFromForm(form) {
   }
 }
 
+// Validation functions
+const validateCode = composeValidators(isRequired)
+const validateName = composeValidators(isRequired)
+const validateValue = (value) => {
+  if (!value) return { isValid: false, error: 'Giá trị không được để trống' }
+  const parsed = Number(value)
+  if (isNaN(parsed) || parsed < 0.01) return { isValid: false, error: 'Giá trị phải lớn hơn 0' }
+  return { isValid: true }
+}
+const validateNumberOrZero = (value) => {
+  if (value === '') return { isValid: true } // Allow empty for optional fields
+  const parsed = Number(value)
+  if (isNaN(parsed) || parsed < 0) return { isValid: false, error: 'Phải là số không âm' }
+  return { isValid: true }
+}
+const validatePositiveInteger = (value) => {
+  if (value === '') return { isValid: true } // Allow empty for optional fields
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed < 1) return { isValid: false, error: 'Phải là số nguyên dương' }
+  return { isValid: true }
+}
+
 function AdminCouponsView({ onSetError, onSetNotice, token }) {
   const { t } = useTranslation()
   const [coupons, setCoupons] = useState([])
@@ -143,6 +169,51 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
 
   const saveCoupon = async (event) => {
     event.preventDefault()
+
+    // Validate form
+    const codeValidation = validateCode(form.code);
+    const nameValidation = validateName(form.name);
+    const valueValidation = validateValue(form.value);
+    const maxDiscountValidation = validateNumberOrZero(form.maxDiscountAmount);
+    const minOrderValidation = validateNumberOrZero(form.minOrderAmount);
+    const usageLimitValidation = validatePositiveInteger(form.usageLimit);
+    const perUserLimitValidation = validatePositiveInteger(form.perUserLimit);
+
+    if (!codeValidation.isValid) {
+      onSetError?.(codeValidation.error || t('admin.coupons.form.codeRequired'))
+      return
+    }
+
+    if (!nameValidation.isValid) {
+      onSetError?.(nameValidation.error || t('admin.coupons.form.nameRequired'))
+      return
+    }
+
+    if (!valueValidation.isValid) {
+      onSetError?.(valueValidation.error || t('admin.coupons.form.valueRequired'))
+      return
+    }
+
+    if (!maxDiscountValidation.isValid) {
+      onSetError?.(maxDiscountValidation.error || t('admin.coupons.form.maxDiscountInvalid'))
+      return
+    }
+
+    if (!minOrderValidation.isValid) {
+      onSetError?.(minOrderValidation.error || t('admin.coupons.form.minOrderInvalid'))
+      return
+    }
+
+    if (!usageLimitValidation.isValid) {
+      onSetError?.(usageLimitValidation.error || t('admin.coupons.form.usageLimitInvalid'))
+      return
+    }
+
+    if (!perUserLimitValidation.isValid) {
+      onSetError?.(perUserLimitValidation.error || t('admin.coupons.form.perUserLimitInvalid'))
+      return
+    }
+
     setSaving(true)
     try {
       const payload = payloadFromForm(form)
@@ -215,11 +286,14 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
             </div>
           </div>
           <div className="admin-filters single-filter">
-            <select value={status} onChange={(event) => setStatus(event.target.value)}>
-              <option value="">{t('admin.coupons.form.allStatus')}</option>
+            <BaseSelect
+              value={status}
+              onChange={(value) => setStatus(value)}
+              placeholder={t('admin.coupons.form.allStatus')}
+            >
               <option value="ACTIVE">{t('admin.coupons.form.active')}</option>
               <option value="DISABLED">{t('admin.coupons.form.disabled')}</option>
-            </select>
+            </BaseSelect>
           </div>
           <div className="admin-data-table">
             <div className="admin-data-row head coupons">
@@ -274,69 +348,126 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
       >
         <form className="admin-form coupon-editor-form" onSubmit={saveCoupon}>
           <div className="admin-form-grid two-columns">
-            <label>
-              <span>{t('admin.coupons.form.code')}</span>
-              <input value={form.code} onChange={(event) => updateForm('code', event.target.value)} required maxLength={64} />
-            </label>
-            <label>
-              <span>{t('admin.coupons.form.status')}</span>
-              <select value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
-                <option value="ACTIVE">{t('admin.coupons.form.active')}</option>
-                <option value="DISABLED">{t('admin.coupons.form.disabled')}</option>
-              </select>
-            </label>
-            <label className="wide">
-              <span>{t('admin.coupons.form.name')}</span>
-              <input value={form.name} onChange={(event) => updateForm('name', event.target.value)} required maxLength={255} />
-            </label>
-            <label>
-              <span>{t('admin.coupons.form.type')}</span>
-              <select value={form.type} onChange={(event) => updateForm('type', event.target.value)}>
-                <option value="PERCENT">{t('admin.coupons.form.percent')}</option>
-                <option value="FIXED_AMOUNT">{t('admin.coupons.form.fixedAmount')}</option>
-              </select>
-            </label>
-            <label>
-              <span>{t('admin.coupons.form.value')}</span>
-              <input type="number" min="0.01" step="0.01" value={form.value} onChange={(event) => updateForm('value', event.target.value)} required />
-            </label>
-            <label>
-              <span>{t('admin.coupons.form.maxDiscount')}</span>
-              <input type="number" min="0" step="1000" value={form.maxDiscountAmount} onChange={(event) => updateForm('maxDiscountAmount', event.target.value)} />
-            </label>
-            <label>
-              <span>{t('admin.coupons.form.minOrder')}</span>
-              <input type="number" min="0" step="1000" value={form.minOrderAmount} onChange={(event) => updateForm('minOrderAmount', event.target.value)} />
-            </label>
-            <label>
-              <span>{t('admin.coupons.form.totalUsage')}</span>
-              <input type="number" min="1" value={form.usageLimit} onChange={(event) => updateForm('usageLimit', event.target.value)} />
-            </label>
-            <label>
-              <span>{t('admin.coupons.form.perUser')}</span>
-              <input type="number" min="1" value={form.perUserLimit} onChange={(event) => updateForm('perUserLimit', event.target.value)} />
-            </label>
-            <label className="wide">
-              <span>{t('admin.coupons.form.serviceApply')}</span>
-              <select value={form.serviceId} onChange={(event) => updateForm('serviceId', event.target.value)}>
-                <option value="">{t('admin.coupons.form.allServices')}</option>
-                {services.map((service) => (
-                  <option key={service.id} value={service.id}>{service.name}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>{t('admin.coupons.form.startDate')}</span>
-              <input type="datetime-local" value={form.startsAt} onChange={(event) => updateForm('startsAt', event.target.value)} />
-            </label>
-            <label>
-              <span>{t('admin.coupons.form.endDate')}</span>
-              <input type="datetime-local" value={form.endsAt} onChange={(event) => updateForm('endsAt', event.target.value)} />
-            </label>
-            <label className="wide">
-              <span>{t('admin.coupons.form.internalNote')}</span>
-              <textarea rows={3} value={form.adminNote} onChange={(event) => updateForm('adminNote', event.target.value)} />
-            </label>
+            <BaseInput
+              label={t('admin.coupons.form.code')}
+              value={form.code}
+              onChange={(value) => updateForm('code', value)}
+              validators={[validateCode]}
+              errorMessage={t('admin.coupons.form.codeRequired')}
+              required
+              maxLength={64}
+            />
+            <BaseSelect
+              label={t('admin.coupons.form.status')}
+              value={form.status}
+              onChange={(value) => updateForm('status', value)}
+              options={[
+                { value: 'ACTIVE', label: t('admin.coupons.form.active') },
+                { value: 'DISABLED', label: t('admin.coupons.form.disabled') }
+              ]}
+              validators={[]} // Status is required but handled by select
+              required
+            />
+            <BaseInput
+              label={t('admin.coupons.form.name')}
+              value={form.name}
+              onChange={(value) => updateForm('name', value)}
+              validators={[validateName]}
+              errorMessage={t('admin.coupons.form.nameRequired')}
+              required
+              maxLength={255}
+            />
+            <BaseSelect
+              label={t('admin.coupons.form.type')}
+              value={form.type}
+              onChange={(value) => updateForm('type', value)}
+              options={[
+                { value: 'PERCENT', label: t('admin.coupons.form.percent') },
+                { value: 'FIXED_AMOUNT', label: t('admin.coupons.form.fixedAmount') }
+              ]}
+              validators={[]} // Type is required but handled by select
+              required
+            />
+            <BaseInput
+              label={t('admin.coupons.form.value')}
+              value={form.value}
+              onChange={(value) => updateForm('value', value)}
+              type="number"
+              min="0.01"
+              step="0.01"
+              validators={[validateValue]}
+              errorMessage={t('admin.coupons.form.valueRequired')}
+              required
+            />
+            <BaseInput
+              label={t('admin.coupons.form.maxDiscount')}
+              value={form.maxDiscountAmount}
+              onChange={(value) => updateForm('maxDiscountAmount', value)}
+              type="number"
+              min="0"
+              step="1000"
+              validators={[validateNumberOrZero]}
+              errorMessage={t('admin.coupons.form.maxDiscountInvalid')}
+            />
+            <BaseInput
+              label={t('admin.coupons.form.minOrder')}
+              value={form.minOrderAmount}
+              onChange={(value) => updateForm('minOrderAmount', value)}
+              type="number"
+              min="0"
+              step="1000"
+              validators={[validateNumberOrZero]}
+              errorMessage={t('admin.coupons.form.minOrderInvalid')}
+            />
+            <BaseInput
+              label={t('admin.coupons.form.totalUsage')}
+              value={form.usageLimit}
+              onChange={(value) => updateForm('usageLimit', value)}
+              type="number"
+              min="1"
+              validators={[validatePositiveInteger]}
+              errorMessage={t('admin.coupons.form.usageLimitInvalid')}
+            />
+            <BaseInput
+              label={t('admin.coupons.form.perUser')}
+              value={form.perUserLimit}
+              onChange={(value) => updateForm('perUserLimit', value)}
+              type="number"
+              min="1"
+              validators={[validatePositiveInteger]}
+              errorMessage={t('admin.coupons.form.perUserLimitInvalid')}
+            />
+            <BaseSelect
+              label={t('admin.coupons.form.serviceApply')}
+              value={form.serviceId}
+              onChange={(value) => updateForm('serviceId', value)}
+              options={[
+                { value: '', label: t('admin.coupons.form.allServices') },
+                ...services.map((service) => ({
+                  value: service.id,
+                  label: service.name
+                }))
+              ]}
+              validators={[]} // Service is optional
+            />
+            <BaseInput
+              label={t('admin.coupons.form.startDate')}
+              value={form.startsAt}
+              onChange={(value) => updateForm('startsAt', value)}
+              type="datetime-local"
+            />
+            <BaseInput
+              label={t('admin.coupons.form.endDate')}
+              value={form.endsAt}
+              onChange={(value) => updateForm('endsAt', value)}
+              type="datetime-local"
+            />
+            <BaseTextarea
+              label={t('admin.coupons.form.internalNote')}
+              value={form.adminNote}
+              onChange={(value) => updateForm('adminNote', value)}
+              rows={3}
+            />
           </div>
           <div className="admin-action-row coupon-editor-actions">
             {selected && (

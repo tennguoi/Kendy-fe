@@ -1,4 +1,6 @@
 import { BarChart3, CreditCard, Save, Wallet } from 'lucide-react'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
 
 const financeToolTabs = [
   { id: 'bank', label: 'Bank', icon: CreditCard },
@@ -51,18 +53,24 @@ function FinanceTools({
               </div>
             </div>
             <form className="admin-form compact" onSubmit={(event) => event.preventDefault()}>
-              <label>
-                <span>Mã nạp</span>
-                <input value={bankActionForm.depositCode} onChange={(event) => setBankActionForm((current) => ({ ...current, depositCode: event.target.value }))} />
-              </label>
-              <label>
-                <span>User ID manual credit</span>
-                <input value={bankActionForm.userId} onChange={(event) => setBankActionForm((current) => ({ ...current, userId: event.target.value.replace(/\D/g, '') }))} inputMode="numeric" />
-              </label>
-              <label>
-                <span>Lý do</span>
-                <textarea value={bankActionForm.reason} onChange={(event) => setBankActionForm((current) => ({ ...current, reason: event.target.value }))} rows="3" required />
-              </label>
+              <BaseInput
+                label="Mã nạp"
+                value={bankActionForm.depositCode}
+                onChange={(value) => setBankActionForm((current) => ({ ...current, depositCode: value }))}
+              />
+              <BaseInput
+                label="User ID manual credit"
+                value={bankActionForm.userId}
+                onChange={(value) => setBankActionForm((current) => ({ ...current, userId: value.replace(/\D/g, '') }))}
+                inputMode="numeric"
+              />
+              <BaseTextarea
+                label="Lý do"
+                value={bankActionForm.reason}
+                onChange={(value) => setBankActionForm((current) => ({ ...current, reason: value }))}
+                rows="3"
+                required
+              />
             </form>
           </section>
 
@@ -75,22 +83,30 @@ function FinanceTools({
               </div>
             </div>
             <form className="admin-form compact" id="finance-bank-bulk-form" onSubmit={runBulkBankCredit}>
-              <label>
-                <span>Bank transaction IDs</span>
-                <textarea value={bankBulkForm.ids} onChange={(event) => setBankBulkForm((current) => ({ ...current, ids: event.target.value }))} rows="2" placeholder="VD: 101, 102, 103" />
-              </label>
-              <label>
-                <span>User ID</span>
-                <input value={bankBulkForm.userId} onChange={(event) => setBankBulkForm((current) => ({ ...current, userId: event.target.value.replace(/\D/g, '') }))} inputMode="numeric" />
-              </label>
-              <label>
-                <span>Mã nạp</span>
-                <input value={bankBulkForm.depositCode} onChange={(event) => setBankBulkForm((current) => ({ ...current, depositCode: event.target.value }))} />
-              </label>
-              <label>
-                <span>Lý do</span>
-                <textarea value={bankBulkForm.reason} onChange={(event) => setBankBulkForm((current) => ({ ...current, reason: event.target.value }))} rows="2" />
-              </label>
+              <BaseTextarea
+                label="Bank transaction IDs"
+                value={bankBulkForm.ids}
+                onChange={(value) => setBankBulkForm((current) => ({ ...current, ids: value }))}
+                rows="2"
+                placeholder="VD: 101, 102, 103"
+              />
+              <BaseInput
+                label="User ID"
+                value={bankBulkForm.userId}
+                onChange={(value) => setBankBulkForm((current) => ({ ...current, userId: value.replace(/\D/g, '') }))}
+                inputMode="numeric"
+              />
+              <BaseInput
+                label="Mã nạp"
+                value={bankBulkForm.depositCode}
+                onChange={(value) => setBankBulkForm((current) => ({ ...current, depositCode: value }))}
+              />
+              <BaseTextarea
+                label="Lý do"
+                value={bankBulkForm.reason}
+                onChange={(value) => setBankBulkForm((current) => ({ ...current, reason: value }))}
+                rows="2"
+              />
               <button type="button" className="admin-icon-button finance-inline-button" onClick={() => setBankBulkForm((current) => ({ ...current, ids: selectedBank ? String(selectedBank.id) : current.ids }))}>
                 Dùng giao dịch đang chọn
               </button>
@@ -112,14 +128,19 @@ function FinanceTools({
             </div>
           </div>
           <form className="admin-form compact" onSubmit={(event) => event.preventDefault()}>
-            <label>
-              <span>Số phút gia hạn</span>
-              <input value={depositActionForm.minutes} onChange={(event) => setDepositActionForm((current) => ({ ...current, minutes: event.target.value.replace(/\D/g, '') }))} inputMode="numeric" />
-            </label>
-            <label>
-              <span>Lý do</span>
-              <textarea value={depositActionForm.reason} onChange={(event) => setDepositActionForm((current) => ({ ...current, reason: event.target.value }))} rows="3" required />
-            </label>
+            <BaseInput
+              label="Số phút gia hạn"
+              value={depositActionForm.minutes}
+              onChange={(value) => setDepositActionForm((current) => ({ ...current, minutes: value.replace(/\D/g, '') }))}
+              inputMode="numeric"
+            />
+            <BaseTextarea
+              label="Lý do"
+              value={depositActionForm.reason}
+              onChange={(value) => setDepositActionForm((current) => ({ ...current, reason: value }))}
+              rows="3"
+              required
+            />
           </form>
         </section>
       )}

@@ -767,6 +767,211 @@ button.admin-data-row.selected {
   background: #fff;
 }
 
+/* ── Brand Media Cards (Logo & Favicon) ── */
+.admin-brand-media-card {
+  padding: 18px 20px;
+  border: 1px solid var(--kd-border, #e2e8f0);
+  border-radius: 14px;
+  background: var(--kd-surface-alt, rgba(255, 255, 255, 0.02));
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-brand-media-card:hover {
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+.admin-brand-media-card.tab-icon-card {
+  border-left: 3px solid #6366f1;
+}
+
+.admin-brand-media-header strong {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--kd-text, #0f172a);
+}
+
+.admin-brand-media-header p {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: var(--kd-muted, #64748b);
+  line-height: 1.4;
+}
+
+.admin-badge-highlight {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+  letter-spacing: 0.02em;
+}
+
+.admin-brand-media-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .admin-brand-media-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-brand-media-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-brand-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-file-picker-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: var(--kd-surface, #f8fafc);
+  border: 1px dashed var(--kd-border, #cbd5e1);
+  color: var(--kd-text, #334155);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-file-picker-btn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.04);
+}
+
+.admin-file-picker-btn input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.admin-brand-previews-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.admin-brand-preview-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 110px;
+}
+
+.admin-brand-preview-box .preview-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--kd-muted, #64748b);
+}
+
+.brand-preview-frame {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  border: 1px solid var(--kd-border, #cbd5e1);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.brand-preview-frame img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.brand-preview-frame .preview-empty {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ── Realistic Browser Tab Mockup ── */
+.browser-tab-mockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #18202f;
+  color: #e2e8f0;
+  border-radius: 9px 9px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid #38bdf8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  user-select: none;
+  max-width: 180px;
+}
+
+.browser-tab-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.browser-tab-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.browser-tab-close {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-left: auto;
+  opacity: 0.7;
+  cursor: default;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.browser-tab-mockup:hover .browser-tab-close {
+  opacity: 1;
+  color: #f87171;
+}
+
 .content-preview-block {
   display: grid;
   gap: 8px;

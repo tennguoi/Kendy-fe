@@ -24,4 +24,12 @@ i18n
     },
   })
 
+if (import.meta.hot) {
+  import.meta.hot.accept(['./locales/vi/translation.json', './locales/en/translation.json'], ([newVi, newEn]) => {
+    if (newVi) i18n.addResourceBundle('vi', 'translation', newVi.default || newVi, true, true)
+    if (newEn) i18n.addResourceBundle('en', 'translation', newEn.default || newEn, true, true)
+    i18n.emit('loaded')
+  })
+}
+
 export default i18n

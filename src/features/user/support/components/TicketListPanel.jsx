@@ -4,6 +4,7 @@ import { supportStatuses, getSupportCategoryLabel, getSupportPriorityLabel, supp
 import { formatSupportDate } from '../supportFormat'
 import Pagination from '../../../../components/Pagination/Pagination'
 import SearchField from '../../../../components/SearchField/SearchField'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function TicketListPanel({
   currentPage,
@@ -27,13 +28,15 @@ function TicketListPanel({
       </div>
       <div className="admin-filters single-filter">
         <SearchField value={query} onChange={(event) => onSearchChange(event.target.value)} placeholder={t('support.searchPlaceholder', { defaultValue: 'Tìm ticket, chủ đề, mã đơn' })} />
-        <select value={statusFilter} onChange={(event) => onStatusChange(event.target.value)}>
-          {supportStatuses.map((status) => (
-            <option value={status} key={status || 'all'}>
-              {status ? t('status.' + status, { defaultValue: supportStatusLabels[status] }) : t('support.statusAll', { defaultValue: 'Tất cả trạng thái' })}
-            </option>
-          ))}
-        </select>
+        <BaseSelect
+          value={statusFilter}
+          onChange={(value) => onStatusChange(value)}
+          options={supportStatuses.map((status) => ({
+            value: status,
+            label: status ? t('status.' + status, { defaultValue: supportStatusLabels[status] }) : t('support.statusAll', { defaultValue: 'Tất cả trạng thái' })
+          }))}
+          placeholder={t('support.statusAll', { defaultValue: 'Tất cả trạng thái' })}
+        />
       </div>
       <div className="admin-ticket-list">
         {tickets.map((ticket) => (

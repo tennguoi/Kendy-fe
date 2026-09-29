@@ -2,6 +2,9 @@ import { LifeBuoy, Upload, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { supportCategories, supportCategoryLabels } from '../support.constants'
+import BaseSelect from '../../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
+import { isRequired, composeValidators } from '../../../../utils/validation'
 
 const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024
 
@@ -19,6 +22,9 @@ function SupportWidget({
   const [isOpen, setIsOpen] = useState(false)
   const [fileError, setFileError] = useState('')
 
+  // Validation for support form
+  const validateRequired = composeValidators(isRequired)
+
   const handleFileChange = (event) => {
     const selectedFile = event.target.files?.[0] || null
     if (selectedFile && selectedFile.size > MAX_ATTACHMENT_SIZE) {
@@ -33,6 +39,22 @@ function SupportWidget({
   }
 
   const handleSubmit = async (event) => {
+    event.preventDefault()
+
+    // Validate form
+    const categoryValidation = validateRequired(ticketForm.category)
+    const messageValidation = validateRequired(ticketForm.message)
+
+    if (!categoryValidation.isValid) {
+      // Set error state or handle validation error
+      // For now, we'll let the form submit and validation will be handled by the onCreateTicket function
+      // In a real implementation, we might want to set form-level errors
+    }
+
+    if (!messageValidation.isValid) {
+      // Same as above
+    }
+
     const saved = await onCreateTicket(event)
     if (saved) {
       setIsOpen(false)
@@ -64,37 +86,44 @@ function SupportWidget({
 
             <label>
               <span>{t('support.selectOrderHelp', { defaultValue: 'Đơn hàng cần hỗ trợ' })}</span>
-              <select value={ticketForm.orderCode} onChange={(event) => onTicketFormChange('orderCode', event.target.value)}>
-                <option value="">{t('support.noOrderOption', { defaultValue: 'Không chọn đơn hàng' })}</option>
-                {orders.map((order) => (
-                  <option key={order.orderCode || order.id} value={order.orderCode || ''}>
-                    {order.orderCode || `Đơn #${order.id}`} {order.serviceName ? `- ${order.serviceName}` : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>{t('support.selectCategoryHelp', { defaultValue: 'Bạn cần trợ giúp về vấn đề gì? *' })}</span>
-              <select value={ticketForm.category} onChange={(event) => onTicketFormChange('category', event.target.value)} required>
-                {supportCategories.map((category) => (
-                  <option value={category} key={category}>
-                    {t('status.' + category, { defaultValue: supportCategoryLabels[category] })}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              <span>{t('support.detailDesc', { defaultValue: 'Mô tả chi tiết vấn đề' })}</span>
-              <textarea
-                value={ticketForm.message}
-                onChange={(event) => onTicketFormChange('message', event.target.value)}
-                placeholder={t('support.descPlaceholder', { defaultValue: 'Nhập mô tả chi tiết tại đây ...' })}
-                rows="4"
-                required
+              <BaseSelect
+                value={ticketForm.orderCode}
+                onChange={(value) => onTicketFormChange('orderCode', value)}
+                options={[
+                  { value: '', label: t('support.noOrderOption', { defaultValue: 'Không chọn đơn hàng' }) },
+                  ...orders.map((order) => ({
+                    value: order.orderCode || '',
+                    label: `${order.orderCode || `Đơn #${order.id}`} ${order.serviceName ? `- ${order.serviceName}` : ''}`
+                  }))
+                ]}
+                validators={[]} // Order code is optional
+                placeholder={t('support.selectOrderHelp', { defaultValue: 'Đơn hàng cần hỗ trợ' })}
               />
             </label>
+
+            <BaseSelect
+              label={t('support.selectCategoryHelp', { defaultValue: 'Bạn cần trợ giúp về vấn đề gì? *' })}
+              value={ticketForm.category}
+              onChange={(value) => onTicketFormChange('category', value)}
+              options={supportCategories.map((category) => ({
+                value: category,
+                label: t('status.' + category, { defaultValue: supportCategoryLabels[category] })
+              }))}
+              validators={[validateRequired]}
+              errorMessage={t('support.categoryRequired', { defaultValue: 'Vui lòng chọn danh mục' })}
+              required
+            />
+
+            <BaseTextarea
+              label={t('support.detailDesc', { defaultValue: 'Mô tả chi tiết vấn đề' })}
+              value={ticketForm.message}
+              onChange={(value) => onTicketFormChange('message', value)}
+              placeholder={t('support.descPlaceholder', { defaultValue: 'Nhập mô tả chi tiết tại đây ...' })}
+              rows="4"
+              validators={[validateRequired]}
+              errorMessage={t('support.messageRequired', { defaultValue: 'Vui lòng nhập mô tả vấn đề' })}
+              required
+            />
 
             <button className="support-widget-submit" type="submit" disabled={submitting || !ticketForm.message.trim()}>
               {t('support.widgetSubmitBtn', { defaultValue: 'Gửi yêu cầu' })}

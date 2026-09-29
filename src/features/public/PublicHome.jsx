@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Clapperboard, Megaphone, PackageCheck, ShieldCheck, Users } from 'lucide-react'
 import heroImg from '../../assets/hero.png'
 import { publicApi } from '../../api/public.api'
+import { useToast } from '../../components/Toast'
 import ScrollReveal from '../../components/ScrollReveal/ScrollReveal'
 import AutoDepositSection from './components/AutoDepositSection/AutoDepositSection'
 import ConsultSection from './components/ConsultSection/ConsultSection'
@@ -91,6 +92,8 @@ function mapApiServiceToFeaturedRow(service) {
 function PublicHome({ notice, onLoginClick }) {
   const [apiServices, setApiServices] = useState([])
   const [apiCategories, setApiCategories] = useState([])
+  const [consultSubmitting, setConsultSubmitting] = useState(false)
+  const { addToast } = useToast()
   const { settings } = usePublicSiteSettings()
   const logo = settings.brand.logoUrl || heroImg
 
@@ -120,9 +123,28 @@ function PublicHome({ notice, onLoginClick }) {
     [apiServices],
   )
 
-  const handleConsultSubmit = (event) => {
-    event.preventDefault()
-    onLoginClick()
+  const handleConsultSubmit = async (formData, resetForm) => {
+    try {
+      setConsultSubmitting(true)
+      const res = await publicApi.submitConsult(formData)
+      addToast({
+        title: 'Thành công',
+        message: res?.message || 'Yêu cầu tư vấn của bạn đã được gửi thành công! Đội ngũ KendyDigital sẽ liên hệ lại sớm nhất.',
+        type: 'success',
+      })
+      if (resetForm) {
+        resetForm()
+      }
+    } catch (error) {
+      const errMsg = error?.response?.data?.message || error?.message || 'Gửi yêu cầu thất bại, vui lòng thử lại sau.'
+      addToast({
+        title: 'Không thể gửi yêu cầu',
+        message: errMsg,
+        type: 'error',
+      })
+    } finally {
+      setConsultSubmitting(false)
+    }
   }
 
   return (
@@ -165,7 +187,12 @@ function PublicHome({ notice, onLoginClick }) {
             title={settings.faq.title}
           />
         </ScrollReveal>
-        <ScrollReveal delay={100}><ConsultSection onSubmit={handleConsultSubmit} /></ScrollReveal>
+        <ScrollReveal delay={100}>
+          <ConsultSection
+            onSubmit={handleConsultSubmit}
+            submitting={consultSubmitting}
+          />
+        </ScrollReveal>
         <ScrollReveal delay={100}><FinalCta onLoginClick={onLoginClick} /></ScrollReveal>
       </main>
 

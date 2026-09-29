@@ -128,8 +128,35 @@ export function ToastProvider({ children }) {
     );
   }, []);
 
+  const clearToasts = useCallback((type) => {
+    if (type) {
+      setToasts((current) => {
+        const remaining = [];
+        for (const t of current) {
+          if (t.type === type) {
+            clearTickInterval(t.id);
+            if (removalTimeouts.current[t.id]) {
+              clearTimeout(removalTimeouts.current[t.id]);
+              delete removalTimeouts.current[t.id];
+            }
+          } else {
+            remaining.push(t);
+          }
+        }
+        return remaining;
+      });
+    } else {
+      Object.keys(tickIntervals.current).forEach((id) => clearTickInterval(id));
+      Object.keys(removalTimeouts.current).forEach((id) => {
+        clearTimeout(removalTimeouts.current[id]);
+        delete removalTimeouts.current[id];
+      });
+      setToasts([]);
+    }
+  }, [clearTickInterval]);
+
   return (
-    <ToastContext.Provider value={{ addToast, removeToast }}>
+    <ToastContext.Provider value={{ addToast, removeToast, clearToasts }}>
       {children}
       <ToastContainer
         toasts={toasts}

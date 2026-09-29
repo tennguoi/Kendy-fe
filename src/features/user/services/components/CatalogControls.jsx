@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { catalogTabs, getServiceStatusLabel, getServiceTypeLabel } from '../services.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function CatalogControls({
   activeTab,
@@ -63,22 +64,26 @@ function CatalogControls({
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder={t('services.searchPlaceholder', { defaultValue: 'Tìm dịch vụ...' })}
       />
-      <select value={typeFilter} onChange={(event) => onTypeFilterChange(event.target.value)}>
-        <option value="">{t('services.typeAll', { defaultValue: 'Tất cả loại' })}</option>
-        {serviceTypes.map((type) => (
-          <option value={type} key={type}>
-            {getServiceTypeTranslation(type)}
-          </option>
-        ))}
-      </select>
-      <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>
-        <option value="">{t('services.statusAll', { defaultValue: 'Tất cả trạng thái' })}</option>
-        {serviceStatuses.map((status) => (
-          <option value={status} key={status}>
-            {getServiceStatusTranslation(status)}
-          </option>
-        ))}
-      </select>
+      <BaseSelect
+        name="typeFilter"
+        value={typeFilter}
+        onChange={(value) => onTypeFilterChange(value)}
+        placeholder={t('services.typeAll', { defaultValue: 'Tất cả loại' })}
+        options={serviceTypes.map((type) => ({
+          value: type,
+          label: getServiceTypeTranslation(type),
+        }))}
+      />
+      <BaseSelect
+        name="statusFilter"
+        value={statusFilter}
+        onChange={(value) => onStatusFilterChange(value)}
+        placeholder={t('services.statusAll', { defaultValue: 'Tất cả trạng thái' })}
+        options={serviceStatuses.map((status) => ({
+          value: status,
+          label: getServiceStatusTranslation(status),
+        }))}
+      />
     </div>
   )
 }

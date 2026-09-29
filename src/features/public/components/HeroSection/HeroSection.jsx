@@ -14,7 +14,7 @@ function buildFeedColumns(lines) {
   })
 }
 
-function HeroSection({ logo, notice, onLoginClick, serviceSignals, dynamicContent }) {
+function HeroSection({ notice, onLoginClick, serviceSignals, dynamicContent }) {
   const { t } = useTranslation()
 
   const kicker = dynamicContent?.kicker || t('public.hero.kicker', { defaultValue: 'Mua tài khoản, nâng cấp gói và đăng ký dịch vụ Facebook' })

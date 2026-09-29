@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Download, Paperclip, Send, Trash2 } from 'lucide-react'
+import { Download, Paperclip, Trash2 } from 'lucide-react'
 import StatusBadge from '../../../../components/status/StatusBadge'
 import { formatSupportDate } from '../supportFormat'
 import { toApiUrl } from '../../../../lib/api'
 import { userTicketsApi } from '../../../../api/user/tickets.api'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
+import { isRequired, composeValidators } from '../../../../utils/validation'
 
 function TicketDetailPanel({
   attachments = [],
@@ -56,6 +58,9 @@ function TicketDetailPanel({
   }, [attachments, selectedTicket, token])
   const { t } = useTranslation()
 
+  // Validation for message field (required)
+  const validateMessage = composeValidators(isRequired)
+
   if (!selectedTicket) {
     return null
   }
@@ -88,13 +93,17 @@ function TicketDetailPanel({
         {(selectedTicket.messages || []).length === 0 && <p className="admin-empty-state">{t('support.noConversation', { defaultValue: 'Ticket chưa có hội thoại.' })}</p>}
       </div>
       <form className="admin-form compact" onSubmit={onSendMessage}>
-        <label>
-          <span>{t('support.replyLabel', { defaultValue: 'Phản hồi' })}</span>
-          <textarea value={message} onChange={(event) => onSetMessage(event.target.value)} rows="3" required />
-        </label>
-        <button type="submit" disabled={submitting || !message.trim()}>
-          <Send size={17} strokeWidth={2} aria-hidden="true" />
-          <span>{t('support.sendReplyBtn', { defaultValue: 'Gửi phản hồi' })}</span>
+        <BaseTextarea
+          label={t('support.replyLabel', { defaultValue: 'Phản hồi' })}
+          value={message}
+          onChange={(value) => onSetMessage(value)}
+          rows="3"
+          validators={[validateMessage]}
+          errorMessage={t('support.messageRequired', { defaultValue: 'Vui lòng nhập nội dung phản hồi' })}
+          required
+        />
+        <button type="submit" className="primary-button" disabled={submitting || !message?.trim()}>
+          {t('support.sendReply', { defaultValue: 'Gửi phản hồi' })}
         </button>
       </form>
       <div className="admin-action-row">

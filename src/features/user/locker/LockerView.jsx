@@ -12,6 +12,8 @@ import {
 import { userApi } from '../../../api/user.api'
 import { formatDate } from '../../../utils/date'
 import ConfirmModal from '../../../components/Modal/ConfirmModal'
+import BaseInput from '../../../components/ui/BaseInput'
+import BaseSelect from '../../../components/ui/BaseSelect'
 
 const warrantyReasons = [
   'Sai tài khoản hoặc mật khẩu',
@@ -181,9 +183,9 @@ function LockerView({ onSetNotice, token }) {
       <div className="locker-toolbar">
         <label>
           <Search size={17} />
-          <input
+          <BaseInput
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(value) => setQuery(value)}
             placeholder="Tìm dịch vụ, mã đơn hoặc tài khoản"
           />
         </label>
@@ -264,9 +266,15 @@ function LockerView({ onSetNotice, token }) {
 
               {warrantyTarget === item.id && (
                 <div className="locker-warranty-form">
-                  <select value={warrantyReason} onChange={(event) => setWarrantyReason(event.target.value)}>
-                    {warrantyReasons.map((reason) => <option value={reason} key={reason}>{reason}</option>)}
-                  </select>
+                  <BaseSelect
+                    value={warrantyReason}
+                    onChange={(value) => setWarrantyReason(value)}
+                    placeholder="Chọn lý do bảo hành"
+                    options={warrantyReasons.map((reason) => ({
+                      value: reason,
+                      label: reason
+                    }))}
+                  />
                   <button type="button" onClick={() => handleWarranty(item)} disabled={submittingId === item.id}>
                     Gửi yêu cầu
                   </button>

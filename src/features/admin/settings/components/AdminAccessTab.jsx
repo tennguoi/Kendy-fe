@@ -1,6 +1,10 @@
 import { Save } from 'lucide-react'
 import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
+import BaseTextarea from '../../../../components/ui/BaseTextarea'
+import { isRequired, composeValidators } from '../../../../utils/validation'
 
 function AdminAccessTab({
   adminEditor,
@@ -26,6 +30,10 @@ function AdminAccessTab({
   submitting,
   totpSetup,
 }) {
+  // Validation functions
+  const validateRequired = composeValidators(isRequired);
+  const validateRoleName = composeValidators(isRequired);
+
   return (
     <div className="admin-grid two-columns">
       <div className="admin-panel">
@@ -53,27 +61,36 @@ function AdminAccessTab({
             </div>
             <label>
               <span>Legacy role</span>
-              <select value={adminEditor.legacyRole} onChange={(event) => onSetAdminEditor((current) => ({ ...current, legacyRole: event.target.value }))}>
-                <option value="ADMIN">ADMIN</option>
-                <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-              </select>
+              <BaseSelect
+                value={adminEditor.legacyRole}
+                onChange={(value) => onSetAdminEditor((current) => ({ ...current, legacyRole: value }))}
+                options={[
+                  { value: 'ADMIN', label: 'ADMIN' },
+                  { value: 'SUPER_ADMIN', label: 'SUPER_ADMIN' }
+                ]}
+                placeholder="Chọn role"
+              />
             </label>
             <label>
               <span>Lý do</span>
-              <textarea value={adminEditor.reason} onChange={(event) => onSetAdminEditor((current) => ({ ...current, reason: event.target.value }))} rows="2" />
+              <BaseTextarea
+                value={adminEditor.reason}
+                onChange={(value) => onSetAdminEditor((current) => ({ ...current, reason: value }))}
+                rows="2"
+              />
             </label>
             <div className="admin-check-row settings-row">
               {roles.map((role) => (
                 <label key={role.id}>
-                  <input
-                    checked={adminEditor.roleIds.includes(role.id)}
-                    onChange={() => onSetAdminEditor((current) => ({
-                      ...current,
-                      roleIds: current.roleIds.includes(role.id)
-                        ? current.roleIds.filter((id) => id !== role.id)
-                        : [...current.roleIds, role.id],
-                    }))}
+                  <BaseInput
                     type="checkbox"
+                    checked={adminEditor.roleIds.includes(role.id)}
+                    onChange={() => onSetAdminEditor((current) => {
+                      const roleIds = current.roleIds.includes(role.id)
+                        ? current.roleIds.filter((id) => id !== role.id)
+                        : [...current.roleIds, role.id];
+                      return { ...current, roleIds };
+                    })}
                   />
                   <span>{role.name}</span>
                 </label>
@@ -82,15 +99,15 @@ function AdminAccessTab({
             <div className="admin-check-row settings-row">
               {permissions.map((permission) => (
                 <label key={permission.id}>
-                  <input
-                    checked={adminEditor.permissionCodes.includes(permission.code)}
-                    onChange={() => onSetAdminEditor((current) => ({
-                      ...current,
-                      permissionCodes: current.permissionCodes.includes(permission.code)
-                        ? current.permissionCodes.filter((code) => code !== permission.code)
-                        : [...current.permissionCodes, permission.code],
-                    }))}
+                  <BaseInput
                     type="checkbox"
+                    checked={adminEditor.permissionCodes.includes(permission.code)}
+                    onChange={() => onSetAdminEditor((current) => {
+                      const permissionCodes = current.permissionCodes.includes(permission.code)
+                        ? current.permissionCodes.filter((code) => code !== permission.code)
+                        : [...current.permissionCodes, permission.code];
+                      return { ...current, permissionCodes };
+                    })}
                   />
                   <span>{permission.code}</span>
                 </label>
@@ -111,26 +128,47 @@ function AdminAccessTab({
         </div>
         <form className="admin-form compact" onSubmit={onSaveRole}>
           <div className="admin-action-row">
-            <select value={selectedRoleId || ''} onChange={(event) => onSelectRoleForEdit(event.target.value ? Number(event.target.value) : null)}>
-              <option value="">Tạo role mới</option>
-              {roles.map((role) => <option value={role.id} key={role.id}>{role.name}</option>)}
-            </select>
+            <BaseSelect
+              value={selectedRoleId || ''}
+              onChange={(value) => onSelectRoleForEdit(value ? Number(value) : null)}
+              options={[
+                { value: '', label: 'Tạo role mới' },
+                ...roles.map((role) => ({ value: role.id, label: role.name }))
+              ]}
+              placeholder="Chọn role hoặc tạo mới"
+            />
             {selectedRole && !selectedRole.system && (
-              <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={onDeleteRole}>Xóa role</button>
+              <button type="button" className="admin-danger-button slim" disabled={submitting} onClick={onDeleteRole}>
+                Xóa role
+              </button>
             )}
           </div>
           <label>
             <span>Tên role</span>
-            <input value={roleDraft.name} onChange={(event) => onSetRoleDraft((current) => ({ ...current, name: event.target.value }))} required />
+            <BaseInput
+              value={roleDraft.name}
+              onChange={(value) => onSetRoleDraft((current) => ({ ...current, name: value }))}
+              validators={[validateRoleName]}
+              errorMessage="Tên role là bắt buộc"
+              required
+            />
           </label>
           <label>
             <span>Mô tả</span>
-            <textarea value={roleDraft.description} onChange={(event) => onSetRoleDraft((current) => ({ ...current, description: event.target.value }))} rows="2" />
+            <BaseTextarea
+              value={roleDraft.description}
+              onChange={(value) => onSetRoleDraft((current) => ({ ...current, description: value }))}
+              rows="2"
+            />
           </label>
           <div className="admin-check-row settings-row">
             {permissions.map((permission) => (
               <label key={permission.id}>
-                <input checked={roleDraft.permissionIds.includes(permission.id)} onChange={() => onTogglePermission(permission.id)} type="checkbox" />
+                <BaseInput
+                  type="checkbox"
+                  checked={roleDraft.permissionIds.includes(permission.id)}
+                  onChange={() => onTogglePermission(permission.id)}
+                />
                 <span>{permission.code}</span>
               </label>
             ))}
@@ -171,7 +209,12 @@ function AdminAccessTab({
           <form className="admin-form compact" onSubmit={(event) => { event.preventDefault(); onRunAdminTwoFactor('enable') }}>
             <label>
               <span>Mã xác thực</span>
-              <input value={adminEditor.verificationCode} onChange={(event) => onSetAdminEditor((current) => ({ ...current, verificationCode: event.target.value.trim() }))} />
+              <BaseInput
+                value={adminEditor.verificationCode}
+                onChange={(value) => onSetAdminEditor((current) => ({ ...current, verificationCode: value.trim() }))}
+                validators={[validateRequired]}
+                errorMessage="Mã xác thực là bắt buộc"
+              />
             </label>
             <button type="submit" disabled={submitting || !adminEditor.verificationCode}>Enable 2FA</button>
           </form>

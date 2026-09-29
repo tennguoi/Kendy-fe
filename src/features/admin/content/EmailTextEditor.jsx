@@ -8,6 +8,9 @@ import {
 } from './emailTemplates'
 import { adminContentApi } from '../../../api/admin/content.api'
 import RichEditor from '../../../components/RichEditor/RichEditor'
+import BaseInput from '../../../components/ui/BaseInput'
+import BaseTextarea from '../../../components/ui/BaseTextarea'
+import { isRequired, composeValidators } from '../../../utils/validation'
 
 function EmailTextEditor({
   activeSlug,
@@ -27,8 +30,20 @@ function EmailTextEditor({
   const [sending, setSending] = useState(false)
   const rawContent = draft.rawHtml || renderTransactionalEmail(definition, draft, brand)
 
+  // Validation for email fields
+  const validateRequired = composeValidators(isRequired)
+  const validateEmail = composeValidators(isRequired) // Simple email validation - could be enhanced
+
   const handleSendTest = async () => {
     if (!testEmail.trim()) return
+
+    // Validate email
+    const emailValidation = validateEmail(testEmail.trim())
+    if (!emailValidation.isValid) {
+      onSetError(emailValidation.error || t('admin.content.email.invalidTestEmail'))
+      return
+    }
+
     setSending(true)
     try {
       await adminContentApi.sendTestEmail({
@@ -88,36 +103,36 @@ function EmailTextEditor({
       </div>
 
       {rawMode ? (
-        <label>
-          <span>{t('admin.content.email.rawHtmlLabel')}</span>
-          <textarea
-            className="email-raw-textarea"
+        <>
+          <BaseTextarea
+            label={t('admin.content.email.rawHtmlLabel')}
             value={rawContent}
-            onChange={(event) => onChange({ rawHtml: event.target.value })}
+            onChange={(value) => onChange({ rawHtml: value })}
+            className="email-raw-textarea"
             rows={24}
             spellCheck={false}
           />
           <small>{t('admin.content.email.rawHtmlHint')}</small>
-        </label>
+        </>
       ) : (
         <>
           <div className="admin-form-grid two-columns">
-            <label>
-              <span>{t('admin.content.email.subjectLabel')}</span>
-              <input
-                value={draft.subject}
-                onChange={(event) => onChange({ subject: event.target.value, rawHtml: undefined })}
-                required
-              />
-            </label>
-            <label>
-              <span>{t('admin.content.email.headingLabel')}</span>
-              <input
-                value={draft.heading}
-                onChange={(event) => onChange({ heading: event.target.value, rawHtml: undefined })}
-                required
-              />
-            </label>
+            <BaseInput
+              label={t('admin.content.email.subjectLabel')}
+              value={draft.subject}
+              onChange={(value) => onChange({ subject: value, rawHtml: undefined })}
+              validators={[validateRequired]}
+              errorMessage={t('admin.content.email.subjectRequired', { defaultValue: 'Vui lòng nhập tiêu đề email' })}
+              required
+            />
+            <BaseInput
+              label={t('admin.content.email.headingLabel')}
+              value={draft.heading}
+              onChange={(value) => onChange({ heading: value, rawHtml: undefined })}
+              validators={[validateRequired]}
+              errorMessage={t('admin.content.email.headingRequired', { defaultValue: 'Vui lòng nhập tiêu đề Heading' })}
+              required
+            />
           </div>
 
           <div className="admin-form-group">
@@ -126,34 +141,32 @@ function EmailTextEditor({
           </div>
 
           {definition.type === 'code' && (
-            <label>
-              <span>{t('admin.content.email.codeLabel')}</span>
-              <input
-                value={draft.codeLabel}
-                onChange={(event) => onChange({ codeLabel: event.target.value, rawHtml: undefined })}
-                required
-              />
-            </label>
+            <BaseInput
+              label={t('admin.content.email.codeLabel')}
+              value={draft.codeLabel}
+              onChange={(value) => onChange({ codeLabel: value, rawHtml: undefined })}
+              validators={[validateRequired]}
+              errorMessage={t('admin.content.email.codeLabelRequired', { defaultValue: 'Vui lòng nhập nhãn mã' })}
+              required
+            />
           )}
           {(definition.type === 'link' || definition.slug === 'password_reset') && (
-            <label>
-              <span>{t('admin.content.email.actionLabel')}</span>
-              <input
-                value={draft.actionLabel}
-                onChange={(event) => onChange({ actionLabel: event.target.value, rawHtml: undefined })}
-                required
-              />
-            </label>
+            <BaseInput
+              label={t('admin.content.email.actionLabel')}
+              value={draft.actionLabel}
+              onChange={(value) => onChange({ actionLabel: value, rawHtml: undefined })}
+              validators={[validateRequired]}
+              errorMessage={t('admin.content.email.actionLabelRequired', { defaultValue: 'Vui lòng nhập nhãn hành động' })}
+              required
+            />
           )}
 
-          <label>
-            <span>{t('admin.content.email.detailLabel')}</span>
-            <input
-              value={draft.detail}
-              onChange={(event) => onChange({ detail: event.target.value, rawHtml: undefined })}
-            />
-            <small>{t('admin.content.email.detailHint')}</small>
-          </label>
+          <BaseInput
+            label={t('admin.content.email.detailLabel')}
+            value={draft.detail}
+            onChange={(value) => onChange({ detail: value, rawHtml: undefined })}
+          />
+          <small>{t('admin.content.email.detailHint')}</small>
 
           <div className="admin-form-group">
             <span>{t('admin.content.email.securityNoteLabel')}</span>
@@ -190,11 +203,13 @@ function EmailTextEditor({
       <div className="email-test-section">
         <strong>{t('admin.content.email.testLabel') || 'Gửi email test'}</strong>
         <div className="email-test-row">
-          <input
+          <BaseInput
             type="email"
             value={testEmail}
-            onChange={(event) => setTestEmail(event.target.value)}
+            onChange={(value) => setTestEmail(value)}
             placeholder={t('admin.content.email.testPlaceholder') || 'Nhập email nhận test...'}
+            validators={[validateRequired, validateEmail]}
+            errorMessage={t('admin.content.email.testEmailRequired', { defaultValue: 'Vui lòng nhập email test' })}
             disabled={sending}
           />
           <button

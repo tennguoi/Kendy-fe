@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ctaTypes, stockStatuses } from '../../services/services.constants'
 import RichEditor from '../../../../components/RichEditor/RichEditor'
+import BaseInput from '../../../../components/ui/BaseInput'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function PricingEditor({
   form,
@@ -64,31 +66,31 @@ function PricingEditor({
             <div className="admin-form-grid single">
               <label>
                 <span>Giá số</span>
-                <input value={form.price} onChange={(event) => onUpdateForm('price', event.target.value)} inputMode="decimal" />
+                <BaseInput value={form.price} onChange={(value) => onUpdateForm('price', value)} inputMode="decimal" />
               </label>
               <label>
                 <span>Giá hiển thị text</span>
-                <input value={form.priceText} onChange={(event) => onUpdateForm('priceText', event.target.value)} placeholder={t('admin.pricing.form.pricePlaceholder')} />
+                <BaseInput value={form.priceText} onChange={(value) => onUpdateForm('priceText', value)} placeholder={t('admin.pricing.form.pricePlaceholder')} />
               </label>
               <label>
                 <span>Badge nổi bật ở bảng giá</span>
-                <input value={form.pricingBadge} onChange={(event) => onUpdateForm('pricingBadge', event.target.value)} placeholder={t('admin.pricing.form.badgePlaceholder')} />
+                <BaseInput value={form.pricingBadge} onChange={(value) => onUpdateForm('pricingBadge', value)} placeholder={t('admin.pricing.form.badgePlaceholder')} />
               </label>
               <label>
                 <span>Trạng thái kho</span>
-                <select value={form.stockStatus} onChange={(event) => onUpdateForm('stockStatus', event.target.value)}>
-                  {stockStatuses.map((status) => <option value={status} key={status}>{status}</option>)}
-                </select>
+                <BaseSelect value={form.stockStatus} onChange={(value) => onUpdateForm('stockStatus', value)}>
+                  {stockStatuses.map((status) => ({ value: status, label: status }))}
+                </BaseSelect>
               </label>
               <label>
                 <span>CTA mua hàng</span>
-                <select value={form.ctaType} onChange={(event) => onUpdateForm('ctaType', event.target.value)}>
-                  {ctaTypes.map((type) => <option value={type} key={type}>{type}</option>)}
-                </select>
+                <BaseSelect value={form.ctaType} onChange={(value) => onUpdateForm('ctaType', value)}>
+                  {ctaTypes.map((type) => ({ value: type, label: type }))}
+                </BaseSelect>
               </label>
               <label>
                 <span>Thời gian xử lý</span>
-                <input value={form.processingTime} onChange={(event) => onUpdateForm('processingTime', event.target.value)} placeholder={t('admin.pricing.form.processingPlaceholder')} />
+                <BaseInput value={form.processingTime} onChange={(value) => onUpdateForm('processingTime', value)} placeholder={t('admin.pricing.form.processingPlaceholder')} />
               </label>
               <div className="admin-form-group">
                 <span>Chính sách bảo hành</span>
@@ -98,11 +100,11 @@ function PricingEditor({
 
             <div className="admin-check-row" style={{ marginTop: '8px' }}>
               <label style={{ cursor: 'pointer' }}>
-                <input checked={form.featured} onChange={(event) => onUpdateForm('featured', event.target.checked)} type="checkbox" />
+                <BaseInput type="checkbox" checked={form.featured} onChange={(value) => onUpdateForm('featured', value)} />
                 <span>Gói nổi bật</span>
               </label>
               <label style={{ cursor: 'pointer' }}>
-                <input checked={form.publicVisible} onChange={(event) => onUpdateForm('publicVisible', event.target.checked)} type="checkbox" />
+                <BaseInput type="checkbox" checked={form.publicVisible} onChange={(value) => onUpdateForm('publicVisible', value)} />
                 <span>Hiển thị bảng giá</span>
               </label>
             </div>

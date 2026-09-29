@@ -2,6 +2,7 @@ import { Mail, Save, ShieldAlert, TimerReset } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { adminApi } from '../../../../api/admin.api'
 import RichEditor from '../../../../components/RichEditor/RichEditor'
+import BaseInput from '../../../../components/ui/BaseInput'
 
 const defaultForm = {
   maintenanceEnabled: false,
@@ -95,7 +96,11 @@ function OperationsTab({ onSaved, onSetError, onSetNotice, settingsMap, submitti
               <span>Chặn user và public API khi cần bảo trì.</span>
             </div>
             <label className="settings-switch">
-              <input type="checkbox" checked={form.maintenanceEnabled} onChange={(event) => updateForm({ maintenanceEnabled: event.target.checked })} />
+              <BaseInput
+                type="checkbox"
+                checked={form.maintenanceEnabled}
+                onChange={(event) => updateForm({ maintenanceEnabled: event.target.checked })}
+              />
               <span />
             </label>
           </div>
@@ -103,10 +108,14 @@ function OperationsTab({ onSaved, onSetError, onSetNotice, settingsMap, submitti
           <div className="settings-switch-card">
             <div>
               <strong><TimerReset size={19} strokeWidth={2} aria-hidden="true" /> Rate limiting</strong>
-              <span>Giảm spam đăng nhập, webhook và thao tác tài chính.</span>
+              <span>Giảm spam đăng nhập, webhook và thaoatko tài chính.</span>
             </div>
             <label className="settings-switch">
-              <input type="checkbox" checked={form.rateLimitEnabled} onChange={(event) => updateForm({ rateLimitEnabled: event.target.checked })} />
+              <BaseInput
+                type="checkbox"
+                checked={form.rateLimitEnabled}
+                onChange={(event) => updateForm({ rateLimitEnabled: event.target.checked })}
+              />
               <span />
             </label>
           </div>
@@ -123,9 +132,24 @@ function OperationsTab({ onSaved, onSetError, onSetNotice, settingsMap, submitti
             <span>request / phút</span>
           </div>
           <div className="admin-form-grid three-columns">
-            <label><span>Auth / phút</span><input type="number" min="0" value={form.rateLimitAuth} onChange={(event) => updateForm({ rateLimitAuth: event.target.value })} /></label>
-            <label><span>Tài chính / phút</span><input type="number" min="0" value={form.rateLimitFinance} onChange={(event) => updateForm({ rateLimitFinance: event.target.value })} /></label>
-            <label><span>Webhook / phút</span><input type="number" min="0" value={form.rateLimitWebhook} onChange={(event) => updateForm({ rateLimitWebhook: event.target.value })} /></label>
+            <label><span>Auth / phút</span><BaseInput
+              type="number"
+              min="0"
+              value={form.rateLimitAuth}
+              onChange={(event) => updateForm({ rateLimitAuth: event.target.value })}
+            /></label>
+            <label><span>Tài chính / phút</span><BaseInput
+              type="number"
+              min="0"
+              value={form.rateLimitFinance}
+              onChange={(event) => updateForm({ rateLimitFinance: event.target.value })}
+            /></label>
+            <label><span>Webhook / phút</span><BaseInput
+              type="number"
+              min="0"
+              value={form.rateLimitWebhook}
+              onChange={(event) => updateForm({ rateLimitWebhook: event.target.value })}
+            /></label>
           </div>
         </div>
       )}
@@ -134,19 +158,28 @@ function OperationsTab({ onSaved, onSetError, onSetNotice, settingsMap, submitti
         <div className="settings-email-grid">
           <div className="admin-panel admin-form settings-panel">
             <div className="admin-panel-head"><h3>Reset mật khẩu</h3><Mail size={18} aria-hidden="true" /></div>
-            <label><span>Tiêu đề email</span><input value={form.resetPasswordSubject} onChange={(event) => updateForm({ resetPasswordSubject: event.target.value })} /></label>
+            <label><span>Tiêu đề email</span><BaseInput
+              value={form.resetPasswordSubject}
+              onChange={(event) => updateForm({ resetPasswordSubject: event.target.value })}
+            /></label>
             <div className="admin-form-group"><span>Nội dung email</span><RichEditor value={form.resetPasswordBody} onChange={(value) => updateForm({ resetPasswordBody: value })} minHeight={200} /></div>
           </div>
 
           <div className="admin-panel admin-form settings-panel">
             <div className="admin-panel-head"><h3>Xác minh email</h3><Mail size={18} aria-hidden="true" /></div>
-            <label><span>Tiêu đề email</span><input value={form.verifyEmailSubject} onChange={(event) => updateForm({ verifyEmailSubject: event.target.value })} /></label>
+            <label><span>Tiêu đề email</span><BaseInput
+              value={form.verifyEmailSubject}
+              onChange={(event) => updateForm({ verifyEmailSubject: event.target.value })}
+            /></label>
             <div className="admin-form-group"><span>Nội dung email</span><RichEditor value={form.verifyEmailBody} onChange={(value) => updateForm({ verifyEmailBody: value })} minHeight={200} /></div>
           </div>
 
           <div className="admin-panel admin-form settings-panel settings-email-wide">
             <div className="admin-panel-head"><h3>Xác thực hai lớp</h3></div>
-            <label><span>Tiêu đề email</span><input value={form.twoFactorSubject} onChange={(event) => updateForm({ twoFactorSubject: event.target.value })} /></label>
+            <label><span>Tiêu đề email</span><BaseInput
+              value={form.twoFactorSubject}
+              onChange={(event) => updateForm({ twoFactorSubject: event.target.value })}
+            /></label>
             <div className="admin-form-group"><span>Nội dung email</span><RichEditor value={form.twoFactorBody} onChange={(value) => updateForm({ twoFactorBody: value })} minHeight={200} /></div>
             <p className="admin-empty-state">Placeholder: {'{{name}}'}, {'{{email}}'}, {'{{link}}'}, {'{{token}}'}, {'{{code}}'}, {'{{expiresAt}}'}.</p>
           </div>

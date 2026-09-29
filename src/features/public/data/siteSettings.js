@@ -43,6 +43,7 @@ export const defaultSiteSettings = {
     name: 'Kendy Digital',
     tagline: 'Tài khoản, nâng cấp & quảng cáo',
     logoUrl: '',
+    faviconUrl: '',
     description:
       'Mua tài khoản Facebook, nâng cấp CapCut Pro, đăng ký dịch vụ quảng cáo và nhận hỗ trợ sau mua.',
     email: '',
@@ -127,6 +128,7 @@ function normalizeBrand(data) {
     name: cleanString(data?.name || data?.brand, defaultSiteSettings.brand.name),
     tagline: cleanString(data?.tagline, defaultSiteSettings.brand.tagline),
     logoUrl: cleanString(data?.logoUrl),
+    faviconUrl: cleanString(data?.faviconUrl),
     description: cleanString(data?.description, defaultSiteSettings.brand.description),
     email: cleanString(data?.email),
     phone: cleanString(data?.phone),
@@ -198,4 +200,17 @@ export function resetSiteTheme() {
   root.style.removeProperty('--kd-blue')
   root.style.removeProperty('--kd-blue-hover')
   root.style.removeProperty('--kd-cyan')
+}
+
+export function applySiteFavicon(faviconUrl, logoUrl) {
+  const iconHref = faviconUrl || logoUrl || '/favicon.svg'
+  let link = document.querySelector("link[rel~='icon']")
+  if (!link) {
+    link = document.createElement('link')
+    link.rel = 'icon'
+    document.head.appendChild(link)
+  }
+  if (link.getAttribute('href') !== iconHref) {
+    link.href = iconHref
+  }
 }

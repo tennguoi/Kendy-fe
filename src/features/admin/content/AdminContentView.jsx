@@ -27,7 +27,7 @@ import {
   normalizeHexColor,
   SITE_SETTING_SLUGS,
 } from '../../public/data/siteSettings'
-
+import BaseInput from '../../../components/ui/BaseInput'
 
 
 function clone(value) {
@@ -95,6 +95,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingFavicon, setUploadingFavicon] = useState(false)
 
   const loadContent = useCallback(async () => {
     if (!token) return
@@ -184,6 +185,24 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
       onSetError(error.message || 'Không thể tải logo lên.')
     } finally {
       setUploadingLogo(false)
+    }
+  }
+
+  const uploadFavicon = async (file) => {
+    if (!file) return
+    setUploadingFavicon(true)
+    onSetError('')
+    try {
+      const uploaded = await adminApi.uploadServiceImage(file, token)
+      setDrafts((current) => ({
+        ...current,
+        brand: { ...current.brand, faviconUrl: uploaded.url },
+      }))
+      onSetNotice('Đã tải favicon lên. Nhấn “Lưu thay đổi” để áp dụng toàn hệ thống.')
+    } catch (error) {
+      onSetError(error.message || 'Không thể tải favicon lên.')
+    } finally {
+      setUploadingFavicon(false)
     }
   }
 
@@ -347,24 +366,24 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
           {activeSection === 'banner' && (
             <div className="admin-form compact">
               <label className="admin-check-row">
-                <input
+                <BaseInput
                   type="checkbox"
                   checked={drafts.banner.enabled}
-                  onChange={(event) => updateDraft({ enabled: event.target.checked })}
+                  onChange={(value) => updateDraft({ enabled: value })}
                 />
                 <span>{t('admin.content.banner.showBanner')}</span>
               </label>
               <div className="admin-form-grid two-columns">
                 <label>
                   <span>{t('admin.content.banner.eyebrow')}</span>
-                  <input
+                  <BaseInput
                     value={drafts.banner.eyebrow}
                     onChange={(event) => updateDraft({ eyebrow: event.target.value })}
                   />
                 </label>
                 <label>
                   <span>{t('admin.content.banner.titleField')}</span>
-                  <input
+                  <BaseInput
                     value={drafts.banner.title}
                     onChange={(event) => updateDraft({ title: event.target.value })}
                     required
@@ -378,14 +397,14 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               <div className="admin-form-grid two-columns">
                 <label>
                   <span>{t('admin.content.banner.ctaLabel')}</span>
-                  <input
+                  <BaseInput
                     value={drafts.banner.ctaLabel}
                     onChange={(event) => updateDraft({ ctaLabel: event.target.value })}
                   />
                 </label>
                 <label>
                   <span>{t('admin.content.banner.ctaUrl')}</span>
-                  <input
+                  <BaseInput
                     value={drafts.banner.ctaUrl}
                     onChange={(event) => updateDraft({ ctaUrl: event.target.value })}
                     placeholder={t('admin.content.banner.ctaUrlPlaceholder')}
@@ -396,12 +415,12 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 <label>
                   <span>{t('admin.content.banner.bgColor')}</span>
                   <div className="content-color-input">
-                    <input
+                    <BaseInput
                       type="color"
                       value={drafts.banner.backgroundColor}
                       onChange={(event) => updateDraft({ backgroundColor: event.target.value })}
                     />
-                    <input
+                    <BaseInput
                       value={drafts.banner.backgroundColor}
                       onChange={(event) => updateDraft({
                         backgroundColor: normalizeHexColor(
@@ -415,12 +434,12 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 <label>
                   <span>{t('admin.content.banner.textColor')}</span>
                   <div className="content-color-input">
-                    <input
+                    <BaseInput
                       type="color"
                       value={drafts.banner.textColor}
                       onChange={(event) => updateDraft({ textColor: event.target.value })}
                     />
-                    <input
+                    <BaseInput
                       value={drafts.banner.textColor}
                       onChange={(event) => updateDraft({
                         textColor: normalizeHexColor(event.target.value, drafts.banner.textColor),
@@ -430,17 +449,17 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 </label>
               </div>
               <label className="admin-check-row">
-                <input
+                <BaseInput
                   type="checkbox"
                   checked={drafts.banner.countdownEnabled}
-                  onChange={(event) => updateDraft({ countdownEnabled: event.target.checked })}
+                  onChange={(value) => updateDraft({ countdownEnabled: value })}
                 />
                 <span>{t('admin.content.banner.countdown')}</span>
               </label>
               {drafts.banner.countdownEnabled && (
                 <label>
                   <span>{t('admin.content.banner.endTime')}</span>
-                  <input
+                  <BaseInput
                     type="datetime-local"
                     value={toLocalDateTime(drafts.banner.endsAt)}
                     onChange={(event) => updateDraft({
@@ -462,14 +481,14 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               <div className="admin-form-grid two-columns">
                 <label>
                   <span>{t('admin.content.faq.eyebrow')}</span>
-                  <input
+                  <BaseInput
                     value={drafts.faq.eyebrow}
                     onChange={(event) => updateDraft({ eyebrow: event.target.value })}
                   />
                 </label>
                 <label>
                   <span>{t('admin.content.faq.faqTitle')}</span>
-                  <input
+                  <BaseInput
                     value={drafts.faq.title}
                     onChange={(event) => updateDraft({ title: event.target.value })}
                     required
@@ -493,7 +512,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                     </div>
                     <label>
                       <span>{t('admin.content.faq.questionLabel')}</span>
-                      <input
+                      <BaseInput
                         value={item.question}
                         onChange={(event) => updateFaqItem(item.id, { question: event.target.value })}
                         required
@@ -518,41 +537,93 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               <div className="admin-form-grid two-columns">
                 <label>
                   <span>{t('admin.content.brand.brandName')}</span>
-                  <input
+                  <BaseInput
                     value={drafts.brand.name}
-                    onChange={(event) => updateDraft({ name: event.target.value })}
+                    onChange={(val) => updateDraft({ name: typeof val === 'object' && val?.target ? val.target.value : val })}
                     required
                   />
                 </label>
                 <label>
                   <span>{t('admin.content.brand.tagline')}</span>
-                  <input
+                  <BaseInput
                     value={drafts.brand.tagline}
-                    onChange={(event) => updateDraft({ tagline: event.target.value })}
+                    onChange={(val) => updateDraft({ tagline: typeof val === 'object' && val?.target ? val.target.value : val })}
                   />
                 </label>
               </div>
-              <label>
-                <span>{t('admin.content.brand.logoUrl')}</span>
-                <div className="content-logo-field">
-                  <input
-                    value={drafts.brand.logoUrl}
-                    onChange={(event) => updateDraft({ logoUrl: event.target.value })}
-                    placeholder="https://.../logo.png"
-                  />
-                  {drafts.brand.logoUrl && <img src={drafts.brand.logoUrl} alt={t('admin.content.brand.logoPreview')} />}
+
+              {/* Khối Logo Website & Tab trình duyệt (Gộp chung làm 1) */}
+              <div className="admin-brand-media-card unified-logo-card">
+                <div className="admin-brand-media-header">
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <strong>{t('admin.content.brand.logoTitle', { defaultValue: 'Logo Website & Tab trình duyệt' })}</strong>
+                      <span className="admin-badge-highlight">Dùng chung cho Website & Icon Tab</span>
+                    </div>
+                    <p>{t('admin.content.brand.logoUnifiedDesc', { defaultValue: 'Chỉ cần tải ảnh 1 lần: tự động áp dụng cho Logo trên thanh menu, Header và biểu tượng trên Tab trình duyệt.' })}</p>
+                  </div>
                 </div>
-              </label>
-              <label>
-                <span>Tải logo từ máy</span>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  disabled={uploadingLogo || submitting}
-                  onChange={(event) => uploadLogo(event.target.files?.[0])}
-                />
-                <small>{uploadingLogo ? 'Đang tải logo...' : 'Sau khi tải lên, nhấn lưu thay đổi để áp dụng.'}</small>
-              </label>
+                <div className="admin-brand-media-body">
+                  <div className="admin-brand-media-inputs">
+                    <label>
+                      <span>{t('admin.content.brand.logoUrl', { defaultValue: 'URL Logo' })}</span>
+                      <BaseInput
+                        value={drafts.brand.logoUrl || ''}
+                        onChange={(val) => {
+                          const url = typeof val === 'object' && val?.target ? val.target.value : val
+                          updateDraft({ logoUrl: url, faviconUrl: url })
+                        }}
+                        placeholder="https://.../logo.png"
+                      />
+                    </label>
+                    <div className="admin-brand-upload-row">
+                      <label className="admin-file-picker-btn">
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,image/x-icon"
+                          disabled={uploadingLogo || submitting}
+                          onChange={(e) => uploadLogo(e.target.files?.[0])}
+                        />
+                        <span>{uploadingLogo ? 'Đang tải logo...' : 'Tải logo từ máy tính'}</span>
+                      </label>
+                      {drafts.brand.logoUrl && (
+                        <button
+                          type="button"
+                          className="admin-icon-button slim danger"
+                          onClick={() => updateDraft({ logoUrl: '', faviconUrl: '' })}
+                          title="Xóa logo"
+                        >
+                          Xóa
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="admin-brand-previews-row">
+                    <div className="admin-brand-preview-box">
+                      <span className="preview-label">Trên Website</span>
+                      <div className="brand-preview-frame logo-frame">
+                        {drafts.brand.logoUrl ? (
+                          <img src={drafts.brand.logoUrl} alt={t('admin.content.brand.logoPreview')} />
+                        ) : (
+                          <span className="preview-empty">Chưa có</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="admin-brand-preview-box">
+                      <span className="preview-label">Trên Tab trình duyệt</span>
+                      <div className="browser-tab-mockup">
+                        <img
+                          src={drafts.brand.logoUrl || drafts.brand.faviconUrl || '/favicon.svg'}
+                          alt="Tab Icon"
+                          className="browser-tab-icon"
+                        />
+                        <span className="browser-tab-title">{drafts.brand.name || 'Kendy Digital'}</span>
+                        <span className="browser-tab-close" aria-hidden="true">✕</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="admin-form-group">
                 <span>{t('admin.content.brand.footerDesc')}</span>
                 <RichEditor value={drafts.brand.description} onChange={(value) => updateDraft({ description: value })} minHeight={120} />
@@ -560,7 +631,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               <div className="admin-form-grid two-columns">
                 <label>
                   <span>{t('admin.content.brand.contactEmail')}</span>
-                  <input
+                  <BaseInput
                     type="email"
                     value={drafts.brand.email}
                     onChange={(event) => updateDraft({ email: event.target.value })}
@@ -568,7 +639,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 </label>
                 <label>
                   <span>{t('admin.content.brand.phone')}</span>
-                  <input
+                  <BaseInput
                     value={drafts.brand.phone}
                     onChange={(event) => updateDraft({ phone: event.target.value })}
                   />
@@ -576,14 +647,14 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
               </div>
               <label>
                 <span>{t('admin.content.brand.address')}</span>
-                <input
+                <BaseInput
                   value={drafts.brand.address}
                   onChange={(event) => updateDraft({ address: event.target.value })}
                 />
               </label>
               <label>
                 <span>{t('admin.content.brand.copyright')}</span>
-                <input
+                <BaseInput
                   value={drafts.brand.copyright}
                   onChange={(event) => updateDraft({ copyright: event.target.value })}
                 />
@@ -601,7 +672,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                   <article key={item.id} className="content-social-row">
                     <label>
                       <span>{t('admin.content.brand.channelName')}</span>
-                      <input
+                      <BaseInput
                         value={item.label}
                         onChange={(event) => updateSocial(item.id, { label: event.target.value })}
                         placeholder={t('admin.content.brand.channelNamePlaceholder')}
@@ -609,7 +680,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                     </label>
                     <label>
                       <span>{t('admin.content.brand.url')}</span>
-                      <input
+                      <BaseInput
                         value={item.url}
                         onChange={(event) => updateSocial(item.id, { url: event.target.value })}
                         placeholder={t('admin.content.brand.urlPlaceholder')}
@@ -639,12 +710,12 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
                 <label key={key}>
                   <span>{t(tKey)}</span>
                   <div className="content-color-input">
-                    <input
+                    <BaseInput
                       type="color"
                       value={drafts.theme[key]}
                       onChange={(event) => updateDraft({ [key]: event.target.value })}
                     />
-                    <input
+                    <BaseInput
                       value={drafts.theme[key]}
                       onChange={(event) => updateDraft({
                         [key]: normalizeHexColor(event.target.value, drafts.theme[key]),

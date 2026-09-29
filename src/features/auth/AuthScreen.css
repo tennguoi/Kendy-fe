@@ -21,7 +21,7 @@
 
 @keyframes pixelDrift {
   0%   { background-position: 0 0, 0 0, 36px 72px; }
-  100% { background-position: 40px 40px, 40px 40px, 76px 112px; }
+  100% { background-position: 120px 120px, 120px 120px, 156px 192px; }
 }
 
 @keyframes glowPulse {
@@ -71,7 +71,8 @@
     linear-gradient(90deg, rgba(24, 196, 199, 0.55) 10px, transparent 10px);
   background-position: 0 0, 0 0, 36px 72px;
   background-size: 40px 40px, 40px 40px, 120px 120px;
-  animation: pixelDrift 18s linear infinite;
+  animation: pixelDrift 28s linear infinite;
+  will-change: background-position;
 }
 
 .auth-brand-content {
@@ -311,7 +312,8 @@
   gap: 16px;
 }
 
-.auth-field {
+/* ── BaseInput integration ──────────────────────────────── */
+.auth-card .base-input {
   display: grid;
   gap: 8px;
   color: var(--kd-text);
@@ -319,14 +321,88 @@
   animation: fieldAppear 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.auth-field:nth-child(1) { animation-delay: 0.35s; }
-.auth-field:nth-child(2) { animation-delay: 0.45s; }
-.auth-field:nth-child(3) { animation-delay: 0.55s; }
-.auth-field:nth-child(4) { animation-delay: 0.65s; }
-.auth-field:nth-child(5) { animation-delay: 0.75s; }
+.auth-card .base-input:nth-child(1) { animation-delay: 0.35s; }
+.auth-card .base-input:nth-child(2) { animation-delay: 0.45s; }
+.auth-card .base-input:nth-child(3) { animation-delay: 0.55s; }
+.auth-card .base-input:nth-child(4) { animation-delay: 0.65s; }
+.auth-card .base-input:nth-child(5) { animation-delay: 0.75s; }
 
-.auth-field > span {
+.auth-card .base-input-label {
   font-size: 14px;
+  font-weight: 700;
+  color: var(--kd-text);
+}
+
+.auth-card .base-input-wrapper {
+  position: relative;
+  min-height: 48px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 4px 0 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 14px;
+  background: var(--kd-bg);
+  color: var(--kd-muted);
+  overflow: hidden;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.auth-card .base-input-wrapper:focus-within {
+  border-color: var(--kd-blue);
+  box-shadow: 0 0 0 4px rgba(20, 124, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.auth-card .base-input-field {
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  padding: 13px 0;
+  background: transparent;
+  color: var(--kd-text);
+  font: inherit;
+  font-weight: 400;
+}
+
+.auth-card .base-input-field::placeholder {
+  color: var(--kd-muted);
+  opacity: 0.6;
+}
+
+.auth-card .base-input-field:-webkit-autofill,
+.auth-card .base-input-field:-webkit-autofill:hover,
+.auth-card .base-input-field:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--kd-text);
+  caret-color: var(--kd-text);
+  box-shadow: 0 0 0 1000px var(--kd-bg) inset;
+  transition: background-color 9999s ease-out;
+}
+
+.auth-card .base-input-wrapper.has-error {
+  border-color: var(--kd-danger);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
+
+.auth-card .base-input-error {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--kd-danger);
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Legacy .auth-field / .auth-input (fallback) ─────── */
+.auth-field {
+  display: grid;
+  gap: 8px;
+  color: var(--kd-text);
+  font-weight: 700;
+  animation: fieldAppear 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .auth-input {
@@ -386,6 +462,7 @@
   display: grid;
   place-items: center;
   border-radius: 10px;
+  flex: 0 0 auto;
 }
 
 .password-toggle:hover,
@@ -402,6 +479,15 @@
   gap: 14px;
 }
 
+/* ── Checkbox in auth (remove BaseInput wrapper styling) ─ */
+.checkbox-row .base-input {
+  display: contents;
+}
+
+.checkbox-row .base-input-wrapper {
+  display: contents;
+}
+
 .checkbox-row {
   min-width: 0;
   display: flex;
@@ -410,13 +496,17 @@
   color: var(--kd-muted);
   font-size: 14px;
   line-height: 1.45;
+  cursor: pointer;
 }
 
-.checkbox-row input {
-  width: 18px;
-  height: 18px;
+.checkbox-row .base-input-field,
+.checkbox-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
   flex: 0 0 auto;
   accent-color: var(--kd-blue);
+  cursor: pointer;
+  border-radius: 5px;
 }
 
 .text-action {
@@ -432,11 +522,13 @@
 }
 
 /* ── Confirm password states ─────────────────────────────── */
+.auth-card .base-input-wrapper.input-match,
 .auth-input.input-match {
   border-color: #16a34a;
   box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
 }
 
+.auth-card .base-input-wrapper.input-mismatch,
 .auth-input.input-mismatch {
   border-color: #dc2626;
   box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.10);
@@ -444,6 +536,10 @@
 
 .confirm-icon {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
   line-height: 1;
   transition: color 200ms ease;
 }

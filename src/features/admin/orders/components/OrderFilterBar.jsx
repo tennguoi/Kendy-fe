@@ -1,5 +1,6 @@
 import { orderStatuses, orderStatusLabels } from '../orders.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
+import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function OrderFilterBar({
   onQueryChange,
@@ -10,11 +11,15 @@ function OrderFilterBar({
   return (
     <div className="admin-filters">
       <SearchField value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm mã đơn, dịch vụ, user id" />
-      <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value)}>
-        {orderStatuses.map((status) => (
-          <option value={status} key={status || 'all'}>{orderStatusLabels[status] || status || 'Tất cả trạng thái'}</option>
-        ))}
-      </select>
+      <BaseSelect
+        value={statusFilter}
+        onChange={(value) => onStatusFilterChange(value)}
+        options={orderStatuses.map((status) => ({
+          value: status,
+          label: orderStatusLabels[status] || status || 'Tất cả trạng thái'
+        }))}
+        placeholder="Tất cả trạng thái"
+      />
     </div>
   )
 }
