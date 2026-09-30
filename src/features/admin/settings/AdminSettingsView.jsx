@@ -23,6 +23,7 @@ import { useSepaySettings } from './hooks/useSepaySettings'
 import { useSystemSettings } from './hooks/useSystemSettings'
 import { settingsGroups, settingsTabs } from './settings.constants'
 import { mergeSettings, sepayConfigToObject } from './settings.utils'
+import { resolveAdminError } from '../adminErrorResolver'
 
 function AdminSettingsView({
   currentUser,
@@ -34,7 +35,6 @@ function AdminSettingsView({
   const [activeTab, setActiveTab] = useState('settings')
   const [openSettingsGroup, setOpenSettingsGroup] = useState(null)
   const settingsNavRef = useRef(null)
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [health, setHealth] = useState(null)
@@ -42,8 +42,8 @@ function AdminSettingsView({
   const { t } = useTranslation()
 
   const setViewError = useCallback((message) => {
-    setError(message)
-    onSetError(message)
+    if (!message) return
+    onSetError(resolveAdminError(message))
   }, [onSetError])
 
   const systemSettings = useSystemSettings({
@@ -110,7 +110,6 @@ function AdminSettingsView({
     }
 
     setLoading(true)
-    setViewError('')
     try {
       const [
         settingsData,
@@ -151,7 +150,8 @@ function AdminSettingsView({
       setHealth(healthData)
       adminAccess.setSelectedAdminId((current) => (current && adminsData.some((admin) => admin.id === current) ? current : adminsData[0]?.id || null))
     } catch (err) {
-      setViewError(err.message || t('admin.settings.loadError'))
+      const msg = resolveAdminError(err, t('admin.settings.loadError'))
+      onSetError(msg)
     } finally {
       setLoading(false)
     }
@@ -159,8 +159,8 @@ function AdminSettingsView({
     adminAccess,
     adminJobs,
     notifications,
+    onSetError,
     sepaySettings,
-    setViewError,
     systemSettings,
     token,
     t,
@@ -212,9 +212,9 @@ function AdminSettingsView({
         </button>
       </div>
 
-      {(error || loading) && (
-        <p className={error ? 'admin-message error' : 'admin-message'}>
-          {error || t('admin.settings.loading')}
+      {loading && (
+        <p className="admin-message">
+          {t('admin.settings.loading')}
         </p>
       )}
 

@@ -42,7 +42,7 @@ function UserProfileSummary({ detail, selectedUser }) {
           <UserProfileAvatar user={profileUser} />
           <h3>{selectedUser ? selectedUser.name || selectedUser.email : t('admin.users.detail.empty')}</h3>
         </div>
-        {selectedUser && <AdminStatusBadge status={selectedUser.status} />}
+        {selectedUser && <AdminStatusBadge status={selectedUser.status} type="user" />}
       </div>
 
       <dl className="admin-detail-list">

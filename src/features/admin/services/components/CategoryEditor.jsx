@@ -18,14 +18,14 @@ function CategoryEditor({
   const { t } = useTranslation()
   return (
     <form className="admin-form service-editor admin-service-editor" onSubmit={onSubmitCategory}>
-      <div 
-        className="admin-panel-head" 
-        style={{ 
-          marginBottom: '10px', 
+      <div
+        className="admin-panel-head"
+        style={{
+          marginBottom: '10px',
           display: 'flex',
           flexDirection: 'row',
           flexWrap: 'nowrap',
-          alignItems: 'center', 
+          alignItems: 'center',
           justifyContent: 'space-between',
           gap: '12px'
         }}

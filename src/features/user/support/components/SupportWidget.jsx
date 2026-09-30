@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { supportCategories, supportCategoryLabels } from '../support.constants'
 import BaseSelect from '../../../../components/ui/BaseSelect'
 import BaseTextarea from '../../../../components/ui/BaseTextarea'
-import { isRequired, composeValidators } from '../../../../utils/validation'
+import { isRequired, validateRequired, validateFileSize } from '../../../../utils/validation'
 
 const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024
 
@@ -22,16 +22,20 @@ function SupportWidget({
   const [isOpen, setIsOpen] = useState(false)
   const [fileError, setFileError] = useState('')
 
-  // Validation for support form
-  const validateRequired = composeValidators(isRequired)
-
   const handleFileChange = (event) => {
     const selectedFile = event.target.files?.[0] || null
-    if (selectedFile && selectedFile.size > MAX_ATTACHMENT_SIZE) {
-      setFileError(t('support.maxSizeError', { defaultValue: 'Ảnh tối đa 5MB.' }))
-      onFileChange(null)
-      event.target.value = ''
-      return
+    if (selectedFile) {
+      const sizeValidation = validateFileSize(
+        selectedFile,
+        MAX_ATTACHMENT_SIZE,
+        t('support.maxSizeError', { defaultValue: 'Ảnh tối đa 5MB.' })
+      )
+      if (!sizeValidation.isValid) {
+        setFileError(sizeValidation.error)
+        onFileChange(null)
+        event.target.value = ''
+        return
+      }
     }
 
     setFileError('')
@@ -41,18 +45,8 @@ function SupportWidget({
   const handleSubmit = async (event) => {
     event.preventDefault()
 
-    // Validate form
-    const categoryValidation = validateRequired(ticketForm.category)
-    const messageValidation = validateRequired(ticketForm.message)
-
-    if (!categoryValidation.isValid) {
-      // Set error state or handle validation error
-      // For now, we'll let the form submit and validation will be handled by the onCreateTicket function
-      // In a real implementation, we might want to set form-level errors
-    }
-
-    if (!messageValidation.isValid) {
-      // Same as above
+    if (!isRequired(ticketForm.category) || !isRequired(ticketForm.message)) {
+      return
     }
 
     const saved = await onCreateTicket(event)

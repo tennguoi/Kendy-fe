@@ -60,6 +60,8 @@ axiosClient.interceptors.request.use(
     if (config.token) {
       config.headers.Authorization = `Bearer ${config.token}`;
     }
+    const currentLang = typeof window !== 'undefined' ? (localStorage.getItem('i18nextLng') || 'vi') : 'vi';
+    config.headers['Accept-Language'] = currentLang.startsWith('en') ? 'en' : 'vi';
     return config;
   },
   (error) => Promise.reject(error)

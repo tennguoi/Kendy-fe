@@ -9,8 +9,9 @@ import Loading from '../../../components/Loading/Loading'
 import BaseInput from '../../../components/ui/BaseInput'
 import BaseSelect from '../../../components/ui/BaseSelect'
 import BaseTextarea from '../../../components/ui/BaseTextarea'
+import { composeValidators, isRequired } from '../../../utils/validation'
 import { formatAdminDate } from '../adminFormat'
-import { isRequired, composeValidators } from '../../../utils/validation'
+import { resolveAdminError } from '../adminErrorResolver'
 
 const WARRANTY_STATUS_COLORS = {
   OPEN: '#ffc107',
@@ -56,11 +57,10 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [reviewForm, setReviewForm] = useState(EMPTY_FORM)
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
 
   const setViewError = useCallback((message) => {
-    setError(message)
-    onSetError(message)
+    if (!message) return
+    onSetError(resolveAdminError(message))
   }, [onSetError])
 
   // Validation for review form
@@ -79,7 +79,6 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
     if (!token) return
     const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
-    setViewError('')
     try {
       const params = statusFilter ? { status: statusFilter } : {}
       const data = await adminApi.getWarranties(token, { ...params, page: targetPage })
@@ -88,11 +87,12 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
       setTotalPages(pages)
       setCurrentPage(targetPage)
     } catch (err) {
-      setViewError(err.message || t('admin.warranty.loadError'))
+      const msg = resolveAdminError(err, t('admin.warranty.loadError'))
+      onSetError(msg)
     } finally {
       setLoading(false)
     }
-  }, [currentPage, setViewError, statusFilter, token])
+  }, [currentPage, onSetError, statusFilter, t, token])
 
   useEffect(() => { setCurrentPage(0) }, [statusFilter])
 
@@ -169,8 +169,6 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
           <span>{t('admin.warranty.reload')}</span>
         </button>
       </div>
-
-      {error && <p className="admin-message error">{error}</p>}
 
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
         <Search size={16} style={{ color: 'var(--kd-muted)' }} />

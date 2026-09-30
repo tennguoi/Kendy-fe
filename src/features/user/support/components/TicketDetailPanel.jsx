@@ -6,7 +6,7 @@ import { formatSupportDate } from '../supportFormat'
 import { toApiUrl } from '../../../../lib/api'
 import { userTicketsApi } from '../../../../api/user/tickets.api'
 import BaseTextarea from '../../../../components/ui/BaseTextarea'
-import { isRequired, composeValidators } from '../../../../utils/validation'
+import { composeValidators, isRequired } from '../../../../utils/validation'
 
 function TicketDetailPanel({
   attachments = [],

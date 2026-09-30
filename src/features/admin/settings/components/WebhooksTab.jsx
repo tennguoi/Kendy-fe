@@ -3,7 +3,7 @@ import { AdminEmptyState, AdminStatusBadge } from '../../AdminShared'
 import { formatAdminDate } from '../../adminFormat'
 import BaseInput from '../../../../components/ui/BaseInput'
 import BaseTextarea from '../../../../components/ui/BaseTextarea'
-import { isRequired, composeValidators } from '../../../../utils/validation'
+import { isRequired, validateRequired, validatePositiveInteger } from '../../../../utils/validation'
 
 function WebhooksTab({
   onRetryFormChange,
@@ -17,12 +17,7 @@ function WebhooksTab({
   submitting,
 }) {
   // Validation for retry form
-  const validateRequired = composeValidators(isRequired);
-  const validateNumeric = (value) => {
-    if (!value) return { isValid: false, error: 'This field is required' };
-    if (!/^\d+$/.test(value)) return { isValid: false, error: 'Must be a number' };
-    return { isValid: true };
-  };
+  const validateNumeric = (value) => validatePositiveInteger(value);
 
   return (
     <div className="admin-grid two-columns">
@@ -67,9 +62,7 @@ function WebhooksTab({
           const depositCodeValid = validateRequired(retryForm.depositCode);
           const reasonValid = validateRequired(retryForm.reason);
           if (!bankIdValid.isValid || !depositCodeValid.isValid || !reasonValid.isValid) {
-            // We don't have a way to set form errors in this component, so we rely on the submit handlers to handle validation.
-            // For now, we'll just call the retryWebhook function and let it handle validation.
-            // In a real implementation, we might want to set form state for errors.
+            return;
           }
           retryWebhook(event);
         }}>

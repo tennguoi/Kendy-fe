@@ -5,6 +5,7 @@ import { useToast } from './components/Toast'
 import { adminNavItems } from './features/admin/adminNavigation'
 import { navItems } from './features/user/navigation'
 import AdminRoutes from './features/admin/AdminRoutes'
+import { resolveAdminError } from './features/admin/adminErrorResolver'
 import AuthScreen from './features/auth/AuthScreen'
 import DashboardShell from './components/layout/DashboardShell'
 import UserRoutes from './features/user/UserRoutes'
@@ -49,6 +50,9 @@ function App() {
     : ''
   const initialVerifyToken = isVerifyEmailPathInitial
     ? new URLSearchParams(location.search).get('token') || ''
+    : ''
+  const initialVerifyEmail = isVerifyEmailPathInitial
+    ? new URLSearchParams(location.search).get('email') || ''
     : ''
   const [showAuthScreen, setShowAuthScreen] = useState(() => (
     Boolean(initialOAuthCallback?.error || initialOAuthCallback?.oauthTwoFactorChallenge || isPasswordResetPathInitial || isVerifyEmailPathInitial)
@@ -126,7 +130,7 @@ function App() {
     const codeKey = `errorCodes.${code}`
     const translated = t(codeKey)
     if (translated && translated !== codeKey) return translated
-    return error.message || fallback
+    return resolveAdminError(error, fallback)
   }, [t])
 
   const notify = useCallback((message, type = 'info', title = '', action = '', details = null, code = '') => {
@@ -490,7 +494,17 @@ function App() {
     navigate(nextItem?.path || '/')
   }, [navigate])
 
-  const handleAdminRouteError = useCallback(() => { }, [])
+  const handleAdminRouteError = useCallback((message) => {
+    if (message) {
+      notify(resolveAdminError(message), 'error')
+    }
+  }, [notify])
+
+  useEffect(() => {
+    if (adminOverview.error && isAdmin) {
+      notify(adminOverview.error, 'error')
+    }
+  }, [adminOverview.error, isAdmin, notify])
 
   const handleUserSettingsError = useCallback((message) => {
     if (message) {
@@ -1100,10 +1114,13 @@ function App() {
   }
 
   if (isVerifyEmailPath) {
+    const currentVerifyToken = new URLSearchParams(location.search).get('token') || initialVerifyToken
+    const currentVerifyEmail = new URLSearchParams(location.search).get('email') || initialVerifyEmail
     return (
       <AuthScreen
         initialMode="verify"
-        initialVerifyToken={initialVerifyToken}
+        initialVerifyToken={currentVerifyToken}
+        initialVerifyEmail={currentVerifyEmail}
         notice={apiNotice}
         onBack={() => navigate('/')}
         onResetComplete={handlePasswordResetComplete}
@@ -1119,6 +1136,7 @@ function App() {
           initialMode={initialAuthMode}
           initialResetCode={initialResetCode}
           initialVerifyToken={initialVerifyToken}
+          initialVerifyEmail={initialVerifyEmail}
           notice={apiNotice}
           oauthChallenge={initialOAuthCallback?.oauthTwoFactorChallenge ? {
             challengeToken: initialOAuthCallback.oauthTwoFactorChallenge,
@@ -1185,9 +1203,7 @@ function App() {
         showBalance={false}
         subtitle={t('app.adminSubtitle')}
       >
-        {adminActiveView === 'admin-overview' && adminOverview.error && (
-          <p className="admin-message error">{adminOverview.error}</p>
-        )}
+
         <AdminRoutes
           categories={adminOverview.categories}
           currentUser={currentUser}

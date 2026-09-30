@@ -28,6 +28,7 @@ import {
   SITE_SETTING_SLUGS,
 } from '../../public/data/siteSettings'
 import BaseInput from '../../../components/ui/BaseInput'
+import { resolveAdminError } from '../adminErrorResolver'
 
 
 function clone(value) {
@@ -145,7 +146,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
         ),
       )
     } catch (error) {
-      onSetError(error.message || t('admin.content.loadError'))
+      onSetError(resolveAdminError(error, t('admin.content.loadError')))
     } finally {
       setLoading(false)
     }
@@ -182,7 +183,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
       }))
       onSetNotice('Đã tải logo lên. Nhấn “Lưu thay đổi” để áp dụng toàn hệ thống.')
     } catch (error) {
-      onSetError(error.message || 'Không thể tải logo lên.')
+      onSetError(resolveAdminError(error, 'Không thể tải logo lên.'))
     } finally {
       setUploadingLogo(false)
     }
@@ -200,7 +201,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
       }))
       onSetNotice('Đã tải favicon lên. Nhấn “Lưu thay đổi” để áp dụng toàn hệ thống.')
     } catch (error) {
-      onSetError(error.message || 'Không thể tải favicon lên.')
+      onSetError(resolveAdminError(error, 'Không thể tải favicon lên.'))
     } finally {
       setUploadingFavicon(false)
     }
@@ -271,7 +272,7 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
           : t('admin.content.saveSuccess', { name: meta.title.toLowerCase() }),
       )
     } catch (error) {
-      onSetError(error.message || t('admin.content.saveError', { name: meta.title.toLowerCase() }))
+      onSetError(resolveAdminError(error, t('admin.content.saveError', { name: meta.title.toLowerCase() })))
     } finally {
       setSubmitting(false)
     }

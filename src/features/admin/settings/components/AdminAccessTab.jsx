@@ -4,7 +4,7 @@ import { formatAdminDate } from '../../adminFormat'
 import BaseInput from '../../../../components/ui/BaseInput'
 import BaseSelect from '../../../../components/ui/BaseSelect'
 import BaseTextarea from '../../../../components/ui/BaseTextarea'
-import { isRequired, composeValidators } from '../../../../utils/validation'
+import { composeValidators, isRequired, validateRequired } from '../../../../utils/validation'
 
 function AdminAccessTab({
   adminEditor,
@@ -31,8 +31,7 @@ function AdminAccessTab({
   totpSetup,
 }) {
   // Validation functions
-  const validateRequired = composeValidators(isRequired);
-  const validateRoleName = composeValidators(isRequired);
+    const validateRoleName = composeValidators(isRequired);
 
   return (
     <div className="admin-grid two-columns">
@@ -57,7 +56,7 @@ function AdminAccessTab({
           <form className="admin-form compact" onSubmit={onSaveAdminAccess}>
             <div className="admin-panel-head compact-head">
               <h3>{selectedAdmin.email}</h3>
-              <AdminStatusBadge status={selectedAdmin.status} />
+              <AdminStatusBadge status={selectedAdmin.status} type="user" />
             </div>
             <label>
               <span>Legacy role</span>

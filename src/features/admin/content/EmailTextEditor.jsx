@@ -9,8 +9,9 @@ import {
 import { adminContentApi } from '../../../api/admin/content.api'
 import RichEditor from '../../../components/RichEditor/RichEditor'
 import BaseInput from '../../../components/ui/BaseInput'
-import BaseTextarea from '../../../components/ui/BaseTextarea'
 import { isRequired, composeValidators } from '../../../utils/validation'
+import { resolveAdminError } from '../adminErrorResolver'
+
 
 function EmailTextEditor({
   activeSlug,
@@ -53,7 +54,7 @@ function EmailTextEditor({
       onSetNotice(t('admin.content.email.testSent', { email: testEmail.trim() }) || 'Email test đã gửi!')
       setTestEmail('')
     } catch (error) {
-      onSetError(error.message || 'Không thể gửi email test')
+      onSetError(resolveAdminError(error, t('admin.content.email.testSendError', { defaultValue: 'Không thể gửi email test' })))
     } finally {
       setSending(false)
     }

@@ -125,7 +125,7 @@ function UserListPanel({
                 </button>
                 <span>{getUserRoleLabel(user.role)}</span>
                 <span>{formatAdminMoney(user.balance)}</span>
-                <span><AdminStatusBadge status={user.status} /></span>
+                <span><AdminStatusBadge status={user.status} type="user" /></span>
                 <span className="admin-row-actions">
                   <button
                     type="button"

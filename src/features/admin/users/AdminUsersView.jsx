@@ -9,6 +9,7 @@ import UserListPanel from './components/UserListPanel'
 import UsersFilterBar from './components/UsersFilterBar'
 import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
+import { resolveAdminError } from '../adminErrorResolver'
 
 function AdminUsersView({
   onSetError,
@@ -23,7 +24,6 @@ function AdminUsersView({
   const [detail, setDetail] = useState(null)
   const [detailData, setDetailData] = useState({ apiKeys: [], audit: [], orders: [], sessions: [], tickets: [], wallet: [] })
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [error, setError] = useState('')
   const [hasLoadedUsers, setHasLoadedUsers] = useState(false)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
@@ -37,8 +37,8 @@ function AdminUsersView({
   const selectedUser = users.find((user) => user.id === selectedId) || users[0]
 
   const setViewError = useCallback((message) => {
-    setError(message)
-    onSetError(message)
+    if (!message) return
+    onSetError(resolveAdminError(message))
   }, [onSetError])
 
   const loadUsers = useCallback(async (page) => {
@@ -51,7 +51,6 @@ function AdminUsersView({
     const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
     setHasLoadedUsers(false)
-    setViewError('')
     try {
       const data = await adminApi.searchUsers({ query: query.trim(), status: statusFilter, page: targetPage }, token)
       const { items, totalPages: pages } = normalizePaged(data, 50)
@@ -64,12 +63,13 @@ function AdminUsersView({
           : items[0]?.id || null
       ))
     } catch (err) {
-      setViewError(err.message || t('admin.users.loadError'))
+      const msg = resolveAdminError(err, t('admin.users.loadError'))
+      onSetError(msg)
     } finally {
       setHasLoadedUsers(true)
       setLoading(false)
     }
-  }, [currentPage, query, setViewError, statusFilter, token])
+  }, [currentPage, onSetError, query, statusFilter, t, token])
 
   const loadUserDetail = useCallback(async (userId) => {
     if (!token || !userId) {
@@ -138,7 +138,7 @@ function AdminUsersView({
       setSelectedId(saved.id)
       onSetNotice(t('admin.users.statusUpdateSuccess', { email: saved.email }))
     } catch (err) {
-      setViewError(err.message || t('admin.users.statusUpdateError'))
+      onSetError(resolveAdminError(err, t('admin.users.statusUpdateError')))
     } finally {
       setSubmitting(false)
     }
@@ -162,7 +162,7 @@ function AdminUsersView({
       await loadUserDetail(saved.id)
       onSetNotice(t('admin.users.roleUpdateSuccess', { email: saved.email }))
     } catch (err) {
-      setViewError(err.message || t('admin.users.roleUpdateError'))
+      onSetError(resolveAdminError(err, t('admin.users.roleUpdateError')))
     } finally {
       setSubmitting(false)
     }
@@ -188,7 +188,7 @@ function AdminUsersView({
       await loadUserDetail(selectedUser.id)
       onSetNotice(t('admin.users.walletAdjustSuccess', { email: selectedUser.email }))
     } catch (err) {
-      setViewError(err.message || t('admin.users.walletAdjustError'))
+      onSetError(resolveAdminError(err, t('admin.users.walletAdjustError')))
     } finally {
       setSubmitting(false)
     }
@@ -206,7 +206,7 @@ function AdminUsersView({
       await loadUserDetail(selectedUser.id)
       onSetNotice(t('admin.users.apiKeyRevokeSuccess', { id: keyId }))
     } catch (err) {
-      setViewError(err.message || t('admin.users.apiKeyRevokeError'))
+      onSetError(resolveAdminError(err, t('admin.users.apiKeyRevokeError')))
     } finally {
       setSubmitting(false)
     }
@@ -224,7 +224,7 @@ function AdminUsersView({
       await loadUserDetail(selectedUser.id)
       onSetNotice(t('admin.users.sessionRevokeSuccess', { id: sessionId }))
     } catch (err) {
-      setViewError(err.message || t('admin.users.sessionRevokeError'))
+      onSetError(resolveAdminError(err, t('admin.users.sessionRevokeError')))
     } finally {
       setSubmitting(false)
     }
@@ -237,7 +237,7 @@ function AdminUsersView({
       .filter(Boolean)
 
     if (ids.length === 0) {
-      setViewError(t('admin.users.bulkIdsRequired'))
+      onSetError(t('admin.users.bulkIdsRequired'))
       return
     }
 
@@ -253,7 +253,7 @@ function AdminUsersView({
       await loadUsers()
       onSetNotice(t('admin.users.bulkUpdateSuccess', { count: saved.length }))
     } catch (err) {
-      setViewError(err.message || t('admin.users.bulkUpdateError'))
+      onSetError(resolveAdminError(err, t('admin.users.bulkUpdateError')))
     } finally {
       setSubmitting(false)
     }
@@ -285,8 +285,8 @@ function AdminUsersView({
         </button>
       </div>
 
-      {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message={t('admin.users.loading')} subMessage="" />}
+      {loading && <Loading fullScreen={false} message={t('admin.users.loading')} subMessage="" />}
+
 
       <UsersFilterBar
         onQueryChange={setQuery}

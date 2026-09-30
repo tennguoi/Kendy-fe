@@ -53,8 +53,7 @@ function ConsultSection({ onSubmit, dynamicContent, submitting = false }) {
     }
 
     // Phone validation
-    const phoneResult = isValidPhoneVn(formData.phone)
-    if (phoneResult && phoneResult.isValid === false) {
+    if (!isValidPhoneVn(formData.phone)) {
       return
     }
 
@@ -97,7 +96,8 @@ function ConsultSection({ onSubmit, dynamicContent, submitting = false }) {
             onChange={(val) => handleChange('phone', val)}
             placeholder={t('auth.phonePlaceholder', { defaultValue: '0900000000' })}
             validators={[validatePhone]}
-            errorMessage={t('settings.phoneInvalid', { defaultValue: 'Số điện thoại không hợp lệ.' })}
+            maxLength={11}
+            errorMessage={t('validation.phone')}
             disabled={submitting}
             required
           />

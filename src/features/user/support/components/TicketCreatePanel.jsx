@@ -4,7 +4,7 @@ import { supportCategories, supportPriorities, supportCategoryLabels, supportPri
 import BaseInput from '../../../../components/ui/BaseInput'
 import BaseSelect from '../../../../components/ui/BaseSelect'
 import BaseTextarea from '../../../../components/ui/BaseTextarea'
-import { isRequired, composeValidators } from '../../../../utils/validation'
+import { validateRequired } from '../../../../utils/validation'
 
 function TicketCreatePanel({
   loading,
@@ -17,8 +17,7 @@ function TicketCreatePanel({
   const { t } = useTranslation()
 
   // Validators
-  const validateRequired = composeValidators(isRequired)
-  const validateOptional = () => ({ isValid: true }) // Always valid for optional fields
+    const validateOptional = () => ({ isValid: true }) // Always valid for optional fields
 
   return (
     <article className="ticket-form">

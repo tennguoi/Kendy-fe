@@ -1,8 +1,9 @@
 export const statusLabel = {
-  ACTIVE: 'Đang bán',
-  INACTIVE: 'Ngừng bán',
+  ACTIVE: 'Hoạt động',
+  INACTIVE: 'Ngừng hoạt động',
   MAINTENANCE: 'Bảo trì',
   DISABLED: 'Vô hiệu',
+  PENDING_VERIFY: 'Chờ xác thực',
   AVAILABLE: 'Còn hàng',
   RESERVED: 'Đang giữ',
   DELIVERED: 'Đã giao',

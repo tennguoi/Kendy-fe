@@ -9,6 +9,7 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
   const removalTimeouts = useRef({});
   const tickIntervals = useRef({});
+  const recentToastsRef = useRef(new Map());
 
   // Dọn dẹp timeout/interval khi unmount
   useEffect(() => {
@@ -74,6 +75,25 @@ export function ToastProvider({ children }) {
 
   const addToast = useCallback(
     ({ type = 'info', title = '', message = '', code = '', details = null, timeout = 5000, onClick = null, to = null, action = null } = {}) => {
+      if (!message && !title) return null;
+
+      // Duplicate prevention: suppress identical toast within 2000ms
+      const now = Date.now();
+      const dedupeKey = `${type}:${title}:${message}`;
+      const lastSeen = recentToastsRef.current.get(dedupeKey) || 0;
+      if (now - lastSeen < 2000) {
+        return null;
+      }
+      recentToastsRef.current.set(dedupeKey, now);
+
+      if (recentToastsRef.current.size > 50) {
+        for (const [key, timestamp] of recentToastsRef.current.entries()) {
+          if (now - timestamp > 5000) {
+            recentToastsRef.current.delete(key);
+          }
+        }
+      }
+
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
       const hasTimer = timeout > 0;
 

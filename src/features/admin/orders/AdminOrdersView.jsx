@@ -10,6 +10,7 @@ import OrderListPanel from './components/OrderListPanel'
 import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
 import { manualQueueOptions } from './orders.constants'
+import { resolveAdminError } from '../adminErrorResolver'
 import './orders.css'
 
 function toDateTimeInput(value) {
@@ -53,7 +54,6 @@ function AdminOrdersView({
   const [bulkRefundCodes, setBulkRefundCodes] = useState('')
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
-  const [error, setError] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [manualQueue, setManualQueue] = useState('all')
@@ -91,8 +91,8 @@ function AdminOrdersView({
   const refundableOrder = selectedOrder && !['CANCELLED', 'REFUNDED'].includes(selectedOrder.status)
 
   const setViewError = useCallback((message) => {
-    setError(message)
-    onSetError(message)
+    if (!message) return
+    onSetError(resolveAdminError(message))
   }, [onSetError])
 
   const loadOrders = useCallback(async (page) => {
@@ -102,7 +102,6 @@ function AdminOrdersView({
 
     const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
-    setViewError('')
     try {
       const [data, adminData] = await Promise.all([
         adminApi.searchOrders({ query: query.trim(), status: statusFilter, page: targetPage }, token),
@@ -115,11 +114,12 @@ function AdminOrdersView({
       setCurrentPage(targetPage)
       setSelectedId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
     } catch (err) {
-      setViewError(err.message || t('admin.orders.loadError'))
+      const msg = resolveAdminError(err, t('admin.orders.loadError'))
+      onSetError(msg)
     } finally {
       setLoading(false)
     }
-  }, [currentPage, query, setViewError, statusFilter, token])
+  }, [currentPage, onSetError, query, statusFilter, t, token])
 
   useEffect(() => {
     setSelectedId((current) => (
@@ -198,7 +198,7 @@ function AdminOrdersView({
     }
 
     if ((action === 'cancel' || action === 'refund' || action === 'extend' || action === 'reprocess') && !orderForm.reason.trim()) {
-      setViewError(t('admin.orders.reasonRequired'))
+      onSetError(t('admin.orders.reasonRequired'))
       return
     }
 
@@ -234,7 +234,7 @@ function AdminOrdersView({
       await loadOrders()
       onSetNotice(t('admin.orders.updateSuccess', { code: saved.orderCode }))
     } catch (err) {
-      setViewError(err.message || t('admin.orders.updateError'))
+      onSetError(resolveAdminError(err, t('admin.orders.updateError')))
     } finally {
       setSubmitting(false)
     }
@@ -243,7 +243,7 @@ function AdminOrdersView({
   const saveAdminNote = async (event) => {
     event.preventDefault()
     if (!selectedOrder || !orderForm.adminNote.trim()) {
-      setViewError(t('admin.orders.adminNoteRequired'))
+      onSetError(t('admin.orders.adminNoteRequired'))
       return
     }
 
@@ -259,7 +259,7 @@ function AdminOrdersView({
       setDraft(formFromOrder(saved))
       onSetNotice(t('admin.orders.adminNoteSaveSuccess', { code: saved.orderCode }))
     } catch (err) {
-      setViewError(err.message || t('admin.orders.adminNoteSaveError'))
+      onSetError(resolveAdminError(err, t('admin.orders.adminNoteSaveError')))
     } finally {
       setSubmitting(false)
     }
@@ -268,7 +268,7 @@ function AdminOrdersView({
   const saveUserNote = async (event) => {
     event.preventDefault()
     if (!selectedOrder || !orderForm.userNote.trim()) {
-      setViewError(t('admin.orders.userNoteRequired'))
+      onSetError(t('admin.orders.userNoteRequired'))
       return
     }
 
@@ -284,7 +284,7 @@ function AdminOrdersView({
       setDraft(formFromOrder(saved))
       onSetNotice(t('admin.orders.userNoteSaveSuccess', { code: saved.orderCode }))
     } catch (err) {
-      setViewError(err.message || t('admin.orders.userNoteSaveError'))
+      onSetError(resolveAdminError(err, t('admin.orders.userNoteSaveError')))
     } finally {
       setSubmitting(false)
     }
@@ -312,7 +312,7 @@ function AdminOrdersView({
       await loadOrders()
       onSetNotice(t('admin.orders.workflowUpdateSuccess', { code: saved.orderCode }))
     } catch (err) {
-      setViewError(err.message || t('admin.orders.workflowUpdateError'))
+      onSetError(resolveAdminError(err, t('admin.orders.workflowUpdateError')))
     } finally {
       setSubmitting(false)
     }
@@ -330,7 +330,7 @@ function AdminOrdersView({
       setDraft(formFromOrder(saved))
       onSetNotice(t('admin.orders.workflowUpdateSuccess', { code: saved.orderCode }))
     } catch (err) {
-      setViewError(err.message || t('admin.orders.workflowUpdateError'))
+      onSetError(resolveAdminError(err, t('admin.orders.workflowUpdateError')))
     } finally {
       setSubmitting(false)
     }
@@ -344,7 +344,7 @@ function AdminOrdersView({
       .filter(Boolean)
 
     if (orderCodes.length === 0 || !orderForm.reason.trim()) {
-      setViewError(t('admin.orders.bulkRefundCodesRequired'))
+      onSetError(t('admin.orders.bulkRefundCodesRequired'))
       return
     }
 
@@ -357,7 +357,7 @@ function AdminOrdersView({
       await loadOrders()
       onSetNotice(t('admin.orders.bulkRefundSuccess', { count: savedItems.length }))
     } catch (err) {
-      setViewError(err.message || t('admin.orders.bulkRefundError'))
+      onSetError(resolveAdminError(err, t('admin.orders.bulkRefundError')))
     } finally {
       setSubmitting(false)
     }
@@ -382,8 +382,8 @@ function AdminOrdersView({
         </button>
       </div>
 
-      {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message={t('admin.orders.loading')} subMessage="" />}
+      {loading && <Loading fullScreen={false} message={t('admin.orders.loading')} subMessage="" />}
+
 
       <OrderFilterBar
         manualQueue={manualQueue}

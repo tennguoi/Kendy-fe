@@ -1,3 +1,5 @@
+import { getDefaultErrorMessage } from '../../utils/validation';
+
 /**
  * Base textarea component with validation and error display
  */
@@ -20,8 +22,12 @@ const BaseTextarea = ({
   if (validators && validators.length) {
     for (const validator of validators) {
       const result = typeof validator === 'function' ? validator(value) : validator;
+      if (typeof result === 'boolean' && !result) {
+        error = errorMessage || getDefaultErrorMessage();
+        break;
+      }
       if (result && result.isValid === false) {
-        error = result.error || errorMessage;
+        error = result.error || errorMessage || getDefaultErrorMessage();
         break;
       }
     }
@@ -34,7 +40,18 @@ const BaseTextarea = ({
         id={name}
         name={name}
         value={value !== null && value !== undefined ? value : ''}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          if (!onChange) return;
+          try {
+            onChange(e.target.value, e);
+          } catch (err) {
+            if (err instanceof TypeError && (err.message?.includes("reading 'value'") || err.message?.includes("reading 'target'"))) {
+              onChange(e);
+            } else {
+              throw err;
+            }
+          }
+        }}
         className={`base-textarea-field ${error ? 'error' : ''}`}
         disabled={disabled}
         readOnly={readOnly}

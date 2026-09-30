@@ -10,6 +10,7 @@ import SearchField from '../../../components/SearchField/SearchField'
 import { useTranslation } from 'react-i18next'
 import BaseInput from '../../../components/ui/BaseInput'
 import BaseSelect from '../../../components/ui/BaseSelect'
+import { resolveAdminError } from '../adminErrorResolver'
 
 function toInstant(value, endOfDay = false) {
   if (!value) return undefined
@@ -39,22 +40,20 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
   const [accounts, setAccounts] = useState([])
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
-  const [error, setError] = useState('')
   const [filters, setFilters] = useState({ deliveredFrom: '', deliveredTo: '', query: '', status: '' })
   const [loading, setLoading] = useState(false)
   const [revealed, setRevealed] = useState({})
   const [revealingId, setRevealingId] = useState(null)
 
   const setViewError = useCallback((message) => {
-    setError(message)
-    onSetError(message)
+    if (!message) return
+    onSetError(resolveAdminError(message))
   }, [onSetError])
 
   const loadAccounts = useCallback(async (page) => {
     if (!token) return
     const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
-    setViewError('')
     try {
       const data = await adminApi.getAssignedCredentials({
         deliveredFrom: toInstant(filters.deliveredFrom),
@@ -68,11 +67,12 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
       setTotalPages(pages)
       setCurrentPage(targetPage)
     } catch (err) {
-      setViewError(err.message || t('admin.assignedAccounts.loadError'))
+      const msg = resolveAdminError(err, t('admin.assignedAccounts.loadError'))
+      onSetError(msg)
     } finally {
       setLoading(false)
     }
-  }, [currentPage, filters, setViewError, token])
+  }, [currentPage, filters, onSetError, t, token])
 
   useEffect(() => {
     setCurrentPage(0)
@@ -124,8 +124,6 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
           <RefreshCw size={17} className={loading ? 'spin' : ''} /> {t('admin.assignedAccounts.reload')}
         </button>
       </div>
-
-      {error && <p className="admin-message error">{error}</p>}
 
       <div className="admin-metrics">
         <article className="admin-metric"><span>{t('admin.assignedAccounts.metrics.totalDelivered')}</span><strong>{metrics.total}</strong></article>

@@ -9,6 +9,7 @@ import TicketFilterBar from './components/TicketFilterBar'
 import TicketListPanel from './components/TicketListPanel'
 import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
+import { resolveAdminError } from '../adminErrorResolver'
 
 function AdminTicketsView({
   onSetError,
@@ -21,7 +22,6 @@ function AdminTicketsView({
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [editor, setEditor] = useState({ assignedAdminId: '', category: '', priority: 'NORMAL', status: 'OPEN' })
-  const [error, setError] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -41,8 +41,8 @@ function AdminTicketsView({
   const averageResolutionText = resolution ? String(Math.round(resolution.averageResolutionMinutes || 0)) : '--'
 
   const setViewError = useCallback((messageText) => {
-    setError(messageText)
-    onSetError(messageText)
+    if (!messageText) return
+    onSetError(resolveAdminError(messageText))
   }, [onSetError])
 
   const patchTicket = (saved) => {
@@ -56,7 +56,6 @@ function AdminTicketsView({
 
     const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
-    setViewError('')
     try {
       const ticketRequest = ticketQueue === 'unassigned'
         ? adminApi.getUnassignedTickets(token)
@@ -82,11 +81,12 @@ function AdminTicketsView({
       setResolution(resolutionData)
       setSelectedCode((current) => (current && items.some((ticket) => ticket.ticketCode === current) ? current : items[0]?.ticketCode || null))
     } catch (err) {
-      setViewError(err.message || t('admin.tickets.loadError'))
+      const msg = resolveAdminError(err, t('admin.tickets.loadError'))
+      onSetError(msg)
     } finally {
       setLoading(false)
     }
-  }, [categoryFilter, currentPage, priorityFilter, query, setViewError, statusFilter, ticketQueue, token])
+  }, [categoryFilter, currentPage, onSetError, priorityFilter, query, statusFilter, t, ticketQueue, token])
 
   const loadAttachments = useCallback(async (ticketCode) => {
     if (!token || !ticketCode) {
@@ -162,7 +162,7 @@ function AdminTicketsView({
       setMessage('')
       onSetNotice(t('admin.tickets.sendMessageSuccess', { code: selectedTicket.ticketCode }))
     } catch (err) {
-      setViewError(err.message || t('admin.tickets.sendMessageError'))
+      onSetError(resolveAdminError(err, t('admin.tickets.sendMessageError')))
     } finally {
       setSubmitting(false)
     }
@@ -191,7 +191,7 @@ function AdminTicketsView({
       patchTicket(saved)
       onSetNotice(t('admin.tickets.updateSuccess', { code: selectedTicket.ticketCode }))
     } catch (err) {
-      setViewError(err.message || t('admin.tickets.updateError'))
+      onSetError(resolveAdminError(err, t('admin.tickets.updateError')))
     } finally {
       setSubmitting(false)
     }
@@ -211,7 +211,7 @@ function AdminTicketsView({
       await loadAttachments(selectedTicket.ticketCode)
       onSetNotice(t('admin.tickets.uploadSuccess', { code: selectedTicket.ticketCode }))
     } catch (err) {
-      setViewError(err.message || t('admin.tickets.uploadError'))
+      onSetError(resolveAdminError(err, t('admin.tickets.uploadError')))
     } finally {
       setSubmitting(false)
     }
@@ -229,7 +229,7 @@ function AdminTicketsView({
       await loadAttachments(selectedTicket.ticketCode)
       onSetNotice(t('admin.tickets.deleteAttachmentSuccess', { id: attachmentId }))
     } catch (err) {
-      setViewError(err.message || t('admin.tickets.deleteAttachmentError'))
+      onSetError(resolveAdminError(err, t('admin.tickets.deleteAttachmentError')))
     } finally {
       setSubmitting(false)
     }
@@ -259,8 +259,8 @@ function AdminTicketsView({
         </button>
       </div>
 
-      {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message={t('admin.tickets.loading')} subMessage="" />}
+      {loading && <Loading fullScreen={false} message={t('admin.tickets.loading')} subMessage="" />}
+
 
       <TicketFilterBar
         categoryFilter={categoryFilter}

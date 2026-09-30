@@ -15,6 +15,7 @@ import WalletPanel from './components/WalletPanel'
 import Loading from '../../../components/Loading/Loading'
 import Modal from '../../../components/Modal/Modal'
 import SearchField from '../../../components/SearchField/SearchField'
+import { resolveAdminError } from '../adminErrorResolver'
 
 const bankStatuses = ['', 'NEW', 'MATCHED', 'CREDITED', 'MANUAL_REVIEW', 'DUPLICATE', 'IGNORED']
 const depositStatuses = ['', 'PENDING', 'COMPLETED', 'MANUAL_REVIEW', 'EXPIRED', 'CANCELLED']
@@ -61,7 +62,6 @@ function AdminFinanceView({
   const [depositDrawerOpen, setDepositDrawerOpen] = useState(false)
   const [depositStatus, setDepositStatus] = useState('')
   const [deposits, setDeposits] = useState([])
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [revenue, setRevenue] = useState(null)
@@ -87,8 +87,8 @@ function AdminFinanceView({
   ]
 
   const setViewError = useCallback((message) => {
-    setError(message)
-    onSetError(message)
+    if (!message) return
+    onSetError(resolveAdminError(message))
   }, [onSetError])
 
   const loadFinance = useCallback(async (page) => {
@@ -97,7 +97,6 @@ function AdminFinanceView({
     }
 
     setLoading(true)
-    setViewError('')
     try {
       const [dashboardData, revenueData] = await Promise.all([
         adminApi.getDashboard(token),
@@ -131,11 +130,12 @@ function AdminFinanceView({
         setWalletCurrentPage(targetPage)
       }
     } catch (err) {
-      setViewError(err.message || t('admin.finance.loadError'))
+      const msg = resolveAdminError(err, t('admin.finance.loadError'))
+      onSetError(msg)
     } finally {
       setLoading(false)
     }
-  }, [activeTab, bankCurrentPage, bankStatus, depositCurrentPage, depositStatus, query, setViewError, token, walletCurrentPage, walletType])
+  }, [activeTab, bankCurrentPage, bankStatus, depositCurrentPage, depositStatus, onSetError, query, t, token, walletCurrentPage, walletType])
 
   useEffect(() => {
     setBankCurrentPage(0)
@@ -240,7 +240,7 @@ function AdminFinanceView({
       await loadFinance()
       onSetNotice(t('admin.finance.bank.processSuccess', { id: saved.id }))
     } catch (err) {
-      setViewError(err.message || t('admin.finance.bank.processError'))
+      onSetError(resolveAdminError(err, t('admin.finance.bank.processError')))
     } finally {
       setSubmitting(false)
     }
@@ -254,7 +254,7 @@ function AdminFinanceView({
       .filter(Boolean)
 
     if (bankTransactionIds.length === 0 || !bankBulkForm.userId || !bankBulkForm.reason.trim()) {
-      setViewError(t('admin.finance.bank.bulkCreditRequired'))
+      onSetError(t('admin.finance.bank.bulkCreditRequired'))
       return
     }
 
@@ -272,7 +272,7 @@ function AdminFinanceView({
       await loadFinance()
       onSetNotice(t('admin.finance.bank.bulkCreditSuccess', { count: saved.length }))
     } catch (err) {
-      setViewError(err.message || t('admin.finance.bank.bulkCreditError'))
+      onSetError(resolveAdminError(err, t('admin.finance.bank.bulkCreditError')))
     } finally {
       setSubmitting(false)
     }
@@ -292,7 +292,7 @@ function AdminFinanceView({
       setActiveTab('bank')
       onSetNotice(t('admin.finance.bank.queueLoadSuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || t('admin.finance.bank.queueLoadError'))
+      onSetError(resolveAdminError(err, t('admin.finance.bank.queueLoadError')))
     } finally {
       setSubmitting(false)
     }
@@ -310,7 +310,7 @@ function AdminFinanceView({
       setActiveTab('deposits')
       onSetNotice(t('admin.finance.deposit.queueLoadSuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || t('admin.finance.deposit.queueLoadError'))
+      onSetError(resolveAdminError(err, t('admin.finance.deposit.queueLoadError')))
     } finally {
       setSubmitting(false)
     }
@@ -318,7 +318,7 @@ function AdminFinanceView({
 
   const runDepositAction = async (action) => {
     if (!selectedDeposit || !depositActionForm.reason.trim()) {
-      setViewError(t('admin.finance.deposit.selectError'))
+      onSetError(t('admin.finance.deposit.selectError'))
       return
     }
 
@@ -340,7 +340,7 @@ function AdminFinanceView({
       await loadFinance()
       onSetNotice(t('admin.finance.deposit.processSuccess', { code: saved.depositCode }))
     } catch (err) {
-      setViewError(err.message || t('admin.finance.deposit.processError'))
+      onSetError(resolveAdminError(err, t('admin.finance.deposit.processError')))
     } finally {
       setSubmitting(false)
     }
@@ -354,7 +354,7 @@ function AdminFinanceView({
       setBalanceIssues(data)
       onSetNotice(t('admin.finance.wallet.balanceCheckSuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || t('admin.finance.error.balanceCheck'))
+      onSetError(resolveAdminError(err, t('admin.finance.error.balanceCheck')))
     } finally {
       setSubmitting(false)
     }
@@ -368,7 +368,7 @@ function AdminFinanceView({
       setBalanceIssues(data)
       onSetNotice(t('admin.finance.wallet.reconciliationSuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || t('admin.finance.error.reconciliation'))
+      onSetError(resolveAdminError(err, t('admin.finance.error.reconciliation')))
     } finally {
       setSubmitting(false)
     }
@@ -382,7 +382,7 @@ function AdminFinanceView({
       setBalanceIssues(data)
       onSetNotice(t('admin.finance.report.balanceIntegritySuccess', { count: data.length }))
     } catch (err) {
-      setViewError(err.message || t('admin.finance.error.balanceIntegrity'))
+      onSetError(resolveAdminError(err, t('admin.finance.error.balanceIntegrity')))
     } finally {
       setSubmitting(false)
     }
@@ -400,7 +400,7 @@ function AdminFinanceView({
       }
       onSetNotice(t('admin.finance.report.exportSuccess', { type, format }))
     } catch (err) {
-      setViewError(err.message || t('admin.finance.error.exportFailed'))
+      onSetError(resolveAdminError(err, t('admin.finance.error.exportFailed')))
     } finally {
       setSubmitting(false)
     }
@@ -435,8 +435,8 @@ function AdminFinanceView({
         </button>
       </div>
 
-      {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message={t('admin.finance.loading')} subMessage="" />}
+      {loading && <Loading fullScreen={false} message={t('admin.finance.loading')} subMessage="" />}
+
 
       <div className="admin-metrics">
         {financeMetrics.map((metric) => {

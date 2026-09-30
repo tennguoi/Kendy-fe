@@ -5,7 +5,7 @@ import { userRoles, userRoleLabels } from '../users.constants'
 import BaseInput from '../../../../components/ui/BaseInput'
 import BaseSelect from '../../../../components/ui/BaseSelect'
 import BaseTextarea from '../../../../components/ui/BaseTextarea'
-import { isRequired, composeValidators } from '../../../../utils/validation'
+import { validateRequired } from '../../../../utils/validation'
 
 
 function UserAdminTools({
@@ -27,7 +27,6 @@ function UserAdminTools({
   const { t } = useTranslation()
   const [showPassword, setShowPassword] = useState(false)
 
-  const validateRequired = composeValidators(isRequired)
 
   const userToolTabs = useMemo(() => [
     { id: 'bulk', label: 'Bulk', icon: Shield },
@@ -73,7 +72,7 @@ function UserAdminTools({
               <span>User IDs</span>
               <BaseTextarea
                 value={bulkStatusForm.ids}
-                onChange={(event) => onBulkStatusFormChange((current) => ({ ...current, ids: event.target.value }))}
+                onChange={(val) => onBulkStatusFormChange((current) => ({ ...current, ids: val }))}
                 rows="2"
                 placeholder={t('admin.users.detail.bulkPlaceholder')}
                 validators={[validateRequired]}
@@ -84,7 +83,7 @@ function UserAdminTools({
               <span>Lý do</span>
               <BaseTextarea
                 value={bulkStatusForm.reason}
-                onChange={(event) => onBulkStatusFormChange((current) => ({ ...current, reason: event.target.value }))}
+                onChange={(val) => onBulkStatusFormChange((current) => ({ ...current, reason: val }))}
                 rows="2"
                 validators={[validateRequired]}
                 errorMessage={t('admin.users.detail.bulkReasonRequired', { defaultValue: 'Lý do là bắt buộc' })}
@@ -125,7 +124,7 @@ function UserAdminTools({
               <span>Lý do</span>
               <BaseTextarea
                 value={roleForm.reason}
-                onChange={(event) => onRoleFormChange((current) => ({ ...current, reason: event.target.value }))}
+                onChange={(val) => onRoleFormChange((current) => ({ ...current, reason: val }))}
                 rows="2"
                 validators={[validateRequired]}
                 errorMessage={t('admin.users.detail.roleReasonRequired', { defaultValue: 'Lý do thay đổi vai trò là bắt buộc' })}
@@ -162,7 +161,7 @@ function UserAdminTools({
               <BaseInput
                 type="number"
                 value={adjustForm.amount}
-                onChange={(event) => onAdjustFormChange((current) => ({ ...current, amount: event.target.value }))}
+                onChange={(val) => onAdjustFormChange((current) => ({ ...current, amount: val }))}
                 inputMode="decimal"
                 min="0"
                 step="any"
@@ -175,7 +174,7 @@ function UserAdminTools({
               <span>Lý do</span>
               <BaseTextarea
                 value={adjustForm.reason}
-                onChange={(event) => onAdjustFormChange((current) => ({ ...current, reason: event.target.value }))}
+                onChange={(val) => onAdjustFormChange((current) => ({ ...current, reason: val }))}
                 rows="3"
                 validators={[validateRequired]}
                 errorMessage={t('admin.users.detail.walletReasonRequired', { defaultValue: 'Lý do thay đổi ví là bắt buộc' })}
@@ -186,7 +185,7 @@ function UserAdminTools({
               <span className="user-password-control">
                 <BaseInput
                   value={adjustForm.confirmationPassword}
-                  onChange={(event) => onAdjustFormChange((current) => ({ ...current, confirmationPassword: event.target.value }))}
+                  onChange={(val) => onAdjustFormChange((current) => ({ ...current, confirmationPassword: val }))}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   validators={[validateRequired]}

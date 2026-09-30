@@ -12,6 +12,7 @@ import Modal from '../../../components/Modal/Modal'
 import BaseInput from '../../../components/ui/BaseInput'
 import BaseSelect from '../../../components/ui/BaseSelect'
 import BaseTextarea from '../../../components/ui/BaseTextarea'
+import { resolveAdminError } from '../adminErrorResolver'
 
 const emptyForm = {
   expiresAt: '', internalNote: '', loginIdentifier: '', passwordSecret: '',
@@ -42,7 +43,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
   const [createMode, setCreateMode] = useState(null)
 
   const fail = useCallback((message) => {
-    onSetError(message)
+    onSetError(resolveAdminError(message))
   }, [onSetError])
 
   const loadServices = useCallback(async () => {

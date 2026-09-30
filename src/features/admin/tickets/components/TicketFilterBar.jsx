@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { ticketCategories, ticketPriorities, ticketStatuses, ticketCategoryLabels, ticketPriorityLabels, ticketStatusLabels } from '../tickets.constants'
 import SearchField from '../../../../components/SearchField/SearchField'
 import BaseSelect from '../../../../components/ui/BaseSelect'
@@ -14,45 +15,56 @@ function TicketFilterBar({
   statusFilter,
   ticketQueue,
 }) {
+  const { t } = useTranslation()
   return (
     <div className="admin-filters support-filters">
       <BaseSelect
         value={ticketQueue}
         onChange={(value) => onTicketQueueChange(value)}
         options={[
-          { value: 'all', label: 'Tất cả ticket' },
-          { value: 'unassigned', label: 'Chưa assign' },
-          { value: 'mine', label: 'Assigned to me' }
+          { value: 'all', label: t('admin.tickets.filter.allTickets', { defaultValue: 'Tất cả ticket' }) },
+          { value: 'unassigned', label: t('admin.tickets.filter.unassigned', { defaultValue: 'Chưa phân công' }) },
+          { value: 'mine', label: t('admin.tickets.filter.mine', { defaultValue: 'Được gán cho tôi' }) }
         ]}
-        placeholder="All tickets"
+        placeholder={t('admin.tickets.filter.allTickets', { defaultValue: 'Tất cả ticket' })}
       />
-      <SearchField value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tìm ticket, user, chủ đề" />
+      <SearchField
+        value={query}
+        onChange={(event) => onQueryChange(event.target.value)}
+        placeholder={t('admin.tickets.filter.searchPlaceholder', { defaultValue: 'Tìm ticket, user, chủ đề' })}
+      />
       <BaseSelect
         value={statusFilter}
         onChange={(value) => onStatusFilterChange(value)}
         options={ticketStatuses.map((status) => ({
           value: status,
-          label: ticketStatusLabels[status] || status || 'Tất cả trạng thái'
+          label: !status
+            ? t('admin.tickets.filter.allStatus', { defaultValue: 'Tất cả trạng thái' })
+            : t(`status.${status}`, { defaultValue: ticketStatusLabels[status] || status }),
         }))}
-        placeholder="Tất cả trạng thái"
+        placeholder={t('admin.tickets.filter.allStatus', { defaultValue: 'Tất cả trạng thái' })}
       />
       <BaseSelect
         value={priorityFilter}
         onChange={(value) => onPriorityFilterChange(value)}
         options={ticketPriorities.map((priority) => ({
           value: priority,
-          label: ticketPriorityLabels[priority] || priority || 'Tất cả ưu tiên'
+          label: !priority
+            ? t('admin.tickets.filter.allPriorities', { defaultValue: 'Tất cả ưu tiên' })
+            : t(`priority.${priority}`, { defaultValue: ticketPriorityLabels[priority] || priority }),
         }))}
-        placeholder="Tất cả ưu tiên"
+        placeholder={t('admin.tickets.filter.allPriorities', { defaultValue: 'Tất cả ưu tiên' })}
       />
       <BaseSelect
         value={categoryFilter}
         onChange={(value) => onCategoryFilterChange(value)}
         options={ticketCategories.map((category) => ({
           value: category,
-          label: ticketCategoryLabels[category] || category || 'Tất cả danh mục'
+          label: !category
+            ? t('admin.tickets.filter.allCategories', { defaultValue: 'Tất cả danh mục' })
+            : ticketCategoryLabels[category] || category,
         }))}
-        placeholder="Tất cả danh mục"
+        placeholder={t('admin.tickets.filter.allCategories', { defaultValue: 'Tất cả danh mục' })}
       />
     </div>
   )

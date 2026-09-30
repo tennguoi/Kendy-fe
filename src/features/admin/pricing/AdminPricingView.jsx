@@ -9,6 +9,7 @@ import PricingFilterBar from './components/PricingFilterBar'
 import PricingListPanel from './components/PricingListPanel'
 import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
+import { resolveAdminError } from '../adminErrorResolver'
 
 function pricingToForm(item) {
   return {
@@ -36,7 +37,6 @@ function AdminPricingView({
   const [categorySlug, setCategorySlug] = useState('')
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
-  const [error, setError] = useState('')
   const [featuredOnly, setFeaturedOnly] = useState(false)
   const [query, setQuery] = useState('')
   const [formDraft, setFormDraft] = useState(null)
@@ -51,8 +51,8 @@ function AdminPricingView({
   const form = formDraft && formDraft.id === selectedItem?.id ? formDraft.values : pricingToForm(selectedItem || {})
 
   const setViewError = useCallback((message) => {
-    setError(message)
-    onSetError(message)
+    if (!message) return
+    onSetError(resolveAdminError(message))
   }, [onSetError])
 
   const loadPricing = useCallback(async (page) => {
@@ -62,7 +62,6 @@ function AdminPricingView({
 
     const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
-    setViewError('')
     try {
       const [categoryData, pricingData] = await Promise.all([
         adminApi.getServiceCategories(token),
@@ -81,11 +80,12 @@ function AdminPricingView({
       setCurrentPage(targetPage)
       setSelectedId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
     } catch (err) {
-      setViewError(err.message || t('admin.pricing.loadError'))
+      const msg = resolveAdminError(err, t('admin.pricing.loadError'))
+      onSetError(msg)
     } finally {
       setLoading(false)
     }
-  }, [categorySlug, currentPage, featuredOnly, query, setViewError, sort, token])
+  }, [categorySlug, currentPage, featuredOnly, onSetError, query, sort, t, token])
 
   useEffect(() => {
     setCurrentPage(0)
@@ -162,8 +162,8 @@ function AdminPricingView({
         </button>
       </div>
 
-      {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message={t('admin.pricing.loading')} subMessage="" />}
+      {loading && <Loading fullScreen={false} message={t('admin.pricing.loading')} subMessage="" />}
+
 
       <PricingFilterBar
         categories={categories}

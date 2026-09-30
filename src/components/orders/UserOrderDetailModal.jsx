@@ -8,7 +8,7 @@ import Modal from '../Modal/Modal'
 import StatusBadge from '../status/StatusBadge'
 import BaseTextarea from '../ui/BaseTextarea'
 import { formatDate } from '../../utils/date'
-import { isRequired, composeValidators } from '../../utils/validation'
+import { composeValidators, isRequired } from '../../utils/validation'
 
 function safeBlock(value, t) {
   if (!value) return t('common.noData', { defaultValue: 'Không có' })

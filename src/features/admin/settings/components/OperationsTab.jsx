@@ -1,8 +1,10 @@
 import { Mail, Save, ShieldAlert, TimerReset } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { adminApi } from '../../../../api/admin.api'
 import RichEditor from '../../../../components/RichEditor/RichEditor'
 import BaseInput from '../../../../components/ui/BaseInput'
+import { resolveAdminError } from '../../adminErrorResolver'
 
 const defaultForm = {
   maintenanceEnabled: false,
@@ -29,6 +31,7 @@ function intValue(value, fallback) {
 }
 
 function OperationsTab({ onSaved, onSetError, onSetNotice, settingsMap, submitting, token }) {
+  const { t } = useTranslation()
   const [form, setForm] = useState(defaultForm)
   const [saving, setSaving] = useState(false)
   const [activeSection, setActiveSection] = useState('general')
@@ -72,9 +75,9 @@ function OperationsTab({ onSaved, onSetError, onSetNotice, settingsMap, submitti
         ],
       }, token)
       onSaved(saved)
-      onSetNotice('Đã lưu cài đặt vận hành.')
+      onSetNotice(t('admin.settings.operations.saveSuccess', { defaultValue: 'Đã lưu cài đặt vận hành.' }))
     } catch (err) {
-      onSetError(err.message || 'Không lưu được cài đặt vận hành.')
+      onSetError(resolveAdminError(err, t('admin.settings.operations.saveError', { defaultValue: 'Không lưu được cài đặt vận hành.' })))
     } finally {
       setSaving(false)
     }

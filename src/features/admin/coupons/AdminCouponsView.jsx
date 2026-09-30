@@ -5,12 +5,20 @@ import { adminApi } from '../../../api/admin.api'
 import { normalizePaged } from '../../../utils/pagination'
 import { money } from '../../../utils/currency'
 import { AdminEmptyState, AdminStatusBadge } from '../AdminShared'
+import { resolveAdminError } from '../adminErrorResolver'
 import Modal from '../../../components/Modal/Modal'
 import Pagination from '../../../components/Pagination/Pagination'
 import BaseInput from '../../../components/ui/BaseInput'
 import BaseSelect from '../../../components/ui/BaseSelect'
 import BaseTextarea from '../../../components/ui/BaseTextarea'
-import { isRequired, composeValidators } from '../../../utils/validation'
+import {
+  isRequired,
+  composeValidators,
+  validateRequired,
+  validatePositiveNumber,
+  validateNonNegativeNumber,
+  validatePositiveInteger,
+} from '../../../utils/validation'
 
 const blankForm = {
   adminNote: '',
@@ -87,23 +95,10 @@ function payloadFromForm(form) {
 const validateCode = composeValidators(isRequired)
 const validateName = composeValidators(isRequired)
 const validateValue = (value) => {
-  if (!value) return { isValid: false, error: 'Giá trị không được để trống' }
-  const parsed = Number(value)
-  if (isNaN(parsed) || parsed < 0.01) return { isValid: false, error: 'Giá trị phải lớn hơn 0' }
-  return { isValid: true }
+  if (!value) return validateRequired(value)
+  return validatePositiveNumber(value)
 }
-const validateNumberOrZero = (value) => {
-  if (value === '') return { isValid: true } // Allow empty for optional fields
-  const parsed = Number(value)
-  if (isNaN(parsed) || parsed < 0) return { isValid: false, error: 'Phải là số không âm' }
-  return { isValid: true }
-}
-const validatePositiveInteger = (value) => {
-  if (value === '') return { isValid: true } // Allow empty for optional fields
-  const parsed = Number(value)
-  if (!Number.isInteger(parsed) || parsed < 1) return { isValid: false, error: 'Phải là số nguyên dương' }
-  return { isValid: true }
-}
+const validateNumberOrZero = (value) => validateNonNegativeNumber(value)
 
 function AdminCouponsView({ onSetError, onSetNotice, token }) {
   const { t } = useTranslation()
@@ -136,7 +131,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
       setServices(Array.isArray(serviceData) ? serviceData : [])
       onSetError?.('')
     } catch (err) {
-      onSetError?.(err.message || t('admin.coupons.loadError'))
+      onSetError?.(resolveAdminError(err, t('admin.coupons.loadError')))
     } finally {
       setLoading(false)
     }
@@ -231,7 +226,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
       onSetNotice?.(t('admin.coupons.saveSuccess', { code: saved.code }))
       setIsModalOpen(false)
     } catch (err) {
-      onSetError?.(err.message || t('admin.coupons.saveError'))
+      onSetError?.(resolveAdminError(err, t('admin.coupons.saveError')))
     } finally {
       setSaving(false)
     }
@@ -251,7 +246,7 @@ function AdminCouponsView({ onSetError, onSetNotice, token }) {
       onSetNotice?.(t('admin.coupons.statusUpdateSuccess', { code: saved.code }))
       setIsModalOpen(false)
     } catch (err) {
-      onSetError?.(err.message || t('admin.coupons.statusUpdateError'))
+      onSetError?.(resolveAdminError(err, t('admin.coupons.statusUpdateError')))
     } finally {
       setSaving(false)
     }

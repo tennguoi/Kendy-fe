@@ -4,6 +4,7 @@ import { adminApi } from '../../../../api/admin.api'
 import { publicApi } from '../../../../api/public.api'
 import BaseInput from '../../../../components/ui/BaseInput'
 import { defaultSiteSettings, SITE_SETTING_SLUGS } from '../../../public/data/siteSettings'
+import { resolveAdminError } from '../../adminErrorResolver'
 
 function BrandTab({ onSetError, onSetNotice, token }) {
   const { t } = useTranslation()
@@ -33,7 +34,7 @@ function BrandTab({ onSetError, onSetNotice, token }) {
         }
       }
     } catch (err) {
-      onSetError?.(err.message || 'Không thể tải cấu hình thương hiệu.')
+      onSetError?.(resolveAdminError(err, t('admin.settings.brand.loadError', { defaultValue: 'Không thể tải cấu hình thương hiệu.' })))
     } finally {
       setLoading(false)
     }
@@ -54,9 +55,9 @@ function BrandTab({ onSetError, onSetNotice, token }) {
     try {
       const uploaded = await adminApi.uploadServiceImage(file, token)
       setDraft((curr) => ({ ...curr, logoUrl: uploaded.url }))
-      onSetNotice?.('Đã tải logo lên. Nhấn “Lưu thay đổi” để áp dụng.')
+      onSetNotice?.(t('admin.settings.brand.logoUploaded', { defaultValue: 'Đã tải logo lên. Nhấn “Lưu thay đổi” để áp dụng.' }))
     } catch (err) {
-      onSetError?.(err.message || 'Không thể tải logo lên.')
+      onSetError?.(resolveAdminError(err, t('admin.settings.brand.logoUploadError', { defaultValue: 'Không thể tải logo lên.' })))
     } finally {
       setUploadingLogo(false)
     }
@@ -69,9 +70,9 @@ function BrandTab({ onSetError, onSetNotice, token }) {
     try {
       const uploaded = await adminApi.uploadServiceImage(file, token)
       setDraft((curr) => ({ ...curr, faviconUrl: uploaded.url }))
-      onSetNotice?.('Đã tải favicon lên. Nhấn “Lưu thay đổi” để áp dụng.')
+      onSetNotice?.(t('admin.settings.brand.faviconUploaded', { defaultValue: 'Đã tải favicon lên. Nhấn “Lưu thay đổi” để áp dụng.' }))
     } catch (err) {
-      onSetError?.(err.message || 'Không thể tải favicon lên.')
+      onSetError?.(resolveAdminError(err, t('admin.settings.brand.faviconUploadError', { defaultValue: 'Không thể tải favicon lên.' })))
     } finally {
       setUploadingFavicon(false)
     }
@@ -103,9 +104,9 @@ function BrandTab({ onSetError, onSetNotice, token }) {
 
       setRecord(saved)
       window.dispatchEvent(new CustomEvent('kd-site-settings-updated'))
-      onSetNotice?.('Đã lưu cấu hình Logo & Thương hiệu thành công.')
+      onSetNotice?.(t('admin.settings.brand.saveSuccess', { defaultValue: 'Đã lưu cấu hình Logo & Thương hiệu thành công.' }))
     } catch (err) {
-      onSetError?.(err.message || 'Không thể lưu cấu hình.')
+      onSetError?.(resolveAdminError(err, t('admin.settings.brand.saveError', { defaultValue: 'Không thể lưu cấu hình.' })))
     } finally {
       setSubmitting(false)
     }

@@ -27,7 +27,7 @@ import './AuthScreen.css';
 
 // Import base components and validation utilities
 import BaseInput from '../../components/ui/BaseInput';
-import { isValidEmail, isRequired, minLength, composeValidators } from '../../utils/validation';
+import { isValidEmail, isRequired, minLength, composeValidators, isValidPhoneVn, validatePhoneVn, isMatching } from '../../utils/validation';
 
 const defaultOAuthProviders = [
   { id: 'google', name: 'Google', authorizationUrl: '/oauth2/authorization/google' },
@@ -160,8 +160,8 @@ function AuthScreen({
   const validateEmail = composeValidators(isRequired, isValidEmail);
   const validatePassword = composeValidators(isRequired, minLength(8));
   const validateConfirmPassword = (value) => {
-    if (!value) return { isValid: false, error: t('auth.error.confirmPasswordRequired', { defaultValue: 'Vui lòng xác nhận lại mật khẩu.' }) };
-    if (value !== form.password) return { isValid: false, error: t('auth.error.passwordMismatch', { defaultValue: 'Mật khẩu xác nhận chưa khớp.' }) };
+    if (!isRequired(value)) return { isValid: false, error: t('auth.error.confirmPasswordRequired') };
+    if (!isMatching(value, form.password)) return { isValid: false, error: t('auth.error.passwordMismatch') };
     return { isValid: true };
   };
   const validateName = composeValidators(isRequired);
@@ -173,7 +173,7 @@ function AuthScreen({
     clearToasts('error');
 
     if (twoFactorStep?.type === 'oauth') {
-      if (!form.twoFactorCode.trim()) {
+      if (!isRequired(form.twoFactorCode)) {
         setError(t('auth.error.enter2FACode'));
         return;
       }
@@ -219,7 +219,7 @@ function AuthScreen({
         setVerifyEmail('');
         setForm((current) => ({ ...current, email: verifiedEmail }));
       } catch (err) {
-        const msg = err.message || t('auth.error.invalidVerifyCode');
+        const msg = (err.code && t(`errorCodes.${err.code}`)) || err.message || t('auth.error.invalidVerifyCode');
         setError(msg);
         addToast({ type: 'error', title: t('common.error'), message: msg });
       } finally {
@@ -256,7 +256,7 @@ function AuthScreen({
     }
 
     if (mode === 'reset-verify') {
-      if (!resetCode.trim()) {
+      if (!isRequired(resetCode)) {
         setError(t('auth.error.enterResetCode'));
         addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterResetCode') });
         return;
@@ -292,7 +292,7 @@ function AuthScreen({
         return;
       }
 
-      if (form.password !== form.confirmPassword) {
+      if (!isMatching(form.password, form.confirmPassword)) {
         setError(t('auth.error.passwordMismatch'));
         addToast({ type: 'error', title: t('common.error'), message: t('auth.error.passwordMismatch') });
         return;
@@ -323,35 +323,49 @@ function AuthScreen({
     }
 
     // Login and Register validation
-    if (!form.email.trim() || !form.password) {
+    if (!isRequired(form.email) || !isRequired(form.password)) {
       setError(t('auth.error.enterEmailPassword'));
       addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterEmailPassword') });
       return;
     }
 
-    if (mode === 'register' && !form.name.trim()) {
+    if (!isValidEmail(form.email)) {
+      const msg = t('validation.email');
+      setError(msg);
+      addToast({ type: 'error', title: t('common.error'), message: msg });
+      return;
+    }
+
+    if (mode === 'register' && !isRequired(form.name)) {
       setError(t('auth.error.enterName'));
       addToast({ type: 'error', title: t('common.error'), message: t('auth.error.enterName') });
       return;
     }
 
-    if (mode === 'register' && form.password.length < 8) {
+    if (mode === 'register' && isRequired(form.phone) && !isValidPhoneVn(form.phone)) {
+      const msg = t('validation.phone');
+      setError(msg);
+      addToast({ type: 'error', title: t('common.error'), message: msg });
+      return;
+    }
+
+    if (mode === 'register' && !minLength(form.password, 8)) {
       setError(t('auth.error.passwordMinLength'));
       addToast({ type: 'error', title: t('common.error'), message: t('auth.error.passwordMinLength') });
       return;
     }
 
-    if (mode === 'register' && !form.confirmPassword) {
-      const msg = t('auth.error.confirmPasswordRequired', { defaultValue: 'Vui lòng xác nhận lại mật khẩu.' });
+    if (mode === 'register' && !isRequired(form.confirmPassword)) {
+      const msg = t('auth.error.confirmPasswordRequired');
       setError(msg);
-      addToast({ type: 'error', title: t('common.error', { defaultValue: 'Lỗi' }), message: msg });
+      addToast({ type: 'error', title: t('common.error'), message: msg });
       return;
     }
 
-    if (mode === 'register' && form.password !== form.confirmPassword) {
-      const msg = t('auth.error.passwordMismatch', { defaultValue: 'Mật khẩu xác nhận chưa khớp.' });
+    if (mode === 'register' && !isMatching(form.password, form.confirmPassword)) {
+      const msg = t('auth.error.passwordMismatch');
       setError(msg);
-      addToast({ type: 'error', title: t('common.error', { defaultValue: 'Lỗi' }), message: msg });
+      addToast({ type: 'error', title: t('common.error'), message: msg });
       return;
     }
 
@@ -540,7 +554,11 @@ function AuthScreen({
 
             {mode === 'verify' && (
               <>
-                <p className="auth-message">{t('auth.verifyCodeSent')} <strong>{verifyEmail}</strong>.</p>
+                <p className="auth-message">
+                  {verifyEmail ? (
+                    <>{t('auth.verifyCodeSent')} <strong>{verifyEmail}</strong>.</>
+                  ) : t('auth.verifyCodeFromEmail', { defaultValue: 'Nhập mã xác thực trong email của bạn.' })}
+                </p>
                 <BaseInput
                   label={t('auth.verifyCodeLabel')}
                   value={verifyToken}
@@ -549,29 +567,32 @@ function AuthScreen({
                   errorMessage={t('auth.error.enterVerifyCode')}
                   placeholder="123456"
                   inputMode="numeric"
+                  autoComplete="one-time-code"
                   maxLength={64}
                 />
-                <button
-                  type="button"
-                  className="text-action"
-                  disabled={busy}
-                  onClick={async () => {
-                    setBusy(true);
-                    setError('');
-                    try {
-                      await authApi.resendVerification({ email: verifyEmail });
-                      addToast({ type: 'success', title: t('auth.toast.verifyTitle'), message: t('auth.success.resend') });
-                    } catch (err) {
-                      const msg = err.message || t('auth.error.resendFailed');
-                      setError(msg);
-                      addToast({ type: 'error', title: t('common.error'), message: msg });
-                    } finally {
-                      setBusy(false);
-                    }
-                  }}
-                >
-                  {t('auth.resendCode')}
-                </button>
+                {verifyEmail && (
+                  <button
+                    type="button"
+                    className="text-action"
+                    disabled={busy}
+                    onClick={async () => {
+                      setBusy(true);
+                      setError('');
+                      try {
+                        await authApi.resendVerification({ email: verifyEmail });
+                        addToast({ type: 'success', title: t('auth.toast.verifyTitle'), message: t('auth.success.resend') });
+                      } catch (err) {
+                        const msg = (err.code && t(`errorCodes.${err.code}`)) || err.message || t('auth.error.resendFailed');
+                        setError(msg);
+                        addToast({ type: 'error', title: t('common.error'), message: msg });
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                  >
+                    {t('auth.resendCode')}
+                  </button>
+                )}
               </>
             )}
 
@@ -649,7 +670,7 @@ function AuthScreen({
               </>
             )}
 
-            {!twoFactorStep && mode !== 'forgot' && mode !== 'reset-verify' && mode !== 'reset' && (
+            {!twoFactorStep && mode !== 'forgot' && mode !== 'reset-verify' && mode !== 'reset' && mode !== 'verify' && (
               <BaseInput
                 label={t('auth.emailLabel')}
                 value={form.email}
@@ -679,15 +700,16 @@ function AuthScreen({
                 label={t('auth.phoneLabel')}
                 value={form.phone}
                 onChange={(value) => updateForm('phone', value)}
-                validators={[isRequired]} // Simple required validation for phone
-                errorMessage={t('auth.error.enterPhone')}
+                validators={[validatePhoneVn]}
+                errorMessage={t('validation.phone')}
                 placeholder={t('auth.phonePlaceholder')}
+                maxLength={11}
                 inputMode="tel"
                 autoComplete="tel"
               />
             )}
 
-            {!twoFactorStep && mode !== 'forgot' && mode !== 'reset-verify' && mode !== 'reset' && (
+            {!twoFactorStep && mode !== 'forgot' && mode !== 'reset-verify' && mode !== 'reset' && mode !== 'verify' && (
               <BaseInput
                 label={t('auth.passwordLabel')}
                 value={form.password}
@@ -743,24 +765,22 @@ function AuthScreen({
             )}
           </div>
 
-          <div className="auth-options">
-            {mode !== 'register' && !twoFactorStep && mode !== 'forgot' && mode !== 'reset' && (
-              <>
-                <label className="checkbox-row">
-                  <input
-                    type="checkbox"
-                    checked={form.remember}
-                    onChange={(e) => updateForm('remember', e.target.checked)}
-                  />
-                  <span>{t('auth.rememberLogin')}</span>
-                </label>
-                <button type="button" className="text-action" onClick={() => switchMode('forgot')}>
-                  <KeyRound size={16} strokeWidth={2} aria-hidden="true" />
-                  {t('auth.forgotPasswordLink')}
-                </button>
-              </>
-            )}
-          </div>
+          {mode !== 'register' && !twoFactorStep && mode !== 'forgot' && mode !== 'reset' && mode !== 'verify' && (
+            <div className="auth-options">
+              <label className="checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={form.remember}
+                  onChange={(e) => updateForm('remember', e.target.checked)}
+                />
+                <span>{t('auth.rememberLogin')}</span>
+              </label>
+              <button type="button" className="text-action" onClick={() => switchMode('forgot')}>
+                <KeyRound size={16} strokeWidth={2} aria-hidden="true" />
+                {t('auth.forgotPasswordLink')}
+              </button>
+            </div>
+          )}
 
           {(error || notice) && <p className={error ? 'auth-message error' : 'auth-message'}>{error || notice}</p>}
 
@@ -815,6 +835,8 @@ function AuthScreen({
                 <>
                   <span>{t('auth.verifiedEmail')}</span>
                   <button type="button" onClick={() => switchMode('login')}>{t('auth.login')}</button>
+                  <span style={{ margin: '0 8px', opacity: 0.4 }}>•</span>
+                  <button type="button" onClick={() => switchMode('register')}>{t('auth.registerAgain', { defaultValue: 'Đăng ký lại' })}</button>
                 </>
               ) : mode === 'forgot' || mode === 'reset-verify' || mode === 'reset' ? (
                 <>

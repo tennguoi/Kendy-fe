@@ -1,4 +1,5 @@
 import { faqGroups } from './faqs.public'
+import { isValidHexColor } from '../../../utils/validation'
 
 export const SITE_SETTING_SLUGS = {
   banner: 'promo-banner',
@@ -81,7 +82,7 @@ function cleanString(value, fallback = '') {
 }
 
 export function normalizeHexColor(value, fallback) {
-  return /^#[0-9a-f]{6}$/i.test(value || '') ? value : fallback
+  return isValidHexColor(value) ? value : fallback
 }
 
 function normalizeFaq(data) {

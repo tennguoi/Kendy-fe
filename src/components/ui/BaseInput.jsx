@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getDefaultErrorMessage } from '../../utils/validation';
 
 /**
  * Base input component with validation and error display
@@ -39,11 +40,11 @@ const BaseInput = ({
     for (const validator of validators) {
       const result = typeof validator === 'function' ? validator(value) : validator;
       if (typeof result === 'boolean' && !result) {
-        error = errorMessage;
+        error = errorMessage || getDefaultErrorMessage();
         break;
       }
       if (result && result.isValid === false) {
-        error = result.error || errorMessage;
+        error = result.error || errorMessage || getDefaultErrorMessage();
         break;
       }
     }
@@ -65,7 +66,15 @@ const BaseInput = ({
       return;
     }
     const val = type === 'checkbox' ? e.target.checked : e.target.value;
-    onChange(val, e);
+    try {
+      onChange(val, e);
+    } catch (err) {
+      if (err instanceof TypeError && (err.message?.includes("reading 'value'") || err.message?.includes("reading 'checked'") || err.message?.includes("reading 'target'"))) {
+        onChange(e);
+      } else {
+        throw err;
+      }
+    }
   };
 
   const inputProps = {
@@ -90,7 +99,7 @@ const BaseInput = ({
   return (
     <div className="base-input">
       {label && <label htmlFor={name} className="base-input-label">{label}</label>}
-      <div className={`base-input-wrapper ${shouldShowError ? 'has-error' : ''}`}>
+      <div className={`base-input-wrapper ${shouldShowError ? 'has-error' : ''} ${children ? 'has-addon' : ''}`}>
         <input {...inputProps} />
         {children}
       </div>

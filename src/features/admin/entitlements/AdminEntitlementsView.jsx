@@ -9,7 +9,8 @@ import { formatAdminDate } from '../adminFormat'
 import BaseInput from '../../../components/ui/BaseInput'
 import BaseSelect from '../../../components/ui/BaseSelect'
 import BaseTextarea from '../../../components/ui/BaseTextarea'
-import { isRequired, composeValidators } from '../../../utils/validation'
+import { composeValidators, isRequired } from '../../../utils/validation'
+import { resolveAdminError } from '../adminErrorResolver'
 
 const statusKeys = {
   PENDING: 'admin.entitlements.status.PENDING',
@@ -44,7 +45,7 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
       const data = await adminApi.getEntitlements(token)
       setItems(Array.isArray(data) ? data : data?.content || [])
     } catch (err) {
-      onSetError(err.message || t('admin.entitlements.loadError'))
+      onSetError(resolveAdminError(err, t('admin.entitlements.loadError')))
     } finally {
       setLoading(false)
     }
@@ -113,7 +114,7 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
       setActionDraft(null)
       onSetNotice(t('admin.entitlements.updateSuccess', { id: item.id }))
     } catch (err) {
-      onSetError(err.message || t('admin.entitlements.updateError'))
+      onSetError(resolveAdminError(err, t('admin.entitlements.updateError')))
     } finally {
       setBusyId(null)
     }

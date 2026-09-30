@@ -11,6 +11,7 @@ import ServiceListPanel from './components/ServiceListPanel'
 import Pagination from '../../../components/Pagination/Pagination'
 import Loading from '../../../components/Loading/Loading'
 import Modal from '../../../components/Modal/Modal'
+import { resolveAdminError } from '../adminErrorResolver'
 
 const emptyServiceForm = {
   accessDurationDays: '30',
@@ -230,7 +231,6 @@ function AdminServicesView({
   const { t } = useTranslation()
   const [categories, setCategories] = useState([])
   const [categoryForm, setCategoryForm] = useState(emptyCategoryForm)
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
@@ -261,8 +261,8 @@ function AdminServicesView({
   const ungroupedServices = services.filter((service) => !service.categoryId && !service.categoryName).length
 
   const setViewError = useCallback((message) => {
-    setError(message)
-    onSetError(message)
+    if (!message) return
+    onSetError(resolveAdminError(message))
   }, [onSetError])
 
   const loadCategories = useCallback(async () => {
@@ -273,9 +273,9 @@ function AdminServicesView({
     try {
       setCategories(await adminApi.getServiceCategories(token))
     } catch (err) {
-      setViewError(err.message || t('admin.services.loadCategoriesError'))
+      onSetError(resolveAdminError(err, t('admin.services.loadCategoriesError')))
     }
-  }, [setViewError, token])
+  }, [onSetError, t, token])
 
   const loadServices = useCallback(async (page) => {
     if (!token) {
@@ -284,7 +284,6 @@ function AdminServicesView({
 
     const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
-    setViewError('')
     try {
       const data = await adminApi.searchServices({ query: query.trim(), status: statusFilter, page: targetPage }, token)
       const { items, totalPages: pages } = normalizePaged(data, 100)
@@ -293,11 +292,12 @@ function AdminServicesView({
       setCurrentPage(targetPage)
       setSelectedServiceId((current) => (current && items.some((item) => item.id === current) ? current : items[0]?.id || null))
     } catch (err) {
-      setViewError(err.message || t('admin.services.loadServicesError'))
+      const msg = resolveAdminError(err, t('admin.services.loadServicesError'))
+      onSetError(msg)
     } finally {
       setLoading(false)
     }
-  }, [currentPage, query, setViewError, statusFilter, token])
+  }, [currentPage, onSetError, query, statusFilter, t, token])
 
   const reloadAll = useCallback(async () => {
     await Promise.all([loadCategories(), loadServices()])
@@ -854,8 +854,8 @@ function AdminServicesView({
         </div>
       </div>
 
-      {error && <p className="admin-message error">{error}</p>}
-      {!error && loading && <Loading fullScreen={false} message={t('admin.services.loading')} subMessage="" />}
+      {loading && <Loading fullScreen={false} message={t('admin.services.loading')} subMessage="" />}
+
 
       <div className="admin-services-summary" aria-label={t('admin.services.title')}>
         <div>

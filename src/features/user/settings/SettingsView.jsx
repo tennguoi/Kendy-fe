@@ -4,6 +4,8 @@ import {
   Code2,
   Copy,
   Download,
+  Eye,
+  EyeOff,
   FileText,
   Globe2,
   ImageUp,
@@ -30,7 +32,7 @@ import { useTheme } from '../../../contexts/ThemeContext'
 
 // Import base components and validation utilities
 import BaseInput from '../../../components/ui/BaseInput';
-import { isValidEmail, isRequired, minLength, composeValidators, isValidPhoneVn } from '../../../utils/validation';
+import { isValidEmail, isRequired, minLength, composeValidators, isValidPhoneVn, isMatching, validateFileSize } from '../../../utils/validation';
 
 function profileToForm(user) {
   const avatarUrl = user?.avatarUrl || user?.avatar || user?.picture || user?.imageUrl || user?.photoUrl || ''
@@ -82,14 +84,30 @@ function SettingsView({
   const [totpSetup, setTotpSetup] = useState(null)
   const [twoFactorForm, setTwoFactorForm] = useState({ code: '', password: '' })
   const [twoFactorEmailSent, setTwoFactorEmailSent] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showTwoFactorPassword, setShowTwoFactorPassword] = useState(false)
 
   // Mobile optimization tab state
   const [activeSettingsTab, setActiveSettingsTab] = useState('general')
 
-  const setViewError = useCallback((message) => {
-    setError(message)
-    onSetError(message)
-  }, [onSetError])
+  const setViewError = useCallback((errOrMessage, fallback = '') => {
+    let msg = ''
+    if (typeof errOrMessage === 'string') {
+      msg = errOrMessage
+    } else if (errOrMessage && typeof errOrMessage === 'object') {
+      if (errOrMessage.code && t(`errorCodes.${errOrMessage.code}`, { defaultValue: '' })) {
+        msg = t(`errorCodes.${errOrMessage.code}`)
+      } else {
+        msg = errOrMessage.message || fallback || 'Đã có lỗi xảy ra'
+      }
+    } else {
+      msg = fallback || 'Đã có lỗi xảy ra'
+    }
+    setError(msg)
+    onSetError(msg)
+  }, [onSetError, t])
 
   const sessionList = normalizeList(sessions)
   const apiKeyList = normalizeList(apiKeys)
@@ -118,7 +136,7 @@ function SettingsView({
       setApiKeys(normalizeList(apiKeyData))
       setNotifications(normalizeList(notificationData))
     } catch (err) {
-      setViewError(err.message || t('settings.loadError', { defaultValue: 'Không tải được cài đặt tài khoản.' }))
+      setViewError(err, t('settings.loadError', { defaultValue: 'Không tải được cài đặt tài khoản.' }))
     } finally {
       setLoading(false)
     }
@@ -131,10 +149,11 @@ function SettingsView({
 
   // Validation functions
   const validateEmail = composeValidators(isRequired, isValidEmail);
+  const validateCurrentPassword = composeValidators(isRequired);
   const validatePassword = composeValidators(isRequired, minLength(8));
   const validateConfirmPassword = (value) => {
-    if (!value) return { isValid: false, error: t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' }) };
-    if (value !== passwordForm.newPassword) return { isValid: false, error: t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' }) };
+    if (!isRequired(value)) return { isValid: false, error: t('settings.confirmPasswordRequired', { defaultValue: 'Vui lòng xác nhận mật khẩu mới.' }) };
+    if (!isMatching(value, passwordForm.newPassword)) return { isValid: false, error: t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' }) };
     return { isValid: true };
   };
   const validateName = composeValidators(isRequired);
@@ -148,6 +167,11 @@ function SettingsView({
     const nameValidation = validateName(profileForm.name);
     if (!nameValidation.isValid) {
       setViewError(nameValidation.error || t('settings.nameRequired', { defaultValue: 'Tên hiển thị không được để trống.' }))
+      return
+    }
+
+    if (isRequired(profileForm.phone) && !isValidPhoneVn(profileForm.phone)) {
+      setViewError(t('validation.phone'))
       return
     }
 
@@ -174,6 +198,11 @@ function SettingsView({
     if (!file) {
       return
     }
+    const sizeCheck = validateFileSize(file, 5 * 1024 * 1024, t('settings.avatarSizeError', { defaultValue: 'Ảnh đại diện tối đa 5MB.' }))
+    if (!sizeCheck.isValid) {
+      setViewError(sizeCheck.error)
+      return
+    }
     setUploadingAvatar(true)
     setViewError('')
     try {
@@ -182,7 +211,7 @@ function SettingsView({
       setProfileForm(profileToForm(saved))
       onSetNotice(t('settings.avatarUploaded', { defaultValue: 'Đã cập nhật ảnh đại diện.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.avatarUploadError', { defaultValue: 'Không tải được ảnh đại diện.' }))
+      setViewError(err, t('settings.avatarUploadError', { defaultValue: 'Không tải được ảnh đại diện.' }))
     } finally {
       setUploadingAvatar(false)
     }
@@ -195,7 +224,7 @@ function SettingsView({
 
   const changePassword = async (event) => {
     event.preventDefault()
-    const currentPasswordValidation = validatePassword(passwordForm.currentPassword);
+    const currentPasswordValidation = validateCurrentPassword(passwordForm.currentPassword);
     const newPasswordValidation = validatePassword(passwordForm.newPassword);
     const confirmPasswordValidation = validateConfirmPassword(passwordForm.confirmPassword);
 
@@ -205,12 +234,17 @@ function SettingsView({
     }
 
     if (!newPasswordValidation.isValid) {
-      setViewError(newPasswordValidation.error || t('settings.newPasswordRequired', { defaultValue: 'Mật khẩu mới không được để trống.' }))
+      setViewError(newPasswordValidation.error || t('settings.newPasswordValidation', { defaultValue: 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.' }))
       return
     }
 
     if (!confirmPasswordValidation.isValid) {
       setViewError(confirmPasswordValidation.error || t('settings.confirmPasswordRequired', { defaultValue: 'Vui lòng xác nhận mật khẩu mới.' }))
+      return
+    }
+
+    if (passwordForm.currentPassword === passwordForm.newPassword) {
+      setViewError(t('errorCodes.AUTH_NEW_PASSWORD_SAME', { defaultValue: 'Mật khẩu mới phải khác mật khẩu hiện tại.' }))
       return
     }
 
@@ -226,7 +260,7 @@ function SettingsView({
       await loadSettings()
       onSetNotice(t('settings.passwordChanged', { defaultValue: 'Đã đổi mật khẩu.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.passwordChangeError', { defaultValue: 'Không đổi được mật khẩu.' }))
+      setViewError(err, t('settings.passwordChangeError', { defaultValue: 'Không đổi được mật khẩu.' }))
     } finally {
       setSubmitting(false)
     }
@@ -238,7 +272,7 @@ function SettingsView({
     const confirmPasswordValidation = validateConfirmPassword(passwordForm.confirmPassword);
 
     if (!newPasswordValidation.isValid) {
-      setViewError(newPasswordValidation.error || t('settings.newPasswordRequired', { defaultValue: 'Mật khẩu mới không được để trống.' }))
+      setViewError(newPasswordValidation.error || t('settings.newPasswordValidation', { defaultValue: 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.' }))
       return
     }
 
@@ -258,7 +292,7 @@ function SettingsView({
       await loadSettings()
       onSetNotice(t('settings.passwordSet', { defaultValue: 'Đã thiết lập mật khẩu. Bạn có thể đăng nhập bằng email/mật khẩu.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.passwordSetError', { defaultValue: 'Không thiết lập được mật khẩu.' }))
+      setViewError(err, t('settings.passwordSetError', { defaultValue: 'Không thiết lập được mật khẩu.' }))
     } finally {
       setSubmitting(false)
     }
@@ -272,7 +306,7 @@ function SettingsView({
       setTwoFactorEmailSent(true)
       onSetNotice(t('settings.twoFAEmailSent', { defaultValue: 'Đã gửi mã xác thực 2FA qua email.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.twoFAEmailError', { defaultValue: 'Không gửi được mã xác thực 2FA.' }))
+      setViewError(err, t('settings.twoFAEmailError', { defaultValue: 'Không gửi được mã xác thực 2FA.' }))
     } finally {
       setSubmitting(false)
     }
@@ -296,7 +330,7 @@ function SettingsView({
       await loadSettings()
       onSetNotice(t('settings.twoFAEmailEnabled', { defaultValue: 'Đã bật 2FA qua email.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.twoFAEmailEnableError', { defaultValue: 'Không bật được 2FA qua email.' }))
+      setViewError(err, t('settings.twoFAEmailEnableError', { defaultValue: 'Không bật được 2FA qua email.' }))
     } finally {
       setSubmitting(false)
     }
@@ -309,7 +343,7 @@ function SettingsView({
       setTotpSetup(await userApi.setupTwoFactor(token))
       onSetNotice(t('settings.totpSetupCreated', { defaultValue: 'Đã tạo mã cài đặt TOTP.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.totpSetupError', { defaultValue: 'Không tạo được mã cài đặt TOTP.' }))
+      setViewError(err, t('settings.totpSetupError', { defaultValue: 'Không tạo được mã cài đặt TOTP.' }))
     } finally {
       setSubmitting(false)
     }
@@ -333,7 +367,7 @@ function SettingsView({
       await loadSettings()
       onSetNotice(t('settings.totpEnabled', { defaultValue: 'Đã bật 2FA TOTP.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.totpCodeInvalid', { defaultValue: 'Mã TOTP không hợp lệ.' }))
+      setViewError(err, t('settings.totpCodeInvalid', { defaultValue: 'Mã TOTP không hợp lệ.' }))
     } finally {
       setSubmitting(false)
     }
@@ -365,7 +399,7 @@ function SettingsView({
       await loadSettings()
       onSetNotice(t('settings.twoFAProcessed', { defaultValue: 'Đã xử lý cài đặt 2FA.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.twoFAProcessError', { defaultValue: 'Không xử lý được cài đặt 2FA.' }))
+      setViewError(err, t('settings.twoFAProcessError', { defaultValue: 'Không xử lý được cài đặt 2FA.' }))
     } finally {
       setSubmitting(false)
     }
@@ -379,7 +413,7 @@ function SettingsView({
       setSessions(normalizeList(await userApi.getSessions(token)))
       onSetNotice(t('settings.sessionRevoked', { id: sessionId, defaultValue: 'Đã thu hồi session #{{id}}.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.sessionRevokeError', { defaultValue: 'Không thu hồi được session.' }))
+      setViewError(err, t('settings.sessionRevokeError', { defaultValue: 'Không thu hồi được session.' }))
     } finally {
       setSubmitting(false)
     }
@@ -393,7 +427,7 @@ function SettingsView({
       setSessions([])
       onSetNotice(t('settings.allSessionsRevoked', { defaultValue: 'Đã thu hồi tất cả session.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.allSessionsRevokeError', { defaultValue: 'Không thu hồi được tất cả session.' }))
+      setViewError(err, t('settings.allSessionsRevokeError', { defaultValue: 'Không thu hồi được tất cả session.' }))
     } finally {
       setSubmitting(false)
     }
@@ -420,7 +454,7 @@ function SettingsView({
       await loadSettings()
       onSetNotice(t('settings.apiKeyCreated', { defaultValue: 'Đã tạo API key mới.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.apiKeyCreateError', { defaultValue: 'Không tạo được API key.' }))
+      setViewError(err, t('settings.apiKeyCreateError', { defaultValue: 'Không tạo được API key.' }))
     } finally {
       setSubmitting(false)
     }
@@ -434,7 +468,7 @@ function SettingsView({
       setApiKeys(normalizeList(await userApi.getApiKeys(token)))
       onSetNotice(t('settings.apiKeyRevoked', { id: keyId, defaultValue: 'Đã thu hồi API key #{{id}}.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.apiKeyRevokeError', { defaultValue: 'Không thu hồi được API key.' }))
+      setViewError(err, t('settings.apiKeyRevokeError', { defaultValue: 'Không thu hồi được API key.' }))
     } finally {
       setSubmitting(false)
     }
@@ -456,7 +490,7 @@ function SettingsView({
       URL.revokeObjectURL(url)
       onSetNotice(t('settings.exportData', { defaultValue: 'Đã xuất dữ liệu cá nhân.' }))
     } catch (err) {
-      setViewError(err.message || t('settings.exportDataError', { defaultValue: 'Không xuất được dữ liệu cá nhân.' }))
+      setViewError(err, t('settings.exportDataError', { defaultValue: 'Không xuất được dữ liệu cá nhân.' }))
     } finally {
       setSubmitting(false)
     }
@@ -477,7 +511,7 @@ function SettingsView({
       onSetNotice(t('settings.accountDeleted', { defaultValue: 'Tài khoản đã được xoá/ẩn danh.' }))
       window.location.assign('/')
     } catch (err) {
-      setViewError(err.message || t('settings.accountDeleteError', { defaultValue: 'Không xoá được tài khoản.' }))
+      setViewError(err, t('settings.accountDeleteError', { defaultValue: 'Không xoá được tài khoản.' }))
     } finally {
       setSubmitting(false)
     }
@@ -692,8 +726,9 @@ function SettingsView({
                           value={profileForm.phone}
                           onChange={(value) => setProfileForm((current) => ({ ...current, phone: value }))}
                           validators={[validatePhone]}
-                          errorMessage={t('settings.phoneInvalid', { defaultValue: 'Số điện thoại không hợp lệ.' })}
+                          errorMessage={t('validation.phone')}
                           placeholder={t('settings.phonePlaceholder', { defaultValue: 'Nhập số điện thoại' })}
+                          maxLength={11}
                           inputMode="tel"
                           autoComplete="tel"
                         />
@@ -804,12 +839,22 @@ function SettingsView({
                             label={t('settings.currentPassword', { defaultValue: 'Mật khẩu hiện tại' })}
                             value={passwordForm.currentPassword}
                             onChange={(value) => setPasswordForm((current) => ({ ...current, currentPassword: value }))}
-                            validators={[validatePassword]}
+                            validators={[validateCurrentPassword]}
                             errorMessage={t('settings.currentPasswordRequired', { defaultValue: 'Mật khẩu hiện tại không được để trống.' })}
-                            type="password"
+                            type={showCurrentPassword ? 'text' : 'password'}
                             autoComplete="current-password"
                             required
-                          />
+                          >
+                            <button
+                              type="button"
+                              className="password-toggle"
+                              onClick={() => setShowCurrentPassword((prev) => !prev)}
+                              title={showCurrentPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                              aria-label={showCurrentPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                            >
+                              {showCurrentPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                            </button>
+                          </BaseInput>
                         </div>
                         <div className="settings-input-group full-width">
                           <BaseInput
@@ -819,10 +864,20 @@ function SettingsView({
                             validators={[validatePassword]}
                             errorMessage={t('settings.newPasswordValidation', { defaultValue: 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.' })}
                             minLength="8"
-                            type="password"
+                            type={showNewPassword ? 'text' : 'password'}
                             autoComplete="new-password"
                             required
-                          />
+                          >
+                            <button
+                              type="button"
+                              className="password-toggle"
+                              onClick={() => setShowNewPassword((prev) => !prev)}
+                              title={showNewPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                              aria-label={showNewPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                            >
+                              {showNewPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                            </button>
+                          </BaseInput>
                         </div>
                         <div className="settings-input-group full-width">
                           <BaseInput
@@ -832,10 +887,20 @@ function SettingsView({
                             validators={[validateConfirmPassword]}
                             errorMessage={t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' })}
                             minLength="8"
-                            type="password"
+                            type={showConfirmPassword ? 'text' : 'password'}
                             autoComplete="new-password"
                             required
-                          />
+                          >
+                            <button
+                              type="button"
+                              className="password-toggle"
+                              onClick={() => setShowConfirmPassword((prev) => !prev)}
+                              title={showConfirmPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                              aria-label={showConfirmPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                            >
+                              {showConfirmPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                            </button>
+                          </BaseInput>
                         </div>
                         <div className="full-width" style={{ marginTop: '8px' }}>
                           <button type="submit" className="settings-btn-save" disabled={submitting}>
@@ -863,10 +928,20 @@ function SettingsView({
                             validators={[validatePassword]}
                             errorMessage={t('settings.newPasswordValidation', { defaultValue: 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.' })}
                             minLength="8"
-                            type="password"
+                            type={showNewPassword ? 'text' : 'password'}
                             autoComplete="new-password"
                             required
-                          />
+                          >
+                            <button
+                              type="button"
+                              className="password-toggle"
+                              onClick={() => setShowNewPassword((prev) => !prev)}
+                              title={showNewPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                              aria-label={showNewPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                            >
+                              {showNewPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                            </button>
+                          </BaseInput>
                         </div>
                         <div className="settings-input-group full-width">
                           <BaseInput
@@ -876,10 +951,20 @@ function SettingsView({
                             validators={[validateConfirmPassword]}
                             errorMessage={t('settings.passwordMismatch', { defaultValue: 'Mật khẩu mới và xác nhận mật khẩu không khớp.' })}
                             minLength="8"
-                            type="password"
+                            type={showConfirmPassword ? 'text' : 'password'}
                             autoComplete="new-password"
                             required
-                          />
+                          >
+                            <button
+                              type="button"
+                              className="password-toggle"
+                              onClick={() => setShowConfirmPassword((prev) => !prev)}
+                              title={showConfirmPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                              aria-label={showConfirmPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                            >
+                              {showConfirmPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                            </button>
+                          </BaseInput>
                         </div>
                         <div className="full-width" style={{ marginTop: '8px' }}>
                           <button type="submit" className="settings-btn-save" disabled={submitting}>
@@ -969,9 +1054,19 @@ function SettingsView({
                               onChange={(value) => setTwoFactorForm((current) => ({ ...current, password: value }))}
                               validators={[isRequired]}
                               errorMessage={t('settings.twoFAPasswordRequired', { defaultValue: 'Nhập mật khẩu hiện tại để xử lý 2FA.' })}
-                              type="password"
+                              type={showTwoFactorPassword ? 'text' : 'password'}
                               placeholder={t('settings.passwordAuthPlaceholder', { defaultValue: 'Nhập mật khẩu hiện tại của bạn' })}
-                            />
+                            >
+                              <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setShowTwoFactorPassword((prev) => !prev)}
+                                title={showTwoFactorPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                                aria-label={showTwoFactorPassword ? t('auth.hidePassword', { defaultValue: 'Ẩn mật khẩu' }) : t('auth.showPassword', { defaultValue: 'Hiện mật khẩu' })}
+                              >
+                                {showTwoFactorPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                              </button>
+                            </BaseInput>
                           </div>
                         )}
                         <div className="settings-input-group full-width">
