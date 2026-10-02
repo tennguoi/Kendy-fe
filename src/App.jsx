@@ -64,6 +64,7 @@ function App() {
   const [checkoutCouponError, setCheckoutCouponError] = useState('')
   const [checkoutCouponQuote, setCheckoutCouponQuote] = useState(null)
   const [checkoutCouponSubmitting, setCheckoutCouponSubmitting] = useState(false)
+  const [checkoutModalError, setCheckoutModalError] = useState(null)
   const [accessToken, setAccessToken] = useState(() => initialOAuthCallback?.token || getStoredAccessToken())
   const [rememberSession, setRememberSession] = useState(() => Boolean(initialOAuthCallback?.token) || hasPersistentSession())
   const [currentUser, setCurrentUser] = useState(null)
@@ -721,6 +722,7 @@ function App() {
       setCheckoutCouponCode('')
       setCheckoutCouponError('')
       setCheckoutCouponQuote(null)
+      setCheckoutModalError(null)
       setCheckoutService(service)
     } catch (err) {
       const message = purchaseErrorMessage(err, t)
@@ -733,6 +735,7 @@ function App() {
     setCheckoutCouponCode(value)
     setCheckoutCouponError('')
     setCheckoutCouponQuote(null)
+    setCheckoutModalError((prev) => (prev?.type === 'coupon' ? null : prev))
   }
 
   const handleApplyCheckoutCoupon = async () => {
@@ -770,6 +773,14 @@ function App() {
     setCheckoutCouponCode('')
     setCheckoutCouponError('')
     setCheckoutCouponQuote(null)
+    setCheckoutModalError(null)
+  }
+
+  const handleContinueWithoutCoupon = () => {
+    setCheckoutCouponCode('')
+    setCheckoutCouponQuote(null)
+    setCheckoutCouponError('')
+    setCheckoutModalError(null)
   }
 
   const handlePayWithWallet = async (formData = {}) => {
@@ -787,6 +798,7 @@ function App() {
     }
 
     setCheckoutSubmitting(true)
+    setCheckoutModalError(null)
     try {
       const order = await userApi.createOrder({
         serviceId,
@@ -806,9 +818,37 @@ function App() {
       notify(message, 'success')
       closeCheckoutModal()
     } catch (err) {
-      const message = purchaseErrorMessage(err, t)
-      setApiNotice(message)
-      notify(message, 'error')
+      const code = err.code || ''
+      const msg = purchaseErrorMessage(err, t)
+      const isCouponLimit = code === 'COUPON_USAGE_LIMIT' || code === 'COUPON_ALREADY_USED' || msg.includes('hết lượt') || msg.includes('usage limit')
+      const isOutOfStock = code === 'SERVICE_OUT_OF_STOCK' || msg.includes('hết hàng') || msg.includes('out of stock')
+
+      if (isCouponLimit) {
+        setCheckoutCouponQuote(null)
+        setCheckoutCouponCode('')
+        setCheckoutModalError({
+          code: code || 'COUPON_USAGE_LIMIT',
+          message: msg,
+          type: 'coupon',
+        })
+        notify(msg, 'warning')
+      } else if (isOutOfStock) {
+        setCheckoutModalError({
+          code: code || 'SERVICE_OUT_OF_STOCK',
+          message: msg,
+          type: 'stock',
+        })
+        refreshBootstrapData().catch(() => {})
+        notify(msg, 'error')
+      } else {
+        setCheckoutModalError({
+          code,
+          message: msg,
+          type: 'general',
+        })
+        notify(msg, 'error')
+      }
+      setApiNotice(msg)
     } finally {
       setCheckoutSubmitting(false)
     }
@@ -828,6 +868,7 @@ function App() {
     }
 
     setCheckoutSubmitting(true)
+    setCheckoutModalError(null)
     try {
       const serviceId = resolveServiceId(checkoutService)
       const checkout = await userApi.createServiceCheckout({
@@ -844,9 +885,37 @@ function App() {
       closeCheckoutModal()
       notify(t('app.transferCheckoutCreated', { code: deposit.depositCode, name: checkout.serviceName || checkoutService.name }), 'success')
     } catch (err) {
-      const message = resolveErrorMessage(err, t('app.transferCheckoutError'))
-      setApiNotice(message)
-      notify(message, 'error')
+      const code = err.code || ''
+      const msg = purchaseErrorMessage(err, t)
+      const isCouponLimit = code === 'COUPON_USAGE_LIMIT' || code === 'COUPON_ALREADY_USED' || msg.includes('hết lượt') || msg.includes('usage limit')
+      const isOutOfStock = code === 'SERVICE_OUT_OF_STOCK' || msg.includes('hết hàng') || msg.includes('out of stock')
+
+      if (isCouponLimit) {
+        setCheckoutCouponQuote(null)
+        setCheckoutCouponCode('')
+        setCheckoutModalError({
+          code: code || 'COUPON_USAGE_LIMIT',
+          message: msg,
+          type: 'coupon',
+        })
+        notify(msg, 'warning')
+      } else if (isOutOfStock) {
+        setCheckoutModalError({
+          code: code || 'SERVICE_OUT_OF_STOCK',
+          message: msg,
+          type: 'stock',
+        })
+        refreshBootstrapData().catch(() => {})
+        notify(msg, 'error')
+      } else {
+        setCheckoutModalError({
+          code,
+          message: msg,
+          type: 'general',
+        })
+        notify(msg, 'error')
+      }
+      setApiNotice(msg)
     } finally {
       setCheckoutSubmitting(false)
     }
@@ -1316,8 +1385,11 @@ function App() {
         couponError={checkoutCouponError}
         couponQuote={checkoutCouponQuote}
         couponSubmitting={checkoutCouponSubmitting}
+        modalError={checkoutModalError}
         onApplyCoupon={handleApplyCheckoutCoupon}
+        onClearModalError={() => setCheckoutModalError(null)}
         onClose={closeCheckoutModal}
+        onContinueWithoutCoupon={handleContinueWithoutCoupon}
         onCouponChange={handleCheckoutCouponChange}
         onPayTransfer={handlePayByTransfer}
         onPayWallet={handlePayWithWallet}

@@ -50,12 +50,31 @@ export function resolveServiceId(service) {
   return service?.id ?? service?.serviceId
 }
 
-export function purchaseErrorMessage(error, t = (key) => key) {
+export function purchaseErrorMessage(error, t = (key, opt) => (typeof opt === 'string' ? opt : key)) {
   if (!error) return t('orderPurchaseError', 'Không tạo được đơn.')
   const code = error.code || ''
-  const codeKey = `errorCodes.${code}`
-  const translated = t(codeKey)
-  if (translated && translated !== codeKey) return translated
+  const message = String(error.message || '')
+
+  if (code) {
+    const codeKey = `errorCodes.${code}`
+    const translated = t(codeKey)
+    if (translated && translated !== codeKey) return translated
+  }
+
+  const upper = message.toUpperCase()
+  if (upper.includes('COUPON USAGE LIMIT') || upper.includes('USAGE LIMIT REACHED')) {
+    const translated = t('errorCodes.COUPON_USAGE_LIMIT')
+    if (translated && translated !== 'errorCodes.COUPON_USAGE_LIMIT') return translated
+  }
+  if (upper.includes('COUPON USER LIMIT') || upper.includes('ALREADY USED')) {
+    const translated = t('errorCodes.COUPON_ALREADY_USED')
+    if (translated && translated !== 'errorCodes.COUPON_ALREADY_USED') return translated
+  }
+  if (upper.includes('NO ACCOUNT CREDENTIALS') || upper.includes('OUT OF STOCK')) {
+    const translated = t('errorCodes.SERVICE_OUT_OF_STOCK')
+    if (translated && translated !== 'errorCodes.SERVICE_OUT_OF_STOCK') return translated
+  }
+
   return error.message || t('orderPurchaseError', 'Không tạo được đơn.')
 }
 

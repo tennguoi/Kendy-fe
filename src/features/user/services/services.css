@@ -584,6 +584,137 @@
   }
 }
 
+.payment-alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid transparent;
+  font-size: 13px;
+  line-height: 1.45;
+  animation: paymentAlertSlide 0.2s ease both;
+}
+
+@keyframes paymentAlertSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-alert-banner.coupon-warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.payment-alert-banner.stock-error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.payment-alert-banner.general-error {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
+}
+
+.payment-alert-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.payment-alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.payment-alert-content strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.payment-alert-content p {
+  margin: 0;
+  font-size: 12.5px;
+}
+
+.payment-alert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.payment-alert-btn-primary {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #d97706;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.payment-alert-btn-primary:hover {
+  background: #b45309;
+}
+
+.payment-alert-btn-secondary {
+  padding: 6px 10px;
+  border: 1px solid rgba(146, 64, 14, 0.3);
+  border-radius: 8px;
+  background: transparent;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-alert-btn-secondary:hover {
+  background: rgba(251, 191, 36, 0.18);
+}
+
+.payment-alert-btn-danger {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.payment-alert-btn-danger:hover {
+  background: #b91c1c;
+}
+
+.kd-spin {
+  animation: kdSpin 0.9s linear infinite;
+}
+
+@keyframes kdSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
 
 /* Responsive */
 @media (max-width: 1024px) {

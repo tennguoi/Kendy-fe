@@ -1,4 +1,4 @@
-import { CreditCard, Wallet, X } from 'lucide-react'
+import { AlertCircle, AlertTriangle, CreditCard, Loader2, Wallet, X } from 'lucide-react'
 import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { money } from '../../../../utils/currency'
@@ -10,8 +10,11 @@ function PaymentChoiceModal({
   couponError,
   couponQuote,
   couponSubmitting,
-  onClose,
+  modalError,
   onApplyCoupon,
+  onClearModalError,
+  onClose,
+  onContinueWithoutCoupon,
   onCouponChange,
   onPayTransfer,
   onPayWallet,
@@ -73,6 +76,81 @@ function PaymentChoiceModal({
           </button>
         </div>
 
+        {modalError && (
+          <div
+            className={`payment-alert-banner ${
+              modalError.type === 'coupon'
+                ? 'coupon-warning'
+                : modalError.type === 'stock'
+                ? 'stock-error'
+                : 'general-error'
+            }`}
+            role="alert"
+          >
+            {modalError.type === 'stock' ? (
+              <AlertTriangle size={20} className="payment-alert-icon" />
+            ) : (
+              <AlertCircle size={20} className="payment-alert-icon" />
+            )}
+            <div className="payment-alert-content">
+              {modalError.type === 'coupon' && (
+                <strong>{t('checkout.couponExpiredNoticeTitle', { defaultValue: 'Mã giảm giá vừa hết lượt!' })}</strong>
+              )}
+              {modalError.type === 'stock' && (
+                <strong>{t('errorCodes.SERVICE_OUT_OF_STOCK', { defaultValue: 'Tạm hết hàng' })}</strong>
+              )}
+              <p>{modalError.message}</p>
+              <div className="payment-alert-actions">
+                {modalError.type === 'coupon' && (
+                  <>
+                    <button
+                      type="button"
+                      className="payment-alert-btn-primary"
+                      onClick={() => {
+                        if (onContinueWithoutCoupon) onContinueWithoutCoupon()
+                        else onClearModalError?.()
+                      }}
+                    >
+                      {t('checkout.continueWithoutCoupon', {
+                        amount: money.format(price),
+                        defaultValue: `Tiếp tục mua với giá gốc (${money.format(price)})`,
+                      })}
+                    </button>
+                    <button
+                      type="button"
+                      className="payment-alert-btn-secondary"
+                      onClick={() => {
+                        onClearModalError?.()
+                        onCouponChange?.('')
+                      }}
+                    >
+                      {t('checkout.tryAnotherCoupon', { defaultValue: 'Đổi mã khác' })}
+                    </button>
+                  </>
+                )}
+                {modalError.type === 'stock' && (
+                  <button
+                    type="button"
+                    className="payment-alert-btn-danger"
+                    onClick={onClose}
+                  >
+                    {t('checkout.outOfStockClose', { defaultValue: 'Đã hiểu, đóng cửa sổ' })}
+                  </button>
+                )}
+                {modalError.type === 'general' && (
+                  <button
+                    type="button"
+                    className="payment-alert-btn-secondary"
+                    onClick={onClearModalError}
+                  >
+                    {t('common.close', { defaultValue: 'Đóng' })}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="payment-summary">
           <span>{priceLabel}</span>
           <strong>{service.priceText || money.format(price)}</strong>
@@ -95,15 +173,23 @@ function PaymentChoiceModal({
           <BaseInput
             label={t('checkout.discountCode', { defaultValue: 'Mã giảm giá' })}
             value={couponCode}
-            onChange={onCouponChange}
+            onChange={(val) => {
+              if (modalError?.type === 'coupon') onClearModalError?.()
+              onCouponChange?.(val)
+            }}
             placeholder={t('checkout.couponPlaceholder', { defaultValue: 'Nhập coupon' })}
+            disabled={submitting}
           />
           <button
             type="button"
             disabled={couponSubmitting || submitting || !couponCode?.trim()}
             onClick={onApplyCoupon}
           >
-            {t('checkout.couponApply', { defaultValue: 'Áp dụng' })}
+            {couponSubmitting ? (
+              <Loader2 size={16} className="kd-spin" />
+            ) : (
+              t('checkout.couponApply', { defaultValue: 'Áp dụng' })
+            )}
           </button>
           {(couponQuote?.valid || couponError) && (
             <small className={couponQuote?.valid ? 'success' : 'error'}>
@@ -125,6 +211,7 @@ function PaymentChoiceModal({
                   value={formData[key] || ''}
                   onChange={(value) => setFormData(prev => ({ ...prev, [key]: value }))}
                   placeholder={prop.placeholder || t('checkout.inputPlaceholder', { label: prop.label || key, defaultValue: 'Nhập {{label}}...' })}
+                  disabled={submitting}
                 />
               </div>
             ))}
@@ -132,28 +219,56 @@ function PaymentChoiceModal({
         )}
 
         <div className="payment-options">
-          <button type="button" disabled={!canUseWallet || submitting || !isFormValid} onClick={() => onPayWallet(formData)}>
-            <Wallet size={20} strokeWidth={2.2} />
+          <button
+            type="button"
+            disabled={!canUseWallet || submitting || !isFormValid || modalError?.type === 'stock'}
+            onClick={() => onPayWallet(formData)}
+          >
+            {submitting ? (
+              <Loader2 size={20} className="kd-spin" strokeWidth={2.2} />
+            ) : (
+              <Wallet size={20} strokeWidth={2.2} />
+            )}
             <span>
-              <strong>{walletAction}</strong>
+              <strong>
+                {submitting
+                  ? t('checkout.processingOrder', { defaultValue: 'Đang xử lý đơn...' })
+                  : walletAction}
+              </strong>
               <small>
-                {canUseWallet
-                  ? (isAccountStock
-                      ? t('checkout.walletDeductAuto', { defaultValue: 'Trừ ví và giao tài khoản tự động.' })
-                      : t('checkout.walletDeductManual', { defaultValue: 'Trừ ví và gửi yêu cầu cho admin xử lý.' }))
-                  : t('checkout.walletInsufficient', { amount: money.format(missingAmount), defaultValue: 'Thiếu {{amount}} trong ví.' })
+                {modalError?.type === 'stock'
+                  ? t('errorCodes.SERVICE_OUT_OF_STOCK', { defaultValue: 'Dịch vụ hiện đang hết hàng.' })
+                  : canUseWallet
+                    ? (isAccountStock
+                        ? t('checkout.walletDeductAuto', { defaultValue: 'Trừ ví và giao tài khoản tự động.' })
+                        : t('checkout.walletDeductManual', { defaultValue: 'Trừ ví và gửi yêu cầu cho admin xử lý.' }))
+                    : t('checkout.walletInsufficient', { amount: money.format(missingAmount), defaultValue: 'Thiếu {{amount}} trong ví.' })
                 }
               </small>
             </span>
           </button>
-          <button type="button" disabled={submitting || !isFormValid || payableAmount <= 1000} onClick={() => onPayTransfer(formData)}>
-            <CreditCard size={20} strokeWidth={2.2} />
+          <button
+            type="button"
+            disabled={submitting || !isFormValid || payableAmount <= 1000 || modalError?.type === 'stock'}
+            onClick={() => onPayTransfer(formData)}
+          >
+            {submitting ? (
+              <Loader2 size={20} className="kd-spin" strokeWidth={2.2} />
+            ) : (
+              <CreditCard size={20} strokeWidth={2.2} />
+            )}
             <span>
-              <strong>{t('checkout.payByTransfer', { defaultValue: 'Thanh toán chuyển khoản' })}</strong>
+              <strong>
+                {submitting
+                  ? t('checkout.processingOrder', { defaultValue: 'Đang xử lý đơn...' })
+                  : t('checkout.payByTransfer', { defaultValue: 'Thanh toán chuyển khoản' })}
+              </strong>
               <small>
-                {payableAmount > 1000
-                  ? t('checkout.transferQRNote', { defaultValue: 'Tạo mã QR đúng số tiền đơn hàng, không cần nạp thủ công trước.' })
-                  : t('checkout.transferMinAmount', { defaultValue: 'Số tiền chuyển khoản phải lớn hơn 1.000đ.' })
+                {modalError?.type === 'stock'
+                  ? t('errorCodes.SERVICE_OUT_OF_STOCK', { defaultValue: 'Dịch vụ hiện đang hết hàng.' })
+                  : payableAmount > 1000
+                    ? t('checkout.transferQRNote', { defaultValue: 'Tạo mã QR đúng số tiền đơn hàng, không cần nạp thủ công trước.' })
+                    : t('checkout.transferMinAmount', { defaultValue: 'Số tiền chuyển khoản phải lớn hơn 1.000đ.' })
                 }
               </small>
             </span>
