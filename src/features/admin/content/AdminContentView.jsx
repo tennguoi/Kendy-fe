@@ -259,6 +259,9 @@ function AdminContentView({ onSetError, onSetNotice, token }) {
             sortOrder: 0,
           }
       const existing = records[slug]
+      if (existing) {
+        payload.version = existing.version
+      }
       const saved = existing
         ? await adminApi.updateContent(existing.id, payload, token)
         : await adminApi.createContent(payload, token)

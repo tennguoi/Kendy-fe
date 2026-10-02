@@ -96,6 +96,7 @@ function BrandTab({ onSetError, onSetNotice, token }) {
         seoDescription: null,
         published: true,
         sortOrder: 0,
+        version: record?.version,
       }
 
       const saved = record?.id

@@ -42,8 +42,8 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
   const [createMenuOpen, setCreateMenuOpen] = useState(false)
   const [createMode, setCreateMode] = useState(null)
 
-  const fail = useCallback((message) => {
-    onSetError(resolveAdminError(message))
+  const fail = useCallback((error, fallback = '') => {
+    onSetError(resolveAdminError(error, fallback))
   }, [onSetError])
 
   const loadServices = useCallback(async () => {
@@ -127,7 +127,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       resetForm()
       await loadCredentials()
     } catch (err) {
-      fail(err.message || t('admin.accountInventory.saveError'))
+      fail(err, t('admin.accountInventory.saveError'))
     } finally {
       setSubmitting(false)
     }
@@ -141,6 +141,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
       loginIdentifier: item.loginIdentifier || '', passwordSecret: '',
       recoveryInfo: item.recoveryInfo || '', twoFactorSecret: item.twoFactorSecret || '',
       usageNote: item.usageNote || '', warrantyUntil: toInputDate(item.warrantyUntil),
+      version: item.version,
     })
   }
 

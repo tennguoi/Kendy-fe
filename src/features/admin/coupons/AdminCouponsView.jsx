@@ -70,6 +70,7 @@ function formFromCoupon(coupon) {
     type: coupon.type || 'PERCENT',
     usageLimit: coupon.usageLimit ?? '',
     value: coupon.value ?? '',
+    version: coupon.version,
   }
 }
 
@@ -88,6 +89,7 @@ function payloadFromForm(form) {
     type: form.type,
     usageLimit: numberOrNull(form.usageLimit),
     value: numberOrNull(form.value),
+    version: form.version,
   }
 }
 

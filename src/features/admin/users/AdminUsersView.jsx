@@ -133,6 +133,7 @@ function AdminUsersView({
       const saved = await adminApi.updateUserStatus(targetUser.id, {
         reason: status === 'LOCKED' ? t('admin.users.detail.lockReason') : t('admin.users.detail.unlockReason'),
         status,
+        version: targetUser.version,
       }, token)
       patchUser(saved)
       setSelectedId(saved.id)
@@ -156,6 +157,7 @@ function AdminUsersView({
       const saved = await adminApi.updateUserRole(selectedUser.id, {
         reason: roleForm.reason.trim(),
         role: roleForm.role,
+        version: selectedUser.version,
       }, token)
       patchUser(saved)
       setRoleForm({ reason: '', role: saved.role })

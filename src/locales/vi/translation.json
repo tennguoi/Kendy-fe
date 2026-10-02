@@ -2346,7 +2346,8 @@
     "WARRANTY_NOT_FOUND": "Không tìm thấy yêu cầu bảo hành.",
     "WARRANTY_OUT_OF_RANGE": "Yêu cầu bảo hành ngoài phạm vi.",
     "WARRANTY_ORDER_NOT_ELIGIBLE": "Đơn hàng không đủ điều kiện bảo hành.",
-    "WARRANTY_DUPLICATE": "Đã có yêu cầu bảo hành cho đơn hàng này."
+    "WARRANTY_DUPLICATE": "Đã có yêu cầu bảo hành cho đơn hàng này.",
+    "CONCURRENT_ADMIN_CONFLICT": "Dữ liệu này vừa được một quản trị viên khác cập nhật trước đó. Vui lòng tải lại trang để xem thông tin mới nhất trước khi chỉnh sửa."
   },
   "validation": {
     "required": "Trường này không được để trống",

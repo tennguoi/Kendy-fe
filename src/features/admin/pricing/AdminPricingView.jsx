@@ -50,9 +50,9 @@ function AdminPricingView({
   const selectedItem = pricingItems.find((item) => item.id === selectedId) || pricingItems[0]
   const form = formDraft && formDraft.id === selectedItem?.id ? formDraft.values : pricingToForm(selectedItem || {})
 
-  const setViewError = useCallback((message) => {
-    if (!message) return
-    onSetError(resolveAdminError(message))
+  const setViewError = useCallback((error, fallback = '') => {
+    if (!error) return
+    onSetError(resolveAdminError(error, fallback))
   }, [onSetError])
 
   const loadPricing = useCallback(async (page) => {
@@ -137,6 +137,7 @@ function AdminPricingView({
         stockStatus: form.stockStatus,
         usageNotes: form.usageNotes || undefined,
         warrantyPolicy: form.warrantyPolicy || undefined,
+        version: selectedItem.version,
       }, token)
 
       setPricingItems((items) => items.map((item) => (item.id === saved.id ? { ...item, ...saved } : item)))
@@ -144,7 +145,7 @@ function AdminPricingView({
       await loadPricing()
       onSetNotice(t('admin.pricing.updateSuccess', { name: saved.name }))
     } catch (err) {
-      setViewError(err.message || t('admin.pricing.updateError'))
+      setViewError(err, t('admin.pricing.updateError'))
     } finally {
       setSubmitting(false)
     }

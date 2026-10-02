@@ -26,7 +26,20 @@ export function resolveAdminError(err, fallback = '') {
   const msg = typeof rawMsg === 'string' ? rawMsg.trim() : ''
   const lower = msg.toLowerCase()
 
-  // 2. Semantic matching for backend exception messages
+  // Concurrency & Optimistic Locking Conflict
+  if (
+    lower.includes('concurrent_admin_conflict') ||
+    lower.includes('concurrentconflict') ||
+    lower.includes('optimistic') ||
+    lower.includes('stale object') ||
+    lower.includes('quản trị viên khác cập nhật') ||
+    lower.includes('xung đột dữ liệu')
+  ) {
+    return t('errorCodes.CONCURRENT_ADMIN_CONFLICT', {
+      defaultValue: 'Dữ liệu này vừa được một quản trị viên khác cập nhật trước đó. Vui lòng tải lại trang để xem thông tin mới nhất trước khi chỉnh sửa.',
+    })
+  }
+
   // Admin & Auth
   if (lower.includes('confirmation password required') || lower.includes('confirmation password')) {
     return t('admin.errors.confirmationPasswordRequired', {
