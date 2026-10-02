@@ -41,9 +41,9 @@ function AdminSettingsView({
 
   const { t } = useTranslation()
 
-  const setViewError = useCallback((message) => {
-    if (!message) return
-    onSetError(resolveAdminError(message))
+  const setViewError = useCallback((error, fallback = '') => {
+    if (!error) return
+    onSetError(resolveAdminError(error, fallback))
   }, [onSetError])
 
   const systemSettings = useSystemSettings({

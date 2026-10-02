@@ -128,6 +128,7 @@ function serviceToForm(service) {
     type: service.type || 'MANUAL',
     usageNotes: service.usageNotes || '',
     warrantyPolicy: service.warrantyPolicy || '',
+    version: service.version,
   }
 }
 
@@ -160,6 +161,7 @@ function buildServicePayload(form, isEditing) {
     type: form.type,
     usageNotes: form.usageNotes || undefined,
     warrantyPolicy: form.warrantyPolicy || undefined,
+    version: isEditing ? form.version : undefined,
   }
 }
 
@@ -194,6 +196,7 @@ function buildCredentialPayload(form) {
     twoFactorSecret: form.twoFactorSecret || undefined,
     usageNote: form.usageNote || undefined,
     warrantyUntil: toInstant(form.warrantyUntil),
+    version: form.version,
   }
 }
 
@@ -219,6 +222,7 @@ function credentialToForm(credential) {
     twoFactorSecret: '',
     usageNote: credential.usageNote || '',
     warrantyUntil: toDateTimeInput(credential.warrantyUntil),
+    version: credential.version,
   }
 }
 
@@ -260,9 +264,9 @@ function AdminServicesView({
   const visibleServices = services.filter((service) => service.publicVisible !== false).length
   const ungroupedServices = services.filter((service) => !service.categoryId && !service.categoryName).length
 
-  const setViewError = useCallback((message) => {
-    if (!message) return
-    onSetError(resolveAdminError(message))
+  const setViewError = useCallback((error, fallback = '') => {
+    if (!error) return
+    onSetError(resolveAdminError(error, fallback))
   }, [onSetError])
 
   const loadCategories = useCallback(async () => {
@@ -436,6 +440,7 @@ function AdminServicesView({
         warranty: detail.warranty || '',
         requirements: detail.requirements || '',
         cta: detail.cta || '',
+        version: detail.version,
       })
     } catch {
       setCategoryForm({
@@ -450,6 +455,7 @@ function AdminServicesView({
         warranty: category.warranty || '',
         requirements: category.requirements || '',
         cta: category.cta || '',
+        version: category.version,
       })
     }
   }
@@ -477,6 +483,7 @@ function AdminServicesView({
         warranty: categoryForm.warranty || undefined,
         requirements: categoryForm.requirements || undefined,
         cta: categoryForm.cta || undefined,
+        version: selectedCategoryId ? categoryForm.version : undefined,
       }
       const saved = selectedCategoryId
         ? await adminApi.updateServiceCategory(selectedCategoryId, payload, token)
@@ -740,11 +747,11 @@ function AdminServicesView({
     try {
       let saved
       if (Object.prototype.hasOwnProperty.call(patch, 'status')) {
-        saved = await adminApi.updateServiceStatus(serviceId, { status: patch.status }, token)
+        saved = await adminApi.updateServiceStatus(serviceId, { status: patch.status, version: service.version }, token)
       } else if (Object.prototype.hasOwnProperty.call(patch, 'publicVisible')) {
-        saved = await adminApi.updateService(serviceId, { publicVisible: patch.publicVisible }, token)
+        saved = await adminApi.updateService(serviceId, { publicVisible: patch.publicVisible, version: service.version }, token)
       } else {
-        saved = await adminApi.updateService(serviceId, patch, token)
+        saved = await adminApi.updateService(serviceId, { ...patch, version: service.version }, token)
       }
       setServices((items) => items.map((item) => (item.id === saved.id ? saved : item)))
       if (selectedServiceId === serviceId) {

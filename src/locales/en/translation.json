@@ -2346,7 +2346,8 @@
     "WARRANTY_NOT_FOUND": "Warranty request not found.",
     "WARRANTY_OUT_OF_RANGE": "Warranty period exceeded.",
     "WARRANTY_ORDER_NOT_ELIGIBLE": "Order not eligible for warranty.",
-    "WARRANTY_DUPLICATE": "Warranty request already exists."
+    "WARRANTY_DUPLICATE": "Warranty request already exists.",
+    "CONCURRENT_ADMIN_CONFLICT": "This item was just updated by another administrator. Please refresh the page to view the latest data before making changes."
   },
   "validation": {
     "required": "This field is required",

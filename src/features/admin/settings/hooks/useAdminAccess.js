@@ -106,6 +106,7 @@ export function useAdminAccess({
         description: roleDraft.description.trim(),
         name: roleDraft.name.trim(),
         permissionIds: roleDraft.permissionIds,
+        version: selectedRole?.version,
       }
       const saved = selectedRole
         ? await adminApi.updateRole(selectedRole.id, payload, token)
@@ -114,7 +115,7 @@ export function useAdminAccess({
       await loadSettings()
       onSetNotice(t('admin.settings.success.roleSaved', { name: saved.name }))
     } catch (err) {
-      setViewError(err.message || t('admin.settings.error.roleSaveFailed'))
+      setViewError(err, t('admin.settings.error.roleSaveFailed'))
     } finally {
       setSubmitting(false)
     }
