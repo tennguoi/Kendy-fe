@@ -35,6 +35,7 @@ function AdminSettingsView({
   const [activeTab, setActiveTab] = useState('settings')
   const [openSettingsGroup, setOpenSettingsGroup] = useState(null)
   const settingsNavRef = useRef(null)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [health, setHealth] = useState(null)
@@ -104,6 +105,15 @@ function AdminSettingsView({
     token,
   })
 
+  const settersRef = useRef({})
+  settersRef.current = {
+    systemSettings,
+    sepaySettings,
+    notifications,
+    adminAccess,
+    adminJobs,
+  }
+
   const loadSettings = useCallback(async () => {
     if (!token) {
       return
@@ -137,34 +147,34 @@ function AdminSettingsView({
         adminApi.getHealth(token),
       ])
 
-      systemSettings.setSettings(settingsData)
-      sepaySettings.setSepayStatus(sepayStatusData)
-      sepaySettings.setSepayLogs(sepayLogsData)
-      sepaySettings.setSepayConfigText(JSON.stringify(sepayConfigToObject(sepayConfigData), null, 2))
-      notifications.setNotificationSetting(notificationData)
-      notifications.setNotifications(notificationItems)
-      adminAccess.setAdmins(adminsData)
-      adminAccess.setRoles(rolesData)
-      adminAccess.setPermissions(permissionsData)
-      adminJobs.setJobs(jobsData)
+      const {
+        systemSettings: sys,
+        sepaySettings: sep,
+        notifications: notif,
+        adminAccess: adm,
+        adminJobs: jobs,
+      } = settersRef.current
+
+      sys?.setSettings(settingsData)
+      sep?.setSepayStatus(sepayStatusData)
+      sep?.setSepayLogs(sepayLogsData)
+      sep?.setSepayConfigText(JSON.stringify(sepayConfigToObject(sepayConfigData), null, 2))
+      notif?.setNotificationSetting(notificationData)
+      notif?.setNotifications(notificationItems)
+      adm?.setAdmins(adminsData)
+      adm?.setRoles(rolesData)
+      adm?.setPermissions(permissionsData)
+      jobs?.setJobs(jobsData)
       setHealth(healthData)
-      adminAccess.setSelectedAdminId((current) => (current && adminsData.some((admin) => admin.id === current) ? current : adminsData[0]?.id || null))
+      adm?.setSelectedAdminId((current) => (current && adminsData.some((admin) => admin.id === current) ? current : adminsData[0]?.id || null))
     } catch (err) {
       const msg = resolveAdminError(err, t('admin.settings.loadError'))
       onSetError(msg)
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
-  }, [
-    adminAccess,
-    adminJobs,
-    notifications,
-    onSetError,
-    sepaySettings,
-    systemSettings,
-    token,
-    t,
-  ])
+  }, [onSetError, systemSettings.settingSearch, token, t])
 
   useEffect(() => {
     loadSettingsRef.current = loadSettings
@@ -206,13 +216,13 @@ function AdminSettingsView({
           <h2>{t('admin.settings.title')}</h2>
           <p>{t('admin.settings.description')}</p>
         </div>
-        <button type="button" className="admin-icon-button" onClick={loadSettings} disabled={loading}>
+        <button type="button" className={`admin-icon-button ${loading ? 'loading' : ''}`} onClick={loadSettings} disabled={loading}>
           <RefreshCw size={18} strokeWidth={2} aria-hidden="true" />
           <span>{t('admin.common.reload')}</span>
         </button>
       </div>
 
-      {loading && (
+      {!hasLoaded && loading && (
         <p className="admin-message">
           {t('admin.settings.loading')}
         </p>

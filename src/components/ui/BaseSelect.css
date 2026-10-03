@@ -1,0 +1,201 @@
+.base-select {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.base-select-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--kd-text);
+  margin-bottom: 6px;
+}
+
+/* Trigger Button */
+.base-select-trigger {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 14px;
+  background: var(--kd-card);
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  color: var(--kd-text);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  user-select: none;
+}
+
+.base-select-trigger:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--kd-blue) 45%, var(--kd-border));
+}
+
+.base-select-trigger:focus-visible,
+.base-select.is-open .base-select-trigger {
+  border-color: var(--kd-blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kd-blue) 16%, transparent);
+}
+
+.base-select.has-error .base-select-trigger {
+  border-color: #ef4444;
+}
+
+.base-select-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.base-select-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.base-select-value.is-placeholder {
+  color: var(--kd-muted);
+  font-weight: 400;
+}
+
+.base-select-chevron {
+  flex: 0 0 auto;
+  color: var(--kd-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.base-select.is-open .base-select-chevron {
+  transform: rotate(180deg);
+  color: var(--kd-blue);
+}
+
+/* Popover Menu */
+.base-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 100%;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1050;
+  padding: 5px;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--kd-card) 96%, #000);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.3),
+              0 0 0 1px rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: baseSelectMenuIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes baseSelectMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.base-select-menu::-webkit-scrollbar {
+  width: 5px;
+}
+
+.base-select-menu::-webkit-scrollbar-thumb {
+  background: var(--kd-border);
+  border-radius: 4px;
+}
+
+/* Options */
+.base-select-option {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 11px;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--kd-text);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+  transition: background 0.12s ease, color 0.12s ease;
+  user-select: none;
+}
+
+.base-select-option:hover {
+  background: var(--kd-soft);
+  color: var(--kd-text);
+}
+
+.base-select-option.is-selected {
+  background: color-mix(in srgb, var(--kd-blue) 12%, transparent);
+  color: var(--kd-blue);
+  font-weight: 600;
+}
+
+.base-select-option.is-selected:hover {
+  background: color-mix(in srgb, var(--kd-blue) 18%, transparent);
+}
+
+.base-select-check {
+  flex: 0 0 auto;
+  color: var(--kd-blue);
+  animation: baseSelectCheckIn 0.15s ease-out;
+}
+
+@keyframes baseSelectCheckIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Validation */
+.base-select-error {
+  display: block;
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 5px;
+}
+
+.base-select-helper {
+  display: block;
+  font-size: 12px;
+  color: var(--kd-muted);
+  margin-top: 5px;
+}

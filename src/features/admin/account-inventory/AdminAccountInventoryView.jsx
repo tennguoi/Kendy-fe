@@ -242,7 +242,13 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
                     const visible = revealed[item.id] || item
                     return (
                       <article key={item.id}>
-                        <div><strong>{item.loginIdentifier}</strong><span>{getStatusLabel(item.status) || item.status} · {t('admin.accountInventory.form.addedOn', { date: formatAdminDate(item.createdAt) })}</span>{visible.passwordSecret && <code>{t('admin.accountInventory.form.passwordLabel')}: {visible.passwordSecret}</code>}</div>
+                        <div>
+                          <strong>{item.loginIdentifier}</strong>
+                          <span>{getStatusLabel(item.status) || item.status} · {t('admin.accountInventory.form.addedOn', { date: formatAdminDate(item.createdAt) })}</span>
+                          {visible.passwordSecret && (
+                            <code>{t('admin.accountInventory.form.passwordLabel', { defaultValue: 'Mật khẩu' }).replace(/:+$/, '')}: {visible.passwordSecret}</code>
+                          )}
+                        </div>
                         <div className="inventory-actions"><button type="button" onClick={() => revealCredential(item)}><Eye size={15} /> {t('admin.accountInventory.form.view')}</button>{item.status === 'AVAILABLE' && <><button type="button" onClick={() => editCredential(item)}><Pencil size={15} /> {t('admin.accountInventory.form.edit')}</button><button type="button" className="danger" onClick={() => disableCredential(item)}><ShieldOff size={15} /> {t('admin.accountInventory.form.lock')}</button></>}</div>
                       </article>
                     )

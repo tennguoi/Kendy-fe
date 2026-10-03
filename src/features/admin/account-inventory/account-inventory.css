@@ -225,15 +225,21 @@
 }
 
 .inventory-list code {
-  display: block;
+  display: inline-block;
   margin-top: 7px;
-  padding: 5px 9px;
+  padding: 5px 10px;
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--kd-soft, #f1f5f9);
   border: 1px solid var(--kd-border);
   color: var(--kd-text);
   font: 12px/1.5 Consolas, 'SFMono-Regular', monospace;
   overflow-wrap: anywhere;
+}
+
+html.dark .inventory-list code {
+  background: color-mix(in srgb, var(--kd-card) 75%, #000);
+  border-color: var(--kd-border);
+  color: var(--kd-text);
 }
 
 /* ── Empty state (designer style: icon + copy) ───────── */
