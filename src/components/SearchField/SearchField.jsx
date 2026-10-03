@@ -20,6 +20,12 @@ function SearchField({
     onChange?.({ target: { value: '' } })
   }
 
+  const handleInputChange = (val, event) => {
+    if (!onChange) return
+    const syntheticEvent = (event && event.target) ? event : { target: { value: val ?? '' } }
+    onChange(syntheticEvent, val)
+  }
+
   return (
     <label className={`search-field search-field-${size} ${className}`.trim()}>
       <Search className="search-field-icon" size={17} strokeWidth={2} aria-hidden="true" />
@@ -28,7 +34,7 @@ function SearchField({
         className={inputClassName}
         type="search"
         value={value}
-        onChange={onChange}
+        onChange={handleInputChange}
       />
       {showClear && Boolean(value) && (
         <button type="button" className="search-field-clear" onClick={clear} aria-label={t('common.clearSearch', { defaultValue: 'Xóa nội dung tìm kiếm' })}>
