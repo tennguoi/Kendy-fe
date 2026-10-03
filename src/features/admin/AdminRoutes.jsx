@@ -29,6 +29,7 @@ import './account-inventory/account-inventory.css'
 import './entitlements/entitlements.css'
 import './orders/orders.css'
 import './security/security.css'
+import { AppErrorBoundary } from '../../components/ErrorBoundary/AppErrorBoundary'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')
@@ -131,7 +132,9 @@ function AdminRoutes({
             style={route.path === activePath ? undefined : { display: 'none' }}
             aria-hidden={route.path !== activePath}
           >
-            {route.element}
+            <AppErrorBoundary level="page" key={route.path}>
+              {route.element}
+            </AppErrorBoundary>
           </div>
         )
       ))}

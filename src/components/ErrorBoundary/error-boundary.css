@@ -1,0 +1,174 @@
+/* =========================================================
+ * error-boundary.css - Error Boundary Styles (Light & Dark)
+ * Uses --kd-* tokens for automatic theme adaptation.
+ * ========================================================= */
+
+.error-fallback-root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--kd-bg);
+  color: var(--kd-text);
+  font-family: var(--sans);
+}
+
+.error-fallback-card {
+  width: 100%;
+  max-width: 560px;
+  padding: 32px 28px;
+  border: 1px solid var(--kd-border);
+  border-radius: 16px;
+  background: var(--kd-card);
+  box-shadow: var(--kd-shadow);
+  text-align: center;
+  animation: errorCardFadeIn 0.25s ease-out;
+}
+
+@keyframes errorCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.error-fallback-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--kd-danger) 14%, transparent);
+  color: var(--kd-danger);
+}
+
+.error-fallback-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--kd-text);
+}
+
+.error-fallback-message {
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--kd-muted);
+}
+
+.error-fallback-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.error-btn-primary {
+  min-height: 42px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--kd-blue);
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.error-btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.error-btn-secondary {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--kd-border);
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--kd-text);
+  background: var(--kd-card);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.error-btn-secondary:hover {
+  background: var(--kd-bg);
+  border-color: var(--kd-border-strong);
+}
+
+/* Page-level fallback (rendered inside layout shells) */
+.error-fallback-page {
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 380px;
+}
+
+.error-fallback-page .error-fallback-card {
+  max-width: 480px;
+  padding: 24px 20px;
+  box-shadow: var(--kd-soft-shadow);
+}
+
+.error-fallback-page .error-fallback-icon {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 14px;
+}
+
+.error-fallback-page .error-fallback-title {
+  font-size: 19px;
+}
+
+/* Technical Details Accordion */
+.error-details-toggle {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--kd-border);
+  text-align: left;
+}
+
+.error-details-toggle summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--kd-muted);
+  user-select: none;
+}
+
+.error-details-toggle summary:hover {
+  color: var(--kd-text);
+}
+
+.error-details-content {
+  margin-top: 8px;
+  padding: 12px;
+  background: #0f172a;
+  color: #f87171;
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 160px;
+  overflow-y: auto;
+}

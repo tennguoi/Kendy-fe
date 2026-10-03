@@ -26,6 +26,16 @@
     "security": "Giám sát bảo mật",
     "settings": "Cài đặt"
   },
+  "errorBoundary": {
+    "rootTitle": "Hệ thống đã gặp sự cố không mong muốn",
+    "pageTitle": "Không thể hiển thị nội dung này",
+    "rootMessage": "Ứng dụng đã gặp lỗi hiển thị bất ngờ. Vui lòng thử tải lại trang hoặc quay về trang chủ.",
+    "pageMessage": "Phần giao diện này đã phát sinh lỗi trong quá trình xử lý. Các phần khác của hệ thống vẫn hoạt động bình thường.",
+    "retry": "Thử lại",
+    "reloadPage": "Tải lại trang",
+    "goHome": "Về trang chủ",
+    "viewTechnicalDetails": "Chi tiết kỹ thuật (dành cho lập trình viên)"
+  },
   "common": {
     "error": "Lỗi",
     "success": "Thành công",

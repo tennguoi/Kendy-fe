@@ -18,6 +18,7 @@ import Loading from './components/Loading/Loading'
 import SupportWidget from './features/user/support/components/SupportWidget'
 import PaymentChoiceModal from './features/user/services/components/PaymentChoiceModal'
 import TransferPaymentModal from './features/user/services/components/TransferPaymentModal'
+import { AppErrorBoundary } from './components/ErrorBoundary/AppErrorBoundary'
 import { useClipboard } from './hooks/useClipboard'
 import { authApi } from './api/auth.api'
 import { publicApi } from './api/public.api'
@@ -103,7 +104,7 @@ function App() {
   const [activeDeposit, setActiveDeposit] = useState(null)
   const [apiNotice, setApiNotice] = useState('')
   const { copied, copyText } = useClipboard()
-  const { addToast, clearToasts } = useToast()
+  const { addToast } = useToast()
   const { settings: siteSettings } = usePublicSiteSettings()
 
   const amountNumber = Number(depositAmount) || 0
@@ -1201,52 +1202,56 @@ function App() {
   if (!accessToken) {
     if (showAuthScreen) {
       return (
-        <AuthScreen
-          initialMode={initialAuthMode}
-          initialResetCode={initialResetCode}
-          initialVerifyToken={initialVerifyToken}
-          initialVerifyEmail={initialVerifyEmail}
-          notice={apiNotice}
-          oauthChallenge={initialOAuthCallback?.oauthTwoFactorChallenge ? {
-            challengeToken: initialOAuthCallback.oauthTwoFactorChallenge,
-            email: initialOAuthCallback.email,
-            expiresAt: initialOAuthCallback.expiresAt,
-            provider: initialOAuthCallback.provider,
-          } : null}
-          onBack={() => setShowAuthScreen(false)}
-          onResetComplete={handlePasswordResetComplete}
-          onSuccess={handleAuthSuccess}
-        />
+        <AppErrorBoundary level="page">
+          <AuthScreen
+            initialMode={initialAuthMode}
+            initialResetCode={initialResetCode}
+            initialVerifyToken={initialVerifyToken}
+            initialVerifyEmail={initialVerifyEmail}
+            notice={apiNotice}
+            oauthChallenge={initialOAuthCallback?.oauthTwoFactorChallenge ? {
+              challengeToken: initialOAuthCallback.oauthTwoFactorChallenge,
+              email: initialOAuthCallback.email,
+              expiresAt: initialOAuthCallback.expiresAt,
+              provider: initialOAuthCallback.provider,
+            } : null}
+            onBack={() => setShowAuthScreen(false)}
+            onResetComplete={handlePasswordResetComplete}
+            onSuccess={handleAuthSuccess}
+          />
+        </AppErrorBoundary>
       )
     }
 
     return (
-      <Routes>
-        <Route path="/catalog" element={
-          <PublicLayout onLoginClick={handleOpenAuth}>
-            <Catalog />
-          </PublicLayout>
-        } />
-        <Route path="/services" element={
-          <PublicLayout onLoginClick={handleOpenAuth}>
-            <Catalog />
-          </PublicLayout>
-        } />
-        <Route path="/product/:slug" element={
-          <PublicLayout onLoginClick={handleOpenAuth}>
-            <ProductDetail onLoginClick={handleOpenAuth} />
-          </PublicLayout>
-        } />
-        <Route path="/service/:slug" element={
-          <PublicLayout onLoginClick={handleOpenAuth}>
-            <ProductDetail onLoginClick={handleOpenAuth} />
-          </PublicLayout>
-        } />
-        <Route path="/playground" element={<DevPlayground />} />
-        <Route path="*" element={
-          <PublicHome notice={apiNotice} onLoginClick={handleOpenAuth} />
-        } />
-      </Routes>
+      <AppErrorBoundary level="page">
+        <Routes>
+          <Route path="/catalog" element={
+            <PublicLayout onLoginClick={handleOpenAuth}>
+              <Catalog />
+            </PublicLayout>
+          } />
+          <Route path="/services" element={
+            <PublicLayout onLoginClick={handleOpenAuth}>
+              <Catalog />
+            </PublicLayout>
+          } />
+          <Route path="/product/:slug" element={
+            <PublicLayout onLoginClick={handleOpenAuth}>
+              <ProductDetail onLoginClick={handleOpenAuth} />
+            </PublicLayout>
+          } />
+          <Route path="/service/:slug" element={
+            <PublicLayout onLoginClick={handleOpenAuth}>
+              <ProductDetail onLoginClick={handleOpenAuth} />
+            </PublicLayout>
+          } />
+          <Route path="/playground" element={<DevPlayground />} />
+          <Route path="*" element={
+            <PublicHome notice={apiNotice} onLoginClick={handleOpenAuth} />
+          } />
+        </Routes>
+      </AppErrorBoundary>
     )
   }
 

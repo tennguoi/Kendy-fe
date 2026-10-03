@@ -1,17 +1,13 @@
 import {
   AlertTriangle,
   CheckCircle2,
-  Code2,
-  Copy,
   Download,
   Eye,
   EyeOff,
   FileText,
   Globe2,
   ImageUp,
-  KeyRound,
   Lock,
-  Plus,
   RefreshCw,
   Save,
   Shield,
@@ -67,9 +63,6 @@ function SettingsView({
 }) {
   const { t } = useTranslation()
   const { theme, setTheme } = useTheme()
-  const [apiKeyForm, setApiKeyForm] = useState({ name: '', scopes: 'orders:read,wallet:read' })
-  const [apiKeys, setApiKeys] = useState([])
-  const [createdApiToken, setCreatedApiToken] = useState('')
   const [dashboard, setDashboard] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -93,7 +86,7 @@ function SettingsView({
   const [activeSettingsTab, setActiveSettingsTab] = useState('general')
 
   const setViewError = useCallback((errOrMessage, fallback = '') => {
-    let msg = ''
+    let msg
     if (typeof errOrMessage === 'string') {
       msg = errOrMessage
     } else if (errOrMessage && typeof errOrMessage === 'object') {
@@ -110,7 +103,6 @@ function SettingsView({
   }, [onSetError, t])
 
   const sessionList = normalizeList(sessions)
-  const apiKeyList = normalizeList(apiKeys)
 
   const loadSettings = useCallback(async () => {
     if (!token) {
@@ -120,12 +112,11 @@ function SettingsView({
     setLoading(true)
     setViewError('')
     try {
-      const [profileData, dashboardData, securityData, sessionData, apiKeyData, notificationData] = await Promise.all([
+      const [profileData, dashboardData, securityData, sessionData, notificationData] = await Promise.all([
         userApi.getMe(token),
         userApi.getDashboard(token),
         userApi.getSecurity(token),
         userApi.getSessions(token),
-        userApi.getApiKeys(token),
         userApi.getNotifications(token),
       ])
       onCurrentUserChange(profileData)
@@ -133,7 +124,6 @@ function SettingsView({
       setDashboard(dashboardData)
       setSecurity(securityData)
       setSessions(normalizeList(sessionData))
-      setApiKeys(normalizeList(apiKeyData))
       setNotifications(normalizeList(notificationData))
     } catch (err) {
       setViewError(err, t('settings.loadError', { defaultValue: 'Không tải được cài đặt tài khoản.' }))
@@ -160,7 +150,6 @@ function SettingsView({
   const validatePhone = isValidPhoneVn;
   const validateTwoFactorCode = composeValidators(isRequired, minLength(6));
   const validateTotpCode = composeValidators(isRequired, minLength(6));
-  const validateApiKeyName = composeValidators(isRequired);
 
   const updateProfile = async (event) => {
     event.preventDefault()
@@ -433,46 +422,6 @@ function SettingsView({
     }
   }
 
-  const createApiKey = async (event) => {
-    event.preventDefault()
-    const nameValidation = validateApiKeyName(apiKeyForm.name);
-    if (!nameValidation.isValid) {
-      setViewError(nameValidation.error || t('settings.apiKeyNameRequired', { defaultValue: 'Tên API key không được để trống.' }))
-      return
-    }
-
-    setSubmitting(true)
-    setViewError('')
-    try {
-      const created = await userApi.createApiKey({
-        name: apiKeyForm.name.trim(),
-        scopes: apiKeyForm.scopes.split(',').map((scope) => scope.trim()).filter(Boolean),
-      }, token)
-      setApiKeys((items) => [created.apiKey, ...normalizeList(items).filter((item) => item.id !== created.apiKey.id)])
-      setCreatedApiToken(created.token)
-      setApiKeyForm({ name: '', scopes: 'orders:read,wallet:read' })
-      await loadSettings()
-      onSetNotice(t('settings.apiKeyCreated', { defaultValue: 'Đã tạo API key mới.' }))
-    } catch (err) {
-      setViewError(err, t('settings.apiKeyCreateError', { defaultValue: 'Không tạo được API key.' }))
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const revokeApiKey = async (keyId) => {
-    setSubmitting(true)
-    setViewError('')
-    try {
-      await userApi.revokeApiKey(keyId, token)
-      setApiKeys(normalizeList(await userApi.getApiKeys(token)))
-      onSetNotice(t('settings.apiKeyRevoked', { id: keyId, defaultValue: 'Đã thu hồi API key #{{id}}.' }))
-    } catch (err) {
-      setViewError(err, t('settings.apiKeyRevokeError', { defaultValue: 'Không thu hồi được API key.' }))
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   const exportPersonalData = async () => {
     setSubmitting(true)
@@ -517,12 +466,6 @@ function SettingsView({
     }
   }
 
-  const handleCopyToken = () => {
-    if (createdApiToken) {
-      navigator.clipboard.writeText(createdApiToken)
-      onSetNotice(t('settings.apiTokenCopied', { defaultValue: 'Đã copy API token vào clipboard.' }))
-    }
-  }
 
   return (
     <section className="admin-view" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -579,17 +522,6 @@ function SettingsView({
               <div className="menu-text">
                 <strong>{t('settings.securityTab', { defaultValue: 'Bảo mật & Phiên' })}</strong>
                 <span>{t('settings.securityTabDesc', { defaultValue: 'Mật khẩu, 2FA & Thiết bị' })}</span>
-              </div>
-            </button>
-            <button
-              type="button"
-              className={`settings-menu-item ${activeSettingsTab === 'apikeys' ? 'active' : ''}`}
-              onClick={() => setActiveSettingsTab('apikeys')}
-            >
-              <Code2 size={18} className="menu-icon" />
-              <div className="menu-text">
-                <strong>{t('settings.apikeysTab', { defaultValue: 'Developer API Keys' })}</strong>
-                <span>{t('settings.apikeysTabDesc', { defaultValue: 'Kết nối API & Scopes' })}</span>
               </div>
             </button>
             <button
@@ -1192,122 +1124,6 @@ function SettingsView({
             </div>
           )}
 
-          {activeSettingsTab === 'apikeys' && (
-            <div className="settings-card">
-              <div className="settings-card-header">
-                <div>
-                  <h3><KeyRound size={16} /> {t('settings.apikeysTitle', { defaultValue: 'API Keys' })}</h3>
-                  <div className="settings-card-header-desc">
-                    {t('settings.apikeysDesc', { defaultValue: 'Tạo khóa API dùng để xác thực hệ thống bên ngoài (script, bot, tool) với tài khoản của bạn.' })}
-                    <br />
-                    <span style={{ fontSize: '12px', color: 'var(--kd-muted)', marginTop: '4px', display: 'block', lineHeight: '1.6' }}>
-                      <strong>Cách dùng:</strong> Gửi header <code style={{ background: '#1e293b', padding: '1px 6px', borderRadius: '4px', fontSize: '11px' }}>X-Api-Key: kdy_&lt;token&gt;</code> trong mọi request.
-                      Scopes giới hạn quyền (VD: <code>orders:read</code> = chỉ đọc đơn, <code>wallet:read</code> = chỉ xem ví).
-                      Key chỉ hiện <strong>1 lần</strong> duy nhất lúc tạo. Hãy sao chép và lưu an toàn.
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="settings-card-body">
-                <form className="settings-form-grid" onSubmit={createApiKey} style={{ borderBottom: '1px solid var(--kd-border)', paddingBottom: '24px', marginBottom: '24px' }}>
-                  <div className="settings-input-group">
-                    <BaseInput
-                      label={t('settings.apiKeyNameLabel', { defaultValue: 'Tên định danh API Key' })}
-                      value={apiKeyForm.name}
-                      onChange={(value) => setApiKeyForm((current) => ({ ...current, name: value }))}
-                      validators={[validateApiKeyName]}
-                      errorMessage={t('settings.apiKeyNameRequired', { defaultValue: 'Tên API key không được để trống.' })}
-                      placeholder={t('settings.apiKeyNamePlaceholder', { defaultValue: 'Ví dụ: Tool Auto Deposit' })}
-                      required
-                    />
-                  </div>
-                  <div className="settings-input-group">
-                    <BaseInput
-                      label={t('settings.apiKeyScopesLabel', { defaultValue: 'Scopes (Phân quyền API - phân tách bằng dấu phẩy)' })}
-                      value={apiKeyForm.scopes}
-                      onChange={(value) => setApiKeyForm((current) => ({ ...current, scopes: value }))}
-                      placeholder={t('settings.apiKeyScopesPlaceholder', { defaultValue: 'orders:read,wallet:read' })}
-                    />
-                  </div>
-                  <div className="full-width" style={{ marginTop: '8px' }}>
-                    <button type="submit" className="settings-btn-save" disabled={submitting}>
-                      <Plus size={16} />
-                      <span>{t('settings.createApiKeyBtn', { defaultValue: 'Tạo khóa API mới' })}</span>
-                    </button>
-                  </div>
-                </form>
-
-                {createdApiToken && (
-                  <div className="totp-qr-container" style={{ borderLeft: '4px solid var(--kd-blue)', background: 'var(--kd-bg)', margin: '0 0 24px', alignItems: 'stretch' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <strong style={{ color: 'var(--kd-danger)', fontSize: '13px' }}>
-                        {t('settings.apiTokenWarning', { defaultValue: 'API Token mới tạo (Lưu ý: Hãy sao chép ngay, khóa này chỉ hiển thị duy nhất 1 lần):' })}
-                      </strong>
-                      <button
-                        type="button"
-                        onClick={handleCopyToken}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', border: 'none', background: 'transparent', color: 'var(--kd-blue)', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                      >
-                        <Copy size={14} /> {t('settings.copyTokenBtn', { defaultValue: 'Copy Token' })}
-                      </button>
-                    </div>
-                    <pre style={{ margin: 0, padding: '12px', background: '#0f172a', color: '#10b981', borderRadius: '8px', fontSize: '13px', overflowX: 'auto', fontFamily: 'monospace', wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>
-                      {createdApiToken}
-                    </pre>
-                  </div>
-                )}
-
-                <div className="apikey-list">
-                  <h4 style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: '800', textTransform: 'uppercase', color: 'var(--kd-text)' }}>
-                    {t('settings.apiKeysListTitle', { defaultValue: 'Danh sách API Keys của bạn' })}
-                  </h4>
-                  {apiKeyList.map((apiKey) => (
-                    <div className="apikey-item" key={apiKey.id}>
-                      <div className="apikey-item-info">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <strong>{apiKey.name}</strong>
-                          <span className="key-prefix">{t('settings.apiKeyId', { id: apiKey.id, defaultValue: 'ID: #{{id}}' })}</span>
-                          <span style={{ fontSize: '12px', color: apiKey.revokedAt ? 'var(--kd-danger)' : 'var(--kd-success)', fontWeight: 'bold' }}>
-                            {apiKey.revokedAt ? t('settings.keyRevoked', { defaultValue: '• Đã hủy' }) : t('settings.keyActive', { defaultValue: '• Hoạt động' })}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '13px', color: 'var(--kd-muted)', marginTop: '2px' }}>
-                          {t('settings.keyPrefixLabel', { defaultValue: 'Tiền tố: ' })}<code>{apiKey.keyPrefix}</code>
-                        </span>
-                        {apiKey.scopes && apiKey.scopes.length > 0 && (
-                          <div className="apikey-scope-badges">
-                            {apiKey.scopes.map((scope) => (
-                              <span className="scope-badge" key={scope}>
-                                {scope}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {apiKey.revokedAt && (
-                          <span style={{ fontSize: '11px', color: 'var(--kd-muted)', marginTop: '4px' }}>
-                            {t('settings.keyRevokedTime', { time: formatAdminDate(apiKey.revokedAt), defaultValue: 'Thời gian thu hồi: {{time}}' })}
-                          </span>
-                        )}
-                      </div>
-                      {!apiKey.revokedAt && (
-                        <button
-                          type="button"
-                          className="admin-danger-button slim"
-                          disabled={submitting}
-                          onClick={() => revokeApiKey(apiKey.id)}
-                          style={{ borderRadius: '8px', minHeight: '32px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                        >
-                          <Trash2 size={13} />
-                          <span>{t('settings.revoke', { defaultValue: 'Thu hồi' })}</span>
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  {apiKeyList.length === 0 && <AdminEmptyState message={t('settings.noApiKeys', { defaultValue: 'Tài khoản của bạn chưa có API key nào.' })} />}
-                </div>
-              </div>
-            </div>
-          )}
 
           {activeSettingsTab === 'privacy' && (
             <div className="settings-form-grid">

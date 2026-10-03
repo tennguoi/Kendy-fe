@@ -5,6 +5,7 @@ import './i18n'
 import App from './App.jsx'
 import { ToastProvider } from './components/Toast'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { AppErrorBoundary } from './components/ErrorBoundary/AppErrorBoundary'
 import axiosClient from './lib/api'
 import { initializeServerTime } from './utils/serverTime'
 
@@ -19,11 +20,13 @@ const initialTheme = savedTheme === 'dark' || savedTheme === 'light'
 document.documentElement.classList.toggle('dark', initialTheme === 'dark')
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <ThemeProvider>
-      <ToastProvider>
-        <App />
-      </ToastProvider>
-    </ThemeProvider>
-  </BrowserRouter>,
+  <AppErrorBoundary level="root">
+    <BrowserRouter>
+      <ThemeProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  </AppErrorBoundary>,
 )

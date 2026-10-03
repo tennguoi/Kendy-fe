@@ -26,6 +26,16 @@
     "security": "Security Monitor",
     "settings": "Settings"
   },
+  "errorBoundary": {
+    "rootTitle": "Something unexpected happened",
+    "pageTitle": "Unable to display this content",
+    "rootMessage": "An unexpected rendering error occurred. Please try reloading the page or returning home.",
+    "pageMessage": "This section encountered an error during rendering. The rest of the application remains fully functional.",
+    "retry": "Try again",
+    "reloadPage": "Reload page",
+    "goHome": "Return home",
+    "viewTechnicalDetails": "Technical details (for developers)"
+  },
   "common": {
     "error": "Error",
     "success": "Success",

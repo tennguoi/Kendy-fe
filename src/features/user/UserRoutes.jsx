@@ -15,6 +15,7 @@ import './overview/overview.css'
 import './services/services.css'
 import './support/support.css'
 import './locker/locker.css'
+import { AppErrorBoundary } from '../../components/ErrorBoundary/AppErrorBoundary'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')
@@ -246,7 +247,9 @@ function UserRoutes({
             key={route.path}
             aria-hidden={!isActive(route.path)}
           >
-            {route.element}
+            <AppErrorBoundary level="page" key={route.path}>
+              {route.element}
+            </AppErrorBoundary>
           </div>
         )
       ))}
