@@ -40,7 +40,7 @@ function AdminPricingView({
   const [featuredOnly, setFeaturedOnly] = useState(false)
   const [query, setQuery] = useState('')
   const [formDraft, setFormDraft] = useState(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [pricingItems, setPricingItems] = useState([])
   const [selectedId, setSelectedId] = useState(null)
@@ -83,6 +83,7 @@ function AdminPricingView({
       const msg = resolveAdminError(err, t('admin.pricing.loadError'))
       onSetError(msg)
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [categorySlug, currentPage, featuredOnly, onSetError, query, sort, t, token])
@@ -163,7 +164,7 @@ function AdminPricingView({
         </button>
       </div>
 
-      {loading && <Loading fullScreen={false} message={t('admin.pricing.loading')} subMessage="" />}
+      {!hasLoaded && loading && <Loading fullScreen={false} message={t('admin.pricing.loading')} subMessage="" />}
 
 
       <PricingFilterBar

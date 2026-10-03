@@ -24,6 +24,7 @@ function AdminTicketsView({
   const [editor, setEditor] = useState({ assignedAdminId: '', category: '', priority: 'NORMAL', status: 'OPEN' })
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [file, setFile] = useState(null)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [priorityFilter, setPriorityFilter] = useState('')
@@ -84,6 +85,7 @@ function AdminTicketsView({
       const msg = resolveAdminError(err, t('admin.tickets.loadError'))
       onSetError(msg)
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [categoryFilter, currentPage, onSetError, priorityFilter, query, statusFilter, t, ticketQueue, token])
@@ -259,7 +261,7 @@ function AdminTicketsView({
         </button>
       </div>
 
-      {loading && <Loading fullScreen={false} message={t('admin.tickets.loading')} subMessage="" />}
+      {!hasLoaded && loading && <Loading fullScreen={false} message={t('admin.tickets.loading')} subMessage="" />}
 
 
       <TicketFilterBar

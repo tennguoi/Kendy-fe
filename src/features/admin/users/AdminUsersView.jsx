@@ -50,7 +50,6 @@ function AdminUsersView({
 
     const targetPage = typeof page === 'number' ? page : currentPage
     setLoading(true)
-    setHasLoadedUsers(false)
     try {
       const data = await adminApi.searchUsers({ query: query.trim(), status: statusFilter, page: targetPage }, token)
       const { items, totalPages: pages } = normalizePaged(data, 50)
@@ -287,7 +286,7 @@ function AdminUsersView({
         </button>
       </div>
 
-      {loading && <Loading fullScreen={false} message={t('admin.users.loading')} subMessage="" />}
+      {!hasLoadedUsers && loading && <Loading fullScreen={false} message={t('admin.users.loading')} subMessage="" />}
 
 
       <UsersFilterBar

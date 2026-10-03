@@ -235,6 +235,7 @@ function AdminServicesView({
   const { t } = useTranslation()
   const [categories, setCategories] = useState([])
   const [categoryForm, setCategoryForm] = useState(emptyCategoryForm)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
@@ -299,6 +300,7 @@ function AdminServicesView({
       const msg = resolveAdminError(err, t('admin.services.loadServicesError'))
       onSetError(msg)
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [currentPage, onSetError, query, statusFilter, t, token])
@@ -861,7 +863,7 @@ function AdminServicesView({
         </div>
       </div>
 
-      {loading && <Loading fullScreen={false} message={t('admin.services.loading')} subMessage="" />}
+      {!hasLoaded && loading && <Loading fullScreen={false} message={t('admin.services.loading')} subMessage="" />}
 
 
       <div className="admin-services-summary" aria-label={t('admin.services.title')}>

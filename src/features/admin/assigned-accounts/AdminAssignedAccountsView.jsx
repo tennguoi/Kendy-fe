@@ -41,6 +41,7 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [filters, setFilters] = useState({ deliveredFrom: '', deliveredTo: '', query: '', status: '' })
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [revealed, setRevealed] = useState({})
   const [revealingId, setRevealingId] = useState(null)
@@ -70,6 +71,7 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
       const msg = resolveAdminError(err, t('admin.assignedAccounts.loadError'))
       onSetError(msg)
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [currentPage, filters, onSetError, t, token])
@@ -170,10 +172,10 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
           <PackageOpen size={20} />
         </div>
 
-        {loading ? <Loading /> : accounts.length === 0 ? (
+        {!hasLoaded && loading ? <Loading /> : accounts.length === 0 ? (
           <AdminEmptyState message={t('admin.assignedAccounts.empty.message')} hint={t('admin.assignedAccounts.empty.hint')} />
         ) : (
-          <div className="assigned-table-wrap">
+          <div className="assigned-table-wrap" style={{ opacity: loading ? 0.6 : 1, transition: 'opacity .15s ease' }}>
             <table className="assigned-table">
               <thead><tr><th>{t('admin.assignedAccounts.table.customer')}</th><th>{t('admin.assignedAccounts.table.serviceAccount')}</th><th>{t('admin.assignedAccounts.table.order')}</th><th>{t('admin.assignedAccounts.table.deliveredDate')}</th><th>{t('admin.assignedAccounts.table.expiresDate')}</th><th>{t('admin.assignedAccounts.table.status')}</th><th>{t('admin.assignedAccounts.table.info')}</th></tr></thead>
               <tbody>

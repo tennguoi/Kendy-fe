@@ -55,6 +55,7 @@ function AdminOrdersView({
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [manualQueue, setManualQueue] = useState('all')
   const [orders, setOrders] = useState([])
@@ -117,6 +118,7 @@ function AdminOrdersView({
       const msg = resolveAdminError(err, t('admin.orders.loadError'))
       onSetError(msg)
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [currentPage, onSetError, query, statusFilter, t, token])
@@ -382,7 +384,7 @@ function AdminOrdersView({
         </button>
       </div>
 
-      {loading && <Loading fullScreen={false} message={t('admin.orders.loading')} subMessage="" />}
+      {!hasLoaded && loading && <Loading fullScreen={false} message={t('admin.orders.loading')} subMessage="" />}
 
 
       <OrderFilterBar

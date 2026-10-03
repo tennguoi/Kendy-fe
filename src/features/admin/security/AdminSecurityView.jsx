@@ -45,6 +45,7 @@ function AdminSecurityView({ currentUser, onSetError, onSetNotice, token }) {
   const [tab, setTab] = useState('accounts')
   const [category, setCategory] = useState('ALL')
   const [rows, setRows] = useState([])
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [busyId, setBusyId] = useState(null)
 
@@ -71,6 +72,7 @@ function AdminSecurityView({ currentUser, onSetError, onSetNotice, token }) {
       setRows([])
       onSetError(resolveAdminError(err, t('admin.security.loadError')))
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [category, onSetError, t, tab, token])
@@ -207,7 +209,7 @@ function AdminSecurityView({ currentUser, onSetError, onSetNotice, token }) {
           </div>
         )}
 
-        {loading && <Loading fullScreen={false} message={t('admin.security.loading')} subMessage="" />}
+        {!hasLoaded && loading && <Loading fullScreen={false} message={t('admin.security.loading')} subMessage="" />}
 
         {!loading && rows.length === 0 && <AdminEmptyState message={t('admin.security.empty')} />}
 

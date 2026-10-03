@@ -27,7 +27,7 @@ function SearchField({
   }
 
   return (
-    <label className={`search-field search-field-${size} ${className}`.trim()}>
+    <div className={`search-field search-field-${size} ${className}`.trim()} role="search">
       <Search className="search-field-icon" size={17} strokeWidth={2} aria-hidden="true" />
       <BaseInput
         {...inputProps}
@@ -41,7 +41,7 @@ function SearchField({
           <X size={15} strokeWidth={2.2} aria-hidden="true" />
         </button>
       )}
-    </label>
+    </div>
   )
 }
 

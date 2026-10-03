@@ -62,6 +62,7 @@ function AdminFinanceView({
   const [depositDrawerOpen, setDepositDrawerOpen] = useState(false)
   const [depositStatus, setDepositStatus] = useState('')
   const [deposits, setDeposits] = useState([])
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [revenue, setRevenue] = useState(null)
@@ -133,6 +134,7 @@ function AdminFinanceView({
       const msg = resolveAdminError(err, t('admin.finance.loadError'))
       onSetError(msg)
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [activeTab, bankCurrentPage, bankStatus, depositCurrentPage, depositStatus, onSetError, query, t, token, walletCurrentPage, walletType])
@@ -435,7 +437,7 @@ function AdminFinanceView({
         </button>
       </div>
 
-      {loading && <Loading fullScreen={false} message={t('admin.finance.loading')} subMessage="" />}
+      {!hasLoaded && loading && <Loading fullScreen={false} message={t('admin.finance.loading')} subMessage="" />}
 
 
       <div className="admin-metrics">

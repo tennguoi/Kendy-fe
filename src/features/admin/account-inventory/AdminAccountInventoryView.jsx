@@ -36,6 +36,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [csv, setCsv] = useState('')
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [revealed, setRevealed] = useState({})
@@ -80,6 +81,7 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
     } catch (err) {
       fail(err.message || t('admin.accountInventory.loadInventoryError'))
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [currentPage, fail, query, serviceId, status, token])
@@ -233,9 +235,9 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
         <div className="inventory-layout list-only">
           <section className="admin-panel inventory-list-panel">
             <div className="admin-panel-head"><div><h3>{t('admin.accountInventory.form.listTitle')}</h3><span>{t('admin.accountInventory.form.resultsCount', { count: credentials.length })}</span></div><PackageOpen size={20} /></div>
-            {loading ? <Loading /> : credentials.length === 0 ? <AdminEmptyState message={t('admin.accountInventory.form.noAccounts')} /> : (
+            {!hasLoaded && loading ? <Loading /> : credentials.length === 0 ? <AdminEmptyState message={t('admin.accountInventory.form.noAccounts')} /> : (
               <>
-                <div className="inventory-list">
+                <div className="inventory-list" style={{ opacity: loading ? 0.6 : 1, transition: 'opacity .15s ease' }}>
                   {credentials.map((item) => {
                     const visible = revealed[item.id] || item
                     return (

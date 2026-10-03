@@ -51,6 +51,7 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
   const [allRequests, setAllRequests] = useState([])
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [statusFilter, setStatusFilter] = useState('')
   const [selectedRequest, setSelectedRequest] = useState(null)
@@ -90,6 +91,7 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
       const msg = resolveAdminError(err, t('admin.warranty.loadError'))
       onSetError(msg)
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [currentPage, onSetError, statusFilter, t, token])
@@ -193,7 +195,7 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
         </span>
       </div>
 
-      {loading && <Loading fullScreen={false} message={t('admin.warranty.loading')} subMessage="" />}
+      {!hasLoaded && loading && <Loading fullScreen={false} message={t('admin.warranty.loading')} subMessage="" />}
 
       <div className="admin-mini-list">
         {filteredRequests.map((request) => (

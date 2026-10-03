@@ -32,6 +32,7 @@ const strategyKeys = {
 function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
   const { t } = useTranslation()
   const [items, setItems] = useState([])
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [busyId, setBusyId] = useState(null)
   const [query, setQuery] = useState('')
@@ -47,6 +48,7 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
     } catch (err) {
       onSetError(resolveAdminError(err, t('admin.entitlements.loadError')))
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [onSetError, token, t])
@@ -173,10 +175,10 @@ function AdminEntitlementsView({ onSetError, onSetNotice, token }) {
       </section>
 
       <section className="admin-panel">
-        {loading ? <Loading /> : filtered.length === 0 ? (
+        {!hasLoaded && loading ? <Loading /> : filtered.length === 0 ? (
           <AdminEmptyState message={t('admin.entitlements.empty')} />
         ) : (
-          <div className="entitlement-table-wrap">
+          <div className="entitlement-table-wrap" style={{ opacity: loading ? 0.6 : 1, transition: 'opacity .15s ease' }}>
             <table className="entitlement-table">
               <thead>
                 <tr>

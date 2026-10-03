@@ -8,6 +8,7 @@ import BaseSelect from '../../../../components/ui/BaseSelect'
 
 function TicketListPanel({
   currentPage,
+  loading = false,
   onLoadTicket,
   onPageChange,
   onSearchChange,
@@ -38,7 +39,7 @@ function TicketListPanel({
           placeholder={t('support.statusAll', { defaultValue: 'Tất cả trạng thái' })}
         />
       </div>
-      <div className="admin-ticket-list">
+      <div className="admin-ticket-list" style={{ opacity: loading ? 0.6 : 1, transition: 'opacity .15s ease' }}>
         {tickets.map((ticket) => (
           <button
             className={selectedCode === ticket.ticketCode ? 'selected' : ''}

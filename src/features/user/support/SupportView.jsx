@@ -47,6 +47,7 @@ function SupportView({
       <article className="ticket-list">
         <TicketListPanel
           currentPage={currentPage}
+          loading={loading}
           onLoadTicket={onLoadTicket}
           onPageChange={onPageChange}
           onSearchChange={onSearchChange}

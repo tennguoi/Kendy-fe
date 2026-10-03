@@ -66,6 +66,7 @@ function SecretField({ label, value, onCopy, copied }) {
 
 function LockerView({ onSetNotice, token }) {
   const [items, setItems] = useState([])
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
@@ -86,6 +87,7 @@ function LockerView({ onSetNotice, token }) {
     } catch (err) {
       setError(err.message || 'Không tải được danh sách dịch vụ.')
     } finally {
+      setHasLoaded(true)
       setLoading(false)
     }
   }, [token])
@@ -193,9 +195,9 @@ function LockerView({ onSetNotice, token }) {
       </div>
 
       {error && <div className="locker-error"><AlertTriangle size={17} /> {error}</div>}
-      {loading && <p className="locker-muted">Đang tải dịch vụ...</p>}
+      {!hasLoaded && loading && <p className="locker-muted">Đang tải dịch vụ...</p>}
 
-      <div className="locker-list">
+      <div className="locker-list" style={{ opacity: loading ? 0.6 : 1, transition: 'opacity .15s ease' }}>
         {filtered.map((item) => {
           const warrantyExpired = item.warrantyUntil && new Date(item.warrantyUntil).getTime() < now
           const expired = item.expiresAt && new Date(item.expiresAt).getTime() < now
