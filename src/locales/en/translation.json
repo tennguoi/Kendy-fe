@@ -23,6 +23,7 @@
     "coupons": "Coupons",
     "warranty": "Warranty",
     "content": "Website",
+    "security": "Security Monitor",
     "settings": "Settings"
   },
   "common": {
@@ -1954,6 +1955,115 @@
         "requirementsPlaceholder": "Prepare your profile link, set it to public...",
         "usageNotesHeading": "Usage Notes",
         "usageNotesPlaceholder": "Do not change name during processing..."
+      }
+    },
+    "security": {
+      "title": "Security Monitor",
+      "subtitle": "Track login abuse, active sessions, API keys, sensitive actions and webhook attacks.",
+      "reload": "Reload",
+      "loading": "Loading security data...",
+      "loadError": "Unable to load security data.",
+      "updatedAt": "Updated {{time}}",
+      "readOnly": "You have read-only access. Only Super Admins can unlock accounts or revoke access.",
+      "empty": "Nothing to report here.",
+      "kpi": {
+        "lockedAccounts": "Locked accounts",
+        "failedLogins": "Accounts with failed logins",
+        "activeSessions": "Active sessions",
+        "activeApiKeys": "Active API keys",
+        "adminsNo2fa": "Admins without 2FA",
+        "adminsNo2faHint": "of {{total}} admins",
+        "webhook24h": "Rejected webhooks (24h)",
+        "reveals24h": "Credential reveals (24h)",
+        "changes24h": "Sensitive changes (24h)"
+      },
+      "tabs": {
+        "accounts": "Login abuse",
+        "sessions": "Sessions",
+        "apiKeys": "API keys",
+        "events": "Security events"
+      },
+      "accounts": {
+        "title": "Accounts under attack",
+        "hint": "Accounts with failed login attempts or currently locked.",
+        "account": "Account",
+        "role": "Role",
+        "attempts": "Failed attempts",
+        "state": "State",
+        "twoFactor": "2FA",
+        "locked": "Locked until {{time}}",
+        "warning": "Warning",
+        "unlock": "Unlock",
+        "confirmUnlock": "Unlock {{email}} and reset failed attempts?",
+        "unlockSuccess": "Account unlocked.",
+        "unlockError": "Unable to unlock the account.",
+        "on": "On",
+        "off": "Off"
+      },
+      "sessions": {
+        "title": "Active sessions",
+        "hint": "Every signed-in session across the platform, newest first.",
+        "user": "User",
+        "created": "Signed in",
+        "lastUsed": "Last activity",
+        "expires": "Expires",
+        "revoke": "Sign out",
+        "confirmRevoke": "Force sign out this session of {{email}}?",
+        "revokeSuccess": "Session revoked.",
+        "revokeError": "Unable to revoke the session."
+      },
+      "apiKeys": {
+        "title": "Active API keys",
+        "hint": "Keys that can still authenticate against the API.",
+        "user": "Owner",
+        "key": "Key",
+        "scopes": "Scopes",
+        "created": "Created",
+        "lastUsed": "Last used",
+        "neverUsed": "Never used",
+        "revoke": "Revoke",
+        "confirmRevoke": "Revoke API key {{name}} of {{email}}?",
+        "revokeSuccess": "API key revoked.",
+        "revokeError": "Unable to revoke the API key."
+      },
+      "events": {
+        "title": "Security events",
+        "hint": "Sensitive actions and attacks recorded in the audit log.",
+        "time": "Time",
+        "action": "Event",
+        "actor": "Actor",
+        "ip": "IP",
+        "details": "Details",
+        "system": "System",
+        "categories": {
+          "ALL": "All",
+          "CREDENTIAL": "Credentials",
+          "WEBHOOK": "Webhook",
+          "AUTH": "Authentication",
+          "ADMIN": "Admin changes"
+        },
+        "actions": {
+          "ACCOUNT_CREDENTIAL_REVEALED": "Credential revealed",
+          "ACCOUNT_CREDENTIAL_UPDATED": "Credential updated",
+          "ACCOUNT_CREDENTIAL_DISABLED": "Credential disabled",
+          "ACCOUNT_CREDENTIAL_BULK_IMPORTED": "Credentials bulk imported",
+          "ACCOUNT_CREDENTIAL_CREATED": "Credential created",
+          "SEPAY_WEBHOOK_REJECTED": "Webhook rejected",
+          "USER_2FA_DISABLED": "2FA disabled",
+          "USER_2FA_RESET": "2FA reset",
+          "USER_2FA_EMAIL_CODE_LOCKED": "2FA code locked",
+          "USER_PASSWORD_RESET_COMPLETED": "Password reset",
+          "USER_LOGIN_UNLOCKED": "Account unlocked",
+          "AUTH_SESSION_REVOKED": "Session revoked",
+          "SECURITY_SESSION_REVOKED": "Session revoked",
+          "USER_API_KEY_REVOKED": "API key revoked",
+          "SECURITY_API_KEY_REVOKED": "API key revoked",
+          "ADMIN_2FA_DISABLED": "Admin 2FA disabled",
+          "ADMIN_2FA_RESET": "Admin 2FA reset",
+          "ADMIN_ROLE_UPDATED": "Admin role changed",
+          "ADMIN_PERMISSIONS_UPDATED": "Admin permissions changed",
+          "USER_BULK_STATUS_UPDATED": "Bulk status change"
+        }
       }
     },
     "warranty": {

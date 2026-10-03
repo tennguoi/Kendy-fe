@@ -12,6 +12,7 @@ import {
   PackageOpen,
   Shield,
   Users,
+  ShieldAlert,
   WalletCards,
 } from 'lucide-react'
 
@@ -29,5 +30,6 @@ export const adminNavItems = [
   { id: 'admin-coupons', label: 'adminNav.coupons', path: '/admin/coupons', icon: Percent },
   { id: 'admin-warranty', label: 'adminNav.warranty', path: '/admin/warranty', icon: ShieldCheck },
   { id: 'admin-content', label: 'adminNav.content', path: '/admin/content', icon: Newspaper },
+  { id: 'admin-security', label: 'adminNav.security', path: '/admin/security', icon: ShieldAlert },
   { id: 'admin-settings', label: 'adminNav.settings', path: '/admin/settings', icon: Settings },
 ]

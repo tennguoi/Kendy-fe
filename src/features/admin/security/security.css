@@ -1,0 +1,285 @@
+/* ================================================
+ * security.css - Admin Security Monitor
+ * Uses the shared --kd-* tokens so light/dark (html.dark) work automatically.
+ * ================================================ */
+
+.security-subtitle {
+  margin: 4px 0 0;
+  color: var(--kd-muted);
+  font-size: 14px;
+}
+
+.security-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.security-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--kd-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.security-readonly {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--kd-info) 10%, var(--kd-card));
+  color: var(--kd-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* KPI cards */
+.security-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.security-kpi {
+  --tone: var(--kd-muted);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  background: var(--kd-card);
+  box-shadow: var(--kd-soft-shadow);
+  min-width: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.security-kpi:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--tone) 45%, var(--kd-border));
+}
+
+.security-kpi.ok { --tone: var(--kd-success); }
+.security-kpi.warn { --tone: var(--kd-warning); }
+.security-kpi.danger { --tone: var(--kd-danger); }
+.security-kpi.info { --tone: var(--kd-info); }
+
+.security-kpi-icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+}
+
+.security-kpi > div {
+  min-width: 0;
+}
+
+.security-kpi-label {
+  display: block;
+  color: var(--kd-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.security-kpi strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--kd-text);
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.security-kpi small {
+  color: var(--kd-muted);
+  font-size: 12px;
+}
+
+/* Tabs & chips */
+.security-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 4px;
+  border: 1px solid var(--kd-border);
+  border-radius: 12px;
+  background: var(--kd-bg);
+  overflow-x: auto;
+}
+
+.security-tab,
+.security-chip {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--kd-muted);
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.security-tab {
+  flex: 1 1 auto;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 9px;
+}
+
+.security-tab:hover,
+.security-chip:hover {
+  color: var(--kd-text);
+}
+
+.security-tab.active {
+  background: var(--kd-card);
+  color: var(--kd-blue);
+  border-color: var(--kd-border);
+  box-shadow: var(--kd-soft-shadow);
+}
+
+.security-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.security-chip {
+  min-height: 32px;
+  padding: 0 12px;
+  border-color: var(--kd-border);
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.security-chip.active {
+  color: #ffffff;
+  background: var(--kd-blue);
+  border-color: var(--kd-blue);
+}
+
+/* Table rows */
+.security-row.accounts {
+  grid-template-columns: minmax(200px, 1.4fr) 110px 90px minmax(160px, 1.1fr) 70px 110px;
+}
+
+.security-row.sessions {
+  grid-template-columns: minmax(220px, 1.4fr) 150px 150px 150px 120px;
+}
+
+.security-row.keys {
+  grid-template-columns: minmax(180px, 1.1fr) minmax(160px, 1fr) minmax(100px, 0.8fr) 150px 150px 100px;
+}
+
+.security-row.events {
+  grid-template-columns: 150px minmax(160px, 1fr) 90px 130px minmax(220px, 2fr);
+}
+
+.admin-data-row.security-row:not(.head):hover {
+  background: var(--kd-hover, rgba(37, 99, 235, 0.05));
+}
+
+.security-attempts {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.security-attempts.hot {
+  color: var(--kd-danger);
+}
+
+.security-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.security-scopes,
+.security-details {
+  overflow-wrap: anywhere;
+  color: var(--kd-muted);
+  font-size: 13px;
+}
+
+.security-pill {
+  width: max-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--kd-muted);
+  background: color-mix(in srgb, var(--kd-muted) 14%, transparent);
+}
+
+.security-pill.ok { color: var(--kd-success); background: color-mix(in srgb, var(--kd-success) 15%, transparent); }
+.security-pill.warn { color: var(--kd-warning); background: color-mix(in srgb, var(--kd-warning) 16%, transparent); }
+.security-pill.danger { color: var(--kd-danger); background: color-mix(in srgb, var(--kd-danger) 15%, transparent); }
+
+.security-row-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.security-action {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--kd-border-strong);
+  border-radius: 8px;
+  color: var(--kd-blue);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.security-action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--kd-blue) 10%, transparent);
+  border-color: var(--kd-blue);
+}
+
+.security-action.danger {
+  color: var(--kd-danger);
+}
+
+.security-action.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--kd-danger) 10%, transparent);
+  border-color: var(--kd-danger);
+}
+
+.security-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1100px) {
+  .security-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .security-kpis {
+    grid-template-columns: 1fr;
+  }
+}

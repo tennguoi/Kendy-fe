@@ -23,6 +23,7 @@
     "coupons": "Coupon",
     "warranty": "Bảo hành",
     "content": "Website",
+    "security": "Giám sát bảo mật",
     "settings": "Cài đặt"
   },
   "common": {
@@ -1954,6 +1955,115 @@
         "requirementsPlaceholder": "Chuẩn bị link trang cá nhân, bật chế độ công khai...",
         "usageNotesHeading": "Lưu ý khi sử dụng dịch vụ",
         "usageNotesPlaceholder": "Không đổi tên trong quá trình chạy..."
+      }
+    },
+    "security": {
+      "title": "Giám sát bảo mật",
+      "subtitle": "Theo dõi đăng nhập bất thường, phiên đăng nhập, API key, thao tác nhạy cảm và tấn công webhook.",
+      "reload": "Tải lại",
+      "loading": "Đang tải dữ liệu bảo mật...",
+      "loadError": "Không thể tải dữ liệu bảo mật.",
+      "updatedAt": "Cập nhật {{time}}",
+      "readOnly": "Bạn chỉ có quyền xem. Chỉ Super Admin mới có thể mở khóa tài khoản hoặc thu hồi quyền truy cập.",
+      "empty": "Chưa có gì đáng chú ý.",
+      "kpi": {
+        "lockedAccounts": "Tài khoản đang bị khóa",
+        "failedLogins": "Tài khoản đăng nhập sai",
+        "activeSessions": "Phiên đang hoạt động",
+        "activeApiKeys": "API key đang hoạt động",
+        "adminsNo2fa": "Admin chưa bật 2FA",
+        "adminsNo2faHint": "trên {{total}} admin",
+        "webhook24h": "Webhook bị từ chối (24h)",
+        "reveals24h": "Lượt xem credential (24h)",
+        "changes24h": "Thay đổi nhạy cảm (24h)"
+      },
+      "tabs": {
+        "accounts": "Đăng nhập bất thường",
+        "sessions": "Phiên đăng nhập",
+        "apiKeys": "API key",
+        "events": "Sự kiện bảo mật"
+      },
+      "accounts": {
+        "title": "Tài khoản bị dò mật khẩu",
+        "hint": "Tài khoản có lần đăng nhập sai hoặc đang bị khóa.",
+        "account": "Tài khoản",
+        "role": "Vai trò",
+        "attempts": "Số lần sai",
+        "state": "Trạng thái",
+        "twoFactor": "2FA",
+        "locked": "Khóa đến {{time}}",
+        "warning": "Cảnh báo",
+        "unlock": "Mở khóa",
+        "confirmUnlock": "Mở khóa {{email}} và đặt lại số lần đăng nhập sai?",
+        "unlockSuccess": "Đã mở khóa tài khoản.",
+        "unlockError": "Không thể mở khóa tài khoản.",
+        "on": "Bật",
+        "off": "Tắt"
+      },
+      "sessions": {
+        "title": "Phiên đang hoạt động",
+        "hint": "Mọi phiên đăng nhập trên hệ thống, mới nhất trước.",
+        "user": "Người dùng",
+        "created": "Đăng nhập lúc",
+        "lastUsed": "Hoạt động cuối",
+        "expires": "Hết hạn",
+        "revoke": "Đăng xuất",
+        "confirmRevoke": "Buộc đăng xuất phiên này của {{email}}?",
+        "revokeSuccess": "Đã thu hồi phiên.",
+        "revokeError": "Không thể thu hồi phiên."
+      },
+      "apiKeys": {
+        "title": "API key đang hoạt động",
+        "hint": "Các key vẫn có thể xác thực với API.",
+        "user": "Chủ sở hữu",
+        "key": "Key",
+        "scopes": "Phạm vi",
+        "created": "Tạo lúc",
+        "lastUsed": "Dùng gần nhất",
+        "neverUsed": "Chưa từng dùng",
+        "revoke": "Thu hồi",
+        "confirmRevoke": "Thu hồi API key {{name}} của {{email}}?",
+        "revokeSuccess": "Đã thu hồi API key.",
+        "revokeError": "Không thể thu hồi API key."
+      },
+      "events": {
+        "title": "Sự kiện bảo mật",
+        "hint": "Thao tác nhạy cảm và tấn công được ghi trong audit log.",
+        "time": "Thời gian",
+        "action": "Sự kiện",
+        "actor": "Người thực hiện",
+        "ip": "IP",
+        "details": "Chi tiết",
+        "system": "Hệ thống",
+        "categories": {
+          "ALL": "Tất cả",
+          "CREDENTIAL": "Credential",
+          "WEBHOOK": "Webhook",
+          "AUTH": "Xác thực",
+          "ADMIN": "Thay đổi admin"
+        },
+        "actions": {
+          "ACCOUNT_CREDENTIAL_REVEALED": "Xem credential",
+          "ACCOUNT_CREDENTIAL_UPDATED": "Sửa credential",
+          "ACCOUNT_CREDENTIAL_DISABLED": "Vô hiệu credential",
+          "ACCOUNT_CREDENTIAL_BULK_IMPORTED": "Nhập hàng loạt credential",
+          "ACCOUNT_CREDENTIAL_CREATED": "Tạo credential",
+          "SEPAY_WEBHOOK_REJECTED": "Webhook bị từ chối",
+          "USER_2FA_DISABLED": "Tắt 2FA",
+          "USER_2FA_RESET": "Đặt lại 2FA",
+          "USER_2FA_EMAIL_CODE_LOCKED": "Khóa mã 2FA",
+          "USER_PASSWORD_RESET_COMPLETED": "Đặt lại mật khẩu",
+          "USER_LOGIN_UNLOCKED": "Mở khóa tài khoản",
+          "AUTH_SESSION_REVOKED": "Thu hồi phiên",
+          "SECURITY_SESSION_REVOKED": "Thu hồi phiên",
+          "USER_API_KEY_REVOKED": "Thu hồi API key",
+          "SECURITY_API_KEY_REVOKED": "Thu hồi API key",
+          "ADMIN_2FA_DISABLED": "Tắt 2FA admin",
+          "ADMIN_2FA_RESET": "Đặt lại 2FA admin",
+          "ADMIN_ROLE_UPDATED": "Đổi vai trò admin",
+          "ADMIN_PERMISSIONS_UPDATED": "Đổi quyền admin",
+          "USER_BULK_STATUS_UPDATED": "Đổi trạng thái hàng loạt"
+        }
       }
     },
     "warranty": {

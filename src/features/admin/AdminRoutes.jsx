@@ -13,6 +13,7 @@ import AdminWarrantyView from './warranty/AdminWarrantyView'
 import AdminAssignedAccountsView from './assigned-accounts/AdminAssignedAccountsView'
 import AdminAccountInventoryView from './account-inventory/AdminAccountInventoryView'
 import AdminEntitlementsView from './entitlements/AdminEntitlementsView'
+import AdminSecurityView from './security/AdminSecurityView'
 import SettingsView from '../user/settings/SettingsView'
 import './admin.css'
 import './finance/finance.css'
@@ -27,6 +28,7 @@ import './assigned-accounts/assigned-accounts.css'
 import './account-inventory/account-inventory.css'
 import './entitlements/entitlements.css'
 import './orders/orders.css'
+import './security/security.css'
 
 function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '')
@@ -88,6 +90,7 @@ function AdminRoutes({
     { path: '/admin/coupons', element: <AdminCouponsView {...sharedProps} /> },
     { path: '/admin/warranty', element: <AdminWarrantyView {...sharedProps} /> },
     { path: '/admin/content', element: <AdminContentView {...sharedProps} /> },
+    { path: '/admin/security', element: <AdminSecurityView {...sharedProps} currentUser={currentUser} /> },
     {
       path: '/admin/settings',
       element: (

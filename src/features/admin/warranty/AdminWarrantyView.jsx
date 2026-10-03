@@ -193,7 +193,7 @@ function AdminWarrantyView({ onSetError, onSetNotice, token }) {
         </span>
       </div>
 
-      {!error && loading && <Loading fullScreen={false} message={t('admin.warranty.loading')} subMessage="" />}
+      {loading && <Loading fullScreen={false} message={t('admin.warranty.loading')} subMessage="" />}
 
       <div className="admin-mini-list">
         {filteredRequests.map((request) => (

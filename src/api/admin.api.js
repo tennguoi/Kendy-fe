@@ -9,6 +9,7 @@ import { adminFinanceApi } from './admin/finance.api';
 import { adminNotificationsApi } from './admin/notifications.api';
 import { adminOrdersApi } from './admin/orders.api';
 import { adminServicesApi } from './admin/services.api';
+import { adminSecurityApi } from './admin/security.api';
 import { adminSettingsApi } from './admin/settings.api';
 import { adminSystemApi } from './admin/system.api';
 import { adminTicketsApi } from './admin/tickets.api';
@@ -32,4 +33,5 @@ export const adminApi = {
   ...adminTicketsApi,
   ...adminFilesApi,
   ...adminWarrantyApi,
+  ...adminSecurityApi,
 };
