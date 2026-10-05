@@ -272,3 +272,47 @@ html.dark .inventory-list code {
 }
 @media (max-width: 1050px) { .inventory-layout { grid-template-columns: 1fr; } .inventory-service-picker { grid-template-columns: 1fr 1fr; } .inventory-service-picker label { grid-column: 1 / -1; } }
 @media (max-width: 640px) { .inventory-service-picker, .inventory-form { grid-template-columns: 1fr; } .inventory-service-picker label, .inventory-form label:nth-of-type(n+7), .inventory-form button { grid-column: auto; } .inventory-list article { flex-direction: column; } .inventory-kpi-secondaries { grid-template-columns: 1fr; } .inventory-actions { justify-content: flex-start; } }
+
+/* ── Tab Navigation ──────────────────────────────────── */
+.inventory-tabs-nav {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--kd-border);
+  padding-bottom: 12px;
+}
+
+.inventory-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--kd-border);
+  background: var(--kd-card);
+  color: var(--kd-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.inventory-tab-btn:hover {
+  color: var(--kd-text);
+  background: var(--kd-soft);
+  border-color: color-mix(in srgb, var(--kd-border) 70%, var(--kd-blue));
+}
+
+.inventory-tab-btn.active {
+  color: #fff;
+  background: var(--kd-blue);
+  border-color: var(--kd-blue);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--kd-blue) 35%, transparent);
+}
+
+.assigned-accounts-embedded {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

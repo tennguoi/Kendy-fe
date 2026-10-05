@@ -118,6 +118,15 @@ function AdminRoutes({
   if (activePath === '/admin/overview') {
     return <Navigate to="/admin" replace />
   }
+  if (activePath === '/admin/pricing') {
+    return <Navigate to="/admin/services" replace />
+  }
+  if (activePath === '/admin/assigned-accounts') {
+    return <Navigate to="/admin/account-inventory?tab=assigned" replace />
+  }
+  if (activePath === '/admin/entitlements') {
+    return <Navigate to="/admin/account-inventory?tab=assigned" replace />
+  }
 
   if (!activeRoute) {
     return <Navigate to="/admin" replace />

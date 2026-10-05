@@ -16,14 +16,14 @@
     "finance": "Finance",
     "tickets": "Tickets",
     "services": "Services",
-    "accountInventory": "Account Inventory",
+    "accountInventory": "Inventory & Delivery",
     "assignedAccounts": "Assigned Accounts",
     "entitlements": "Access Rights",
     "pricing": "Pricing",
     "coupons": "Coupons",
     "warranty": "Warranty",
     "content": "Website",
-    "security": "Security Monitor",
+    "security": "Security",
     "settings": "Settings"
   },
   "errorBoundary": {
@@ -2179,6 +2179,14 @@
     },
     "accountInventory": {
       "title": "Account Inventory",
+      "tabs": {
+        "stock": "In Stock",
+        "assigned": "Delivered to Customers",
+        "stockTitle": "Available Account Stock",
+        "stockDesc": "Manage available account stock, import single or bulk CSV.",
+        "assignedTitle": "Delivered Accounts",
+        "assignedDesc": "Track accounts assigned to customers and their expiration dates."
+      },
       "reload": "Reload",
       "createNew": "Create New",
       "loadServicesError": "Could not load account stock services.",

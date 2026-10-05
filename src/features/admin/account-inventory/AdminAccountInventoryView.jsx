@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
-import { Eye, FileUp, PackageOpen, Pencil, Plus, RefreshCw, ShieldOff, X } from 'lucide-react'
+import { Eye, FileUp, KeyRound, PackageOpen, Pencil, Plus, RefreshCw, ShieldOff, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { adminApi } from '../../../api/admin.api'
 import { normalizePaged } from '../../../utils/pagination'
 import SearchField from '../../../components/SearchField/SearchField'
@@ -13,6 +14,7 @@ import BaseInput from '../../../components/ui/BaseInput'
 import BaseSelect from '../../../components/ui/BaseSelect'
 import BaseTextarea from '../../../components/ui/BaseTextarea'
 import { resolveAdminError } from '../adminErrorResolver'
+import AdminAssignedAccountsView from '../assigned-accounts/AdminAssignedAccountsView'
 
 const emptyForm = {
   expiresAt: '', internalNote: '', loginIdentifier: '', passwordSecret: '',
@@ -24,6 +26,13 @@ const toInputDate = (value) => value ? new Date(value).toISOString().slice(0, 16
 
 function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
   const { t } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeTab = searchParams.get('tab') === 'assigned' ? 'assigned' : 'stock'
+
+  const handleTabChange = (newTab) => {
+    setSearchParams(newTab === 'assigned' ? { tab: 'assigned' } : {})
+  }
+
   const getStatusLabel = (status) => t('admin.accountInventory.status.' + status)
   const statusKeys = ['AVAILABLE', 'RESERVED', 'DELIVERED', 'REPLACED', 'REFUNDED', 'DISABLED', 'EXPIRED']
   const [services, setServices] = useState([])
@@ -186,83 +195,132 @@ function AdminAccountInventoryView({ onSetError, onSetNotice, token }) {
   return (
     <div className="admin-view account-inventory-view">
       <div className="admin-toolbar">
-        <div><h2>{t('admin.accountInventory.title')}</h2></div>
-        <div className="admin-toolbar-actions inventory-toolbar-actions">
-          <button type="button" className="admin-icon-button" onClick={loadCredentials}><RefreshCw size={18} /> {t('admin.accountInventory.reload')}</button>
-          <div className="admin-create-dropdown-container">
-            <button type="button" className="admin-primary-button" onClick={() => setCreateMenuOpen((current) => !current)}>
-              <Plus size={18} /> {t('admin.accountInventory.createNew')}
+        <div>
+          <h2>
+            {activeTab === 'assigned'
+              ? t('admin.accountInventory.tabs.assignedTitle', 'Tài khoản đã bàn giao')
+              : t('admin.accountInventory.tabs.stockTitle', 'Kho tài khoản sẵn có')}
+          </h2>
+          <p>
+            {activeTab === 'assigned'
+              ? t('admin.accountInventory.tabs.assignedDesc', 'Theo dõi danh sách tài khoản đã cấp cho khách hàng và thời hạn sử dụng.')
+              : t('admin.accountInventory.tabs.stockDesc', 'Quản lý kho tài khoản sẵn có, nhập kho đơn lẻ hoặc hàng loạt bằng CSV.')}
+          </p>
+        </div>
+        {activeTab === 'stock' && (
+          <div className="admin-toolbar-actions inventory-toolbar-actions">
+            <button type="button" className="admin-icon-button" onClick={loadCredentials}>
+              <RefreshCw size={18} /> {t('admin.accountInventory.reload')}
             </button>
-            {createMenuOpen && (
-              <div className="admin-dropdown-menu">
-                <button type="button" onClick={() => { resetForm(); setCreateMode('single'); setCreateMenuOpen(false) }}>
-                  {t('admin.accountInventory.form.singleEntry')}
-                </button>
-                <button type="button" onClick={() => { resetForm(); setCreateMode('import'); setCreateMenuOpen(false) }}>
-                  {t('admin.accountInventory.form.importCsv')}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="admin-metrics">
-        <article className="admin-metric"><span>{t('admin.accountInventory.metrics.totalInService')}</span><strong>{stats.total}</strong></article>
-        <article className="admin-metric"><span>{t('admin.accountInventory.metrics.readyToAssign')}</span><strong>{stats.available}</strong></article>
-        <article className="admin-metric"><span>{t('admin.accountInventory.metrics.delivered')}</span><strong>{stats.delivered}</strong></article>
-      </div>
-
-      <section className="admin-panel inventory-service-picker">
-        <label><span>{t('admin.accountInventory.form.selectService')}</span>
-          <BaseSelect
-            value={serviceId}
-            onChange={(value) => { setServiceId(value); resetForm() }}
-            options={[{ value: '', label: t('admin.accountInventory.form.selectService') }, ...services.map((item) => ({ value: item.id, label: item.name }))]}
-            placeholder={t('admin.accountInventory.form.selectService')}
-          />
-        </label>
-        <SearchField value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('admin.accountInventory.form.searchPlaceholder')} />
-        <BaseSelect
-          value={status}
-          onChange={(value) => setStatus(value)}
-          options={[{ value: '', label: t('admin.accountInventory.form.allStatus') }, ...statusKeys.map((value) => ({ value: value, label: getStatusLabel(value) }))]}
-          placeholder={t('admin.accountInventory.form.allStatus')}
-        />
-      </section>
-
-      {!services.length ? <AdminEmptyState message={t('admin.accountInventory.form.noServiceYet')} hint={t('admin.accountInventory.form.noServiceHint')} /> : (
-        <div className="inventory-layout list-only">
-          <section className="admin-panel inventory-list-panel">
-            <div className="admin-panel-head"><div><h3>{t('admin.accountInventory.form.listTitle')}</h3><span>{t('admin.accountInventory.form.resultsCount', { count: credentials.length })}</span></div><PackageOpen size={20} /></div>
-            {!hasLoaded && loading ? <Loading /> : credentials.length === 0 ? <AdminEmptyState message={t('admin.accountInventory.form.noAccounts')} /> : (
-              <>
-                <div className="inventory-list" style={{ opacity: loading ? 0.6 : 1, transition: 'opacity .15s ease' }}>
-                  {credentials.map((item) => {
-                    const visible = revealed[item.id] || item
-                    return (
-                      <article key={item.id}>
-                        <div>
-                          <strong>{item.loginIdentifier}</strong>
-                          <span>{getStatusLabel(item.status) || item.status} · {t('admin.accountInventory.form.addedOn', { date: formatAdminDate(item.createdAt) })}</span>
-                          {visible.passwordSecret && (
-                            <code>{t('admin.accountInventory.form.passwordLabel', { defaultValue: 'Mật khẩu' }).replace(/:+$/, '')}: {visible.passwordSecret}</code>
-                          )}
-                        </div>
-                        <div className="inventory-actions"><button type="button" onClick={() => revealCredential(item)}><Eye size={15} /> {t('admin.accountInventory.form.view')}</button>{item.status === 'AVAILABLE' && <><button type="button" onClick={() => editCredential(item)}><Pencil size={15} /> {t('admin.accountInventory.form.edit')}</button><button type="button" className="danger" onClick={() => disableCredential(item)}><ShieldOff size={15} /> {t('admin.accountInventory.form.lock')}</button></>}</div>
-                      </article>
-                    )
-                  })}
+            <div className="admin-create-dropdown-container">
+              <button type="button" className="admin-primary-button" onClick={() => setCreateMenuOpen((current) => !current)}>
+                <Plus size={18} /> {t('admin.accountInventory.createNew')}
+              </button>
+              {createMenuOpen && (
+                <div className="admin-dropdown-menu">
+                  <button type="button" onClick={() => { resetForm(); setCreateMode('single'); setCreateMenuOpen(false) }}>
+                    {t('admin.accountInventory.form.singleEntry')}
+                  </button>
+                  <button type="button" onClick={() => { resetForm(); setCreateMode('import'); setCreateMenuOpen(false) }}>
+                    {t('admin.accountInventory.form.importCsv')}
+                  </button>
                 </div>
-                <Pagination
-                  currentPage={currentPage + 1}
-                  totalPages={totalPages}
-                  onPageChange={(page) => loadCredentials(page - 1)}
-                />
-              </>
-            )}
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="inventory-tabs-nav" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'stock'}
+          className={`inventory-tab-btn ${activeTab === 'stock' ? 'active' : ''}`}
+          onClick={() => handleTabChange('stock')}
+        >
+          <PackageOpen size={17} />
+          <span>{t('admin.accountInventory.tabs.stock', 'Kho hàng sẵn có')}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'assigned'}
+          className={`inventory-tab-btn ${activeTab === 'assigned' ? 'active' : ''}`}
+          onClick={() => handleTabChange('assigned')}
+        >
+          <KeyRound size={17} />
+          <span>{t('admin.accountInventory.tabs.assigned', 'Đã bàn giao cho khách')}</span>
+        </button>
+      </div>
+
+      {activeTab === 'assigned' ? (
+        <AdminAssignedAccountsView
+          onSetError={onSetError}
+          onSetNotice={onSetNotice}
+          token={token}
+          embedded
+        />
+      ) : (
+        <>
+          <div className="admin-metrics">
+            <article className="admin-metric"><span>{t('admin.accountInventory.metrics.totalInService')}</span><strong>{stats.total}</strong></article>
+            <article className="admin-metric"><span>{t('admin.accountInventory.metrics.readyToAssign')}</span><strong>{stats.available}</strong></article>
+            <article className="admin-metric"><span>{t('admin.accountInventory.metrics.delivered')}</span><strong>{stats.delivered}</strong></article>
+          </div>
+
+          <section className="admin-panel inventory-service-picker">
+            <label><span>{t('admin.accountInventory.form.selectService')}</span>
+              <BaseSelect
+                value={serviceId}
+                onChange={(value) => { setServiceId(value); resetForm() }}
+                options={[{ value: '', label: t('admin.accountInventory.form.selectService') }, ...services.map((item) => ({ value: item.id, label: item.name }))]}
+                placeholder={t('admin.accountInventory.form.selectService')}
+              />
+            </label>
+            <SearchField value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('admin.accountInventory.form.searchPlaceholder')} />
+            <BaseSelect
+              value={status}
+              onChange={(value) => setStatus(value)}
+              options={[{ value: '', label: t('admin.accountInventory.form.allStatus') }, ...statusKeys.map((value) => ({ value: value, label: getStatusLabel(value) }))]}
+              placeholder={t('admin.accountInventory.form.allStatus')}
+            />
           </section>
-        </div>
+
+          {!services.length ? <AdminEmptyState message={t('admin.accountInventory.form.noServiceYet')} hint={t('admin.accountInventory.form.noServiceHint')} /> : (
+            <div className="inventory-layout list-only">
+              <section className="admin-panel inventory-list-panel">
+                <div className="admin-panel-head"><div><h3>{t('admin.accountInventory.form.listTitle')}</h3><span>{t('admin.accountInventory.form.resultsCount', { count: credentials.length })}</span></div><PackageOpen size={20} /></div>
+                {!hasLoaded && loading ? <Loading /> : credentials.length === 0 ? <AdminEmptyState message={t('admin.accountInventory.form.noAccounts')} /> : (
+                  <>
+                    <div className="inventory-list" style={{ opacity: loading ? 0.6 : 1, transition: 'opacity .15s ease' }}>
+                      {credentials.map((item) => {
+                        const visible = revealed[item.id] || item
+                        return (
+                          <article key={item.id}>
+                            <div>
+                              <strong>{item.loginIdentifier}</strong>
+                              <span>{getStatusLabel(item.status) || item.status} · {t('admin.accountInventory.form.addedOn', { date: formatAdminDate(item.createdAt) })}</span>
+                              {visible.passwordSecret && (
+                                <code>{t('admin.accountInventory.form.passwordLabel', { defaultValue: 'Mật khẩu' }).replace(/:+$/, '')}: {visible.passwordSecret}</code>
+                              )}
+                            </div>
+                            <div className="inventory-actions"><button type="button" onClick={() => revealCredential(item)}><Eye size={15} /> {t('admin.accountInventory.form.view')}</button>{item.status === 'AVAILABLE' && <><button type="button" onClick={() => editCredential(item)}><Pencil size={15} /> {t('admin.accountInventory.form.edit')}</button><button type="button" className="danger" onClick={() => disableCredential(item)}><ShieldOff size={15} /> {t('admin.accountInventory.form.lock')}</button></>}</div>
+                          </article>
+                        )
+                      })}
+                    </div>
+                    <Pagination
+                      currentPage={currentPage + 1}
+                      totalPages={totalPages}
+                      onPageChange={(page) => loadCredentials(page - 1)}
+                    />
+                  </>
+                )}
+              </section>
+            </div>
+          )}
+        </>
       )}
 
       <Modal isOpen={Boolean(createMode)} onClose={resetForm} showHeader={false} maxWidth="600px">

@@ -14,16 +14,16 @@
     "users": "Người dùng",
     "orders": "Đơn hàng",
     "finance": "Tài chính",
-    "tickets": "Ticket",
+    "tickets": "Hỗ trợ",
     "services": "Dịch vụ",
-    "accountInventory": "Kho tài khoản",
+    "accountInventory": "Kho & Bàn giao",
     "assignedAccounts": "Tài khoản đã cấp",
     "entitlements": "Quyền truy cập",
     "pricing": "Bảng giá",
     "coupons": "Coupon",
     "warranty": "Bảo hành",
     "content": "Website",
-    "security": "Giám sát bảo mật",
+    "security": "Bảo mật",
     "settings": "Cài đặt"
   },
   "errorBoundary": {
@@ -2179,6 +2179,14 @@
     },
     "accountInventory": {
       "title": "Kho tài khoản",
+      "tabs": {
+        "stock": "Kho hàng sẵn có",
+        "assigned": "Đã bàn giao cho khách",
+        "stockTitle": "Kho tài khoản sẵn có",
+        "stockDesc": "Quản lý kho tài khoản sẵn có, nhập kho đơn lẻ hoặc hàng loạt bằng CSV.",
+        "assignedTitle": "Tài khoản đã bàn giao",
+        "assignedDesc": "Theo dõi danh sách tài khoản đã cấp cho khách hàng và thời hạn sử dụng."
+      },
       "reload": "Tải lại",
       "createNew": "Tạo mới",
       "loadServicesError": "Không tải được dịch vụ giao tài khoản.",

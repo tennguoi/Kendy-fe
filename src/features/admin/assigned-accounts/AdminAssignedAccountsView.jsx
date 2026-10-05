@@ -18,7 +18,7 @@ function toInstant(value, endOfDay = false) {
   return date.toISOString()
 }
 
-function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
+function AdminAssignedAccountsView({ onSetError, onSetNotice, token, embedded = false }) {
   const { t } = useTranslation()
 
   const statusOptions = [
@@ -115,17 +115,19 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
   }
 
   return (
-    <div className="admin-view assigned-accounts-view">
-      <div className="admin-toolbar">
-        <div>
-          <span className="assigned-eyebrow">{t('admin.assignedAccounts.eyebrow')}</span>
-          <h2>{t('admin.assignedAccounts.title')}</h2>
-          <p>{t('admin.assignedAccounts.description')}</p>
+    <div className={embedded ? 'assigned-accounts-embedded' : 'admin-view assigned-accounts-view'}>
+      {!embedded && (
+        <div className="admin-toolbar">
+          <div>
+            <span className="assigned-eyebrow">{t('admin.assignedAccounts.eyebrow')}</span>
+            <h2>{t('admin.assignedAccounts.title')}</h2>
+            <p>{t('admin.assignedAccounts.description')}</p>
+          </div>
+          <button type="button" className="admin-icon-button" onClick={loadAccounts} disabled={loading}>
+            <RefreshCw size={17} className={loading ? 'spin' : ''} /> {t('admin.assignedAccounts.reload')}
+          </button>
         </div>
-        <button type="button" className="admin-icon-button" onClick={loadAccounts} disabled={loading}>
-          <RefreshCw size={17} className={loading ? 'spin' : ''} /> {t('admin.assignedAccounts.reload')}
-        </button>
-      </div>
+      )}
 
       <div className="admin-metrics">
         <article className="admin-metric"><span>{t('admin.assignedAccounts.metrics.totalDelivered')}</span><strong>{metrics.total}</strong></article>
@@ -169,7 +171,21 @@ function AdminAssignedAccountsView({ onSetError, onSetNotice, token }) {
             <h3>{t('admin.assignedAccounts.table.listTitle')}</h3>
             <span>{t('admin.assignedAccounts.noResult', { count: accounts.length })}</span>
           </div>
-          <PackageOpen size={20} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {embedded && (
+              <button
+                type="button"
+                className="admin-icon-button"
+                onClick={loadAccounts}
+                disabled={loading}
+                title={t('admin.assignedAccounts.reload')}
+                style={{ padding: '6px 10px' }}
+              >
+                <RefreshCw size={15} className={loading ? 'spin' : ''} />
+              </button>
+            )}
+            <PackageOpen size={20} />
+          </div>
         </div>
 
         {!hasLoaded && loading ? <Loading /> : accounts.length === 0 ? (
