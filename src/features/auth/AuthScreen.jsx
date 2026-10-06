@@ -27,7 +27,10 @@ import './AuthScreen.css';
 
 // Import base components and validation utilities
 import BaseInput from '../../components/ui/BaseInput';
+import TurnstileWidget from '../../components/Turnstile/TurnstileWidget';
 import { isValidEmail, isRequired, minLength, composeValidators, isValidPhoneVn, validatePhoneVn, isMatching } from '../../utils/validation';
+
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '';
 
 const defaultOAuthProviders = [
   { id: 'google', name: 'Google', authorizationUrl: '/oauth2/authorization/google' },
@@ -105,6 +108,9 @@ function AuthScreen({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [captchaRequired, setCaptchaRequired] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaRefreshKey, setCaptchaRefreshKey] = useState(0);
   const [oauthProviders, setOauthProviders] = useState(defaultOAuthProviders);
   const [verifyEmail, setVerifyEmail] = useState(initialVerifyEmail);
   const [verifyToken, setVerifyToken] = useState(initialVerifyToken);
@@ -145,6 +151,8 @@ function AuthScreen({
     setResetCode('');
     setResetEmail('');
     setError('');
+    setCaptchaRequired(false);
+    setCaptchaToken('');
   };
 
   const startOAuthLogin = (provider) => {
@@ -179,7 +187,7 @@ function AuthScreen({
       }
 
       setBusy(true);
-      let response = null;
+      let response;
       try {
         response = await authApi.verifyOAuthTwoFactor({
           challengeToken: twoFactorStep.challengeToken,
@@ -369,6 +377,13 @@ function AuthScreen({
       return;
     }
 
+    if (captchaRequired && TURNSTILE_SITE_KEY && !captchaToken) {
+      const msg = t('auth.error.captchaRequired', { defaultValue: 'Vui lòng hoàn tất xác minh bảo mật.' });
+      setError(msg);
+      addToast({ type: 'error', title: t('common.error'), message: msg });
+      return;
+    }
+
     if (mode === 'register') {
       setBusy(true);
       try {
@@ -378,7 +393,7 @@ function AuthScreen({
           email: registeredEmail,
           phone: form.phone,
           password: form.password,
-        });
+        }, captchaToken);
         clearToasts();
         addToast({ type: 'success', title: t('auth.toast.registerTitle'), message: t('auth.success.register') });
         setVerifyEmail(registeredEmail);
@@ -390,6 +405,19 @@ function AuthScreen({
           confirmPassword: '',
         }));
       } catch (err) {
+        if (String(err.message || '').includes('CAPTCHA_REQUIRED')) {
+          setCaptchaRequired(true);
+          setCaptchaToken('');
+          setCaptchaRefreshKey((value) => value + 1);
+          setError('');
+          clearToasts('error');
+          addToast({
+            type: 'info',
+            title: t('auth.toast.securityTitle', { defaultValue: 'Xác minh bảo mật' }),
+            message: t('auth.error.captchaRequired', { defaultValue: 'Vui lòng hoàn tất xác minh bảo mật.' }),
+          });
+          return;
+        }
         const msg = err.message || t('auth.error.registerFailed');
         setError(msg);
         addToast({
@@ -404,14 +432,28 @@ function AuthScreen({
     }
 
     setBusy(true);
-    let loginResponse = null;
+    let loginResponse;
     try {
       loginResponse = await authApi.login({
         email: form.email.trim(),
         password: form.password,
         twoFactorCode: twoFactorStep?.type === 'password' ? form.twoFactorCode.trim() : undefined,
-      });
+      }, captchaToken);
     } catch (err) {
+      if (String(err.message || '').includes('CAPTCHA_REQUIRED')) {
+        setCaptchaRequired(true);
+        setCaptchaToken('');
+        setCaptchaRefreshKey((value) => value + 1);
+        setError('');
+        clearToasts('error');
+        addToast({
+          type: 'info',
+          title: t('auth.toast.securityTitle', { defaultValue: 'Xác minh bảo mật' }),
+          message: t('auth.error.captchaRequired', { defaultValue: 'Vui lòng hoàn tất xác minh bảo mật.' }),
+        });
+        return;
+      }
+
       if (String(err.message || '').includes('2FA code required')) {
         setTwoFactorStep({ email: form.email.trim(), type: 'password' });
         updateForm('twoFactorCode', '');
@@ -784,7 +826,18 @@ function AuthScreen({
 
           {(error || notice) && <p className={error ? 'auth-message error' : 'auth-message'}>{error || notice}</p>}
 
-          <button className="auth-submit" type="submit" disabled={busy}>
+          {captchaRequired && TURNSTILE_SITE_KEY && (
+            <div className="auth-captcha">
+              <TurnstileWidget
+                siteKey={TURNSTILE_SITE_KEY}
+                theme={theme === 'dark' ? 'dark' : 'light'}
+                refreshKey={captchaRefreshKey}
+                onToken={setCaptchaToken}
+              />
+            </div>
+          )}
+
+          <button className="auth-submit" type="submit" disabled={busy || (captchaRequired && TURNSTILE_SITE_KEY && !captchaToken)}>
             {busy ? (
               <>
                 <span className="auth-spinner" aria-hidden="true" />
