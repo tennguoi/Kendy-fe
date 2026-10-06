@@ -19,4 +19,6 @@ export function persistAccessToken(token, remember) {
 export function clearStoredAccessToken() {
   localStorage.removeItem(ACCESS_TOKEN_KEY)
   sessionStorage.removeItem(ACCESS_TOKEN_KEY)
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('token')
 }

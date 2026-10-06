@@ -263,26 +263,46 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!accessToken) {
-      return
+    let active = true
+
+    if (accessToken) {
+      persistAccessToken(accessToken, rememberSession)
+      fetchUserBootstrap(accessToken)
+        .then((data) => {
+          if (active) applyBootstrapData(data)
+        })
+        .catch((err) => {
+          if (!active) return
+          const message = resolveErrorMessage(err, t('app.apiError'))
+          setApiNotice(message)
+          notify(message, 'error')
+          if (err?.status === 401 || err?.status === 403) {
+            clearStoredAccessToken()
+            setAccessToken('')
+            setCurrentUser(null)
+            setWallet(null)
+            setUserDashboard(null)
+          }
+          setAuthInit(true)
+        })
+    } else {
+      // Check if user has an active session via HttpOnly cookie
+      fetchUserBootstrap('')
+        .then((data) => {
+          if (active) {
+            applyBootstrapData(data)
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setAuthInit(true)
+          }
+        })
     }
 
-    persistAccessToken(accessToken, rememberSession)
-    fetchUserBootstrap(accessToken)
-      .then(applyBootstrapData)
-      .catch((err) => {
-        const message = resolveErrorMessage(err, t('app.apiError'))
-        setApiNotice(message)
-        notify(message, 'error')
-        if (err?.status === 401 || err?.status === 403) {
-          clearStoredAccessToken()
-          setAccessToken('')
-          setCurrentUser(null)
-          setWallet(null)
-          setUserDashboard(null)
-        }
-        setAuthInit(true)
-      })
+    return () => {
+      active = false
+    }
   }, [accessToken, applyBootstrapData, notify, rememberSession, resolveErrorMessage, t])
 
   useEffect(() => {
@@ -404,12 +424,10 @@ function App() {
   }
 
   const handleLogout = async () => {
-    if (accessToken) {
-      try {
-        await authApi.logout(accessToken)
-      } catch {
-        // Local logout still needs to clear client state if the API is unreachable.
-      }
+    try {
+      await authApi.logout(accessToken || '')
+    } catch {
+      // Local logout still needs to clear client state if the API is unreachable.
     }
 
     clearStoredAccessToken()

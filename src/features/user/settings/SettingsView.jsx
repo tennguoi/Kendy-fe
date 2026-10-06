@@ -25,6 +25,7 @@ import { AdminEmptyState, AdminStatusBadge } from '../../admin/AdminShared'
 import { formatAdminDate, formatAdminMoney } from '../../admin/adminFormat'
 import LanguageSwitcher from '../../../components/LanguageSwitcher/LanguageSwitcher'
 import { useTheme } from '../../../contexts/ThemeContext'
+import { clearStoredAccessToken } from '../../../utils/session'
 
 // Import base components and validation utilities
 import BaseInput from '../../../components/ui/BaseInput';
@@ -454,8 +455,7 @@ function SettingsView({
     setViewError('')
     try {
       await userApi.deleteAccount(token)
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('token')
+      clearStoredAccessToken()
       sessionStorage.clear()
       onSetNotice(t('settings.accountDeleted', { defaultValue: 'Tài khoản đã được xoá/ẩn danh.' }))
       window.location.assign('/')
