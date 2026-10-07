@@ -8,6 +8,7 @@ function DepositView({
   copied,
   depositAmount,
   deposits = [],
+  isDepositSubmitting = false,
   onAmountChange,
   onCancelDeposit,
   onCopy,
@@ -22,6 +23,7 @@ function DepositView({
           depositAmount={depositAmount}
           onAmountChange={onAmountChange}
           onCreateDeposit={onCreateDeposit}
+          isSubmitting={isDepositSubmitting}
         />
         <DepositBankPanel
           activeDeposit={activeDeposit}

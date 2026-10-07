@@ -19,6 +19,7 @@ function DepositCreatePanel({
   depositAmount,
   onAmountChange,
   onCreateDeposit,
+  isSubmitting = false,
 }) {
   const { t } = useTranslation()
 
@@ -39,13 +40,13 @@ function DepositCreatePanel({
       />
       <div className="quick-amounts">
         {quickDepositAmounts.map((amount) => (
-          <button key={amount} type="button" onClick={() => onAmountChange(String(amount))}>
+          <button key={amount} type="button" onClick={() => onAmountChange(String(amount))} disabled={isSubmitting}>
             {money.format(amount)}
           </button>
         ))}
       </div>
-      <button className="primary-button" type="button" onClick={onCreateDeposit}>
-        {t('deposit.createDeposit', { defaultValue: 'Tạo yêu cầu nạp' })}
+      <button className="primary-button" type="button" onClick={onCreateDeposit} disabled={isSubmitting}>
+        {isSubmitting ? (t('common.processing', { defaultValue: 'Đang xử lý...' })) : t('deposit.createDeposit', { defaultValue: 'Tạo yêu cầu nạp' })}
       </button>
     </div>
   )

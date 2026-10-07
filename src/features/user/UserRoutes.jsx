@@ -33,6 +33,7 @@ function UserRoutes({
   depositAmount,
   detailOrderLoading,
   favoriteServices,
+  isDepositSubmitting = false,
   metrics,
   onAmountChange,
   onCancelDeposit,
@@ -115,6 +116,7 @@ function UserRoutes({
           copied={copied}
           depositAmount={depositAmount}
           deposits={apiDeposits}
+          isDepositSubmitting={isDepositSubmitting}
           onAmountChange={onAmountChange}
           onCancelDeposit={onCancelDeposit}
           onCopy={onCopy}

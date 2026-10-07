@@ -66,6 +66,8 @@ function App() {
   const [checkoutCouponQuote, setCheckoutCouponQuote] = useState(null)
   const [checkoutCouponSubmitting, setCheckoutCouponSubmitting] = useState(false)
   const [checkoutModalError, setCheckoutModalError] = useState(null)
+  const [checkoutIdempotencyKey, setCheckoutIdempotencyKey] = useState('')
+  const [depositSubmitting, setDepositSubmitting] = useState(false)
   const [accessToken, setAccessToken] = useState(() => initialOAuthCallback?.token || getStoredAccessToken())
   const [rememberSession, setRememberSession] = useState(() => Boolean(initialOAuthCallback?.token) || hasPersistentSession())
   const [currentUser, setCurrentUser] = useState(null)
@@ -552,6 +554,10 @@ function App() {
       return
     }
 
+    if (depositSubmitting) {
+      return
+    }
+
     if (amountNumber <= MIN_DEPOSIT_AMOUNT) {
       const message = t('app.depositMinAmount')
       setApiNotice(message)
@@ -559,6 +565,7 @@ function App() {
       return
     }
 
+    setDepositSubmitting(true)
     try {
       const deposit = await userApi.createDeposit({ amount: amountNumber }, accessToken)
 
@@ -572,6 +579,8 @@ function App() {
       const message = resolveErrorMessage(err, t('app.depositCreateError'))
       setApiNotice(message)
       notify(message, 'error')
+    } finally {
+      setDepositSubmitting(false)
     }
   }
 
@@ -742,6 +751,7 @@ function App() {
       setCheckoutCouponError('')
       setCheckoutCouponQuote(null)
       setCheckoutModalError(null)
+      setCheckoutIdempotencyKey(createIdempotencyKey(`buy-${serviceId}`))
       setCheckoutService(service)
     } catch (err) {
       const message = purchaseErrorMessage(err, t)
@@ -793,6 +803,7 @@ function App() {
     setCheckoutCouponError('')
     setCheckoutCouponQuote(null)
     setCheckoutModalError(null)
+    setCheckoutIdempotencyKey('')
   }
 
   const handleContinueWithoutCoupon = () => {
@@ -819,10 +830,14 @@ function App() {
     setCheckoutSubmitting(true)
     setCheckoutModalError(null)
     try {
+      const activeKey = checkoutIdempotencyKey || createIdempotencyKey(`buy-${serviceId}`)
+      if (!checkoutIdempotencyKey) {
+        setCheckoutIdempotencyKey(activeKey)
+      }
       const order = await userApi.createOrder({
         serviceId,
         inputData: JSON.stringify({ ...formData, source: 'dashboard' }),
-        idempotencyKey: createIdempotencyKey(serviceId),
+        idempotencyKey: activeKey,
         couponCode: checkoutCouponCode.trim() || undefined,
       }, accessToken)
 
@@ -890,10 +905,14 @@ function App() {
     setCheckoutModalError(null)
     try {
       const serviceId = resolveServiceId(checkoutService)
+      const activeKey = checkoutIdempotencyKey || createIdempotencyKey(`checkout-${serviceId}`)
+      if (!checkoutIdempotencyKey) {
+        setCheckoutIdempotencyKey(activeKey)
+      }
       const checkout = await userApi.createServiceCheckout({
         serviceId,
         inputData: JSON.stringify({ ...formData, source: 'checkout' }),
-        idempotencyKey: createIdempotencyKey(serviceId),
+        idempotencyKey: activeKey,
         couponCode: checkoutCouponCode.trim() || undefined,
       }, accessToken)
       const deposit = checkout.deposit
@@ -1355,6 +1374,7 @@ function App() {
         onCancelOrder={handleCancelOrder}
         onCloseTicket={(ticketCode) => handleTicketState(ticketCode, 'close')}
         onCopy={copyText}
+        isDepositSubmitting={depositSubmitting}
         onCreateDeposit={handleCreateDeposit}
         onCreateTicket={handleCreateTicket}
         onCurrentUserChange={setCurrentUser}
